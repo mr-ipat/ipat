@@ -24,10 +24,14 @@ jobs:
         run: |
           rustup toolchain install 1.98.1 --profile minimal --component rustfmt
           rustup default 1.98.1
-      - name: Validate lab bootstrap scripts (syntax only)
+      - name: Validate lab bootstrap scripts and reviewed root digest
         run: |
           bash -n deploy/scripts/lab/stage1-root-preflight-and-toolchain.sh
           bash -n deploy/scripts/lab/apply-stage1-from-mac.sh
+          expected=c2f65afb09d0a8f2509f8e6e27530e5d3d7c1c692f502513835620738414e8e4
+          actual="$(sha256sum deploy/scripts/lab/stage1-root-preflight-and-toolchain.sh | cut -d ' ' -f1)"
+          test "$actual" = "$expected"
+          grep -Fq "$expected" deploy/scripts/lab/apply-stage1-from-mac.sh
       - name: Verify formatting
         run: cargo fmt --all -- --check
       - name: Run locked unit tests
