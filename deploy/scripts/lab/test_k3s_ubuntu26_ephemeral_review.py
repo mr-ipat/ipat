@@ -41,7 +41,8 @@ class K3sUbuntu26DisposableSafety(unittest.TestCase):
             "--https-listen-port 16443",
             "ipaddress.ip_network", "0[.]0[.]0[.]0:16443",
             "--disable traefik", "--disable servicelb",
-            "mktemp -d", "trap cleanup EXIT",
+            "mktemp -d /var/lib/ipat-k3s-ci.", "findmnt -n -o OPTIONS",
+            "isolated container runtime data mount is noexec", "trap cleanup EXIT",
         ):
             self.assertIn(expected, SOURCE)
         for banned in (

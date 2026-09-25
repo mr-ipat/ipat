@@ -37,7 +37,14 @@ assert any(ip in n for n in (
     ipaddress.ip_network("192.168.0.0/16")))
 PY
 
-lab_dir="$(mktemp -d "${RUNNER_TEMP:-/tmp}/ipat-k3s-ephemeral.XXXXXXXX")"
+# Keep containerd overlay/runc executable layers on an explicitly executable
+# root filesystem, NOT under GitHub's workspace/_temp mount. Only a disposable
+# GitHub Ubuntu 26.04 VM may execute the gated root operations above.
+lab_dir="$(sudo mktemp -d /var/lib/ipat-k3s-ci.XXXXXXXX)"
+sudo chown "$(id -u):$(id -g)" "$lab_dir"
+mount_options="$(findmnt -n -o OPTIONS -T "$lab_dir")"
+case ",$mount_options," in *,noexec,*) die 'isolated container runtime data mount is noexec' ;; esac
+echo 'R56_CI_CONTAINER_RUNTIME_DATA_ON_EXECUTABLE_ROOTFS=PASS'
 server_pid=''
 cleanup() {
   rc=$?
@@ -46,7 +53,7 @@ cleanup() {
   fi
   # Runner is disposable; no process or secret-bearing test bundle is uploaded.
   # Never recursively delete arbitrary directories or change host-global rules.
-  if [[ "$lab_dir" == "${RUNNER_TEMP:-/tmp}"/ipat-k3s-ephemeral.* ]]; then
+  if [[ "$lab_dir" == /var/lib/ipat-k3s-ci.* ]]; then
     sudo rm -rf -- "$lab_dir"
   fi
   exit "$rc"
