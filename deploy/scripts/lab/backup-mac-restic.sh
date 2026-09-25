@@ -111,6 +111,8 @@ case "$mode" in
     echo "ISOLATED_MAIN_SOURCE_RESTORE_SHA256=PASS"
     echo "ISOLATED_PARTIAL_CONFIG_RESTORE_SHA256=PASS"
     echo "TEMPORARY_PLAINTEXT_RESTORE_REMOVED_ON_EXIT"
-    echo "LIMITATION: root-only VPS config, PostgreSQL and K3s datastore remain unbacked up."
+    echo "VERIFIED_SCOPE: this mode validates Git source and historical readable-config ONLY."
+    echo "Verify selected encrypted root configuration separately with mac-root-config-backup.sh --verify-root."
+    echo "LIMITATION: whole-host, PostgreSQL and K3s datastore recovery remain unverified."
     ;;
 esac

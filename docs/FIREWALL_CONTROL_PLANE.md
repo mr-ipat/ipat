@@ -37,11 +37,11 @@ Future node-side execution must be a *separate root-isolated service* with a mut
 
 | Phase | Prerequisite | Status |
 |---|---|---|
-| Provider-neutral sources and docs | No vendor-specific firewall integration in current repository | In progress during R4.8 |
+| Provider-neutral sources and docs | No provider firewall API integration in current repository | **PASS for current tracked HEAD**; older Git revisions remain historical |
 | Selected root-config encrypted backup | Real sudo stream snapshot plus read-data isolated restore | **PASS** (Restic snapshot `abaa9827` verified independently) |
 | Full system data recovery | Independent recovery of Mac repository/key, root host private keys strategy, later K3s datastore and PostgreSQL backups | **NOT VERIFIED** |
 | External out-of-band console | Actual owner login or independently demonstrated equivalent | **BLOCKED** |
-| Dry-run Rust validation | Explicit management CIDR, public TLS evidence and verified private-cluster scope; always `executable=false` | Code introduced; verify via tests before merge |
+| Dry-run Rust validation | Explicit management CIDR, public TLS evidence and verified private-cluster scope; always `executable=false` | **PASS for nine unit tests on real Ubuntu 26.04.1 and GitHub CI**; not real packet filtering |
 | Privileged host agent | Actual nftables coexistence analysis, minimal privileges, signed requests, time-limited rollback and fresh dual-stack management verification | **NOT IMPLEMENTED** |
 | On-host rollout | Out-of-band recovery and complete scenario testing; documented rollback verified before any enable | **PROHIBITED NOW** |
 | K3s/DB/customer data | Approved ADR-017 networking and appropriate stateful restore gates | **NOT STARTED** |
@@ -53,3 +53,8 @@ Future node-side execution must be a *separate root-isolated service* with a mut
 `crates/firewall-policy/src/lib.rs` validates proposals with explicit `Zone::Management`, `Zone::PrivateCluster` and `Zone::PublicTls`. It rejects public SSH/Kubernetes port allow-all, unverified overlay scopes, unverified public TLS, missing management rule, duplicates and excessive requests; outputs a non-executable dual-stack default-deny **intent**. It has no network write API and its caller still needs strong host/source ownership checks before policy application. The Rust unit tests exercise only pure validation, not actual nftables or CNI behavior.
 
 **No external provider integration is in scope.** The project's formerly provider-named laboratory documents and read-only utility names are being renamed/sanitized to generic `external`/`edge` terms without erasing technical observations; Git's existing historical commits remain immutable records. No network policy has been deployed on any host.
+
+
+### Actual R4.8 source verification
+
+PR #27 merged to private `main` as `620651aedfbd273a35f5493ab2004283a4c9710e`, with final GitHub-hosted CI PASS. A fresh real Ubuntu 26.04.1 run of the canonical merged SHA passed all **32 Rust synthetic/unit tests** (including nine in `firewall-policy`), Rust formatting, and 28 existing Python static checks. No actual Linux nftables or Kubernetes CNI operation was run. Latest source `49f546b4` and the previously captured selected-root-config `abaa9827` were separately recovered from Restic encrypted snapshots with full integrity checks (12 snapshots/22 packs). A successful selected-config archive recovery is **not** a complete host/disk or future database disaster recovery test.
