@@ -40,3 +40,10 @@ Do not start `cargo run -p usp-controller` or create systemd/Kubernetes exposure
 **SHOULD:** integrate production-capable authenticated OIDC and durable PostgreSQL multi-tenant backend with RLS/backup, then real simulation across CWMP and USP normalized device model. This requires schema/migration and separate isolated restore evidence.
 
 **LATER:** MTP and firmware-specific live USP agent interop after model/firmware and routing inventory, meaningful resilience/load tests and eventual production HA. Do not claim real USP support or operator GUI before these tests and deployments.
+
+
+## Final R5.0 integration verification (post-merge)
+
+PR #31 **MERGED** as private GitHub `main` `1a41f4afbb1aaa40605fb9718bb1c402ddf1ac0a`. The exact commit was verified and synchronized to the real Ubuntu 26.04.1 VPS and authorized Mac. GitHub main CI `36139345001` returned **SUCCESS**. The real Ubuntu canonical checkout passed `cargo fmt --all -- --check`, **58 Rust unit/synthetic tests**, and **34 Python static lab safety checks**; the opt-in loopback health binary was not launched on the live VPS. Latest source was backed up into encrypted Mac Restic snapshot `adebecc4`, independently restored with SHA-256 verification; the previously acquired privileged selected root config snapshot `abaa9827` was also independently restored. Full Restic `check --read-data` verified **15 snapshots/28 packs** with no errors; temporary test plaintext removed.
+
+This evidence confirms source, pure simulator domain and read-only backup checks **only**. A real USP protobuf Record/Msg, MTP, authorized agent, real parameter read, physical device support, full host/DB restore and K3s firewall/cluster deployment **remain unimplemented/unverified**. The GitHub history retains the actual CI and limitations instead of claiming standard conformance or production readiness.
