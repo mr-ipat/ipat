@@ -18,17 +18,37 @@ if [[ -z "$backup" || ! -f "$backup" ]]; then
   exit 3
 fi
 tar -tzf "$backup" >/dev/null
-echo "MAC_PARTIAL_BACKUP_VERIFIED=yes"
+expected_backup_sha="2d74782d0e418262701107be01e91c0ea87d3b7406803ca58acdb91a57338a77"
+observed_backup_sha="$(shasum -a 256 "$backup" | awk '{print $1}')"
+if [[ "$observed_backup_sha" != "$expected_backup_sha" ]]; then
+  echo "ABORT: off-host backup does not match the reviewed preflight archive" >&2
+  exit 3
+fi
+echo "MAC_PARTIAL_BACKUP_SHA256_VERIFIED=yes"
 echo "WARNING: this is NOT a full VPS snapshot or disaster recovery backup."
 
 if [[ -n "$(git -C "$repo" status --porcelain)" ]]; then
   echo "ABORT: dirty Mac IPAT worktree; preserve developer changes." >&2
   exit 4
 fi
-git -C "$repo" fetch --quiet origin main
-git -C "$repo" switch main
-git -C "$repo" merge --ff-only origin/main
+if [[ "$(git -C "$repo" branch --show-current)" != "main" ]]; then
+  echo "ABORT: switch to reviewed main first; automatic checkout disabled." >&2
+  exit 4
+fi
+local_main="$(git -C "$repo" rev-parse HEAD)"
+remote_main="$(gh api repos/mr-ipat/ipat/commits/main --jq .sha)"
+if [[ "$local_main" != "$remote_main" ]]; then
+  echo "ABORT: GitHub main changed or local source is outdated; request review." >&2
+  exit 4
+fi
 test -s "$repo/$root_script"
+reviewed_root_sha="c2f65afb09d0a8f2509f8e6e27530e5d3d7c1c692f502513835620738414e8e4"
+observed_root_sha="$(shasum -a 256 "$repo/$root_script" | awk '{print $1}')"
+if [[ "$reviewed_root_sha" != "$observed_root_sha" ]]; then
+  echo "ABORT: root script differs from reviewed SHA-256; no sudo action." >&2
+  exit 4
+fi
+echo "REVIEWED_ROOT_SCRIPT_SHA256=$reviewed_root_sha"
 
 ssh -T -o BatchMode=yes -o StrictHostKeyChecking=yes ipat-lab \
   'test -s /home/openai/.ssh/authorized_keys && test -d /home/openai/workspaces/ipat'
@@ -62,7 +82,7 @@ if [[ "$approval" != "APPLY" ]]; then
   exit 0
 fi
 
-sha="$(shasum -a 256 "$repo/$root_script" | awk '{print $1}')"
+sha="$reviewed_root_sha"
 echo "Ubuntu will request the openai Linux sudo password IN THIS TERMINAL."
 ssh -tt -o BatchMode=yes -o StrictHostKeyChecking=yes ipat-lab \
   "sudo -k -v && \
