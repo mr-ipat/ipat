@@ -71,3 +71,8 @@ bash ~/Projects/ipat-current/deploy/scripts/lab/mac-root-config-backup.sh --back
 ```
 
 This script will prompt for `ESCROW_CONFIRMED_AND_BACKUP_ROOT` and the Ubuntu `openai` sudo password **locally**. It deliberately **does not need Nusa VNC** to create the encrypted backup, and never changes a firewall or SSH rule. Its `--verify-root` operation will check an actual root-config snapshot *only after one exists*. Root host private SSH keys and future database/K3s data are excluded; do not describe this as full VPS recovery.
+
+
+### Root backup prompt visibility (R4.7.1)
+
+If Restic displays **0 files / 0 B** and no visible password prompt, this is NOT proof of completion: the Python producer may be waiting for its **local Mac TTY** sudo-password prompt. Press `Ctrl+C` in the original Mac Terminal to stop that attempt; do not run a second backup while the first is still running. Use the updated reviewed helper on `main`: it suppresses Restic's progress display during the privileged stream and announces the **Ubuntu `openai` sudo password** prompt explicitly. Do not re-enable direct root SSH or send any password to chat. See [actual status and explanation](../../../docs/ROOT_CONFIG_STREAM_R47.md).

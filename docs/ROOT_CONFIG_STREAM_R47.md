@@ -50,3 +50,12 @@ Before any change, the owner must obtain actual Nusa VNC Linux login (or an inde
 **Rollback plan:** record IPAT's current group assignment and provider firewall state before change. Keep an independently working Nusa recovery session. When a dedicated group is eventually tested, verify a new SSH session and external IPv4/IPv6 behavior; if validation fails, restore only IPAT's recorded original assignment, not rules of the shared group. Do not use Nusa Reset Rules, which returns to global allow-all.
 
 **Current gate:** VNC login is not working, so all provider rule changes are BLOCKED. New root-backup code is prepared, but a real privileged encrypted backup and recovery test have not run until the user provides sudo authentication locally. This is not PostgreSQL AC-07 or whole-host disaster recovery.
+
+
+## R4.7.1 terminal-prompt UX correction (source-only follow-up)
+
+An owner's Mac screenshot during the first *real* root-capture attempt showed Restic progress **0 files / 0 B** without a visible sudo prompt. Assistant inspected process metadata read-only (no secrets/TTY content): Restic had spawned a Python producer, which had not yet launched SSH, and there was no completed root-config snapshot. This is consistent with Python waiting for the local `getpass` prompt while Restic progress redraw makes the prompt difficult to see. It is **NOT evidence of root-authentication failure or successful backup**. Direct `root` SSH is intentionally disabled (`PermitRootLogin no`); the backup uses `openai` over public-key SSH and requires the *Linux sudo password for openai*, not root SSH access or any Mac key passphrase.
+
+**First action for that still-pending Terminal:** user presses `Ctrl+C` once in the *same* Mac Terminal if the prompt is not visible, then waits for the script to return. Do not start parallel Restic jobs or send passwords to ChatGPT. This does not modify SSH, firewall or K3s; an incomplete encrypted snapshot must not be reported as a pass.
+
+The follow-up code makes the correct password type explicit, writes a visible nonsecret instruction directly to the controlling Mac TTY immediately before `getpass`, and sets `restic --quiet backup` for the privileged backup path to avoid overwriting the local prompt with a progress indicator. This is a usability/source change only; actual sudo-protected root capture and isolated root restore remain **PENDING** until user executes the updated merged helper and provides the local sudo password. Never enable direct root SSH to work around a local sudo prompt.
