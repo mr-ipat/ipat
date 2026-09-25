@@ -1,30 +1,35 @@
 # IPAT — Integrated Provisioning, Automation & Telemetry
 
-Private multi-tenant ISP operations platform (IP@). This repository is a **laboratory-MVP work in progress**, not a production service.
+IPAT (`IP@`) is a planned commercial multi-tenant ISP network operations platform. This repository is **work in progress**, currently an integrated laboratory MVP effort, **not production-ready**.
 
-## Binding project decisions
+## Official product documentation v0.1
 
-- Ubuntu Server 26.04 LTS; backend Rust/Tokio/Axum.
-- Original Rust ACS supporting CWMP/TR-069. Do **not** substitute GenieACS.
-- Native, separately bounded TR-369/USP Controller is required. MQTT remains a proposal pending ADR approval.
-- OLT/ONT/MikroTik adapters require exact model + firmware test evidence before compatibility claims.
-- Tenant separation across API, data, queue, telemetry, artifacts and device identities.
-- RBAC + ABAC deny-by-default, including hidden unauthorized menus and backend denial.
-- K3s heterogeneous horizontal scaling with bounded worker concurrency and idempotent side effects.
-- PostgreSQL HA and independently tested backups are commercial requirements, not properties of this initial scaffold.
+- [Project binding brief](IPAT_PROJECT_BRIEF.md)
+- [Product requirements and acceptance criteria](docs/PRD.md)
+- [Technical architecture](docs/ARCHITECTURE.md)
+- [Physical device and firmware test matrix](docs/DEVICE_MATRIX.md)
+- [Security, tenant isolation and threat model](docs/SECURITY.md)
+- [Architecture decision register](docs/DECISIONS.md)
+- [Deployment/restore requirements](docs/DEPLOYMENT.md)
+- [Seven-day sprint backlog](docs/SPRINT_BACKLOG.md)
+- [Actual project status and verification evidence](docs/PROJECT_STATUS.md)
 
-The immutable transferred source baseline is [IPAT_PROJECT_BRIEF.md](IPAT_PROJECT_BRIEF.md).
-The previously prepared full v0.1 documentation package must be imported and reconciled before any proposed ADR is finalized. No experimental code below implies approval of unresolved ADRs.
+**Authority:** The approved Project Master Brief is binding. In `DECISIONS.md`, `PROPOSED` and `OPEN` items require explicit approval/evidence. A documentation draft, test fixture or protocol placeholder does not imply implementation, certification, device support or production readiness.
 
-## Day-one scaffold (not device-ready)
+## Binding technical requirements
 
-- `crates/tenant-core`: canonical syntactic tenant IDs.
-- `crates/authz-core`: pure deny-by-default authorization example with synthetic two-tenant tests.
-- `apps/control-api`: local-only Axum health endpoint. Protected resource route always rejects unauthenticated requests.
-- Rust CI workflow is prepared locally but **not yet publishable**: the connected GitHub OAuth credential lacks the `workflow` scope. GitHub-hosted CI has not run.
+- Ubuntu Server 26.04 LTS, backend Rust/Tokio/Axum, original Rust TR-069/CWMP engine (not GenieACS).
+- Native TR-369/USP Controller is mandatory as a separate boundary; initial MTP/broker require confirmation.
+- Heterogeneous K3s worker scaling, bounded queues/leases and idempotent high-impact operations.
+- PostgreSQL with independently designed/tested commercial HA, PITR and external backups.
+- End-to-end multi-tenant isolation; verified identity, RBAC+ABAC deny-by-default; unauthorized UI menus invisible and backend/API requests rejected.
+- Evidence-aware network diagnostics across distribution, OLT/PON/ONT, router/PPPoE and subscriber layers.
+- Physical compatibility is always per exact model, firmware, interface and proven feature.
 
-Run when Rust is installed: `cargo fmt --all -- --check && cargo test --workspace`.
-Start local API: `cargo run -p control-api`; do not expose it to the internet.
-No persistent tenant storage, OIDC validation, ACS, USP, physical adapters, migrations or deployment is implemented yet.
+## Initial Rust workspace (source scaffold only)
 
-See [bootstrap status](docs/PROJECT_STATUS.md) for evidence and blockers.
+`crates/tenant-core` stores syntactic tenant IDs; `crates/authz-core` demonstrates pure policy checks and synthetic negative unit tests. `apps/control-api` exposes only loopback health and a fail-closed placeholder data path. No verified OIDC adapter, tenant database, CWMP/USP runtime or real device control has shipped.
+
+`apps/cwmp-gateway` and `apps/usp-controller` currently document **planned** Rust protocol boundaries.
+
+After Rust is available: `cargo fmt --all -- --check && cargo test --workspace`; run local demo with `cargo run -p control-api`. See `docs/PROJECT_STATUS.md` for **actual** test results; never infer success solely from source presence.
