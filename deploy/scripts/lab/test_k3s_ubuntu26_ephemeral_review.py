@@ -29,8 +29,8 @@ class K3sUbuntu26DisposableSafety(unittest.TestCase):
         for expected in (
             "GITHUB_ACTIONS:-", "RUNNER_ENVIRONMENT:-", "github-hosted",
             "IPAT_K3S_DISPOSABLE_LAB:-", "VERSION_ID", "26.04",
-            "v1.37.0+k3s1",
-            "39eed8f53f277497dfc2542f66eab0ed68a94dfc598946dbebfb50366916c7a2",
+            "v1.36.4+k3s1",
+            "835873f37245fc615f547a2fe2af9402a347875f13fa64a1f136de644955ea3f",
             "sha256sum --check --status",
         ):
             self.assertIn(expected, SOURCE)

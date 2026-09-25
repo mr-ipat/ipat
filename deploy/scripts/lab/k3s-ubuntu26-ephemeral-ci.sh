@@ -4,8 +4,8 @@
 set -Eeuo pipefail
 umask 077
 
-PINNED_TAG='v1.37.0+k3s1'
-PINNED_K3S_SHA256='39eed8f53f277497dfc2542f66eab0ed68a94dfc598946dbebfb50366916c7a2'
+PINNED_TAG='v1.36.4+k3s1'
+PINNED_K3S_SHA256='835873f37245fc615f547a2fe2af9402a347875f13fa64a1f136de644955ea3f'
 
 die() { printf 'R56_K3S_LAB_BLOCKED: %s\n' "$*" >&2; exit 4; }
 [[ "${GITHUB_ACTIONS:-}" == true &&
@@ -169,6 +169,12 @@ for event in json.load(sys.stdin).get("items",[]):
   "RUNTIME_PERMISSION": ("permission denied" in message or "operation not permitted" in message),
   "NET_CONNECTION": ("connection refused" in message or "no route to host" in message),
   "IMAGE_ERROR": ("image" in message or "pull" in message),
+  "APPARMOR": ("apparmor" in message),
+  "SECCOMP": ("seccomp" in message),
+  "RUNC": ("runc" in message),
+  "EXEC_ENTRY": ("executable file not found" in message or "exec:" in message),
+  "MOUNT": ("mount" in message),
+  "NOEXEC": ("noexec" in message),
  }
  for category,present in matches.items():
   if present: print("CI_EVENT_ERROR_CLASS",category)
