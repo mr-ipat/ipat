@@ -14,5 +14,6 @@ members = [
 ]
 
 [workspace.package]
+authors = ["Mr. iPat"]
 edition = "2021"
 license = "UNLICENSED"

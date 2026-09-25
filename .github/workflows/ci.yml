@@ -59,10 +59,12 @@ jobs:
         run: python3 -m unittest discover deploy/scripts/lab -p 'test_usp_synthetic_review.py' -v
       - name: Verify non-executable sealed provisioning jobs (static)
         run: python3 -m unittest discover deploy/scripts/lab -p 'test_provisioning_synthetic_review.py' -v
-      - name: Verify synthetic PostgreSQL RLS migration safety contracts (static)
+      - name: Verify synthetic PostgreSQL RLS and job/outbox migration safety (static)
         run: |
           python3 -m py_compile deploy/db/tests/test_postgres_rls_integration.py
+          python3 -m py_compile deploy/db/tests/test_job_outbox_integration.py
           python3 -m unittest discover deploy/db/tests -p 'test_migration_contract.py' -v
+          python3 -m unittest discover deploy/db/tests -p 'test_job_migration_contract.py' -v
       - name: Verify formatting
         run: cargo fmt --all -- --check
       - name: Run locked unit tests
@@ -105,3 +107,6 @@ jobs:
       - name: Validate tenant RLS and separate new-database logical restore (synthetic ONLY)
         run: |
           python3 -m unittest discover deploy/db/tests -p 'test_postgres_rls_integration.py' -v
+      - name: Validate synthetic durable job state and transactional outbox (ephemeral ONLY)
+        run: |
+          python3 -m unittest discover deploy/db/tests -p 'test_job_outbox_integration.py' -v
