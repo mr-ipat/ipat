@@ -116,3 +116,8 @@ The distinct native Rust `usp-core` synthetic controller boundary and explicit o
 - MUST within this isolated slice: verified source+timestamp synthetic observations, 3 differentiated distribution/access/PPPoE scenario tests, a CWMP missing-only insufficient-evidence guard, no cross-tenant/POP correlation or auto-remediation, and contradictory/stale negative tests.
 - SHOULD next: actual authenticated topology and normalized read-only OLT/router/CWMP/USP signal integration, DB-backed provenance with row isolation, deterministic replay and operator-facing audit evidence.
 - LATER after field evidence: accuracy/uncertainty calibration, downstream impact completeness, production alert routing and controlled remediation approvals.
+
+### R5.3 offline safe job core
+- MUST (simulator-only): tenant/router-scoped immutable synthetic plan and key; self-approval denial; approval TTL, 60-second fenced synthetic worker lease, no duplicate claim on globally shared router, expired-lease `Unknown` **with router quarantine**, and negative tests. Eight Rust tests and three static contracts passed on isolated Ubuntu/Mac before GitHub review.
+- STILL MUST for S1-03 / AC-05: actual verified operator/service identity, persisted PostgreSQL outbox and transactional fencing, independently verified RouterOS inventory and dry-run diff, audited two-person approvals, side-effect uncertainty reconciliation, redacted operator evidence. Current simulator must never be wired to a live writer.
+- LATER: load/failure injection with multiple workers and a real database/broker on recovery-approved isolated infrastructure; before any physical PPPoE write, owner-approved test backups, access and maintenance window.

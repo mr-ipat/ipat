@@ -57,6 +57,8 @@ jobs:
         run: python3 -m unittest discover deploy/scripts/lab -p 'test_cwmp_admission_review.py' -v
       - name: Verify synthetic USP Controller sealed trust and loopback only (static)
         run: python3 -m unittest discover deploy/scripts/lab -p 'test_usp_synthetic_review.py' -v
+      - name: Verify non-executable sealed provisioning jobs (static)
+        run: python3 -m unittest discover deploy/scripts/lab -p 'test_provisioning_synthetic_review.py' -v
       - name: Verify synthetic PostgreSQL RLS migration safety contracts (static)
         run: |
           python3 -m py_compile deploy/db/tests/test_postgres_rls_integration.py
