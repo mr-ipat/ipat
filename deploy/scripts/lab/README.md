@@ -44,3 +44,9 @@ After successful installation, the helper runs `cargo fmt --all -- --check` and 
 ## Next controlled action
 
 [Stage-2 SSH hardening with six-minute timed rollback](STAGE2-SSH.md) is prepared but **NOT YET APPLIED**. The actual privileged Stage-1 policy report showed synthetic-context root and password SSH enabled; Stage 2 requires independent provider-console login, fresh key-only SSH tests and a separate interactive authorization from the owner. It does **not** enable host firewall or K3s.
+
+## R4.4: Stage-2 completed; next K3s gate
+
+The owner executed the reviewed Stage-2 script and independently confirmed the timer-disarmed public-key-only SSH session. A separate fresh Mac SSH session and a password-only negative probe also behaved as expected; see [execution evidence](../../../docs/LAB_K3S_READ_ONLY_2026-09-25.md). The earlier Stage-2 'NOT YET APPLIED' instructions on this page are chronological preparation history. No provider firewall or Kubernetes port change has been performed.
+
+Run the *read-only* K3s prerequisite inventory with `bash deploy/scripts/lab/k3s-readonly-preflight.sh --report`. It cannot approve a K3s install: private multi-node network, provider firewall, full encrypted independent backup with restore test, and ADR-017 remain unresolved. [Rootless evidence and decision gates](../../../docs/LAB_K3S_READ_ONLY_2026-09-25.md).

@@ -1,4 +1,6 @@
-# Stage 2 — guarded SSH key-only hardening (NOT YET APPLIED)
+# Stage 2 — guarded SSH key-only hardening (COMPLETED; HISTORICAL PROCEDURE)
+
+**Current outcome, 2026-09-25:** The owner applied this step and confirmed a fresh key-only connection before disarming the timer. A further independent Mac SSH login and negative password-only diagnostic succeeded. **DO NOT RE-RUN this procedure.** Live verification and next security gates are in [the newer lab report](../../../docs/LAB_K3S_READ_ONLY_2026-09-25.md). The historical pre-application instructions below remain for reproducibility, not as an instruction to apply them again.
 
 **Dependency:** Stage 1 is now independently verified on the actual Ubuntu 26.04.1 VPS: `build-essential`, `cc` and Rust 1.98.1 installed; formatting and all 23 locked unit/simulator tests pass. A **partial** off-host Mac backup and root-only local stage-1 package/config backup exist, but **there is NO VPS snapshot or complete disaster recovery backup**. Do not deploy stateful customer data yet.
 

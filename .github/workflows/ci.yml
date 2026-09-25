@@ -34,6 +34,10 @@ jobs:
           grep -Fq "$expected" deploy/scripts/lab/apply-stage1-from-mac.sh
       - name: Verify lab Stage-2 static safety contract
         run: python3 -m unittest discover deploy/scripts/lab -p 'test_stage2_review.py' -v
+      - name: Verify rootless K3s readiness script (static tests only)
+        run: |
+          bash -n deploy/scripts/lab/k3s-readonly-preflight.sh
+          python3 -m unittest discover deploy/scripts/lab -p 'test_k3s_readonly_review.py' -v
       - name: Verify formatting
         run: cargo fmt --all -- --check
       - name: Run locked unit tests
