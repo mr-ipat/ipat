@@ -1,6 +1,6 @@
 # IPAT Ubuntu laboratory — staged bootstrap
 
-Status: **Stage 1 root operation prepared, NOT executed.** Owner authorizes the staged toolchain only by entering their Linux sudo password in their own Mac Terminal. The assistant never receives the password. Server is 16 KVM vCPU / 30 GiB guest RAM / 250G disk, below the provisional 16 / 64 GiB / ~1 TB pilot baseline. Keep this as a bounded lab, not a commercial deployment.
+Status: **Stage 1 executed and independently verified on Ubuntu 26.04.1 on 2026-09-25.** Owner authorizes the staged toolchain only by entering their Linux sudo password in their own Mac Terminal. The assistant never receives the password. Historical Stage-1 details follow; this helper should not be rerun unless a new change review requires it. Server is 16 KVM vCPU / 30 GiB guest RAM / 250G disk, below the provisional 16 / 64 GiB / ~1 TB pilot baseline. Keep this as a bounded lab, not a commercial deployment.
 
 ## Changes already executed without root
 
@@ -40,3 +40,7 @@ After successful installation, the helper runs `cargo fmt --all -- --check` and 
 - `stage1-root-preflight-and-toolchain.sh --apply`: requires root, two independent explicit owner/backup gate variables and is invoked only by the Mac helper.
 - `apply-stage1-from-mac.sh`: interactive, prevents dirty repo overwrite, transfers a verified source bundle, validates root-script SHA-256, then requests sudo interactively.
 - Actual run evidence and blockers belong in `docs/PROJECT_STATUS.md` and `docs/LAB_SERVER_READ_ONLY_2026-09-25.md`. These shell scripts do not claim production hardening or network-device interoperability.
+
+## Next controlled action
+
+[Stage-2 SSH hardening with six-minute timed rollback](STAGE2-SSH.md) is prepared but **NOT YET APPLIED**. The actual privileged Stage-1 policy report showed synthetic-context root and password SSH enabled; Stage 2 requires independent provider-console login, fresh key-only SSH tests and a separate interactive authorization from the owner. It does **not** enable host firewall or K3s.
