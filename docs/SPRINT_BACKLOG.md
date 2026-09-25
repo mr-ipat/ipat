@@ -75,6 +75,7 @@
 | E-M2-DIAGNOSTICS | Real topology/event data after pilot | Evaluation dataset, operator feedback, freshness and false-positive metrics |
 | E-M3-RESILIENCE | Measured sizing and ADR-010 | K3s multi-node tests, DB failover/PITR RPO/RTO, backup/object/queue HA |
 | E-M3-SECURITY | End-to-end policy coverage | Threat-model closure, penetration test, incident-response tabletop |
+| E-M3-NATIVE-FIREWALL (SHOULD/LATER) | ADR-018 proposed; root-config restore PASS; actual console/rescue still unverified, ADR-017 CNI OPEN | Pure dual-stack firewall-policy Rust dry-run first; later privileged nftables agent only after immutable diff, ABAC/dual approval, CNI coexistence review, isolated rollback drill and independent fresh SSH/IPv4/IPv6 tests; never manage third-party hosting firewall APIs |
 | E-M4-COMMERCIAL | Legal/contract decisions & verified readiness | Tenants/packages/support and privacy readiness, billing only separately scoped |
 
 ## 7. Reporting template (use on D7)

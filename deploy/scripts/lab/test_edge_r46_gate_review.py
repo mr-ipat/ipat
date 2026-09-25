@@ -1,13 +1,13 @@
-"""Static checks: source-only Nusa+FileVault gate, NOT provider rule verification."""
+"""Static checks: source-only external provider+FileVault gate, NOT provider rule verification."""
 from pathlib import Path
 import subprocess
 import unittest
 
-SCRIPT = Path(__file__).with_name("nusa-r46-gate-check.sh")
+SCRIPT = Path(__file__).with_name("edge-r46-gate-check.sh")
 SOURCE = SCRIPT.read_text()
 
 
-class NusaR46GateReviewTests(unittest.TestCase):
+class EdgeR46GateReviewTests(unittest.TestCase):
     def test_bash_syntax(self):
         subprocess.run(["bash", "-n", str(SCRIPT)], check=True)
 
@@ -30,12 +30,12 @@ class NusaR46GateReviewTests(unittest.TestCase):
             "PROPOSED_SOURCE_CIDR=",
             "CAUTION_IP_STABILITY=NOT_ESTABLISHED",
             "VPS_GLOBAL_IPV6_GUEST",
-            "OWNER_SCREENSHOT_NUSA_SG_IPV4_INBOUND=ALLOW_ALL",
-            "OWNER_SCREENSHOT_NUSA_SG_IPV6_INBOUND=ALLOW_ALL",
+            "OWNER_SCREENSHOT_EDGE_SG_IPV4_INBOUND=ALLOW_ALL",
+            "OWNER_SCREENSHOT_EDGE_SG_IPV6_INBOUND=ALLOW_ALL",
             "SECURITY_GROUP_OTHER_VM_ATTACHMENTS=UNVERIFIED",
             "VNC_REAL_LOGIN=REQUIRES_OWNER_CONFIRMATION",
             "RESTIC_PASSWORD_INDEPENDENT_ESCROW=REQUIRES_OWNER_CONFIRMATION",
-            "NUSA_PROVIDER_FIREWALL_CHANGE=NOT_PERFORMED",
+            "EDGE_PROVIDER_FIREWALL_CHANGE=NOT_PERFORMED",
         ):
             with self.subTest(required=required):
                 self.assertIn(required, SOURCE)

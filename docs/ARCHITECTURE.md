@@ -278,3 +278,12 @@ Runbooks dalam `DEPLOYMENT.md`: bootstrap/join/validate/drain/remove/restore; ba
 - [KEDA scaling deployments reference](https://keda.sh/docs/2.21/concepts/scaling-deployments/). Pin actual versions during implementation with SBOM and compatibility tests.
 
 **Verification reminder:** Referensi menjelaskan standar/platform fitur yang tersedia, **tidak** membuktikan keberhasilan implementasi IPAT maupun kompatibilitas fisik OLT/ONT/MikroTik.
+
+
+## R4.8 optional native host firewall boundary — PROPOSED, not deployed
+
+Per [vendor-neutral firewall architecture and safety gates](FIREWALL_CONTROL_PLANE.md), IPAT may offer an optional first-party Ubuntu host firewall management capability. It will NOT integrate with external hosting-provider security-group or managed-firewall APIs. The first Rust `firewall-policy` crate is pure in-memory **dry-run validation only**; no root agent, nftables transaction, UI API, approval workflow, cluster CNI integration or production deployment is implemented.
+
+Proposed trust chain: platform operator identity (OIDC/MFA) → verified platform-host assignment → RBAC+ABAC deny-by-default policy → immutable candidate diff → dual maker/checker approvals for high-risk changes → time-bounded signed host-scoped request → dedicated root-isolated IPAT nftables agent (later) → safe atomic update of **only IPAT-owned chain/table** after backup, independent console/rollback tests → new independent IPv4/IPv6 verification → protected audit evidence. Tenant operators must never inherit platform host firewall privileges; no kernel socket/capability is exposed to tenant workloads.
+
+**K3s caveat:** independent host nftables rules must coexist with the actual chosen K3s CNI and iptables-nft behavior. Do not flush global rules, configure forwarding blindly, or claim that the Rust planner secures node networking. Kubernetes NetworkPolicy and per-device transport authentication remain distinct controls. ADR-018 is PROPOSED and ADR-017 still OPEN.

@@ -21,6 +21,7 @@
 | ADR-015 | OPEN | RLS/tenant quotas, encryption boundaries, tenant deletion and raw backup restore strategy | Commercial isolation/privacy | Contract and disaster-recovery test design |
 | ADR-016 | OPEN | Specific supported CWMP/USP RPC feature set and data models on exact physical firmware | Availability varies by device/firmware | Device inventory and lab execution before support claims |
 | ADR-017 | OPEN | Selected cloud/VPS, network overlay, Kubernetes datastore/control-plane design and storage classes | Mixed VPS/bare metal constraints | Network/NAT/IO cost and capacity assessment |
+| ADR-018 | PROPOSED | Optional IPAT-native host firewall control plane using a narrowly privileged Ubuntu nftables agent, source-scoped dual-stack policy drafts and audit/approval; **no external hosting-provider firewall integration** | Portable tenant-aware operations without requiring vendor-specific APIs; preserve CNI ownership and rescue access | Validate real nftables/iptables-nft/CNI coexistence on disposable node, independent console recovery, root config restore, signed approval matrix, timed rollback and fresh IPv4/IPv6 tests before any apply |
 
 ## 1. Decision questions with suggested owner / due gate
 
