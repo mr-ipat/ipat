@@ -30,7 +30,8 @@ class MacResticReviewTests(unittest.TestCase):
         self.assertNotIn("backup --stdin ", SOURCE)
 
     def test_explicit_scope_warning(self):
-        self.assertIn("root-only VPS config, PostgreSQL and K3s datastore remain unbacked up", SOURCE)
+        self.assertIn("VERIFIED_SCOPE: this mode validates Git source and historical readable-config ONLY", SOURCE)
+        self.assertIn("whole-host, PostgreSQL and K3s datastore recovery remain unverified", SOURCE)
 
 
 if __name__ == "__main__":
