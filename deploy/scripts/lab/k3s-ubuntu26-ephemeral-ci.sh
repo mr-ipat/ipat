@@ -69,7 +69,7 @@ curl --proto '=https' --tlsv1.2 --fail --location --retry 3 \
 printf '%s  %s\n' "$PINNED_K3S_SHA256" "$lab_dir/k3s" | sha256sum --check --status ||
    die 'downloaded K3s binary differs from pinned upstream release checksum'
 chmod 0700 "$lab_dir/k3s"
-"$lab_dir/k3s" --version | head -1
+"$lab_dir/k3s" --version
 echo 'R56_PINNED_K3S_BINARY_SHA256_VERIFIED=PASS'
 
 # Run embedded etcd on a temporary, separate GitHub VM. No host systemd
