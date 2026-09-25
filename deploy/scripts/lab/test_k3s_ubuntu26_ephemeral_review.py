@@ -53,7 +53,8 @@ class K3sUbuntu26DisposableSafety(unittest.TestCase):
 
     def test_actual_pods_dns_and_ephemeral_etcd_snapshot_required(self):
         for expected in (
-            "Ready", "rollout status deploy/coredns", "wait --for=condition=Ready",
+            "Ready", "get deployment coredns", "coredns_deployment_found=0",
+            "rollout status deploy/coredns", "wait --for=condition=Ready",
             "nslookup kubernetes.default.svc.cluster.local",
             "etcd-snapshot save", "R56_EPHEMERAL_ETCD_SNAPSHOT_CREATED=PASS",
             "R56_LIMITATION=ONE_DISPOSABLE_RUNNER_NOT_MULTI_NODE_HA_OR_OFFHOST_RESTORE",

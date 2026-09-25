@@ -107,7 +107,18 @@ grep -Fq "$node_ip:16443" <<<"$listeners" ||
   die 'API listener is not bound to the disposable RFC1918 node IPv4'
 echo 'R56_EPHEMERAL_API_RFC1918_ONLY=PASS'
 
-if ! k -n kube-system rollout status deploy/coredns --timeout=85s >/dev/null 2>&1; then
+# Node Ready can precede packaged chart/deployment creation on fast CI VMs.
+# Wait for the deployment to EXIST before judging its rollout readiness.
+coredns_deployment_found=0
+for attempt in $(seq 1 45); do
+  if k -n kube-system get deployment coredns >/dev/null 2>&1; then
+    coredns_deployment_found=1
+    break
+  fi
+  sleep 2
+done
+[[ "$coredns_deployment_found" == 1 ]] || die 'packaged CoreDNS deployment not created within 90 seconds'
+if ! k -n kube-system rollout status deploy/coredns --timeout=100s >/dev/null 2>&1; then
   # Emit ONLY controlled pod-state and event *reason* keys, never messages,
   # kubeconfigs, startup logs, server tokens or credential-bearing spec fields.
   k get pods -A -o json | python3 -c '
