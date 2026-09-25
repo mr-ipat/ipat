@@ -1,6 +1,6 @@
 # IPAT — Deployment & Operations Runbook Specification v0.1
 
-**Status:** v0.1 cluster/database procedures remain **PLANNED**. A guarded Stage-1 Ubuntu lab compiler bootstrap helper is now prepared in `../deploy/scripts/lab/` but requires a one-time local owner sudo prompt before execution. No Ansible, Terraform, Helm, Kubernetes manifests, certificates, cluster, or measured restore are delivered yet. This file must be converted into executable, reviewed runbooks during implementation.
+**Status (R4.5):** Ubuntu lab Stage 1 compiler bootstrap was actually completed, and Stage 2 SSH key-only policy was independently verified; the Mac has an encrypted restic **partial config + source** backup with real isolated restores. Nusa provider ACL and Mac FileVault/recovery-key escrow are unresolved. **K3s, PostgreSQL, full disaster recovery/DB restore, Ansible, Terraform, Helm and production certificates remain NOT DEPLOYED/NOT VERIFIED.** Review the dated execution history below. This file must be converted into executable, reviewed runbooks during implementation.
 
 ## 1. Target environments and prerequisites
 
@@ -58,3 +58,6 @@
 **R4.3 (2026-09-25):** Real Ubuntu 26.04.1 Stage-1 compiler bootstrap passed and the existing 23 locked unit/simulator tests were independently rerun successfully. [Stage-2 key-only SSH hardening](../deploy/scripts/lab/STAGE2-SSH.md) is **PREPARED ONLY**, with an owner-operated timed rollback; no provider snapshot or complete encrypted off-host recovery backup exists, and no firewall or K3s change has been made.
 
 **R4.4 (2026-09-25):** The owner applied key-only SSH Stage 2 with a six-minute recovery timer and its independent new-session check; an additional Mac-assisted fresh-key login and password-only denial were verified. [Real Ubuntu rootless K3s prerequisites and security/recovery blockers](LAB_K3S_READ_ONLY_2026-09-25.md) are recorded. `deploy/scripts/lab/k3s-readonly-preflight.sh --report` is **inspection only**. K3s has NOT been installed; no public firewall rule, provider ingress, PostgreSQL or subscriber-data action was executed. Previous Stage-2 'PREPARED' wording is chronological history and is superseded by this later verification.
+
+
+**R4.5 (2026-09-25):** Actual restic v0.19.1 encryption of prior PARTIAL config and canonical source on the separate Mac, with Keychain-only password command, read-all-packs integrity and isolated tar/sha256 restore, is recorded in [the actual lab backup and Nusa firewall report](LAB_BACKUP_NUSA_R45.md). Guest and external read-only network checks do not show provider Managed Firewall rules. FileVault is OFF, recovery secret is not separately escrowed, and root-only full config/DB/K3s datastore backups are not complete. K3s installation/host firewall/provider ACL modifications remain prohibited pending distinct recovery/network/ADR reviews.

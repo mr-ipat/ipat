@@ -17,6 +17,7 @@ IPAT (`IP@`) is a planned commercial multi-tenant ISP network operations platfor
 - [Restricted laboratory stage-1 bootstrap and no-snapshot safety plan](deploy/scripts/lab/README.md)
 - [Stage-2 SSH key-only hardening proposal and six-minute recovery timer](deploy/scripts/lab/STAGE2-SSH.md)
 - [Verified Stage-2 SSH results and read-only K3s prerequisites](docs/LAB_K3S_READ_ONLY_2026-09-25.md)
+- [R4.5 encrypted temporary Mac backup, real isolated restore and Nusa firewall gate](docs/LAB_BACKUP_NUSA_R45.md)
 
 **Authority:** The approved Project Master Brief is binding. In `DECISIONS.md`, `PROPOSED` and `OPEN` items require explicit approval/evidence. A documentation draft, test fixture or protocol placeholder does not imply implementation, certification, device support or production readiness.
 

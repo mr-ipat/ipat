@@ -50,3 +50,8 @@ After successful installation, the helper runs `cargo fmt --all -- --check` and 
 The owner executed the reviewed Stage-2 script and independently confirmed the timer-disarmed public-key-only SSH session. A separate fresh Mac SSH session and a password-only negative probe also behaved as expected; see [execution evidence](../../../docs/LAB_K3S_READ_ONLY_2026-09-25.md). The earlier Stage-2 'NOT YET APPLIED' instructions on this page are chronological preparation history. No provider firewall or Kubernetes port change has been performed.
 
 Run the *read-only* K3s prerequisite inventory with `bash deploy/scripts/lab/k3s-readonly-preflight.sh --report`. It cannot approve a K3s install: private multi-node network, provider firewall, full encrypted independent backup with restore test, and ADR-017 remain unresolved. [Rootless evidence and decision gates](../../../docs/LAB_K3S_READ_ONLY_2026-09-25.md).
+
+
+## R4.5 temporary encrypted Mac backup and Nusa firewall read-only assessment
+
+Use [the actual backup/restore report and provider firewall gate](../../../docs/LAB_BACKUP_NUSA_R45.md). Reviewed Mac-only scripts are `backup-mac-restic.sh --status|--backup-source|--backup-partial|--verify` and `nusa-readonly-network-check.sh --report`. A high-entropy restic passphrase is held only in the Mac Keychain; repository snapshots of the prior PARTIAL VPS config and canonical Git source passed isolated restore and full read-data integrity checks. **The Mac FileVault is OFF; no root-only VPS config, future PostgreSQL data or K3s datastore is backed up.** Actual Nusa Managed Firewall rules were NOT read, and no firewall/K3s change was made. Do not call this production disaster recovery.
