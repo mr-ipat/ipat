@@ -83,6 +83,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "cwmp-admission"
+version = "0.1.0"
+dependencies = [
+ "cwmp-protocol",
+ "tenant-core",
+]
+
+[[package]]
 name = "cwmp-protocol"
 version = "0.1.0"
 dependencies = [

@@ -86,3 +86,8 @@ reviewed_by: null
 S1: synthetic/simulator testing allowed for endpoint design; if any exact physical device available, perform discovery/read-only and one safe, authorized parameter/read first, then MikroTik small approved PPPoE write on isolated accounts if recovery exists. Label *simulated vs real* for each output. No OLT config writes S1 by default. Commercial gate: contract/physical regression per firmware, malformed/negative security tests, resilience/rollback and authorization gates; `validated` attached per feature only.
 
 **Initial disposition:** All `TC-*` above **NOT RUN**, all physical device profiles `untested`. This is transparent project status rather than a failure verdict for any vendor.
+
+
+## R4.9 simulator evidence only (NOT physical compatibility)
+
+On the actual Ubuntu 26.04 lab, `cwmp-admission` eleven **offline synthetic** unit tests passed: enrollment/tenant/SPKI binding, SOAP InformResponse after admission, unauthenticated cross-tenant/device spoof rejection, repeated ID, bounded leases/replay, malformed SOAP/XML, wrong-peer lease completion and XML escaping. This exercises no actual TLS transport, broker, RPC or physical ONT and therefore does **not** change any DEV-01 through DEV-08 `untested` physical matrix status or claim a completed TC-CWMP-01/02 field test. Evidence/code and limitations: [R4.9 CWMP synthetic scope](CWMP_ADMISSION_R49.md).

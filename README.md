@@ -21,6 +21,7 @@ IPAT (`IP@`) is a planned commercial multi-tenant ISP network operations platfor
 - [R4.6 verified FileVault and live IPv6 exposure; generic perimeter dependency (historical evidence only)](docs/EDGE_SECURITY_GROUP_R46.md)
 - [R4.7 root-config direct-encrypted streaming preparation and host recovery gate](docs/ROOT_CONFIG_STREAM_R47.md)
 - [R4.8 optional first-party host firewall architecture and safety gates](docs/FIREWALL_CONTROL_PLANE.md)
+- [R4.9 original Rust offline CWMP authenticated-identity boundary and bounded session simulator](docs/CWMP_ADMISSION_R49.md)
 
 **Authority:** The approved Project Master Brief is binding. In `DECISIONS.md`, `PROPOSED` and `OPEN` items require explicit approval/evidence. A documentation draft, test fixture or protocol placeholder does not imply implementation, certification, device support or production readiness.
 
