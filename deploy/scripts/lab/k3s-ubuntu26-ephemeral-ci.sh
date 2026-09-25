@@ -75,7 +75,11 @@ echo 'R56_PINNED_K3S_BINARY_SHA256_VERIFIED=PASS'
 # Run embedded etcd on a temporary, separate GitHub VM. No host systemd
 # installation, external SSH route, provider security-group API, or ingress.
 # Bind the supervisor/API ONLY to the ephemeral runner's RFC1918 address.
-sudo "$lab_dir/k3s" server \
+# Secret-bearing wrapper/files retain the shell's umask 077, but containerd
+# needs standard service umask 022 for correctly traversable OCI layer dirs.
+# Test this only on the disposable GitHub VM; K3s itself explicitly protects
+# its Kubeconfig (0600) and stateful token paths.
+sudo bash -c 'umask 022; exec "$@"' ipat-ephemeral "$lab_dir/k3s" server \
   --cluster-init \
   --data-dir "$lab_dir/data" \
   --write-kubeconfig "$lab_dir/kubeconfig" \

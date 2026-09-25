@@ -42,7 +42,8 @@ class K3sUbuntu26DisposableSafety(unittest.TestCase):
             "ipaddress.ip_network", "0[.]0[.]0[.]0:16443",
             "--disable traefik", "--disable servicelb",
             "mktemp -d /var/lib/ipat-k3s-ci.", "findmnt -n -o OPTIONS",
-            "isolated container runtime data mount is noexec", "trap cleanup EXIT",
+            "isolated container runtime data mount is noexec",
+            "umask 022; exec", "--write-kubeconfig-mode 0600", "trap cleanup EXIT",
         ):
             self.assertIn(expected, SOURCE)
         for banned in (
