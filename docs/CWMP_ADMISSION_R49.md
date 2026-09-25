@@ -38,3 +38,8 @@ These commands compile and test using the user's existing non-root Rust installa
 **SHOULD:** simulator CWMP `GetParameterValues` session transaction and a safe network-transport fixture (not a public service), then standards/version selection and explicit actual ONT model/firmware testing. Native USP Controller remains a separate mandated module; the controller/broker security choice ADR is still open.
 
 **LATER:** production-scale shared distributed session ownership, resilient store and per-model physical interoperability/certification claims, only after sufficient evidence and recovery gates.
+
+
+## R4.9 verified post-merge historical evidence
+
+PR #30 merged to private GitHub `main` `0e354e5445fc9ed3a1d6989f4ef2ae8712923afc`. Actual final main CI `36137997641` passed. Exact private GitHub/Mac/actual Ubuntu source SHAs were independently matched. Real Ubuntu `cargo fmt --check`, **43 Rust unit/synthetic tests**, and **31 lab static checks** passed. The canonical source snapshot `167fe785` and separately captured selected-root-config snapshot `abaa9827` were decrypted and isolated-restore checked; Restic full read-data verification covered **14 snapshots/26 packs** at that milestone. No real authenticated CWMP HTTP listener, durable device/session store, SOAP RPC beyond synthetic parsing or physical ONT testing has been implemented; the later R5.0 standalone native USP core does not change these limitations.
