@@ -62,3 +62,13 @@ K3s official network prerequisites and prohibition on public VXLAN/8472: https:/
 | PRD AC-07 PostgreSQL isolated restore | **BLOCKED** until an actual database, backup and clean restore test exist |
 
 Next: obtain redacted Nusa Managed Firewall rule inventory and tested recovery-console evidence from the owner; enable FileVault and independently escrow the Keychain-held restic secret; then design a one-time privileged **streamed-to-encrypted-repository** config backup without leaving plaintext root files on the Mac. Only after validated recovery/network gates prepare a pinned, isolated/disposable K3s single-node lab bootstrap. Do not claim production HA or tested physical ZTE/C-DATA/VSOL/MikroTik compatibility.
+
+
+## 4. Follow-up after R4.5 code merge
+
+- R4.5 implementation PR #22 merged into private GitHub `main` as `deecfed13bfa6d453816e89af0b3592c8a541067`.
+- Mac-only repeatable backup script was then executed with `--backup-source` on that clean exact `main`; latest canonical source snapshot at this checkpoint is `2ee0cc82`.
+- Its `--verify` mode **ACTUALLY PASSED** `restic check --read-data` on **three snapshots and six packs**; restored the new canonical Git tar and original PARTIAL config tar into separate private throwaway directories; compared both actual restored SHA-256 values with independent expected source/archive hashes, verified known archive entries and removed test directories.
+- Final R4.5 PR GitHub-hosted main CI `36115936092` **SUCCESS**, including nine new source-only backup/Nusa static checks, nine previous static SSH/K3s checks, formatting and 23 locked Rust synthetic/unit tests.
+- The exact reviewed private GitHub `main` commit was synchronized to the Mac and Ubuntu lab non-root workspace via an authenticated temporary Git bundle; independent SHA comparison succeeded; SSH still active and the Stage-2 pending marker was absent. There was **NO privileged backup, Nusa provider ACL/firewall, host firewall, K3s or PostgreSQL modification** in this checkpoint.
+- As this report itself may be committed in a subsequent documentation-only revision, use `--backup-source` and `--verify` again after that revision to encrypt/check the final latest `main`. The milestone does not claim any complete root-only config, database or K3s recovery readiness.
