@@ -1,0 +1,236 @@
+# IPAT — Product Requirements Document (PRD) v0.1
+
+| Metadata | Nilai |
+|---|---|
+| Produk | IPAT (`IP@`) — Integrated Provisioning, Automation & Telemetry |
+| Versi/tanggal | v0.1 / 2026-09-25 (Asia/Jakarta) |
+| Status | **Baseline persyaratan untuk implementasi; validasi dan persetujuan akhir product owner masih diperlukan** |
+| Cakupan | Platform SaaS multi-tenant untuk provisioning, manajemen, telemetri, diagnostik, dan otomasi ISP |
+| Sumber primer | `IPAT_PROJECT_BRIEF.md`, approved design baseline; project instructions |
+| Dokumen pendamping | `ARCHITECTURE.md`, `SECURITY.md`, `DEVICE_MATRIX.md`, `DECISIONS.md`, `SPRINT_BACKLOG.md`, `DEPLOYMENT.md`, `PROJECT_STATUS.md` |
+| Kaidah | `MUST` = persyaratan wajib; `SHOULD` = disarankan; `LATER` = di luar fase awal. Status desain bukan bukti implementasi. |
+
+> **Aturan perubahan:** Brief menetapkan keputusan mengikat. Dokumen ini merinci dan mengusulkan pilihan yang belum final; keputusan usulan bertanda **PROPOSED** dan harus disetujui melalui `DECISIONS.md`. Tidak ada klaim kompatibilitas, uji, keamanan, SLA, atau performa tanpa bukti. Dokumen ini adalah acuan pekerjaan v0.1, bukan pengesahan kesiapan produksi.
+
+## 1. Ringkasan dan tujuan
+
+IPAT menyatukan manajemen CPE melalui ACS TR-069/CWMP asli dalam Rust dan Controller native TR-369/USP, pengelolaan OLT/ONT serta MikroTik, topologi/subscriber, diagnostik berbasis bukti, otomasi terkontrol, observability, dan isolasi SaaS per perusahaan. Positioning membedakan *cakupan fungsi* IPAT dari ACS konvensional, bukan mengklaim kompatibilitas atau performa yang belum dibandingkan secara empiris.
+
+**Outcome pengguna:** NOC melihat subscriber dan dependensi jaringan dalam satu konteks; provisioning officer menjalankan perubahan massal yang dapat ditinjau/diulang aman; security admin memeriksa dan menyetujui aksi berisiko; platform owner mengelola langganan dan tenant tanpa otomatis melihat kredensial tenant.
+
+**Outcome MVP tujuh hari:** potongan alur terintegrasi yang berjalan di laboratorium, bukti tes positif dan negatif, serta fondasi yang dapat dikembangkan. Jika perangkat nyata/node kedua tidak tersedia, demonstrasi simulator dibedakan tegas dari kelulusan tes fisik.
+
+**Indikator yang akan diukur (bukan janji):** jumlah kombinasi firmware tervalidasi per fitur; kelulusan tes isolasi dan deny-by-default; success/failure CWMP Inform/RPC dan USP PoC; perubahan PPPoE tanpa efek ganda; ketepatan/keterlacakan hipotesis diagnostik; throughput queue, error rate, p95 latensi, pemakaian node, RPO/RTO hasil tes.
+
+## 2. Pengguna, tata kelola, dan alur utama
+
+- **Platform owner admin:** provisioning tenant, domain tervalidasi, paket/kuota, pemakaian agregat; tidak otomatis mengakses data operasional/secret tenant.
+- **Tenant admin:** pengguna, organisasi, POP/region dan policy tenant sesuai delegasi; bukan hak universal lintas tenant.
+- **System admin / security admin:** masing-masing operasi sistem dan policy/approval/audit; *separation of duties* untuk operasi berisiko.
+- **NOC manager / engineer:** pemantauan, triase, perubahan teknis yang diizinkan sesuai POP.
+- **Provisioning officer:** onboarding perangkat dan job terbatas, dry-run; aksi massal perlu approval.
+- **Helpdesk / field technician:** hanya subscriber/diagnostik dan tugas lapangan sesuai scope; tidak melihat menu atau data di luar hak.
+- **Auditor:** pembacaan audit yang diizinkan tanpa mengubah perangkat; **service identities** terpisah dari manusia.
+
+Alur utama J-01: platform owner membuat tenant → domain subdomain/custom diverifikasi → tenant admin diundang → login MFA dan policy → hanya dashboard/aksi milik tenant terlihat. J-02: perangkat didaftarkan dengan ikatan identitas tenant → Inform/USP message atau polling diverifikasi → inventory/subscriber/topologi diperbarui → NOC melihat data berlabel freshness. J-03: batch PPPoE CSV → validasi → preview/diff/dry-run → approval terpisah → worker ber-rate-limit → rekonsiliasi, bukti dan audit. J-04: alarm uplink → korelasi bukti topologi dan pelanggan → hipotesis berperingkat internal dengan ketidakpastian, bukan vonis tunggal → operator menentukan tindakan.
+
+## 3. Keputusan tetap, usulan, dan non-goals
+
+### 3.1 Wajib dipertahankan (APPROVED baseline)
+
+1. Backend Rust/Tokio/Axum pada Ubuntu Server 26.04 LTS; **ACS CWMP/TR-069 original Rust, bukan GenieACS**. Referensi interoperabilitas implementasi lain tunduk pada lisensi.
+2. Modul **native USP Controller TR-369** sejak hari pertama dengan abstraksi perangkat bersama; jangan menyebut dukungan lengkap sebelum uji. MQTT = kandidat MTP awal, belum keputusan final.
+3. Modular monolith sebagai domain bisnis dengan pemisahan proses protocol endpoints/worker/infrastruktur sewajarnya; tidak memecah banyak microservice prematur.
+4. K3s lintas VPS/bare-metal heterogen, queue, worker concurrency terbatas, backpressure, locking per perangkat, idempotensi; penambahan node tidak boleh menduplikasi job.
+5. PostgreSQL dengan rencana primary/standby, PITR dan backup terpisah untuk produksi; HA tidak diklaim oleh node lab tunggal.
+6. Isolasi multi-tenant menyeluruh; dashboard dan domain tiap perusahaan, antarmuka platform terpisah; RBAC+ABAC deny-by-default, MFA, approval + audit aksi tinggi; menu terlarang tersembunyi **dan** backend menolak semua jalur akses.
+7. Diagnostik *evidence-led* yang membedakan domain gangguan dan menyatakan freshness/ketidakpastian; tidak menganggap ketiadaan Inform membuktikan fiber putus.
+8. IaC: Ansible, K3s bootstrap/join, Helm+GitOps, Terraform bila penyedia VPS mendukung; secret di luar Git.
+
+### 3.2 Keputusan kandidat (PROPOSED; lihat ADR)
+
+- Frontend Next.js/TypeScript; identity Keycloak OIDC/MFA; RabbitMQ sebagai **work queue**; Prometheus/Grafana; secret manager yang dipilih kemudian.
+- Pola penyimpanan awal: **platform metadata terpisah secara logis**, tabel operasional berbagi PostgreSQL dengan `tenant_id`, Row-Level Security (RLS), `FORCE ROW LEVEL SECURITY`, role runtime tanpa `BYPASSRLS`; kemungkinan migrasi dedicated database untuk tenant besar setelah evaluasi. Pola ini bukan substitusi otorisasi aplikasi atau isolasi backup.
+- USP MTP awal MQTT dengan broker/otorisasi terpisah dari antrian job, pilihan broker belum disahkan.
+- RPO/RTO produksi, retensi telemetri, kuota paket, profil autoscaling dan target kapasitas belum disahkan.
+
+### 3.3 Eksplisit di luar jaminan tujuh hari
+
+Tidak termasuk: seluruh RPC/TR-069 dan USP secara lengkap; sertifikasi perangkat; semua vendor/firmware; bulk firmware upgrade; remedi otomatis skala besar; billing/transaksi keuangan; HA/failover produksi; 100% akurasi RCA; autoscaling di semua penyedia cloud; bukti performa/keamanan lebih unggul dari produk lain.
+
+## 4. Prioritas dan batas fase
+
+| Area | MUST — target demonstrasi 7 hari (jika dependensi tersedia) | MUST — sebelum rilis komersial | SHOULD | LATER |
+|---|---|---|---|---|
+| Identity/tenant | Dua tenant sintetis, OIDC/MFA dev, entitlements UI/API, tes negatif | End-to-end lintas data-plane, domain verified, secret boundaries, approval | Delegasi POP/region rinci | Advanced SSO per enterprise |
+| ACS | Rust endpoint HTTPS, Inform valid, session/fault dasar, 1 RPC parameter yang diuji | Metode prioritas lengkap menurut matriks, hardening/load/interoperabilitas | Templates/device profiles | Firmware campaign skala luas |
+| USP | Boundary, protobuf, simulator-agent PoC dengan satu flow; jika MTP tak siap tandai design-only | Native Controller interoperabel dan aman, MTP terpilih, reconnect/retry | Transport alternatif | USP Service orchestration luas |
+| OLT/ONT | Inventory/read-only via simulator dan perangkat bila ada | Adapter per kombinasi **teruji**, approval write | Event normalization multivendor | Ekspansi vendor |
+| MikroTik | Read secret/session lab, CSV dry-run, batch kecil idempotent ber-approval | Rate-limit/rollback strategy/partial-failure handling | Template provisioning kompleks | Autonomous mass changes |
+| Topologi/diagnostik | Hubungan dasar dan 3 rule simulated incident | Evidence store, stale-data guard, dampak, alarm pipeline | Korelasi lebih kaya | ML RCA setelah dataset |
+| Operasi/scale | Local compose, deploy single-node, worker + outbox/lease PoC, backup-restore | K3s heterogen, node lifecycle, benchmark, HA DB, DR tervalidasi | Autoscaling dinamis | Multi-region active-active |
+
+Catatan: **MUST produk** tidak sama dengan *selesai hari ketujuh*; kegagalan dependensi lab tidak boleh diganti klaim tes fisik. Tentukan prioritas cut-line di `SPRINT_BACKLOG.md`.
+
+## 5. Persyaratan fungsional (FR)
+
+Semua FR memiliki `tenant_id`/otorisasi yang sesuai atau eksplisit `platform-scope`; ID digunakan untuk melacak implementasi dan tes. `S1` = potongan 7 hari, `C` = sebelum komersial, `S` = SHOULD sesudah S1; label S1 mengasumsikan dependensi perangkat bila relevan.
+
+### 5.1 Tenant, identitas, otorisasi
+
+| ID | Prioritas | Persyaratan & kondisi penerimaan |
+|---|---|---|
+| FR-001 | S1 | Buat minimal dua tenant sintetis yang terisolasi; query/command yang salah tenant ditolak di UI, API, service, job, search dan export. |
+| FR-002 | S1→C | Login OIDC dengan MFA untuk privileged users dan sesi tenant-scoped; user tenant lain tidak dapat memalsukan context via header/host/token. |
+| FR-003 | S1 | Policy RBAC + ABAC deny-by-default: action/resource/tenant/POP; menu tak berhak tidak dirender, API memberikan 403/404 sesuai kebijakan tanpa bocor metadata. |
+| FR-004 | C | Verifikasi kepemilikan subdomain/custom domain, TLS per domain, isolasi cookie/session/branding tenant, mapping domain↔tenant tervalidasi. |
+| FR-005 | S1→C | Antarmuka platform owner terpisah, tidak ada akses otomatis terhadap credential/data operasional tenant. |
+| FR-006 | S1→C | Audit siapa/kapan/aksi/tenant/resource/hasil/correlation-id tanpa secret; log akses lintas tenant ditolak juga dicatat. |
+| FR-007 | S1→C | Aksi berisiko memiliki klasifikasi, dry-run, approval *two-person* bila ditetapkan, expiry, reason, dan opsi emergency tercatat. |
+| FR-008 | C | Pengelolaan plan/kuota/pemakaian tenant; hard quota enforced server-side, tanpa billing transaksi sebelum scope eksplisit. |
+
+### 5.2 Protocol endpoint dan management abstraction
+
+| ID | Prioritas | Persyaratan & kondisi penerimaan |
+|---|---|---|
+| FR-009 | S1 | ACS native Rust menerima HTTPS CWMP Inform dengan parsing SOAP/XML aman, autentikasi & binding tenant-per-device tervalidasi, mengirim InformResponse. |
+| FR-010 | S1 | Menyimpan lifecycle/session, event/identity CPE, correlation ID; satu parameter discovery/get yang benar-benar dibuktikan pada simulator/ONT; hasil beda per model ditulis di matriks. |
+| FR-011 | C | Workflow parameter discovery/read/write, RPC lifecycle/fault/timeout/retry dengan state dan per-device serialization; perintah write hanya pada profil teruji/diizinkan. |
+| FR-012 | C | Secure connection-request handling sesuai kemampuan CPE; anti-replay, credential handling, rate limiting, ukuran dan batas XML; kebijakan fallback tanpa downgrade diam-diam. |
+| FR-013 | S1 | Native USP Controller boundary terpisah, protobuf schema dan pemetaan `agent_endpoint_id` terverifikasi; satu interaksi PoC dengan simulator atau agen kompatibel, status bukti eksplisit. |
+| FR-014 | C | Implementasi USP MTP, autentikasi/otorisasi controller-agent, korelasi/duplicate/reconnect, method prioritas dan interoperability suite. |
+| FR-015 | S1→C | Normalized device model mengikat tenant/device/protocol/observations, menjaga raw capability/vendor extensions terpisah dan menyatakan sumber data. |
+
+### 5.3 Adapter OLT/ONT/MikroTik dan provisioning
+
+| ID | Prioritas | Persyaratan & kondisi penerimaan |
+|---|---|---|
+| FR-016 | S1 | Inventory awal ZTE C320 dan C-DATA OLT sebagai **target uji**; discovery/read-only melalui kanal yang benar-benar tersedia, jika tidak simulator. |
+| FR-017 | C | Adapter berdasarkan `(vendor, exact_model, firmware, protocol, feature)`; write disembunyikan/ditolak bila kombinasi tidak tervalidasi. |
+| FR-018 | S1→C | ONT VSOL/ZTE teridentifikasi dengan exact model, hardware revision, firmware, serial/identifier, CWMP data model/capability; status per fitur. |
+| FR-019 | S1 | MikroTik x86/CCR/RB distribusi dan RB pelanggan sebagai target fisik; baca PPPoE secret/session di router lab via secure API/REST yang tersedia. |
+| FR-020 | S1→C | Bulk PPPoE CSV tervalidasi schema/duplikasi/tenant/policy, preview diff/dry-run; approval sebelum apply, rate-limit per router, idempotency key; report per item. |
+| FR-021 | C | Aman saat timeout dan partial success: reconcile actual state sebelum retry; unknown outcome menahan tindakan potensial ganda dan mengeskalasi manual. |
+| FR-022 | C | Network credentials per tenant tersimpan via secret manager, terenkripsi in transit dan audit akses; tidak tampil di export/log/helpdesk. |
+
+### 5.4 Subscriber 360, topologi, insiden
+
+| ID | Prioritas | Persyaratan & kondisi penerimaan |
+|---|---|---|
+| FR-023 | S1 | Model subscriber ↔ PPPoE ↔ CPE ↔ ONT ↔ OLT/PON ↔ distribusi; hubungan boleh `unknown` dan memakai provenance/freshness. |
+| FR-024 | S1 | Incident simulator minimal: uplink distribusi memengaruhi >1 subscriber, ONT tunggal, dan PPPoE tunggal; hipotesis/evidence berbeda. |
+| FR-025 | C | Correlation engine menunjukkan hipotesis domain, bukti pro/kontra, timestamp, confidence yang terkalibrasi (jika metrik tersedia), caveat dan affected subscribers. |
+| FR-026 | C | Alert dedup, acknowledgement, timeline, severity dan audit; tidak ada auto-remediation high impact tanpa policy/test/approval. |
+| FR-027 | S | Menampilkan kualitas data stale/missing/conflicting, observasi dari banyak protocol dan sumber per perangkat. |
+
+### 5.5 Platform operations, orkestrasi dan audit
+
+| ID | Prioritas | Persyaratan & kondisi penerimaan |
+|---|---|---|
+| FR-028 | S1 | Job store dan queue outbox transaksional, pengambilan job ber-lease, retry terbatas, dead-letter/failed terminal, idempotency dan per-device mutual exclusion. |
+| FR-029 | S1→C | Dashboard operator dan metrik auth/protocol/job/db/diagnostics, structured logs, tracing ID; metrics labels tidak mengungkap tenant rahasia. |
+| FR-030 | S1 | Backup PostgreSQL lab dan bukti restore ke instance isolasi; hasil checksum/konsistensi dicatat. |
+| FR-031 | C | HA DB primary+standby dengan failover teruji, PITR dan backup offsite terpisah; DR runbook dengan RPO/RTO hasil ukur. |
+| FR-032 | S1→C | IaC/node lifecycle: bootstrap Ubuntu, K3s join, validasi allocatable/resources, drain/remove dan restore; node kedua diuji bila tersedia. |
+| FR-033 | C | Pengukuran kapasitas heterogen berdasar utilisasi riil, queue age, Inform throughput, USP sessions, latency dan error; resource scheduling disetel dari bukti. |
+| FR-034 | C | Lifecycle data retention dan deletion per tenant, ekspor aman, recoverability dan prosedur offboarding termasuk backup-retention implications. |
+| FR-035 | C | Notifikasi/search/export/webhook jika diaktifkan menegakkan policy yang sama termasuk sink yang menerima data. |
+
+## 6. Persyaratan nonfungsional (NFR) dan cara membuktikan
+
+| ID | Kebutuhan | Lab 7 hari | Kriteria sebelum komersial (target **PROPOSED**, belum SLA) |
+|---|---|---|---|
+| NFR-01 | Isolasi | Semua jalur yang diimplementasikan memiliki tes silang tenant/POP negatif | Threat-model lengkap, tenant escape tests lintas API/queue/storage/restore/domain, hasil 0 kebocoran pada rangkaian tes disepakati |
+| NFR-02 | Auth/security | MFA privileged login dev; TLS test; secret dummy | Pentest independen, key rotation, signed images/SBOM, privilege audit, incident playbook |
+| NFR-03 | Reliability | Satu node dan restore lab; tidak mengaku HA | SLO layanan, error budget, HA/failover/chaos/DR melalui tes berkala |
+| NFR-04 | Performance | Rekam p50/p95/p99 Inform/RPC/job/API, baseline hardware + load shape | Tetapkan latency SLO dan kapasitas terukur per profil tenant/device dengan kriteria persentil |
+| NFR-05 | Scaling | Bukti queue ownership dan tidak ada duplicate application yang teramati pada test | Multi-node heterogen, fault/retry tests, capacity plan berdasarkan bottleneck stateful/IO/network |
+| NFR-06 | Durability | Backup restore + checksum sample | PostgreSQL PITR, offsite/immutable backup, failover, restore dan RPO/RTO terukur |
+| NFR-07 | Observability | Structured logs, metrics, correlation-id | Traces & redaction, audit retention/immutability, alert routing; tenant label cardinality terkendali |
+| NFR-08 | Maintainability | Rust workspace modular, migrations/tests/runbook | CI gate, backward-compatible schema/APIs, semver adapters, upgrade/rollback drills |
+| NFR-09 | Portability | Ubuntu 26.04 LTS + local compose + K3s dev | Tested VPS/bare-metal joining/draining and storage class/network restrictions documented |
+| NFR-10 | Data quality | Timestamps + source/protocol, unknown/stale states | Freshness objectives by signal, conflict resolution audit, device profile regression |
+
+**Sizing:** node awal baseline *provisional* dari brief ialah **16 vCPU, 64 GiB RAM-class, ~1 TB NVMe** + jaringan privat dan backup eksternal. 16 vCPU/32 GiB/250 GB bukan baseline yang disepakati dalam brief dan, bila dipakai, hanya opsi dev sangat terbatas setelah anggaran/retensi/telemetri diubah dan dibuktikan oleh pengukuran. Opsi beban pilot berat 16 vCPU/128 GB/~2 TB juga provisional. Hitung ulang setelah mendapat jumlah tenant, ONT online, frekuensi Inform/polling, USP sessions, retention, jobs/hour dan persyaratan SLO.
+
+## 7. Acceptance criteria dan bukti minimum
+
+| ID | Gate | Skenario, oracle, dan evidence |
+|---|---|---|
+| AC-01 | S1 MUST | Dua tenant Kangnet/Nengnet **sintetis**: seluruh endpoint yang diimplementasikan gagal jika cross-tenant; uji UI, direct URL, API, query/search, export, queued job, termasuk manipulasi host/header/token. |
+| AC-02 | S1 MUST | Helpdesk tak melihat kategori terlarang; direct API menolak; batas POP/subscriber berlaku. Bukti screenshot/menu snapshot + test 403/404 tanpa bocor. |
+| AC-03 | S1 MUST | ACS Rust simulator: Inform + InformResponse valid dengan session + raw logs redacted; jika ONT lab tersedia, ulang dengan model/firmware nyata dan 1 RPC parameter sukses. Tanpa fisik, status **simulator-only**. |
+| AC-04 | S1 MUST | USP modul/controller boot dan PoC satu message dengan simulator/agent beridentitas yang terverifikasi; bila belum ada kompatibilitas riil, status *PoC*, bukan supported vendor. |
+| AC-05 | S1 MUST | MikroTik: tes baca PPPoE via lab/simulator, CSV invalid ditolak, dry-run tidak menulis, approval dan duplicate key mencegah job ganda; catat partial-failure scenario. |
+| AC-06 | S1 MUST | 3 skenario incident menghasilkan domain hipotesis berbeda, evidence/source/age dan disclaimer unknown; satu observasi CWMP missing tak memicu vonis fiber cut. |
+| AC-07 | S1 MUST | Backup PostgreSQL dan restore ke isolated instance dengan row counts/integrity sampel; hasil dicatat. |
+| AC-08 | S1 CONDITIONAL | Node kedua heterogen join dan menjalankan job eligible; tes gangguan/restart worker dan tidak ada duplicate side effect dalam skenario; jika node belum ada, ditandai BLOCKED. |
+| AC-09 | C | Customer custom domain tidak bisa mengambil tenant lain melalui host spoofing; TLS/session/domain ownership policy ditest. |
+| AC-10 | C | ACS interop per metode/firmware berdasarkan matriks, termasuk malformed XML, timeout, auth failures; tidak menggeneralisasi model lain. |
+| AC-11 | C | USP authenticated interoperability/conformance sesuai target fitur/amendment; setiap metode dan MTP punya evidence. |
+| AC-12 | C | OLT ZTE/C-DATA read-only dan aksi write yang diusulkan teruji per firmware dengan rollback/outage control terpisah. |
+| AC-13 | C | Production DB failover + PITR + backup offsite restore memenuhi RPO/RTO yang sudah disetujui dan diukur. |
+| AC-14 | C | Pengujian multi-node/no-double-execution, queue backpressure, per-device serialization, resilience dan scale-down graceful. |
+| AC-15 | C | Penetration test, access control matrix per role/POP, privilege escalation, custom domain SSRF/cross-domain, log redaction lulus gate keamanan. |
+| AC-16 | C | Tenant onboarding/offboarding, data deletion/backup retention sesuai kontrak dan proses compliance yang ditetapkan. |
+
+**Gate akhir Sprint 1:** AC-01 s.d. AC-07 dinilai pass/fail/blocked dengan lampiran bukti; AC-08 bersyarat. *No-go* pada potongan yang merusak isolasi tenant, kontrol approval, atau melakukan write di luar scope. Klaim perangkat nyata hanya jika tes benar-benar terjadi dan `DEVICE_MATRIX.md` diperbarui.
+
+## 8. Pengujian, laboratorium dan bukti
+
+**Piramida:** unit Rust untuk parser/policy/rules/state machine; property/fuzz untuk SOAP/XML, parsers, CSV dan policy; integration PostgreSQL/RLS/outbox/RabbitMQ/identity; contract simulators CWMP dan USP; e2e tenant/menu/API; physical per `(model, firmware, protocol, feature)`; performance/failure/restore; security dan operasi. CI wajib melarang tes simulator diberi label tes fisik.
+
+**Perangkat pilot:** ZTE C320 dan C-DATA OLT (model C-DATA belum diketahui); VSOL dan ZTE ONT (model/firmware belum diketahui); MikroTik distribusi x86/CCR/RB dan MikroTik RB pelanggan (model/RouterOS/version belum diketahui). VSOL GPON OLT **bukan** perangkat fisik pilot yang terkonfirmasi. Baca `DEVICE_MATRIX.md` untuk template data yang wajib dikumpulkan.
+
+**Physical test protocol:** catat serial dengan masking untuk laporan publik, hardware revision, RouterOS/firmware build, lisensi/fitur dan jaringan lab; dapatkan izin/maintenance window, ekspor backup konfigurasi ke repositori aman, batasi VLAN/jalur dan rate, snapshot baseline, jalankan read-only dahulu, kemudian 1 perubahan kecil yang diotorisasi dan tervalidasi, amati diff, lakukan restore bila perlu. Cegah pencampuran perangkat produksi dengan simulasi. Simpan evidence run ID, version/git SHA, timestamp, sanitised request/response, hasil, limitasi dan operator.
+
+**Matrix status:** `untested`, `partial`, `validated` hanya untuk kombinasi fitur tertentu; `blocked` dapat dicatat sebagai outcome pengujian, bukan kompatibilitas negatif umum. Jangan mengekstrapolasi lintas firmware.
+
+## 9. Arsitektur pada tingkat produk
+
+Frontend tenant + platform admin mengakses Axum API melalui verified domain ingress. Keycloak/OIDC (proposed) menerbitkan identity; policy engine Rust menegakkan tenant/POP/aksi; domain core modular mencakup tenant, inventory, subscriber, topologi, diagnosa, provisioning dan audit. Service ACS Rust dan USP Rust terpisah di sisi protocol, tetapi berbagi normalized device model dan domain/queue. OLT + MikroTik adapter menjalankan read-only discovery dan write terkontrol. RabbitMQ work queues (proposed), transactional PostgreSQL outbox/job store dan bounded worker menghasilkan pemrosesan yang dapat dipulihkan. PostgreSQL operational RLS + platform metadata separation, object store/backup terpisah dan secret management lintas tenant. K3s dan tools IaC mengelola compute, sedangkan database HA/backup berdiri sendiri. Lihat `ARCHITECTURE.md` untuk rancangan data flow, failure semantics dan deployment.
+
+## 10. Keamanan, privasi dan regulasi
+
+- **Threat model wajib:** tenant escape, token/tenant context spoofing, SSRF melalui device URL, CWMP/USP spoofing/replay, XML bombs, credential exfiltration, malicious CSV, improper approval, worker replay/duplicate, log/metrics/backup leakage, supply chain, custom domain takeover.
+- **Defence in depth:** verify issuer/audience/signature/nonce, server-resolved tenant membership; tenant/device binding independen dari URL; application authz + DB RLS, service identity least-privilege, resource scoping di query dan queue, tenant-key/secret compartment, policy enforcement di ingress/API/worker/export/search.
+- **Sensitive ops:** PPPoE mass change, reset/reboot, firmware, config write, import/export sensitif, secret read, role elevation dan cross-tenant support access harus diklasifikasi; approval dan blast-radius limits proporsional. Secret tidak boleh muncul di audit/event/ticket.
+- **Compliance:** tentukan yurisdiksi pelanggan, data pribadi yang disimpan, dasar pemrosesan, retensi, lokasi data, kewajiban kontraktual dan audit sebelum penjualan. Dokumen ini bukan legal opinion atau sertifikasi keamanan. Detail di `SECURITY.md`.
+
+## 11. Rencana tahap dan exit gate
+
+| Tahap | Fokus | Exit |
+|---|---|---|
+| M0 (hari ini) | PRD/architecture/security/device matrix/ADRs/backlog | Dokumen siap version control; pilihan PROPOSED tidak disalahsebut APPROVED |
+| S1 D1–D7 | Vertical slices MVP lab; baca `SPRINT_BACKLOG.md` | AC-01..07 dicatat, AC-08 jika node tersedia; demo & status akurat |
+| M1, setelah sprint | ACS/USP protocol completeness terprioritas, physical interop, adapter read-only, end-to-end authz | Test matrix meningkat **per kombinasi**; ketiadaan perangkat tetap blocker |
+| M2 | Batch provisioning controlled, diagnostics richer, UX tenant/custom-domain, operational hardening | Stage pilot tenant terisolasi + security review |
+| M3 | HA DB, production K3s, DR/backup, threat verification, load/fault injection, SLO budgeting | Commercial readiness review dengan bukti SLO/RPO/RTO dan pentest |
+| M4 | Paket/kuota, tenant onboarding self-service terbatas, observability/cost & scale tuning | Contract/compliance/support model disahkan sebelum penjualan luas |
+
+Urutan M1–M4 berbasis dependensi/hasil tes, **tanpa janji tanggal atau klaim implementasi**.
+
+## 12. Risiko dan asumsi
+
+| ID | Risiko/asumsi | Dampak | Mitigasi / status |
+|---|---|---|---|
+| R-01 | Ketersediaan fisik/model/firmware tak tercatat | Klaim dukungan tak sah | Jalankan simulator terpisah, inventory fisik D1, buktikan per fitur |
+| R-02 | Keterbatasan waktu 7 hari dan protokol kompleks | Scope terlalu lebar | Prioritas vertical slice, cut line S1, tidak menganggap scaffold selesai |
+| R-03 | Multitenancy bocor di protocol/workers/backup | High-severity breach | RLS + service scopes + adversarial tests + no-go gate |
+| R-04 | Timeout router menghasilkan unknown side-effect | Double provisioning/outage | Job state machine, reconciliation, idempotency, approval, low blast radius |
+| R-05 | Single DB dan pilot node menjadi bottleneck/SPOF | Outage dan data loss | Backup/restore S1; HA/DR sendiri untuk komersial |
+| R-06 | MQTT/broker/device MTP compatibility belum pasti | USP design bottleneck | ADR transport, PoC simulators & physical agent compatibility |
+| R-07 | Cross-site/custom domain auth complexity | Session leaks/takeover | Verified domain, isolation, cookie CSRF, strict ingress mapping |
+| R-08 | Diagnostik salah akibat missing/stale evidence | Salah eskalasi/remediation | Evidence, freshness, uncertainty dan human review |
+| R-09 | RAM/disk/server proyeksi tanpa beban | Cost/perf surprise | Capacity questionnaire, baseline measurement, quotas/retention |
+| R-10 | Implementasi multivendor melanggar vendor ACL/licence | Interop/legal/ops | Gunakan kanal terdokumentasi, uji authorized lab, review license |
+
+## 13. Open decisions yang harus divalidasi
+
+`DECISIONS.md` adalah daftar resmi dengan owner/decision deadline; prioritas teratas: (1) database tenancy dan backup tenant isolation; (2) USP amendment feature profile/MQTT broker & credential onboarding; (3) per-device CWMP authentication, NAT/connection request; (4) exact OLT/ONT/MikroTik inventory/akses; (5) identity/secret manager, domain ownership and data residency; (6) RPO/RTO, retention, tenant quotas dan load model; (7) tingkat approval dan peran matriks rinci; (8) supplier VPS/K3s/storage; (9) produk legal/commercial support scope.
+
+## 14. Sumber dan jejak perubahan
+
+**Sumber primer:** `IPAT_PROJECT_BRIEF.md` (transferred approved design baseline, 2026-09-25); Project Instructions IPAT. Verifikasi referensi publik pada 2026-09-25: Broadband Forum TR-069 Amendment 6 Corrigendum 1 dan TR-369 Amendment 5 sebagai versi *in force*, TR-181 Issue 2 Amendment 21, dokumentasi MikroTik REST/API, PostgreSQL RLS, Ubuntu 26.04 LTS, KEDA. Link rinci di `ARCHITECTURE.md`. Rujukan publik menginformasikan pilihan standar, **bukan** bukti perangkat IPAT kompatibel.
+
+**Kontrol perubahan:** setiap perubahan lingkup → PRD dan backlog; perubahan teknis → ADR + ARCHITECTURE/SECURITY; hasil fisik → DEVICE_MATRIX; semua milestone → PROJECT_STATUS. Versi berikutnya baru berstatus approved setelah review owner dan para penanggung jawab yang ditunjuk.
