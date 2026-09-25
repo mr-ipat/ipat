@@ -8,6 +8,7 @@ IPAT (`IP@`) is a planned commercial multi-tenant ISP network operations platfor
 - [Product requirements and acceptance criteria](docs/PRD.md)
 - [R5.1 synthetic PostgreSQL tenant RLS and isolated logical restore](docs/POSTGRES_TENANT_R51.md)
 - [R5.2 synthetic evidence-led Rust diagnostics and negative scenarios](docs/DIAGNOSTICS_R52.md)
+- [R5.3 sealed non-executable provisioning job simulator and test evidence](docs/PROVISIONING_SIMULATOR_R53.md)
 - [Technical architecture](docs/ARCHITECTURE.md)
 - [Physical device and firmware test matrix](docs/DEVICE_MATRIX.md)
 - [Security, tenant isolation and threat model](docs/SECURITY.md)
@@ -42,6 +43,6 @@ IPAT (`IP@`) is a planned commercial multi-tenant ISP network operations platfor
 
 `crates/tenant-core` stores syntactic tenant IDs; `crates/authz-core` demonstrates pure policy checks and synthetic negative unit tests. `apps/control-api` exposes only loopback health and a fail-closed placeholder data path. No verified OIDC adapter, tenant database, CWMP/USP runtime or real device control has shipped.
 
-`crates/cwmp-protocol` adds **offline-only** bounded CWMP 1.0 Inform parsing and a pure response serializer, with synthetic tests. `apps/cwmp-gateway` still has no authenticated transport/session listener; `apps/usp-controller` remains planned. Device interoperability remains untested.
+`crates/cwmp-protocol` adds **offline-only** bounded CWMP 1.0 Inform parsing and a pure response serializer, with synthetic tests. `apps/cwmp-gateway` still has no authenticated transport/session listener. `apps/usp-controller` has only an optional loopback health route; native USP trust and correlation remain synthetic. `crates/diagnostic-core` and `crates/provisioning-core` are non-networked synthetic test modules, with no live router commands, OIDC-backed privileges or persistent job store. Device interoperability remains untested.
 
 On a prepared development host: `cargo fmt --all -- --check && cargo test --workspace --locked`; run local demo with `cargo run -p control-api`. See `docs/PROJECT_STATUS.md` for **actual** test results; never infer success solely from source presence.
