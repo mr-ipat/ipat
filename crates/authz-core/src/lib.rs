@@ -49,9 +49,7 @@ pub fn is_allowed(
     }
     match action {
         Action::ViewDevice => is_admin || has(Role::NocEngineer),
-        Action::ViewSubscriber => {
-            is_admin || has(Role::NocEngineer) || has(Role::Helpdesk)
-        }
+        Action::ViewSubscriber => is_admin || has(Role::NocEngineer) || has(Role::Helpdesk),
         Action::ExportSubscriber => is_admin,
         Action::ViewAudit => is_admin || has(Role::Auditor),
         Action::BulkPppoeWrite => false,
@@ -76,13 +74,27 @@ mod tests {
             authorized_pops: &[],
         };
         assert!(is_allowed(
-            &admin, &ResourceScope { tenant_id: &own, pop_id: "a" },
+            &admin,
+            &ResourceScope {
+                tenant_id: &own,
+                pop_id: "a"
+            },
             Action::ViewDevice
         ));
-        for action in [Action::ViewDevice, Action::ViewSubscriber, Action::ExportSubscriber,
-                       Action::ViewAudit, Action::BulkPppoeWrite] {
+        for action in [
+            Action::ViewDevice,
+            Action::ViewSubscriber,
+            Action::ExportSubscriber,
+            Action::ViewAudit,
+            Action::BulkPppoeWrite,
+        ] {
             assert!(!is_allowed(
-                &admin, &ResourceScope { tenant_id: &other, pop_id: "a" }, action
+                &admin,
+                &ResourceScope {
+                    tenant_id: &other,
+                    pop_id: "a"
+                },
+                action
             ));
         }
     }
@@ -95,8 +107,14 @@ mod tests {
             roles: &[Role::Helpdesk],
             authorized_pops: &["pop-a"],
         };
-        let in_scope = ResourceScope { tenant_id: &own, pop_id: "pop-a" };
-        let wrong_pop = ResourceScope { tenant_id: &own, pop_id: "pop-b" };
+        let in_scope = ResourceScope {
+            tenant_id: &own,
+            pop_id: "pop-a",
+        };
+        let wrong_pop = ResourceScope {
+            tenant_id: &own,
+            pop_id: "pop-b",
+        };
         assert!(is_allowed(&helpdesk, &in_scope, Action::ViewSubscriber));
         assert!(!is_allowed(&helpdesk, &in_scope, Action::ViewDevice));
         assert!(!is_allowed(&helpdesk, &in_scope, Action::ExportSubscriber));
@@ -112,7 +130,11 @@ mod tests {
             authorized_pops: &[],
         };
         assert!(!is_allowed(
-            &admin, &ResourceScope { tenant_id: &own, pop_id: "a" },
+            &admin,
+            &ResourceScope {
+                tenant_id: &own,
+                pop_id: "a"
+            },
             Action::BulkPppoeWrite
         ));
     }
@@ -121,10 +143,16 @@ mod tests {
     fn no_roles_means_no_access() {
         let own = id("kangnet");
         let actor = PolicyPrincipal {
-            tenant_id: &own, roles: &[], authorized_pops: &["a"],
+            tenant_id: &own,
+            roles: &[],
+            authorized_pops: &["a"],
         };
         assert!(!is_allowed(
-            &actor, &ResourceScope { tenant_id: &own, pop_id: "a" },
+            &actor,
+            &ResourceScope {
+                tenant_id: &own,
+                pop_id: "a"
+            },
             Action::ViewSubscriber
         ));
     }
