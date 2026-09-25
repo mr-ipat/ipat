@@ -32,6 +32,8 @@ jobs:
           actual="$(sha256sum deploy/scripts/lab/stage1-root-preflight-and-toolchain.sh | cut -d ' ' -f1)"
           test "$actual" = "$expected"
           grep -Fq "$expected" deploy/scripts/lab/apply-stage1-from-mac.sh
+      - name: Verify lab Stage-2 static safety contract
+        run: python3 -m unittest discover deploy/scripts/lab -p 'test_stage2_review.py' -v
       - name: Verify formatting
         run: cargo fmt --all -- --check
       - name: Run locked unit tests

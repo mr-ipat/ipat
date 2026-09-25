@@ -54,3 +54,5 @@
 **Never commit**: live credentials, TLS private keys, K3s join tokens, actual private device configs, raw ONT credentials, PPPoE secrets or patient/subscriber identifiers. All credentials in docs are explanatory placeholders only.
 
 **Restricted lab stage 1:** [reviewable helper and no-snapshot safety plan](../deploy/scripts/lab/README.md). Read-only checks and verified user-only Rust installation are independent of privileged package/SSH/network changes.
+
+**R4.3 (2026-09-25):** Real Ubuntu 26.04.1 Stage-1 compiler bootstrap passed and the existing 23 locked unit/simulator tests were independently rerun successfully. [Stage-2 key-only SSH hardening](../deploy/scripts/lab/STAGE2-SSH.md) is **PREPARED ONLY**, with an owner-operated timed rollback; no provider snapshot or complete encrypted off-host recovery backup exists, and no firewall or K3s change has been made.
