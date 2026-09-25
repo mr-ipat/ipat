@@ -27,3 +27,11 @@
 3. Generate and commit Cargo.lock after dependency resolution.
 4. Implement trusted identity verification and actual negative tenant API tests (no request header as authority).
 5. Obtain exact lab model/firmware and Ubuntu server SSH access via least privilege.
+
+## R0 remote verification (2026-09-25)
+- Private GitHub repository and main commit verified through the GitHub API: `54ae42fdd4bde849f10b369e38c900992a19300a` (root commit before this status amendment).
+- Initial GitHub push succeeded after excluding the workflow file; the local workflow is retained but **not published** because current OAuth lacks `workflow` scope.
+- Repository default GitHub Actions workflow permission verified as `read`; workflow approval of pull requests is disabled.
+- Issue tracking initialized: #1 official v0.1 document import, #2 workflow authorization, #3 trusted identity/tenant tests, #4 Ubuntu and physical-device lab intake.
+- Pre-existing `~/Projects/ipat` contains unrelated older local work and remains untouched; this branch lives in a fresh worktree.
+- Compilation, CI, any server deployment, and all physical device tests remain NOT RUN.
