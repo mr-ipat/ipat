@@ -28,3 +28,8 @@ The separate nonprivileged Ubuntu 26.04.1 isolated checkout executed locked/offl
 
 ## Next MUST before any actual write
 Implement trusted OIDC identity/service verification, review approval-role matrix, durable PostgreSQL outbox with transactional leases and fenced worker token, verified per-tenant global device ownership, real RouterOS read-only diff, crash/reconciliation/audit and independent restore tests. No real provisioning is approved by R5.3.
+
+## Verified merged checkpoint (supersedes pre-merge checklist)
+- PR #37 MERGED to private `main` `f4e2f8d0ed27f1bf1eeb039d2a751f0d4a5ad174`. Both GitHub jobs succeeded on PR run `36149621245` and post-merge run `36149777499`. The PostgreSQL RLS/logical restore ran solely in a disposable PostgreSQL 16.9 GitHub service container.
+- That exact revision matched GitHub, Mac and the actual Ubuntu 26.04.1 lab VPS nonprivileged source checkout. Real VPS `cargo fmt --check`, **76/76 offline Rust tests**, **37/37 lab Python source contracts** and **5/5 DB migration static contracts** PASSED. Nothing was installed on the VPS as a service.
+- Exact merged source encrypted Restic snapshot `18416643` restored independently with SHA-256 validation, historical partial config was re-restored, and the separate privileged selected-root-readable config snapshot `abaa9827` restored and validated; full Restic data read passed. A subsequent docs-only merge advances source HEAD and needs a new encrypted source capture. Full host/DB/cluster recovery and real physical device interop remain unverified.
