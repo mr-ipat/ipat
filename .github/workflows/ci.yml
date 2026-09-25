@@ -44,6 +44,10 @@ jobs:
           bash -n deploy/scripts/lab/nusa-readonly-network-check.sh
           python3 -m unittest discover deploy/scripts/lab -p 'test_backup_mac_review.py' -v
           python3 -m unittest discover deploy/scripts/lab -p 'test_nusa_network_review.py' -v
+      - name: Verify Nusa R4.6 FileVault and dual-stack safety preflight (static)
+        run: |
+          bash -n deploy/scripts/lab/nusa-r46-gate-check.sh
+          python3 -m unittest discover deploy/scripts/lab -p 'test_nusa_r46_gate_review.py' -v
       - name: Verify formatting
         run: cargo fmt --all -- --check
       - name: Run locked unit tests
