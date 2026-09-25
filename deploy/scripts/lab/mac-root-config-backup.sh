@@ -125,8 +125,11 @@ case "$mode" in
     read -r -p 'Type ESCROW_CONFIRMED_AND_BACKUP_ROOT to continue: ' confirmation
     [[ "$confirmation" == ESCROW_CONFIRMED_AND_BACKUP_ROOT ]] ||
       { echo "No privileged backup performed" >&2; exit 9; }
+    echo "Selanjutnya, masukkan password SUDO akun Linux openai di Terminal Mac."
+    echo "Bukan password SSH maupun akun root; karakter password tidak terlihat."
+    echo "Progress Restic sengaja disembunyikan sampai autentikasi/stream selesai."
     name="ipat-ubuntu-root-config-$(date -u +%Y%m%dT%H%M%SZ).tar.gz"
-    restic -r "$repo" backup --tag ipat-lab,root-config \
+    restic -r "$repo" --quiet backup --tag ipat-lab,root-config \
       --stdin-filename "$name" --stdin-from-command -- \
       python3 "$producer" --root
     echo "ENCRYPTED_ROOT_CONFIG_STREAM_SNAPSHOT_CREATED"

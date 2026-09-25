@@ -1,7 +1,7 @@
 # IPAT — Project Status
 
 **As-of:** 2026-09-25 Asia/Jakarta  
-**Milestone:** R4.7 — non-root binary SSH→encrypted Restic streaming + isolated restore verified; privileged root backup queued for owner sudo  
+**Milestone:** R4.7.1 — Mac prompt visibility corrected; root-config backup awaiting owner authentication
 **Milestone state:** R4.6 live SSH/FileVault and existing encrypted partial/source Restic restores are verified; owner now states the Nusa allow-all security group is SHARED across multiple VPSs, actual VNC Linux login is UNSUCCESSFUL, and Restic secret escrow outside Mac is done (OWNER-ATTESTED, not independently recovered). New binary-safe root-config streaming/Restic code is prepared and its real unprivileged SSH→encrypted Restic→isolated-restore smoke test and intentional failed SSH producer/no-snapshot test PASS. A privileged root-owned configuration backup + restored-content verification require one owner-entered Ubuntu sudo password locally and are NOT YET COMPLETE. Shared provider SG, guest firewall and K3s are UNCHANGED.
 
 ## 1. Source of truth and provenance
@@ -287,3 +287,12 @@ Outstanding blockers, owner and next priority:
 **Repository changes in this milestone:** `root-config-stream.py`, `mac-root-config-backup.sh`, `test_root_config_stream_review.py`, `docs/ROOT_CONFIG_STREAM_R47.md`, updates to CI, `README.md`, `docs/SECURITY.md`, `docs/DEPLOYMENT.md`, `docs/NUSA_SECURITY_GROUP_R46.md`, lab runbook and status. No ADR was auto-approved: ADR-008 encrypted backup/secret design, ADR-010 PostgreSQL HA/PITR and ADR-017 CNI/provider private network selection remain OPEN where recorded.
 
 **Next operator action after PR/CI merge:** from Mac interactive Terminal only, run `bash ~/Projects/ipat-current/deploy/scripts/lab/mac-root-config-backup.sh --backup-root`, confirm independently escrowed Restic password and enter Ubuntu account `openai` sudo password when prompted. The script then directly encrypts the root config stream and independently restores/validates the selected root archive, without touching Nusa rules. Ask for final nonsecret test lines; reverify snapshot and update status/issue #18 in a separate milestone. Keep K3s/firewall/production services blocked until actual VNC/equivalent rescue access and **dedicated IPAT-only SG** plus provider IPv4+IPv6/network restore review.
+
+
+## 20. R4.7.1 — visibility fix after the owner's canceled backup attempt (2026-09-25)
+
+The first interactive privileged backup attempt appeared stuck showing Restic at zero bytes without a visible sudo prompt. Inspection of process metadata showed Restic's Python producer running without a child SSH process. After the owner canceled the attempt, independent checks found neither process running and confirmed that no root-config snapshot had been saved.
+
+The corrected Mac helper now prints clear guidance to the controlling terminal that the required credential is the existing Ubuntu `openai` sudo password, not a root SSH login or key passphrase. It uses Restic's verified quiet flag during that specific privileged capture to avoid progress output overwriting the prompt. The existing public-key-only SSH and server configuration remain unchanged.
+
+Mac parser checks and six source safety tests passed. A fresh non-root strict SSH stream was encrypted in Restic snapshot `21c5cbde`, with a full data-integrity check of nine snapshots/sixteen packs, successful isolated archive restoration and cleanup. The actual privileged root-config backup and its independent restore have NOT been completed. Nusa VNC login is still unavailable; the shared allow-all provider group and all host firewall/K3s configurations remain unchanged. The owner must run the updated reviewed helper after merge and enter their Linux sudo password only in their own Mac Terminal.

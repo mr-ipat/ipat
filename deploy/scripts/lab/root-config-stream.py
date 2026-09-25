@@ -74,7 +74,14 @@ def run(mode: str) -> int:
             return 3
         # Human input is sent only through encrypted SSH stdin, never stdout,
         # argv, environment, disk, repository, or tool-generated responses.
-        pwd = getpass.getpass("Ubuntu openai sudo password (Mac Terminal only): ")
+        # Restic may redraw its progress line over a subprocess getpass prompt.
+        # Use the controlling TTY directly; never print a secret or prompt into
+        # the encrypted stdout stream.
+        with open("/dev/tty", "w", encoding="utf-8") as terminal:
+            terminal.write("\nIPAT: masukkan password SUDO Linux untuk user openai.\n")
+            terminal.write("BUKAN password/passphrase SSH dan BUKAN login root.\n")
+            terminal.flush()
+        pwd = getpass.getpass("Password sudo openai (tidak tampil saat diketik): ")
         if not pwd:
             print("ABORT: blank sudo password", file=sys.stderr)
             return 3

@@ -66,6 +66,13 @@ class RootEncryptedStreamContractTests(unittest.TestCase):
             self.assertIn(expected, R)
         self.assertNotIn("RESTIC_PASSWORD=", R)
 
+    def test_sudo_prompt_is_explicit_tty_and_restic_progress_is_quiet(self):
+        self.assertIn('with open("/dev/tty", "w"', P)
+        self.assertIn("BUKAN password/passphrase SSH", P)
+        self.assertIn("password SUDO akun Linux openai", R)
+        self.assertIn('restic -r "$repo" --quiet backup --tag ipat-lab,root-config', R)
+        self.assertNotIn("sudo -i", R)
+
     def test_helper_refuses_unrecognized_mode(self):
         proc = subprocess.run(["bash", str(RUNNER), "--install-k3s"],
                               text=True, capture_output=True)
