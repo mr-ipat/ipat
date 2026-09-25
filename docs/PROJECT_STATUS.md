@@ -1,7 +1,7 @@
 # IPAT — Project Status
 
 **As-of:** 2026-09-25 Asia/Jakarta  
-**Milestone:** R5.0 — distinct native Rust USP synthetic controller core and opt-in loopback health-only binary
+**Milestone:** R5.1 — synthetic PostgreSQL RLS migration and separate ephemeral CI restore tests in progress
 **Milestone state:** R5.0 native Rust offline USP synthetic Controller boundary PR #31 MERGED, final canonical code source `1a41f4afbb1aaa40605fb9718bb1c402ddf1ac0a` synchronized identically to private GitHub, Mac and actual Ubuntu 26.04.1 VPS. Final GitHub main CI `36139345001` SUCCESS; the real VPS `cargo fmt --check`, **58 Rust unit/synthetic tests** and **34 Python static safety checks** PASS. A clean latest source encrypted Restic snapshot `adebecc4` and real selected-root-readable config snapshot `abaa9827` independently restored; full Restic read-data check **15 snapshots/28 packs PASS** and plaintext test restores removed. The previous R4.9 original Rust CWMP offline admission is merged separately; BOTH CWMP and USP remain simulator-only without real secured protocol transports, durable sessions or physical ONT interoperability. IPAT-native host firewall remains NON-EXECUTABLE dry-run; independent out-of-band console still not proven; K3s/host firewall/actual database and production workloads remain blocked. No external hosting-provider firewall integration is included.
 
 ## 1. Source of truth and provenance

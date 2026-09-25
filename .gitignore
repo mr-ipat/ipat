@@ -23,6 +23,8 @@ secrets/
 *.backup
 *.rsc
 *.sql
+# Reviewed, synthetic schema migration source is code, not a device export.
+!/deploy/db/migrations/*.sql
 *.dump
 *.pcap
 *.pcapng

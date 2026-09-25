@@ -61,3 +61,41 @@ jobs:
         run: cargo fmt --all -- --check
       - name: Run locked unit tests
         run: cargo test --workspace --locked
+
+
+  postgres-rls-restore:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    services:
+      postgres:
+        image: postgres:16.9
+        env:
+          POSTGRES_DB: ipat_synthetic
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: local_ci_synthetic_only
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d ipat_synthetic"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 12
+    env:
+      IPAT_PG_EPHEMERAL_TEST: "1"
+      IPAT_PG_SYNTHETIC_PASSWORD: local_ci_synthetic_only
+      PGHOST: 127.0.0.1
+      PGPORT: "5432"
+      PGDATABASE: ipat_synthetic
+      PGUSER: postgres
+      PGPASSWORD: local_ci_synthetic_only
+    steps:
+      - name: Check out sources (pinned SHA)
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Install synthetic PostgreSQL client utilities
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y postgresql-client
+          psql --version
+      - name: Validate tenant RLS and separate new-database logical restore (synthetic ONLY)
+        run: |
+          python3 -m unittest discover deploy/db/tests -p 'test_postgres_rls_integration.py' -v

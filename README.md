@@ -6,6 +6,7 @@ IPAT (`IP@`) is a planned commercial multi-tenant ISP network operations platfor
 
 - [Project binding brief](IPAT_PROJECT_BRIEF.md)
 - [Product requirements and acceptance criteria](docs/PRD.md)
+- [R5.1 synthetic PostgreSQL tenant RLS and isolated logical restore](docs/POSTGRES_TENANT_R51.md)
 - [Technical architecture](docs/ARCHITECTURE.md)
 - [Physical device and firmware test matrix](docs/DEVICE_MATRIX.md)
 - [Security, tenant isolation and threat model](docs/SECURITY.md)

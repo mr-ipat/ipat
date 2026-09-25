@@ -104,3 +104,9 @@ The offline synthetic Inform admission portion of S1-04 now compiles in a separa
 ## R5.0 native USP simulator milestone status
 
 The distinct native Rust `usp-core` synthetic controller boundary and explicit optional `usp-controller` loopback health-only binary compile and have 12 + 3 synthetic unit tests passing on actual Ubuntu 26.04. The controller's real USP protobuf Record/Msg and broker/MTP trust path are NOT IMPLEMENTED; a locally correlated struct is not a TR-369 wire message. **S1-05 remains IN PROGRESS and PRD AC-04 is not met.** Version/schema pinning and actual authenticated wire-level simulator are the next MUST subtask. Never expose a public USP ingress or approve ADR-007 broker choice without the required security comparison.
+
+
+### R5.1 lab data-boundary slice
+- MUST: isolated, explicitly opted-in synthetic PostgreSQL 16.9 schema/RLS/role tests with negative cross-tenant cases; independent restored synthetic database row-checksum and RLS checks. Do not claim live backend persistence or production HA.
+- SHOULD: trusted OIDC-to-tenant verification inside backend, non-superuser pool with transaction-local scope, deny on invalid context and post-transaction connection reuse.
+- LATER: tenant-safe backup access controls, production PostgreSQL HA/PITR, independent host recovery and actual AC-07 customer-data restore evidence.
