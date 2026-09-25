@@ -99,3 +99,8 @@ Next priority / owner / blockers:
 ## R4.9 actual S1-04 subtask progress
 
 The offline synthetic Inform admission portion of S1-04 now compiles in a separate `cwmp-admission` Rust crate, with **11 unit tests PASS** on actual Ubuntu 26.04. It is *not* an HTTPS/mTLS adapter, production sessions, a real RPC, physical ONT testing or full AC-03 acceptance; S1-04 remains **IN PROGRESS**. No security shortcuts or live deployment are authorized while trusted TLS enrollment and out-of-band network recovery remain blocked. The independent S1-05 native USP controller still has no runtime implementation.
+
+
+## R5.0 native USP simulator milestone status
+
+The distinct native Rust `usp-core` synthetic controller boundary and explicit optional `usp-controller` loopback health-only binary compile and have 12 + 3 synthetic unit tests passing on actual Ubuntu 26.04. The controller's real USP protobuf Record/Msg and broker/MTP trust path are NOT IMPLEMENTED; a locally correlated struct is not a TR-369 wire message. **S1-05 remains IN PROGRESS and PRD AC-04 is not met.** Version/schema pinning and actual authenticated wire-level simulator are the next MUST subtask. Never expose a public USP ingress or approve ADR-007 broker choice without the required security comparison.
