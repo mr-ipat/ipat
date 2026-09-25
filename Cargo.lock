@@ -98,6 +98,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "diagnostic-core"
+version = "0.1.0"
+dependencies = [
+ "tenant-core",
+]
+
+[[package]]
 name = "firewall-policy"
 version = "0.1.0"
 

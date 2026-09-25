@@ -110,3 +110,9 @@ The distinct native Rust `usp-core` synthetic controller boundary and explicit o
 - MUST: isolated, explicitly opted-in synthetic PostgreSQL 16.9 schema/RLS/role tests with negative cross-tenant cases; independent restored synthetic database row-checksum and RLS checks. Do not claim live backend persistence or production HA.
 - SHOULD: trusted OIDC-to-tenant verification inside backend, non-superuser pool with transaction-local scope, deny on invalid context and post-transaction connection reuse.
 - LATER: tenant-safe backup access controls, production PostgreSQL HA/PITR, independent host recovery and actual AC-07 customer-data restore evidence.
+
+
+### R5.2 diagnostic synthetic work
+- MUST within this isolated slice: verified source+timestamp synthetic observations, 3 differentiated distribution/access/PPPoE scenario tests, a CWMP missing-only insufficient-evidence guard, no cross-tenant/POP correlation or auto-remediation, and contradictory/stale negative tests.
+- SHOULD next: actual authenticated topology and normalized read-only OLT/router/CWMP/USP signal integration, DB-backed provenance with row isolation, deterministic replay and operator-facing audit evidence.
+- LATER after field evidence: accuracy/uncertainty calibration, downstream impact completeness, production alert routing and controlled remediation approvals.
