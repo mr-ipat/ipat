@@ -1,6 +1,6 @@
 # IPAT — Deployment & Operations Runbook Specification v0.1
 
-**Status:** procedures and file placement **PLANNED**. No generated Ansible, Terraform, Helm, Kubernetes manifests, certificates, cluster, or measured restore are delivered by this documentation-only milestone. This file must be converted into executable, reviewed runbooks during implementation.
+**Status:** v0.1 cluster/database procedures remain **PLANNED**. A guarded Stage-1 Ubuntu lab compiler bootstrap helper is now prepared in `../deploy/scripts/lab/` but requires a one-time local owner sudo prompt before execution. No Ansible, Terraform, Helm, Kubernetes manifests, certificates, cluster, or measured restore are delivered yet. This file must be converted into executable, reviewed runbooks during implementation.
 
 ## 1. Target environments and prerequisites
 
@@ -52,3 +52,5 @@
 - CI/integration and operator physical lab reports are separate. Document node type, installed version, exact test time, all observed results and deviation from acceptance gates. If provider/system unavailable, mark `BLOCKED` in `PROJECT_STATUS.md`.
 
 **Never commit**: live credentials, TLS private keys, K3s join tokens, actual private device configs, raw ONT credentials, PPPoE secrets or patient/subscriber identifiers. All credentials in docs are explanatory placeholders only.
+
+**Restricted lab stage 1:** [reviewable helper and no-snapshot safety plan](../deploy/scripts/lab/README.md). Read-only checks and verified user-only Rust installation are independent of privileged package/SSH/network changes.
