@@ -14,6 +14,7 @@ IPAT (`IP@`) is a planned commercial multi-tenant ISP network operations platfor
 - [Seven-day sprint backlog](docs/SPRINT_BACKLOG.md)
 - [Actual project status and verification evidence](docs/PROJECT_STATUS.md)
 - [2026-09-25 Ubuntu lab server read-only inspection](docs/LAB_SERVER_READ_ONLY_2026-09-25.md)
+- [Restricted laboratory stage-1 bootstrap and no-snapshot safety plan](deploy/scripts/lab/README.md)
 
 **Authority:** The approved Project Master Brief is binding. In `DECISIONS.md`, `PROPOSED` and `OPEN` items require explicit approval/evidence. A documentation draft, test fixture or protocol placeholder does not imply implementation, certification, device support or production readiness.
 
@@ -33,4 +34,4 @@ IPAT (`IP@`) is a planned commercial multi-tenant ISP network operations platfor
 
 `crates/cwmp-protocol` adds **offline-only** bounded CWMP 1.0 Inform parsing and a pure response serializer, with synthetic tests. `apps/cwmp-gateway` still has no authenticated transport/session listener; `apps/usp-controller` remains planned. Device interoperability remains untested.
 
-After Rust is available: `cargo fmt --all -- --check && cargo test --workspace`; run local demo with `cargo run -p control-api`. See `docs/PROJECT_STATUS.md` for **actual** test results; never infer success solely from source presence.
+On a prepared development host: `cargo fmt --all -- --check && cargo test --workspace --locked`; run local demo with `cargo run -p control-api`. See `docs/PROJECT_STATUS.md` for **actual** test results; never infer success solely from source presence.
