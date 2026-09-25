@@ -38,6 +38,10 @@ jobs:
         run: |
           bash -n deploy/scripts/lab/k3s-readonly-preflight.sh
           python3 -m unittest discover deploy/scripts/lab -p 'test_k3s_readonly_review.py' -v
+      - name: Verify disposable Ubuntu 26 K3s isolation contracts
+        run: |
+          bash -n deploy/scripts/lab/k3s-ubuntu26-ephemeral-ci.sh
+          python3 -m unittest discover deploy/scripts/lab -p 'test_k3s_ubuntu26_ephemeral_review.py' -v
       - name: Verify Mac encrypted-backup and external provider probe safety contracts (static)
         run: |
           bash -n deploy/scripts/lab/backup-mac-restic.sh
@@ -163,3 +167,21 @@ jobs:
           python3 -m unittest discover deploy/db/tests -p 'test_job_outbox_integration.py' -v
       - name: Verify synthetic physical basebackup and restore on separate CI server process
         run: bash deploy/db/tests/physical_restore_ephemeral.sh
+
+# Real single-node K3s runs ONLY on a freshly provisioned, disposable
+  # GitHub-hosted Ubuntu 26.04 VM. It NEVER installs on the IPAT VPS.
+  k3s-ubuntu26-disposable:
+    runs-on: ubuntu-26.04
+    timeout-minutes: 25
+    env:
+      IPAT_K3S_DISPOSABLE_LAB: "1"
+    steps:
+      - name: Check out sources (pinned SHA)
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Verify pinned K3s CI safety before any root action
+        run: |
+          bash -n deploy/scripts/lab/k3s-ubuntu26-ephemeral-ci.sh
+          python3 -m unittest discover deploy/scripts/lab -p 'test_k3s_ubuntu26_ephemeral_review.py' -v
+      - name: Install and smoke-test checksum-pinned K3s on disposable Ubuntu 26.04
+        run: |
+          timeout --signal=TERM --kill-after=15s 1200s bash             deploy/scripts/lab/k3s-ubuntu26-ephemeral-ci.sh
