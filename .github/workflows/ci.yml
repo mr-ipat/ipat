@@ -42,6 +42,12 @@ jobs:
         run: |
           bash -n deploy/scripts/lab/k3s-ubuntu26-ephemeral-ci.sh
           python3 -m unittest discover deploy/scripts/lab -p 'test_k3s_ubuntu26_ephemeral_review.py' -v
+      - name: Verify R5.7 cross-host K3s restore and precise nft rollback contracts
+        run: |
+          bash -n deploy/scripts/lab/r57/source-systemd-k3s.sh
+          bash -n deploy/scripts/lab/r57/restore-systemd-k3s.sh
+          bash -n deploy/scripts/lab/r57/nft-rollback-drill.sh
+          python3 -m unittest discover deploy/scripts/lab/r57 -p 'test_r57_review.py' -v
       - name: Verify Mac encrypted-backup and external provider probe safety contracts (static)
         run: |
           bash -n deploy/scripts/lab/backup-mac-restic.sh
