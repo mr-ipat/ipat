@@ -1,0 +1,129 @@
+#!/usr/bin/env bash
+# Mr. iPat / IPAT R5.6. REAL K3s installation is ONLY permitted on a
+# disposable, GitHub-hosted Ubuntu 26.04 runner; NEVER on the live IPAT VPS.
+set -Eeuo pipefail
+umask 077
+
+PINNED_TAG='v1.37.0+k3s1'
+PINNED_K3S_SHA256='39eed8f53f277497dfc2542f66eab0ed68a94dfc598946dbebfb50366916c7a2'
+
+die() { printf 'R56_K3S_LAB_BLOCKED: %s\n' "$*" >&2; exit 4; }
+[[ "${GITHUB_ACTIONS:-}" == true &&
+   "${RUNNER_ENVIRONMENT:-}" == github-hosted &&
+   "${RUNNER_OS:-}" == Linux &&
+   "${RUNNER_ARCH:-}" == X64 &&
+   "${IPAT_K3S_DISPOSABLE_LAB:-}" == 1 ]] ||
+   die 'requires an explicitly opted-in GitHub-hosted ephemeral Linux x64 runner'
+. /etc/os-release
+[[ "$ID" == ubuntu && "$VERSION_ID" == 26.04 ]] ||
+   die 'requires the separately provisioned disposable Ubuntu 26.04 runner'
+[[ "$(id -u)" != 0 ]] || die 'orchestration must use the non-root CI user'
+[[ ! -e /var/lib/rancher/k3s &&
+   ! -e /etc/rancher/k3s/k3s.yaml ]] ||
+   die 'refusing a runner with existing K3s state'
+[[ ! -e /usr/local/bin/k3s ]] || die 'refusing an existing K3s binary'
+command -v sudo >/dev/null || die 'sudo is required only on ephemeral runner'
+command -v curl >/dev/null || die 'curl required for pinned release'
+
+# Discover actual disposable CI node IPv4, never use a user-supplied interface
+# or public address; this smoke profile is not an ADR-017 production CNI.
+node_ip="$(ip -4 route get 1.1.1.1 | awk '{for(i=1;i<=NF;i++) if($i=="src") {print $(i+1); exit}}')"
+python3 - "$node_ip" <<'PY' || die 'CI node route is not RFC1918 private'
+import ipaddress,sys
+ip=ipaddress.ip_address(sys.argv[1])
+assert any(ip in n for n in (
+    ipaddress.ip_network("10.0.0.0/8"),
+    ipaddress.ip_network("172.16.0.0/12"),
+    ipaddress.ip_network("192.168.0.0/16")))
+PY
+
+lab_dir="$(mktemp -d "${RUNNER_TEMP:-/tmp}/ipat-k3s-ephemeral.XXXXXXXX")"
+server_pid=''
+cleanup() {
+  rc=$?
+  if [[ -n "$server_pid" ]]; then
+    sudo kill -TERM "$server_pid" >/dev/null 2>&1 || true
+  fi
+  # Runner is disposable; no process or secret-bearing test bundle is uploaded.
+  # Never recursively delete arbitrary directories or change host-global rules.
+  if [[ "$lab_dir" == "${RUNNER_TEMP:-/tmp}"/ipat-k3s-ephemeral.* ]]; then
+    sudo rm -rf -- "$lab_dir"
+  fi
+  exit "$rc"
+}
+trap cleanup EXIT
+
+echo "R56_EPHEMERAL_RUNNER_OS=${ID}:${VERSION_ID}"
+echo "R56_PINNED_STABLE_K3S=$PINNED_TAG"
+download_url="https://github.com/k3s-io/k3s/releases/download/${PINNED_TAG}/k3s"
+curl --proto '=https' --tlsv1.2 --fail --location --retry 3 \
+  --connect-timeout 10 --max-time 120 \
+  "$download_url" --output "$lab_dir/k3s"
+printf '%s  %s\n' "$PINNED_K3S_SHA256" "$lab_dir/k3s" | sha256sum --check --status ||
+   die 'downloaded K3s binary differs from pinned upstream release checksum'
+chmod 0700 "$lab_dir/k3s"
+"$lab_dir/k3s" --version | head -1
+echo 'R56_PINNED_K3S_BINARY_SHA256_VERIFIED=PASS'
+
+# Run embedded etcd on a temporary, separate GitHub VM. No host systemd
+# installation, external SSH route, provider security-group API, or ingress.
+# Bind the supervisor/API ONLY to the ephemeral runner's RFC1918 address.
+sudo "$lab_dir/k3s" server \
+  --cluster-init \
+  --data-dir "$lab_dir/data" \
+  --write-kubeconfig "$lab_dir/kubeconfig" \
+  --write-kubeconfig-mode 0600 \
+  --bind-address "$node_ip" \
+  --advertise-address "$node_ip" \
+  --node-ip "$node_ip" \
+  --https-listen-port 16443 \
+  --disable traefik --disable servicelb --disable metrics-server \
+  >"$lab_dir/server.log" 2>&1 &
+server_pid=$!
+
+k() { sudo "$lab_dir/k3s" kubectl --kubeconfig "$lab_dir/kubeconfig" "$@"; }
+ready=0
+for attempt in $(seq 1 90); do
+  if ! sudo kill -0 "$server_pid" 2>/dev/null; then
+    die 'ephemeral K3s process exited before API became ready (logs intentionally private)'
+  fi
+  if k get nodes --no-headers 2>/dev/null | grep -Eq '[[:space:]]Ready[[:space:]]'; then
+    ready=1
+    break
+  fi
+  sleep 4
+done
+[[ "$ready" == 1 ]] || die 'ephemeral K3s node not Ready within bounded time'
+k get nodes -o wide
+echo 'R56_UBUNTU26_REAL_K3S_NODE_READY=PASS'
+
+# Confirm the API never binds a public wildcard IPv4/IPv6 listener.
+listeners="$(ss -H -lnt '( sport = :16443 )')"
+[[ -n "$listeners" ]] || die 'K3s API listener was not found'
+if grep -Eq '0[.]0[.]0[.]0:16443|\\[::\\]:16443|[[:space:]]\\*:16443' <<<"$listeners"; then
+  die 'K3s API unexpectedly listens on wildcard/public IPv4/IPv6'
+fi
+grep -Fq "$node_ip:16443" <<<"$listeners" ||
+  die 'API listener is not bound to the disposable RFC1918 node IPv4'
+echo 'R56_EPHEMERAL_API_RFC1918_ONLY=PASS'
+
+k -n kube-system rollout status deploy/coredns --timeout=180s >/dev/null
+echo 'R56_EPHEMERAL_COREDNS_READY=PASS'
+
+# A disposable nonprivileged BusyBox pod checks the REAL CNI and cluster DNS.
+k create namespace ipat-ci-smoke >/dev/null
+k -n ipat-ci-smoke run dns-smoke --image=busybox:1.37.0 --restart=Never \
+   --command -- sh -c 'sleep 300' >/dev/null
+k -n ipat-ci-smoke wait --for=condition=Ready pod/dns-smoke --timeout=180s
+k -n ipat-ci-smoke exec dns-smoke -- nslookup kubernetes.default.svc.cluster.local \
+   >/dev/null
+echo 'R56_EPHEMERAL_POD_AND_CLUSTER_DNS=PASS'
+
+# Embedded-etcd snapshot is ephemeral evidence, not independent production DR.
+sudo "$lab_dir/k3s" etcd-snapshot save \
+  --data-dir "$lab_dir/data" \
+  --name ipat-ephemeral-smoke >/dev/null
+sudo find "$lab_dir/data/server/db/snapshots" -maxdepth 1 -type f \
+  -name 'ipat-ephemeral-smoke*' -size +1k | grep -q .
+echo 'R56_EPHEMERAL_ETCD_SNAPSHOT_CREATED=PASS'
+echo 'R56_LIMITATION=ONE_DISPOSABLE_RUNNER_NOT_MULTI_NODE_HA_OR_OFFHOST_RESTORE'

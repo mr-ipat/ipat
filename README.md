@@ -13,6 +13,7 @@ IPAT (`IP@`) is a planned commercial multi-tenant ISP network operations platfor
 - [R5.3 sealed non-executable provisioning job simulator and test evidence](docs/PROVISIONING_SIMULATOR_R53.md)
 - [R5.4 disposable PostgreSQL job/outbox isolation and restore test plan](docs/POSTGRES_JOB_OUTBOX_R54.md)
 - [R5.5 read-only production readiness checks, recovery and staged DB/firewall/K3s plan](docs/PRODUCTION_INFRA_RECOVERY_R55.md)
+- [R5.6 real disposable Ubuntu 26.04 K3s node, networking smoke and etcd snapshot](docs/K3S_UBUNTU26_R56.md)
 - [Technical architecture](docs/ARCHITECTURE.md)
 - [Physical device and firmware test matrix](docs/DEVICE_MATRIX.md)
 - [Security, tenant isolation and threat model](docs/SECURITY.md)
