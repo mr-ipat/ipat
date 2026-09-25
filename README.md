@@ -17,9 +17,10 @@ IPAT (`IP@`) is a planned commercial multi-tenant ISP network operations platfor
 - [Restricted laboratory stage-1 bootstrap and no-snapshot safety plan](deploy/scripts/lab/README.md)
 - [Stage-2 SSH key-only hardening proposal and six-minute recovery timer](deploy/scripts/lab/STAGE2-SSH.md)
 - [Verified Stage-2 SSH results and read-only K3s prerequisites](docs/LAB_K3S_READ_ONLY_2026-09-25.md)
-- [R4.5 encrypted temporary Mac backup, real isolated restore and Nusa firewall gate](docs/LAB_BACKUP_NUSA_R45.md)
-- [R4.6 verified FileVault and live IPv6 exposure; gated Nusa security-group plan](docs/NUSA_SECURITY_GROUP_R46.md)
-- [R4.7 root-config direct-encrypted streaming preparation and shared-Nusa-group recovery gate](docs/ROOT_CONFIG_STREAM_R47.md)
+- [R4.5 encrypted temporary Mac backup, real isolated restore and historical external-ingress observations](docs/LAB_ENCRYPTED_BACKUP_EDGE_R45.md)
+- [R4.6 verified FileVault and live IPv6 exposure; generic perimeter dependency (historical evidence only)](docs/EDGE_SECURITY_GROUP_R46.md)
+- [R4.7 root-config direct-encrypted streaming preparation and host recovery gate](docs/ROOT_CONFIG_STREAM_R47.md)
+- [R4.8 optional first-party host firewall architecture and safety gates](docs/FIREWALL_CONTROL_PLANE.md)
 
 **Authority:** The approved Project Master Brief is binding. In `DECISIONS.md`, `PROPOSED` and `OPEN` items require explicit approval/evidence. A documentation draft, test fixture or protocol placeholder does not imply implementation, certification, device support or production readiness.
 

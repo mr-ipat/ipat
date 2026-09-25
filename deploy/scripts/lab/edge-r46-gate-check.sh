@@ -8,7 +8,7 @@ set -Eeuo pipefail
 for c in fdesetup curl ssh python3; do
   command -v "$c" >/dev/null || { echo "Tool unavailable: $c" >&2; exit 4; }
 done
-echo "R46_NUSA_FILEVAULT_EXTERNAL_EVIDENCE_ONLY"
+echo "R46_EDGE_FILEVAULT_EXTERNAL_EVIDENCE_ONLY"
 if fdesetup status | grep -Fxq "FileVault is On."; then
   echo FILEVAULT=ON
 else
@@ -41,10 +41,10 @@ grep -Fxq "PasswordAuthentication no" /etc/ssh/sshd_config.d/00-ipat-lab-hardeni
 grep -Fxq "PermitRootLogin no" /etc/ssh/sshd_config.d/00-ipat-lab-hardening.conf
 echo SSH_MANAGED_KEY_ONLY_DIRECTIVES=OBSERVED
 '
-echo "OWNER_SCREENSHOT_NUSA_SG_IPV4_INBOUND=ALLOW_ALL_0.0.0.0/0"
-echo "OWNER_SCREENSHOT_NUSA_SG_IPV6_INBOUND=ALLOW_ALL_::/0"
+echo "OWNER_SCREENSHOT_EDGE_SG_IPV4_INBOUND=ALLOW_ALL_0.0.0.0/0"
+echo "OWNER_SCREENSHOT_EDGE_SG_IPV6_INBOUND=ALLOW_ALL_::/0"
 echo "SECURITY_GROUP_OTHER_VM_ATTACHMENTS=UNVERIFIED"
 echo "VNC_REAL_LOGIN=REQUIRES_OWNER_CONFIRMATION"
 echo "RESTIC_PASSWORD_INDEPENDENT_ESCROW=REQUIRES_OWNER_CONFIRMATION"
-echo "NUSA_PROVIDER_FIREWALL_CHANGE=NOT_PERFORMED"
+echo "EDGE_PROVIDER_FIREWALL_CHANGE=NOT_PERFORMED"
 echo "GUEST_HOST_FIREWALL_CHANGE=NOT_PERFORMED"

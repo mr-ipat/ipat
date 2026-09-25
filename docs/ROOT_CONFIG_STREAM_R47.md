@@ -1,12 +1,12 @@
 # IPAT R4.7 — streamed encrypted root configuration backup preparation
 
-**Date:** 2026-09-25 (Asia/Jakarta). **Laboratory security milestone, partial completion.** Continue from [R4.6](NUSA_SECURITY_GROUP_R46.md), the source PRD's S1 [AC-07](PRD.md), and the latest [actual status](PROJECT_STATUS.md).
+**Date:** 2026-09-25 (Asia/Jakarta). **Laboratory security milestone, partial completion.** Continue from [R4.6](EDGE_SECURITY_GROUP_R46.md), the source PRD's S1 [AC-07](PRD.md), and the latest [actual status](PROJECT_STATUS.md).
 
 ## 1. Facts and current hard-stop gates
 
-- **Owner-provided:** Nusa VNC Console login has **NOT succeeded**. Their Nusa `allow-all` Security Group is **SHARED BY MULTIPLE VPSs**. Do not edit or remove that group: doing so could affect unrelated services. No provider or guest firewall changes are authorized while the independent rescue path is untested.
+- **Owner-provided:** external provider VNC Console login has **NOT succeeded**. Their external provider `allow-all` Security Group is **SHARED BY MULTIPLE VPSs**. Do not edit or remove that group: doing so could affect unrelated services. No provider or guest firewall changes are authorized while the independent rescue path is untested.
 - **Owner-provided:** the Mac Restic repository password has been stored securely outside the Mac and is retrievable from another device. This is an owner **ATTESTATION**, not an independent recovery exercise; no password or recovery key should ever appear in chat/Git.
-- **Assistant verified read-only:** the real Ubuntu `getty@tty1.service` was **active**; the `openai` account had password state `P` and login shell `/bin/bash` when inspected. This does NOT establish that the user can type or authenticate successfully in Nusa VNC. The first console check should use `openai` and the real **Ubuntu account/sudo password**, not an SSH private-key passphrase. Do not alter SSH, root passwords, or reboot merely to debug the console.
+- **Assistant verified read-only:** the real Ubuntu `getty@tty1.service` was **active**; the `openai` account had password state `P` and login shell `/bin/bash` when inspected. This does NOT establish that the user can type or authenticate successfully in external provider VNC. The first console check should use `openai` and the real **Ubuntu account/sudo password**, not an SSH private-key passphrase. Do not alter SSH, root passwords, or reboot merely to debug the console.
 - Existing independent Mac/FileVault/Keychain encrypted Restic repository and older successful partial config + Git-source restore remain valid. The Mac backup is **temporary and on one device**; the Restic passphrase's second custody has not been independently tested. The target Ubuntu still has no provider snapshot.
 
 ## 2. Streamed privileged-root backup design (PREPARED, NOT YET EXECUTED)
@@ -28,9 +28,9 @@ Use the authorized Mac's **own interactive Terminal**; do not send any password 
 bash ~/Projects/ipat-current/deploy/scripts/lab/mac-root-config-backup.sh --backup-root
 ```
 
-The runner requests the literal operator acknowledgement `ESCROW_CONFIRMED_AND_BACKUP_ROOT`, then prompts locally for the *Ubuntu openai sudo password*. It never requires Nusa Console login or provider SG changes for this read-only remote backup; if anything fails, **do not retry by weakening SSH**. Report only the final success/failure lines, not secrets or archive content.
+The runner requests the literal operator acknowledgement `ESCROW_CONFIRMED_AND_BACKUP_ROOT`, then prompts locally for the *Ubuntu openai sudo password*. It never requires external provider Console login or provider SG changes for this read-only remote backup; if anything fails, **do not retry by weakening SSH**. Report only the final success/failure lines, not secrets or archive content.
 
-**If still unable to log in to Nusa VNC:** verify you are looking at the *correct VPS's normal browser Console* (not Rescue), click into the console and wake its login prompt with Enter, enter Linux user `openai` and the account password. The Ubuntu getty/password state was observed read-only, not proven as a browser login. If login still fails or VNC is blank/unresponsive, capture a **redacted** screenshot/error state and open a Nusa Support ticket requesting a *non-rebooting* VNC/login-path diagnosis. The provider's Rescue Mode does reboot into a separate temporary environment: **do not activate it as a casual test**.
+**If still unable to log in to external provider VNC:** verify you are looking at the *correct VPS's normal browser Console* (not Rescue), click into the console and wake its login prompt with Enter, enter Linux user `openai` and the account password. The Ubuntu getty/password state was observed read-only, not proven as a browser login. If login still fails or VNC is blank/unresponsive, capture a **redacted** screenshot/error state and open a external provider Support ticket requesting a *non-rebooting* VNC/login-path diagnosis. The provider's Rescue Mode does reboot into a separate temporary environment: **do not activate it as a casual test**.
 
 ## 3. Actual tests already performed before privileged execution
 
@@ -41,13 +41,13 @@ The runner requests the literal operator acknowledgement `ESCROW_CONFIRMED_AND_B
 
 Official method: [Restic documented command-stream backup and failure behavior](https://github.com/restic/restic/blob/master/doc/040_backup.rst).
 
-## 4. Shared Nusa `allow-all`: rollback-safe preparation ONLY
+## 4. Shared external provider `allow-all`: rollback-safe preparation ONLY
 
-The `allow-all` Security Group is **shared across multiple VPSs**, so **do not change its rules**. An attached, permissive security group may override a new restrictive group depending on the Nusa/OpenStack attachment semantics; do not assume simply attaching a second group restricts anything.
+The `allow-all` Security Group is **shared across multiple VPSs**, so **do not change its rules**. An attached, permissive security group may override a new restrictive group depending on the external provider/OpenStack attachment semantics; do not assume simply attaching a second group restricts anything.
 
-Before any change, the owner must obtain actual Nusa VNC Linux login (or an independently verified equivalent out-of-band provider recovery pathway) and confirm Nusa supports **a separate dedicated security group applied only to IPAT** with the old `allow-all` assignment safely removed from IPAT *without mutating rules used by other VMs*. Export the exact current group attachments, per-VPS Managed Firewall configuration and IPv4/IPv6 rules. Prepare a narrowly scoped SSH management CIDR only if its real external source and stability have been verified. Keep public Kubernetes control-plane TCP 6443, kubelet TCP 10250, datastore TCP 2379-2380 and overlay UDP 8472/51820+ **closed**; select private networking as an explicit ADR-017 review.
+Before any change, the owner must obtain actual external provider VNC Linux login (or an independently verified equivalent out-of-band provider recovery pathway) and confirm external provider supports **a separate dedicated security group applied only to IPAT** with the old `allow-all` assignment safely removed from IPAT *without mutating rules used by other VMs*. Export the exact current group attachments, per-VPS Managed Firewall configuration and IPv4/IPv6 rules. Prepare a narrowly scoped SSH management CIDR only if its real external source and stability have been verified. Keep public Kubernetes control-plane TCP 6443, kubelet TCP 10250, datastore TCP 2379-2380 and overlay UDP 8472/51820+ **closed**; select private networking as an explicit ADR-017 review.
 
-**Rollback plan:** record IPAT's current group assignment and provider firewall state before change. Keep an independently working Nusa recovery session. When a dedicated group is eventually tested, verify a new SSH session and external IPv4/IPv6 behavior; if validation fails, restore only IPAT's recorded original assignment, not rules of the shared group. Do not use Nusa Reset Rules, which returns to global allow-all.
+**Rollback plan:** record IPAT's current group assignment and provider firewall state before change. Keep an independently working external provider recovery session. When a dedicated group is eventually tested, verify a new SSH session and external IPv4/IPv6 behavior; if validation fails, restore only IPAT's recorded original assignment, not rules of the shared group. Do not use external provider Reset Rules, which returns to global allow-all.
 
 **Current gate:** VNC login is not working, so all provider rule changes are BLOCKED. New root-backup code is prepared, but a real privileged encrypted backup and recovery test have not run until the user provides sudo authentication locally. This is not PostgreSQL AC-07 or whole-host disaster recovery.
 
@@ -59,3 +59,8 @@ An owner's Mac screenshot during the first *real* root-capture attempt showed Re
 **First action for that still-pending Terminal:** user presses `Ctrl+C` once in the *same* Mac Terminal if the prompt is not visible, then waits for the script to return. Do not start parallel Restic jobs or send passwords to ChatGPT. This does not modify SSH, firewall or K3s; an incomplete encrypted snapshot must not be reported as a pass.
 
 The follow-up code makes the correct password type explicit, writes a visible nonsecret instruction directly to the controlling Mac TTY immediately before `getpass`, and sets `restic --quiet backup` for the privileged backup path to avoid overwriting the local prompt with a progress indicator. This is a usability/source change only; actual sudo-protected root capture and isolated root restore remain **PENDING** until user executes the updated merged helper and provides the local sudo password. Never enable direct root SSH to work around a local sudo prompt.
+
+
+## R4.8 successful privileged completion (supersedes earlier pending instructions)
+
+The owner completed the **actual privileged** streamed selected-root-config archive. An independent follow-up used `--verify-root` on Restic snapshot `abaa9827`, re-read all 11 snapshots/20 packs, restored the selected config tar to a private temporary Mac directory and verified the expected `sudoers` member and managed key-only SSH directives. Temporary plaintext was removed. No host SSH/network/firewall change occurred. It is still not a complete VM snapshot, host private-key backup, database restore or K3s datastore recovery. Do not re-run solely because earlier chronological instructions said the root backup was pending.

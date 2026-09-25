@@ -135,6 +135,7 @@ Semua FR memiliki `tenant_id`/otorisasi yang sesuai atau eksplisit `platform-sco
 | FR-033 | C | Pengukuran kapasitas heterogen berdasar utilisasi riil, queue age, Inform throughput, USP sessions, latency dan error; resource scheduling disetel dari bukti. |
 | FR-034 | C | Lifecycle data retention dan deletion per tenant, ekspor aman, recoverability dan prosedur offboarding termasuk backup-retention implications. |
 | FR-035 | C | Notifikasi/search/export/webhook jika diaktifkan menegakkan policy yang sama termasuk sink yang menerima data. |
+| FR-036 | SHOULD (post-S1) | Optional native IPAT host-firewall policy planner (Ubuntu nftables adapter later) with dry-run, explicit dual-stack source CIDRs, protected K3s private-only ports, RBAC+ABAC/maker-checker, immutable diff, audited TTL rollback and independent console/recovery gate. No external hosting-provider firewall API dependency. Pure planner does not count as live firewall or validated nftables deployment. |
 
 ## 6. Persyaratan nonfungsional (NFR) dan cara membuktikan
 
@@ -173,6 +174,7 @@ Semua FR memiliki `tenant_id`/otorisasi yang sesuai atau eksplisit `platform-sco
 | AC-14 | C | Pengujian multi-node/no-double-execution, queue backpressure, per-device serialization, resilience dan scale-down graceful. |
 | AC-15 | C | Penetration test, access control matrix per role/POP, privilege escalation, custom domain SSRF/cross-domain, log redaction lulus gate keamanan. |
 | AC-16 | C | Tenant onboarding/offboarding, data deletion/backup retention sesuai kontrak dan proses compliance yang ditetapkan. |
+| AC-17 | SHOULD (post-S1) | Native firewall planner rejects unrestricted SSH/control-plane ingress for both IP families, fails closed on missing route/authorization, and records dry-run evidence. A later live host-agent acceptance requires isolated disposable-node nftables/CNI tests, complete independently recoverable backup and out-of-band access, rollback drill, signed high-risk approval, new SSH session and dual-stack ingress verification. Until then execution must be unavailable. |
 
 **Gate akhir Sprint 1:** AC-01 s.d. AC-07 dinilai pass/fail/blocked dengan lampiran bukti; AC-08 bersyarat. *No-go* pada potongan yang merusak isolasi tenant, kontrol approval, atau melakukan write di luar scope. Klaim perangkat nyata hanya jika tes benar-benar terjadi dan `DEVICE_MATRIX.md` diperbarui.
 

@@ -52,14 +52,14 @@ The owner executed the reviewed Stage-2 script and independently confirmed the t
 Run the *read-only* K3s prerequisite inventory with `bash deploy/scripts/lab/k3s-readonly-preflight.sh --report`. It cannot approve a K3s install: private multi-node network, provider firewall, full encrypted independent backup with restore test, and ADR-017 remain unresolved. [Rootless evidence and decision gates](../../../docs/LAB_K3S_READ_ONLY_2026-09-25.md).
 
 
-## R4.5 temporary encrypted Mac backup and Nusa firewall read-only assessment
+## R4.5 temporary encrypted Mac backup and external provider firewall read-only assessment
 
-Use [the actual backup/restore report and provider firewall gate](../../../docs/LAB_BACKUP_NUSA_R45.md). Reviewed Mac-only scripts are `backup-mac-restic.sh --status|--backup-source|--backup-partial|--verify` and `nusa-readonly-network-check.sh --report`. A high-entropy restic passphrase is held only in the Mac Keychain; repository snapshots of the prior PARTIAL VPS config and canonical Git source passed isolated restore and full read-data integrity checks. **The Mac FileVault is OFF; no root-only VPS config, future PostgreSQL data or K3s datastore is backed up.** Actual Nusa Managed Firewall rules were NOT read, and no firewall/K3s change was made. Do not call this production disaster recovery.
+Use [the actual backup/restore report and provider firewall gate](../../../docs/LAB_ENCRYPTED_BACKUP_EDGE_R45.md). Reviewed Mac-only scripts are `backup-mac-restic.sh --status|--backup-source|--backup-partial|--verify` and `external-readonly-network-check.sh --report`. A high-entropy restic passphrase is held only in the Mac Keychain; repository snapshots of the prior PARTIAL VPS config and canonical Git source passed isolated restore and full read-data integrity checks. **The Mac FileVault is OFF; no root-only VPS config, future PostgreSQL data or K3s datastore is backed up.** Actual external provider Managed Firewall rules were NOT read, and no firewall/K3s change was made. Do not call this production disaster recovery.
 
 
-## R4.6 Nusa dual-stack ingress — observation only
+## R4.6 external provider dual-stack ingress — observation only
 
-The provider screen reveals `allow-all` inbound IPv4 and **global IPv6**. FileVault is now independently confirmed ON, but a same-Mac Restic Keychain secret still needs independent escrow. [Staged rule-change/rollback design](../../../docs/NUSA_SECURITY_GROUP_R46.md). From the authorized Mac, run `bash deploy/scripts/lab/nusa-r46-gate-check.sh --report` to see a current `<MAC_IPv4>/32` **candidate only**, real global guest IPv6 and fresh strict SSH checks. Do not automatically apply this CIDR: the Mac's public ISP IP is not proven static. Do not edit a group shared with other Nusa resources; verify group attachments and test the VPS VNC console before any provider ACL action.
+The provider screen reveals `allow-all` inbound IPv4 and **global IPv6**. FileVault is now independently confirmed ON, but a same-Mac Restic Keychain secret still needs independent escrow. [Staged rule-change/rollback design](../../../docs/EDGE_SECURITY_GROUP_R46.md). From the authorized Mac, run `bash deploy/scripts/lab/edge-r46-gate-check.sh --report` to see a current `<MAC_IPv4>/32` **candidate only**, real global guest IPv6 and fresh strict SSH checks. Do not automatically apply this CIDR: the Mac's public ISP IP is not proven static. Do not edit a group shared with other external provider resources; verify group attachments and test the VPS VNC console before any provider ACL action.
 
 
 ## R4.7 — encrypted root configuration streaming, owner-interactive
@@ -70,7 +70,7 @@ The provider screen reveals `allow-all` inbound IPv4 and **global IPv6**. FileVa
 bash ~/Projects/ipat-current/deploy/scripts/lab/mac-root-config-backup.sh --backup-root
 ```
 
-This script will prompt for `ESCROW_CONFIRMED_AND_BACKUP_ROOT` and the Ubuntu `openai` sudo password **locally**. It deliberately **does not need Nusa VNC** to create the encrypted backup, and never changes a firewall or SSH rule. Its `--verify-root` operation will check an actual root-config snapshot *only after one exists*. Root host private SSH keys and future database/K3s data are excluded; do not describe this as full VPS recovery.
+This script will prompt for `ESCROW_CONFIRMED_AND_BACKUP_ROOT` and the Ubuntu `openai` sudo password **locally**. It deliberately **does not need external provider VNC** to create the encrypted backup, and never changes a firewall or SSH rule. Its `--verify-root` operation will check an actual root-config snapshot *only after one exists*. Root host private SSH keys and future database/K3s data are excluded; do not describe this as full VPS recovery.
 
 
 ### Root backup prompt visibility (R4.7.1)

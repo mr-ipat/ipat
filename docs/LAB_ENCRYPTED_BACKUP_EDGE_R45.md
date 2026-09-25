@@ -1,10 +1,10 @@
-# IPAT R4.5 — Nusa.id VPS security preflight and temporary encrypted Mac backup
+# IPAT R4.5 — hosting provider VPS security preflight and temporary encrypted Mac backup
 
 **Date:** 2026-09-25, Asia/Jakarta. **Lab only.** Reviewed against the current project brief, PRD AC-07, SECURITY, DECISIONS and R4.4 live-host status.
 
 ## 1. Actual temporary encrypted backup performed on the authorized Mac
 
-**Host:** the authorized Mac `MisteriPat.local` (separate host from Nusa.id VPS). Official Homebrew `restic 0.19.1` was installed under user-controlled Homebrew, with no Ubuntu package, root, firewall or network-service changes.
+**Host:** the authorized Mac `MisteriPat.local` (separate host from hosting provider VPS). Official Homebrew `restic 0.19.1` was installed under user-controlled Homebrew, with no Ubuntu package, root, firewall or network-service changes.
 
 - Repository directory: `~/IPAT-secure-backups/restic-lab-v1` with mode `0700`. Restic v2 encrypted format was initialized, repo identifier beginning `8b539c4534bf`.
 - A cryptographically generated high-entropy repository passphrase was stored only as an item in the user's **macOS login Keychain**, service `id.ipat.lab.restic.backup.v1`, account `ipat-lab-backup`. It is provided to restic using `RESTIC_PASSWORD_COMMAND` and the native `security find-generic-password` command. **No passphrase is printed here, saved in Git, placed directly in environment variables, or copied to the VPS.**
@@ -27,21 +27,18 @@ bash deploy/scripts/lab/backup-mac-restic.sh --verify
 
 No cron/launchd recurrence or unattended Keychain-unlock guarantee has been implemented. Do not claim automated backups until they are separately tested. `--backup-partial` intentionally backs up only the previously integrity-verified historical config archive.
 
-## 2. Actual Nusa.id external and Ubuntu guest observations
+## 2. External ingress and Ubuntu guest observations
 
-- Provider named by user: **Nusa.id Cloud VPS**. Public DNS `ipat.fadly.id` resolved to an IPv4 address and **no AAAA** result was returned in the inspected DNS lookup; this does not prove the provider's IPv6 firewall rules are secure.
-- A small, authorized TCP connection-only test from the Mac **accepted port 22**. Ports **80, 443, 6443, 10250, 2379 and 2380 did not complete connections** from this one source at inspection time. Because K3s and HTTP services were not running, this is **NOT proof** that Nusa Managed Firewall denies those ports.
-- UDP VXLAN/8472 and WireGuard/51820+ were **not scanned**. Nusa's actual provider-managed IPv4 and IPv6 rules have not been inspected in the owner's panel. Ubuntu `ufw`, `nft` and Kubernetes network controls have not been installed or changed during R4.5.
+- Hosting provider intentionally omitted from product documentation. Public DNS `ipat.fadly.id` resolved to an IPv4 address and **no AAAA** result was returned in the inspected DNS lookup; this does not prove the provider's IPv6 firewall rules are secure.
+- A small, authorized TCP connection-only test from the Mac **accepted port 22**. Ports **80, 443, 6443, 10250, 2379 and 2380 did not complete connections** from this one source at inspection time. Because K3s and HTTP services were not running, this is **NOT proof** that external provider Managed Firewall denies those ports.
+- UDP VXLAN/8472 and WireGuard/51820+ were **not scanned**. external provider's actual provider-managed IPv4 and IPv6 rules have not been inspected in the owner's panel. Ubuntu `ufw`, `nft` and Kubernetes network controls have not been installed or changed during R4.5.
 - Ubuntu's internal `eth0` is on a private subnet and uses a private gateway. DNS/public access does not establish the exact NAT or rule chain. SSH Stage-2 live key-only access is already verified separately; keep it untouched until a separate provider network safety gate.
 
-### Nusa.id Managed Firewall: inspection and staged change plan (NOT EXECUTED)
+### External perimeter dependency observed (not an IPAT integration)
 
-1. In the owner's authenticated Nusa.id **Client Area > Layanan > Layanan Saya > Cloud VPS > Firewall**, **read and export/capture the CURRENT inbound/outbound rules for BOTH IPv4 and IPv6**, including `Remote IP Prefix`, action/rule, direction and description. Redact account identifiers before sharing evidence. Nusa documents native `Add Rule` and source-CIDR selection in its official guide: https://www.nusa.id/docs/cloud-vps/firewall/mengelola-firewall-rules/
-2. Verify the actual **VNC Console login** with a non-secret recovery workflow *without rebooting* the live VPS. Nusa also documents Rescue Mode, but entering rescue intentionally powers down/reboots the VM: https://www.nusa.id/docs/cloud-vps/kelola-server/rescue-mode/ . Owner availability of the Console UI alone does **not** prove an end-to-end recovery drill.
-3. Determine if the Mac public **management IPv4** is stable and whether Nusa has provider IPv6 assigned despite no public DNS AAAA record. For stable/approved management source, propose inbound **TCP/22 from that IPv4 /32** (and /128 only if an actual IPv6 source is confirmed). If the Mac source is dynamic or no second recovery network exists, DO NOT narrow SSH to an ephemeral IP without a tested console and an explicit remote-access design.
-4. Keep **TCP/6443, TCP/10250, TCP/2379-2380** and **UDP/8472/51820** unavailable to the public internet. Private inter-node CIDRs, approved CNI and security-group rules remain subject to OPEN ADR-017, not guessed from a single-node lab network.
-5. Before removing broad IPv4/IPv6 inbound allow-all rules, create a source-scoped SSH exception, independently verify a NEW Mac key-only SSH connection, document every original Nusa firewall rule and test console recovery. Apply the actual provider change in a separate, observed maintenance transaction; check both address families. Have a clearly described rollback by restoring the recorded prior **specific** rules via the provider console.
-6. **NEVER press Nusa 'Reset Rules' as a security fix.** Official Nusa documentation says reset replaces rules with allow-all inbound/outbound IPv4/IPv6 defaults: https://www.nusa.id/docs/cloud-vps/firewall/reset-firewall/ . No Nusa panel action or host firewall write occurred in this milestone.
+Historic owner-provided evidence showed a shared external security group allowing all inbound IPv4 and IPv6. Host SSH public-key authentication alone does not restrict ingress to source networks. This is an **external operational prerequisite**; IPAT does not control any hosting provider firewall API.
+
+Host-based firewall and network-policy design is tracked in `FIREWALL_CONTROL_PLANE.md`. No external security group, host rules or Kubernetes network settings were changed. Do not change externally shared security groups; keep out-of-band recovery working before any host firewall application.
 
 K3s official network prerequisites and prohibition on public VXLAN/8472: https://docs.k3s.io/installation/requirements . Any pod-network CIDR, K3s datastore layout, private overlay/VPN or HA network decision requires an explicit reviewed ADR-017 entry.
 
@@ -56,12 +53,12 @@ K3s official network prerequisites and prohibition on public VXLAN/8472: https:/
 | Mac FileVault | **OFF** — **BLOCKER** for storing root private host keys/customer material on this Mac |
 | Independent passphrase escrow / second backup location | **NOT VERIFIED** |
 | Root-owned full VPS config / database / K3s restore | **NOT DONE** |
-| Provider firewall current rule inventory | **NOT AVAILABLE** without owner's Nusa panel evidence |
+| Provider firewall current rule inventory | **NOT AVAILABLE** without owner's external provider panel evidence |
 | External port availability check | **OBSERVATION ONLY**; 22 responded, other sampled TCP did not |
-| Nusa firewall change / K3s install | **NOT PERFORMED** |
+| external provider firewall change / K3s install | **NOT PERFORMED** |
 | PRD AC-07 PostgreSQL isolated restore | **BLOCKED** until an actual database, backup and clean restore test exist |
 
-Next: obtain redacted Nusa Managed Firewall rule inventory and tested recovery-console evidence from the owner; enable FileVault and independently escrow the Keychain-held restic secret; then design a one-time privileged **streamed-to-encrypted-repository** config backup without leaving plaintext root files on the Mac. Only after validated recovery/network gates prepare a pinned, isolated/disposable K3s single-node lab bootstrap. Do not claim production HA or tested physical ZTE/C-DATA/VSOL/MikroTik compatibility.
+Next: obtain redacted external provider Managed Firewall rule inventory and tested recovery-console evidence from the owner; enable FileVault and independently escrow the Keychain-held restic secret; then design a one-time privileged **streamed-to-encrypted-repository** config backup without leaving plaintext root files on the Mac. Only after validated recovery/network gates prepare a pinned, isolated/disposable K3s single-node lab bootstrap. Do not claim production HA or tested physical ZTE/C-DATA/VSOL/MikroTik compatibility.
 
 
 ## 4. Follow-up after R4.5 code merge
@@ -69,6 +66,11 @@ Next: obtain redacted Nusa Managed Firewall rule inventory and tested recovery-c
 - R4.5 implementation PR #22 merged into private GitHub `main` as `deecfed13bfa6d453816e89af0b3592c8a541067`.
 - Mac-only repeatable backup script was then executed with `--backup-source` on that clean exact `main`; latest canonical source snapshot at this checkpoint is `2ee0cc82`.
 - Its `--verify` mode **ACTUALLY PASSED** `restic check --read-data` on **three snapshots and six packs**; restored the new canonical Git tar and original PARTIAL config tar into separate private throwaway directories; compared both actual restored SHA-256 values with independent expected source/archive hashes, verified known archive entries and removed test directories.
-- Final R4.5 PR GitHub-hosted main CI `36115936092` **SUCCESS**, including nine new source-only backup/Nusa static checks, nine previous static SSH/K3s checks, formatting and 23 locked Rust synthetic/unit tests.
-- The exact reviewed private GitHub `main` commit was synchronized to the Mac and Ubuntu lab non-root workspace via an authenticated temporary Git bundle; independent SHA comparison succeeded; SSH still active and the Stage-2 pending marker was absent. There was **NO privileged backup, Nusa provider ACL/firewall, host firewall, K3s or PostgreSQL modification** in this checkpoint.
+- Final R4.5 PR GitHub-hosted main CI `36115936092` **SUCCESS**, including nine new source-only backup/external provider static checks, nine previous static SSH/K3s checks, formatting and 23 locked Rust synthetic/unit tests.
+- The exact reviewed private GitHub `main` commit was synchronized to the Mac and Ubuntu lab non-root workspace via an authenticated temporary Git bundle; independent SHA comparison succeeded; SSH still active and the Stage-2 pending marker was absent. There was **NO privileged backup, external provider ACL/firewall, host firewall, K3s or PostgreSQL modification** in this checkpoint.
 - As this report itself may be committed in a subsequent documentation-only revision, use `--backup-source` and `--verify` again after that revision to encrypt/check the final latest `main`. The milestone does not claim any complete root-only config, database or K3s recovery readiness.
+
+
+## R4.8 superseding note
+
+Later evidence confirms an actual additional encrypted and independently restored **selected root-readable** configuration archive (`abaa9827`) as documented in [the latest status](PROJECT_STATUS.md); the partial-user-config-only gap described above is historical. The native [host firewall policy design](FIREWALL_CONTROL_PLANE.md) replaces provider-specific firewall ideas in the product roadmap; this file preserves generic historical exposure facts only.
