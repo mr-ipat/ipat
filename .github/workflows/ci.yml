@@ -53,6 +53,8 @@ jobs:
           bash -n deploy/scripts/lab/mac-root-config-backup.sh
           python3 -m py_compile deploy/scripts/lab/root-config-stream.py
           python3 -m unittest discover deploy/scripts/lab -p 'test_root_config_stream_review.py' -v
+      - name: Verify sealed offline CWMP admission boundary (static)
+        run: python3 -m unittest discover deploy/scripts/lab -p 'test_cwmp_admission_review.py' -v
       - name: Verify formatting
         run: cargo fmt --all -- --check
       - name: Run locked unit tests

@@ -94,3 +94,8 @@ DB restore evidence and data-integrity check:
 Architecture decisions revised:
 Next priority / owner / blockers:
 ```
+
+
+## R4.9 actual S1-04 subtask progress
+
+The offline synthetic Inform admission portion of S1-04 now compiles in a separate `cwmp-admission` Rust crate, with **11 unit tests PASS** on actual Ubuntu 26.04. It is *not* an HTTPS/mTLS adapter, production sessions, a real RPC, physical ONT testing or full AC-03 acceptance; S1-04 remains **IN PROGRESS**. No security shortcuts or live deployment are authorized while trusted TLS enrollment and out-of-band network recovery remain blocked. The independent S1-05 native USP controller still has no runtime implementation.
