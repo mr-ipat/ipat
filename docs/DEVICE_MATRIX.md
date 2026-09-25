@@ -91,3 +91,8 @@ S1: synthetic/simulator testing allowed for endpoint design; if any exact physic
 ## R4.9 simulator evidence only (NOT physical compatibility)
 
 On the actual Ubuntu 26.04 lab, `cwmp-admission` eleven **offline synthetic** unit tests passed: enrollment/tenant/SPKI binding, SOAP InformResponse after admission, unauthenticated cross-tenant/device spoof rejection, repeated ID, bounded leases/replay, malformed SOAP/XML, wrong-peer lease completion and XML escaping. This exercises no actual TLS transport, broker, RPC or physical ONT and therefore does **not** change any DEV-01 through DEV-08 `untested` physical matrix status or claim a completed TC-CWMP-01/02 field test. Evidence/code and limitations: [R4.9 CWMP synthetic scope](CWMP_ADMISSION_R49.md).
+
+
+## R5.0 synthetic USP boundary evidence (NO real-agent interoperability)
+
+Twelve `usp-core` in-memory synthetic enrollment, tenant/peer-spoof, replay, malformed reply, request-correlation and capacity checks plus three optional `usp-controller` loopback-router health/deny tests passed on an isolated actual Ubuntu 26.04 checkout. **No official USP Record/Msg protobuf, MTP, broker or real CPE agent was used.** This is `synthetic-domain-only` evidence, **NOT TC-USP-01 acceptance** and not an upgrade of any physical device test tuple from `untested`. [R5.0 scope](USP_SYNTHETIC_R50.md).

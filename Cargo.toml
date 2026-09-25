@@ -6,6 +6,8 @@ members = [
   "crates/authz-core",
   "crates/cwmp-protocol",
   "crates/cwmp-admission",
+  "crates/usp-core",
+  "apps/usp-controller",
   "crates/firewall-policy",
 ]
 
