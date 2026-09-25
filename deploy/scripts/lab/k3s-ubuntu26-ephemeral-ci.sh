@@ -107,7 +107,28 @@ grep -Fq "$node_ip:16443" <<<"$listeners" ||
   die 'API listener is not bound to the disposable RFC1918 node IPv4'
 echo 'R56_EPHEMERAL_API_RFC1918_ONLY=PASS'
 
-k -n kube-system rollout status deploy/coredns --timeout=180s >/dev/null
+if ! k -n kube-system rollout status deploy/coredns --timeout=85s >/dev/null 2>&1; then
+  # Emit ONLY controlled pod-state and event *reason* keys, never messages,
+  # kubeconfigs, startup logs, server tokens or credential-bearing spec fields.
+  k get pods -A -o json | python3 -c '
+import json,sys
+for x in json.load(sys.stdin).get("items",[]):
+ s=x.get("status",{}); reasons=[]
+ for cs in s.get("containerStatuses",[]):
+  waiting=cs.get("state",{}).get("waiting",{})
+  if waiting: reasons.append(waiting.get("reason","Unknown"))
+ print("CI_POD_STATUS",x["metadata"]["namespace"],x["metadata"]["name"],
+       s.get("phase","Unknown"), ",".join(reasons) or "none")
+' || true
+  k get events -A -o json | python3 -c '
+import json,sys,collections
+reasons=collections.Counter(x.get("reason","Unknown") for x in
+ json.load(sys.stdin).get("items",[]))
+for reason,count in sorted(reasons.items()):
+ print("CI_EVENT_REASON",reason,count)
+' || true
+  die 'CoreDNS not Ready within the disposable test deadline'
+fi
 echo 'R56_EPHEMERAL_COREDNS_READY=PASS'
 
 # A disposable nonprivileged BusyBox pod checks the REAL CNI and cluster DNS.
