@@ -59,6 +59,14 @@ jobs:
         run: python3 -m unittest discover deploy/scripts/lab -p 'test_usp_synthetic_review.py' -v
       - name: Verify non-executable sealed provisioning jobs (static)
         run: python3 -m unittest discover deploy/scripts/lab -p 'test_provisioning_synthetic_review.py' -v
+      - name: Verify production infrastructure never auto-authorizes unsafe deployment
+        run: |
+          python3 -m py_compile deploy/scripts/production/readiness.py
+          python3 -m unittest discover deploy/scripts/production -p 'test_readiness.py' -v
+      - name: Verify disposable physical PostgreSQL restoration contract
+        run: |
+          bash -n deploy/db/tests/physical_restore_ephemeral.sh
+          python3 -m unittest discover deploy/db/tests -p 'test_physical_restore_contract.py' -v
       - name: Verify synthetic PostgreSQL RLS and job/outbox migration safety (static)
         run: |
           python3 -m py_compile deploy/db/tests/test_postgres_rls_integration.py
@@ -110,3 +118,48 @@ jobs:
       - name: Validate synthetic durable job state and transactional outbox (ephemeral ONLY)
         run: |
           python3 -m unittest discover deploy/db/tests -p 'test_job_outbox_integration.py' -v
+
+# Separate disposable CI runner and PostgreSQL server process.
+  # This rehearses a physical base backup; it is NOT production PITR/offsite HA.
+  postgres-physical-recovery-lab:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 16
+    services:
+      postgres:
+        image: postgres:16.9
+        env:
+          POSTGRES_DB: ipat_synthetic
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: local_ci_synthetic_only
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d ipat_synthetic"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 12
+    env:
+      IPAT_PG_EPHEMERAL_TEST: "1"
+      IPAT_PG_SYNTHETIC_PASSWORD: local_ci_synthetic_only
+      PGHOST: 127.0.0.1
+      PGPORT: "5432"
+
+      PGDATABASE: ipat_synthetic
+      PGUSER: postgres
+      PGPASSWORD: local_ci_synthetic_only
+    steps:
+      - name: Check out sources (pinned SHA)
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Install isolated PostgreSQL 16 runner binaries without an auto-created cluster
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y postgresql-client
+          echo 'create_main_cluster = false' | sudo tee /etc/postgresql-common/createcluster.conf
+          sudo apt-get install -y postgresql-16
+          /usr/lib/postgresql/16/bin/pg_ctl --version
+      - name: Seed original synthetic RLS and job/outbox fixtures
+        run: |
+          python3 -m unittest discover deploy/db/tests -p 'test_postgres_rls_integration.py' -v
+          python3 -m unittest discover deploy/db/tests -p 'test_job_outbox_integration.py' -v
+      - name: Verify synthetic physical basebackup and restore on separate CI server process
+        run: bash deploy/db/tests/physical_restore_ephemeral.sh
