@@ -30,6 +30,6 @@ IPAT (`IP@`) is a planned commercial multi-tenant ISP network operations platfor
 
 `crates/tenant-core` stores syntactic tenant IDs; `crates/authz-core` demonstrates pure policy checks and synthetic negative unit tests. `apps/control-api` exposes only loopback health and a fail-closed placeholder data path. No verified OIDC adapter, tenant database, CWMP/USP runtime or real device control has shipped.
 
-`apps/cwmp-gateway` and `apps/usp-controller` currently document **planned** Rust protocol boundaries.
+`crates/cwmp-protocol` adds **offline-only** bounded CWMP 1.0 Inform parsing and a pure response serializer, with synthetic tests. `apps/cwmp-gateway` still has no authenticated transport/session listener; `apps/usp-controller` remains planned. Device interoperability remains untested.
 
 After Rust is available: `cargo fmt --all -- --check && cargo test --workspace`; run local demo with `cargo run -p control-api`. See `docs/PROJECT_STATUS.md` for **actual** test results; never infer success solely from source presence.

@@ -4,6 +4,7 @@ members = [
   "apps/control-api",
   "crates/tenant-core",
   "crates/authz-core",
+  "crates/cwmp-protocol",
 ]
 
 [workspace.package]

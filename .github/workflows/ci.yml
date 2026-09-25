@@ -24,6 +24,16 @@ jobs:
         run: |
           rustup toolchain install 1.98.1 --profile minimal --component rustfmt
           rustup default 1.98.1
+      # TEMPORARY parser-branch lock refresh; remove after Cargo.lock is committed.
+      - name: Resolve parser dependency in disposable CI runner
+        run: cargo generate-lockfile
+      - name: Export refreshed Cargo.lock for branch commit
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: cwmp-cargo-lock
+          path: Cargo.lock
+          if-no-files-found: error
+          retention-days: 3
       - name: Verify formatting
         run: cargo fmt --all -- --check
       - name: Run locked unit tests
