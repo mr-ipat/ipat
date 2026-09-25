@@ -116,7 +116,9 @@ for x in json.load(sys.stdin).get("items",[]):
  s=x.get("status",{}); reasons=[]
  for cs in s.get("containerStatuses",[]):
   waiting=cs.get("state",{}).get("waiting",{})
+  last_exit=cs.get("lastState",{}).get("terminated",{})
   if waiting: reasons.append(waiting.get("reason","Unknown"))
+  if last_exit: reasons.append("lastExitCode="+str(last_exit.get("exitCode","unknown")))
  print("CI_POD_STATUS",x["metadata"]["namespace"],x["metadata"]["name"],
        s.get("phase","Unknown"), ",".join(reasons) or "none")
 ' || true
@@ -126,6 +128,39 @@ reasons=collections.Counter(x.get("reason","Unknown") for x in
  json.load(sys.stdin).get("items",[]))
 for reason,count in sorted(reasons.items()):
  print("CI_EVENT_REASON",reason,count)
+' || true
+  # Classify *known* CoreDNS log/event errors without printing arbitrary
+  # potentially sensitive logs, addresses, Kubeconfig, tokens or messages.
+  k -n kube-system logs deploy/coredns --previous --tail=60 2>/dev/null | python3 -c '
+import sys
+text=sys.stdin.read().lower()
+checks={
+ "COREDNS_PLUGIN_LOOP": ("plugin/loop" in text or "loop detected" in text),
+ "COREDNS_API_REFUSED": ("connection refused" in text),
+ "COREDNS_PERMISSION": ("permission denied" in text),
+ "COREDNS_NO_ROUTE": ("no route to host" in text),
+ "COREDNS_TIMEOUT": ("timeout" in text),
+ "COREDNS_PANIC": ("panic:" in text),
+ "COREDNS_FORWARD_ERROR": ("plugin/errors" in text),
+}
+for category,present in checks.items():
+ if present: print("CI_LOG_ERROR_CLASS",category)
+if not any(checks.values()): print("CI_LOG_ERROR_CLASS","UNCLASSIFIED")
+' || true
+  k get events -A -o json | python3 -c '
+import json,sys
+for event in json.load(sys.stdin).get("items",[]):
+ if event.get("reason") not in ("Failed","FailedCreatePodSandBox","BackOff"):
+  continue
+ message=event.get("message","").lower()
+ matches={
+  "CNI_PLUGIN": ("cni" in message or "flannel" in message),
+  "RUNTIME_PERMISSION": ("permission denied" in message or "operation not permitted" in message),
+  "NET_CONNECTION": ("connection refused" in message or "no route to host" in message),
+  "IMAGE_ERROR": ("image" in message or "pull" in message),
+ }
+ for category,present in matches.items():
+  if present: print("CI_EVENT_ERROR_CLASS",category)
 ' || true
   die 'CoreDNS not Ready within the disposable test deadline'
 fi
