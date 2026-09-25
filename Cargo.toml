@@ -9,6 +9,7 @@ members = [
   "crates/usp-core",
   "apps/usp-controller",
   "crates/firewall-policy",
+  "crates/diagnostic-core",
 ]
 
 [workspace.package]

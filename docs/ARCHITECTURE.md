@@ -234,6 +234,8 @@ Event input: physical/logical uplink status, OLT/PON/ONT signal/alarm, CPE Infor
 
 Tampilan memisahkan observasi aktual vs inferensi, provenance/age dan severity serta memberi manual review; tuning prediksi tidak termasuk S1.
 
+**R5.2 synthetic implementation:** `crates/diagnostic-core` enforces exact `TenantId`/POP/path on normalized observation batches, bounded event timestamps, positive multi-source prerequisites and contradictory-source/operator-review status. A caller-owned `topology_verified` assertion must come from an authorized future topology store; it is not trusted from device payloads or headers. No real device signal ingestion, calibrated inference or remediation exists yet. [Implementation/test scope](DIAGNOSTICS_R52.md).
+
 ## 8. K3s & heterogeneous scale path
 
 **Lab single node:** Ubuntu 26.04 LTS 16 vCPU, 64 GiB-class RAM, ~1 TB NVMe baseline *provisional* + backup eksternal. Docker Compose test optional (tidak dijadikan production HA). K3s single-server/dev untuk menguji charts/resource policy; database awal lokal/dev bukan HA.
