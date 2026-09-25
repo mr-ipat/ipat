@@ -133,3 +133,11 @@ ADR-017 and ADR-018 therefore remain OPEN/PROPOSED. QEMU user networking is labo
 ## 8. Cleanup
 
 All R5.7 clusters contain synthetic data only. After evidence collection, the disposable QEMU VMs, their temporary cluster token, copied snapshot and dedicated disposable SSH key must be powered off and removed from the Mac working directory. The official checksum-verified Ubuntu base image may be retained as a non-secret cache. No K3s token or snapshot is committed to Git.
+
+## 9. Verified merge and cleanup evidence
+
+- Feature PR #45 merged as `8e6f51714b4160a85d3d760ad3c142163445f4fb`; PR CI `36185362020` and post-merge main CI `36185478592` SUCCESS in all four jobs.
+- GitHub, Mac and actual Ubuntu 26.04.1 VPS source SHA matched. The live VPS passed 76 Rust offline tests, 42 existing lab static checks, 14 DB contracts and six R5.7 static safety tests while K3s/PostgreSQL/nftables remained inactive.
+- Encrypted exact merged-source Restic snapshot `2974580c` and selected privileged-root-config snapshot `abaa9827` separately restored with full pack-data verification.
+- After the QEMU evidence was captured, the synthetic K3s server-token copies, cross-host snapshots, dedicated disposable SSH private key and all secret-bearing QEMU overlay disks were deleted from the Mac lab directory. The official checksum-verified Ubuntu base image may remain as a non-secret cache.
+- This closes R5.7 laboratory evidence only. It does not change ADR-017/018 or authorize a live VPS K3s/firewall transaction.
