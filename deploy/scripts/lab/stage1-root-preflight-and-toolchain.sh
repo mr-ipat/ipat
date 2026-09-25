@@ -76,7 +76,18 @@ chmod 0600 "$backup/root-config.tar.gz"
 dpkg-query -W > "$backup/packages-before.tsv"
 chmod 0600 "$backup/packages-before.tsv"
 sha256sum "$backup/root-config.tar.gz" > "$backup/config.sha256"
+{
+  for account in openai root; do
+    echo "ACCOUNT=$account; context=synthetic-127.0.0.1 (not real source IP)"
+    /usr/sbin/sshd -T -C "user=$account,host=ipat.fadly.id,addr=127.0.0.1" |
+      grep -E '^(permitrootlogin|passwordauthentication|pubkeyauthentication|kbdinteractiveauthentication|allowtcpforwarding|maxauthtries) ' || true
+  done
+} > "$backup/effective-sshd-policy.txt"
+chmod 0600 "$backup/effective-sshd-policy.txt"
+install -d -o openai -g openai -m 0700 "$user_home/.cache/ipat"
+install -o openai -g openai -m 0600 "$backup/effective-sshd-policy.txt" "$user_home/.cache/ipat/stage1-sshd-policy.txt"
 echo "ROOT_BACKUP_CREATED=$backup"
+echo "SANITIZED_SSHD_POLICY_REPORT=$user_home/.cache/ipat/stage1-sshd-policy.txt"
 
 echo "APT_STAGE: refresh signed existing Ubuntu sources only"
 export DEBIAN_FRONTEND=noninteractive
