@@ -60,3 +60,14 @@ Use [the actual backup/restore report and provider firewall gate](../../../docs/
 ## R4.6 Nusa dual-stack ingress — observation only
 
 The provider screen reveals `allow-all` inbound IPv4 and **global IPv6**. FileVault is now independently confirmed ON, but a same-Mac Restic Keychain secret still needs independent escrow. [Staged rule-change/rollback design](../../../docs/NUSA_SECURITY_GROUP_R46.md). From the authorized Mac, run `bash deploy/scripts/lab/nusa-r46-gate-check.sh --report` to see a current `<MAC_IPv4>/32` **candidate only**, real global guest IPv6 and fresh strict SSH checks. Do not automatically apply this CIDR: the Mac's public ISP IP is not proven static. Do not edit a group shared with other Nusa resources; verify group attachments and test the VPS VNC console before any provider ACL action.
+
+
+## R4.7 — encrypted root configuration streaming, owner-interactive
+
+[Implementation and actual smoke/failure test evidence](../../../docs/ROOT_CONFIG_STREAM_R47.md). Mac-only `mac-root-config-backup.sh` drives `root-config-stream.py` through Restic's failure-aware `--stdin-from-command`. The **unprivileged** live SSH stream, encrypted snapshot, real isolated tar restore and negative producer-failure test have passed. **A real ROOT PRIVILEGED snapshot has NOT been taken**; it requires one local user-entered Linux sudo password from an interactive Mac Terminal after this exact reviewed code merges into private GitHub `main`:
+
+```bash
+bash ~/Projects/ipat-current/deploy/scripts/lab/mac-root-config-backup.sh --backup-root
+```
+
+This script will prompt for `ESCROW_CONFIRMED_AND_BACKUP_ROOT` and the Ubuntu `openai` sudo password **locally**. It deliberately **does not need Nusa VNC** to create the encrypted backup, and never changes a firewall or SSH rule. Its `--verify-root` operation will check an actual root-config snapshot *only after one exists*. Root host private SSH keys and future database/K3s data are excluded; do not describe this as full VPS recovery.

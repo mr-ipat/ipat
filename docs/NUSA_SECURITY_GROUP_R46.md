@@ -42,3 +42,8 @@ Official provider references:
 - [K3s official node/network requirements](https://docs.k3s.io/installation/requirements)
 
 **Execution status:** FileVault verification + encrypted partial/source restore PASS; confirmed current dual-stack security group **allows all inbound** in the shown Nusa interface; live VM IPv6 + dual-stack SSH listener PRESENT. Dedicated group creation, network ACL changes, full privileged config backup, independent password escrow, cross-source firewall tests, K3s and PostgreSQL still **NOT DONE**.
+
+
+## R4.7 updated actual owner assertions (2026-09-25)
+
+**Confirmed by owner:** `allow-all` is shared with other Nusa VPSs; actual VNC Console login still fails; Restic password is held separately off the Mac (not independently recovered/tested by the assistant). **DO NOT EDIT THE EXISTING SHARED GROUP**. Preserve all currently attached services while obtaining VNC rescue access and evidence that a **dedicated IPAT-only group** can replace the old assignment without allowing rule union. No provider firewall change or K3s install is authorized. The [separate encrypted root-config backup preparation](ROOT_CONFIG_STREAM_R47.md) does not require Nusa firewall changes.

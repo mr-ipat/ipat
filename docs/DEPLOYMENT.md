@@ -64,3 +64,6 @@
 
 
 **R4.6 (2026-09-25):** Owner screenshots and independent probes confirmed FileVault is now ON and current Nusa `allow-all` security-group inbound rules admit arbitrary IPv4 **and** IPv6; the VPS has global IPv6 and SSH bound on both families. The existing temporary Mac encrypted Restic backups were independently verified again after FileVault activation. [Proposed staged Nusa group change and rollback](NUSA_SECURITY_GROUP_R46.md) is **NOT APPLIED**: affected VM/group assignments, actual live VNC rescue login, static management CIDR, independently escrowed Restic secret and provider-managed IPv4+IPv6 firewall context remain unverified. No K3s/DB/ACS/USP public listener has been deployed.
+
+
+**R4.7 (2026-09-25):** Owner says actual Nusa VNC Console login has not succeeded, Restic password was stored outside the Mac and `allow-all` group is shared by multiple VPSs. No firewall/security-group mutation is allowed until independent recovery and per-VPS security-group design are verified. Prepared [fixed-purpose direct encrypted root configuration streaming with real unprivileged SSH, Restic isolated-restore and negative producer-failure tests](ROOT_CONFIG_STREAM_R47.md). The root-privileged capture requires the owner's local sudo prompt and is **NOT YET EXECUTED**, and full K3s/PostgreSQL storage recovery remains blocked.
