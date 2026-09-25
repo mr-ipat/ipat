@@ -61,3 +61,6 @@
 
 
 **R4.5 (2026-09-25):** Actual restic v0.19.1 encryption of prior PARTIAL config and canonical source on the separate Mac, with Keychain-only password command, read-all-packs integrity and isolated tar/sha256 restore, is recorded in [the actual lab backup and Nusa firewall report](LAB_BACKUP_NUSA_R45.md). Guest and external read-only network checks do not show provider Managed Firewall rules. FileVault is OFF, recovery secret is not separately escrowed, and root-only full config/DB/K3s datastore backups are not complete. K3s installation/host firewall/provider ACL modifications remain prohibited pending distinct recovery/network/ADR reviews.
+
+
+**R4.6 (2026-09-25):** Owner screenshots and independent probes confirmed FileVault is now ON and current Nusa `allow-all` security-group inbound rules admit arbitrary IPv4 **and** IPv6; the VPS has global IPv6 and SSH bound on both families. The existing temporary Mac encrypted Restic backups were independently verified again after FileVault activation. [Proposed staged Nusa group change and rollback](NUSA_SECURITY_GROUP_R46.md) is **NOT APPLIED**: affected VM/group assignments, actual live VNC rescue login, static management CIDR, independently escrowed Restic secret and provider-managed IPv4+IPv6 firewall context remain unverified. No K3s/DB/ACS/USP public listener has been deployed.

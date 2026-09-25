@@ -55,3 +55,8 @@ Run the *read-only* K3s prerequisite inventory with `bash deploy/scripts/lab/k3s
 ## R4.5 temporary encrypted Mac backup and Nusa firewall read-only assessment
 
 Use [the actual backup/restore report and provider firewall gate](../../../docs/LAB_BACKUP_NUSA_R45.md). Reviewed Mac-only scripts are `backup-mac-restic.sh --status|--backup-source|--backup-partial|--verify` and `nusa-readonly-network-check.sh --report`. A high-entropy restic passphrase is held only in the Mac Keychain; repository snapshots of the prior PARTIAL VPS config and canonical Git source passed isolated restore and full read-data integrity checks. **The Mac FileVault is OFF; no root-only VPS config, future PostgreSQL data or K3s datastore is backed up.** Actual Nusa Managed Firewall rules were NOT read, and no firewall/K3s change was made. Do not call this production disaster recovery.
+
+
+## R4.6 Nusa dual-stack ingress — observation only
+
+The provider screen reveals `allow-all` inbound IPv4 and **global IPv6**. FileVault is now independently confirmed ON, but a same-Mac Restic Keychain secret still needs independent escrow. [Staged rule-change/rollback design](../../../docs/NUSA_SECURITY_GROUP_R46.md). From the authorized Mac, run `bash deploy/scripts/lab/nusa-r46-gate-check.sh --report` to see a current `<MAC_IPv4>/32` **candidate only**, real global guest IPv6 and fresh strict SSH checks. Do not automatically apply this CIDR: the Mac's public ISP IP is not proven static. Do not edit a group shared with other Nusa resources; verify group attachments and test the VPS VNC console before any provider ACL action.
