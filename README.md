@@ -13,6 +13,7 @@ IPAT (`IP@`) is a planned commercial multi-tenant ISP network operations platfor
 - [Deployment/restore requirements](docs/DEPLOYMENT.md)
 - [Seven-day sprint backlog](docs/SPRINT_BACKLOG.md)
 - [Actual project status and verification evidence](docs/PROJECT_STATUS.md)
+- [2026-09-25 Ubuntu lab server read-only inspection](docs/LAB_SERVER_READ_ONLY_2026-09-25.md)
 
 **Authority:** The approved Project Master Brief is binding. In `DECISIONS.md`, `PROPOSED` and `OPEN` items require explicit approval/evidence. A documentation draft, test fixture or protocol placeholder does not imply implementation, certification, device support or production readiness.
 
