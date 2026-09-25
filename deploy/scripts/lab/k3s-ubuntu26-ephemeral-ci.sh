@@ -204,7 +204,12 @@ k -n ipat-ci-smoke exec dns-smoke -- nslookup kubernetes.default.svc.cluster.loc
 echo 'R56_EPHEMERAL_POD_AND_CLUSTER_DNS=PASS'
 
 # Embedded-etcd snapshot is ephemeral evidence, not independent production DR.
+# Snapshot client defaults to 127.0.0.1:6443; our CI-only supervisor is
+# intentionally bound to a distinct private address and port 16443. The
+# verified upstream v1.36.4 command's --etcd-server flag selects that endpoint.
+# The root-only token is discovered from --data-dir; never pass it in argv/logs.
 sudo "$lab_dir/k3s" etcd-snapshot save \
+  --etcd-server "https://$node_ip:16443" \
   --data-dir "$lab_dir/data" \
   --name ipat-ephemeral-smoke >/dev/null
 sudo find "$lab_dir/data/server/db/snapshots" -maxdepth 1 -type f \

@@ -58,7 +58,8 @@ class K3sUbuntu26DisposableSafety(unittest.TestCase):
             "Ready", "get deployment coredns", "coredns_deployment_found=0",
             "rollout status deploy/coredns", "wait --for=condition=Ready",
             "nslookup kubernetes.default.svc.cluster.local",
-            "etcd-snapshot save", "R56_EPHEMERAL_ETCD_SNAPSHOT_CREATED=PASS",
+            "etcd-snapshot save", "--etcd-server", "https://$node_ip:16443",
+            "R56_EPHEMERAL_ETCD_SNAPSHOT_CREATED=PASS",
             "R56_LIMITATION=ONE_DISPOSABLE_RUNNER_NOT_MULTI_NODE_HA_OR_OFFHOST_RESTORE",
         ):
             self.assertIn(expected, SOURCE)
