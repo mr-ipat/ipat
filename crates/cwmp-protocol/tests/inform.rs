@@ -87,10 +87,7 @@ fn rejects_other_soap_namespace() {
 
 #[test]
 fn rejects_unnegotiated_cwmp_version() {
-    let input = VALID.replace(
-        "urn:dslforum-org:cwmp-1-0",
-        "urn:dslforum-org:cwmp-1-2",
-    );
+    let input = VALID.replace("urn:dslforum-org:cwmp-1-0", "urn:dslforum-org:cwmp-1-2");
     assert_eq!(parse_inform(&input), Err(ParseError::WrongMethod));
 }
 
@@ -103,7 +100,10 @@ fn rejects_duplicate_device_identity() {
 #[test]
 fn rejects_missing_serial_number() {
     let input = VALID.replace("<SerialNumber>SN-TEST</SerialNumber>", "");
-    assert_eq!(parse_inform(&input), Err(ParseError::Missing("SerialNumber")));
+    assert_eq!(
+        parse_inform(&input),
+        Err(ParseError::Missing("SerialNumber"))
+    );
 }
 
 #[test]
@@ -131,7 +131,10 @@ fn rejects_deeply_nested_xml() {
 #[test]
 fn rejects_invalid_retry_count() {
     let input = VALID.replace("<RetryCount>0</RetryCount>", "<RetryCount>-1</RetryCount>");
-    assert_eq!(parse_inform(&input), Err(ParseError::InvalidField("RetryCount")));
+    assert_eq!(
+        parse_inform(&input),
+        Err(ParseError::InvalidField("RetryCount"))
+    );
 }
 
 #[test]

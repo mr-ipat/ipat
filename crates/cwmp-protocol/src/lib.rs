@@ -43,9 +43,7 @@ fn optional_child<'a, 'input>(
     local: &'static str,
 ) -> Result<Option<Node<'a, 'input>>, ParseError> {
     let mut matches = parent.children().filter(|n| {
-        n.is_element()
-            && n.tag_name().namespace() == namespace
-            && n.tag_name().name() == local
+        n.is_element() && n.tag_name().namespace() == namespace && n.tag_name().name() == local
     });
     let first = matches.next();
     if matches.next().is_some() {
@@ -106,8 +104,7 @@ pub fn parse_inform(xml: &str) -> Result<Inform, ParseError> {
     }
 
     let envelope = doc.root_element();
-    if envelope.tag_name().namespace() != Some(SOAP_NS)
-        || envelope.tag_name().name() != "Envelope"
+    if envelope.tag_name().namespace() != Some(SOAP_NS) || envelope.tag_name().name() != "Envelope"
     {
         return Err(ParseError::WrongEnvelope);
     }
@@ -145,8 +142,8 @@ pub fn parse_inform(xml: &str) -> Result<Inform, ParseError> {
     if body.children().filter(|n| n.is_element()).count() != 1 {
         return Err(ParseError::WrongMethod);
     }
-    let inform = optional_child(body, Some(CWMP_10_NS), "Inform")?
-        .ok_or(ParseError::WrongMethod)?;
+    let inform =
+        optional_child(body, Some(CWMP_10_NS), "Inform")?.ok_or(ParseError::WrongMethod)?;
 
     let device_id = required_child(inform, None, "DeviceId")?;
     let manufacturer = text_field(device_id, None, "Manufacturer", false)?;
