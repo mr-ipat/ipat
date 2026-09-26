@@ -12,6 +12,9 @@ use axum::{
 const LAB_INDEX: &str = include_str!("../../../web/lab/index.html");
 const LAB_CSS: &str = include_str!("../../../web/lab/style.css");
 const LAB_JS: &str = include_str!("../../../web/lab/app.js");
+const LAB_DASHBOARD_PREVIEW: &str = include_str!("../../../web/lab/dashboard-preview.html");
+const LAB_DASHBOARD_CSS: &str = include_str!("../../../web/lab/dashboard-preview.css");
+const LAB_DASHBOARD_JS: &str = include_str!("../../../web/lab/dashboard-preview.js");
 // Public project target taxonomy only. Not an enrollment record or real device data.
 const LAB_DEVICE_TARGETS: &str = include_str!("../../../web/lab/device-targets.json");
 const LAB_STATUS: &str = r#"{"mode":"ssh-loopback-only","production_access":false,"authentication_enabled":false,"device_operations_enabled":false,"backend":"online"}"#;
@@ -66,6 +69,27 @@ async fn lab_js() -> (HeaderMap, &'static str) {
     )
 }
 
+async fn lab_dashboard_preview() -> (HeaderMap, Html<&'static str>) {
+    (
+        private_lab_headers("text/html; charset=utf-8"),
+        Html(LAB_DASHBOARD_PREVIEW),
+    )
+}
+
+async fn lab_dashboard_css() -> (HeaderMap, &'static str) {
+    (
+        private_lab_headers("text/css; charset=utf-8"),
+        LAB_DASHBOARD_CSS,
+    )
+}
+
+async fn lab_dashboard_js() -> (HeaderMap, &'static str) {
+    (
+        private_lab_headers("text/javascript; charset=utf-8"),
+        LAB_DASHBOARD_JS,
+    )
+}
+
 async fn lab_status() -> (HeaderMap, &'static str) {
     (
         private_lab_headers("application/json; charset=utf-8"),
@@ -80,9 +104,29 @@ async fn lab_device_targets() -> (HeaderMap, &'static str) {
     )
 }
 
+async fn unauthenticated_business_api() -> (HeaderMap, StatusCode) {
+    // No OIDC verifier, verified tenant membership, or permission to reveal
+    // even aggregate business information yet. NEVER trust role/tenant headers.
+    let mut h = HeaderMap::new();
+    h.insert(header::CACHE_CONTROL, HeaderValue::from_static("no-store"));
+    (h, StatusCode::UNAUTHORIZED)
+}
+
 fn app_with_lab(lab_web_enabled: bool) -> Router {
     let api = Router::new()
         .route("/healthz", get(|| async { "ok" }))
+        .route(
+            "/v1/platform/{*path}",
+            axum::routing::any(unauthenticated_business_api),
+        )
+        .route(
+            "/v1/tenant/{*path}",
+            axum::routing::any(unauthenticated_business_api),
+        )
+        .route(
+            "/v1/operations/{*path}",
+            axum::routing::any(unauthenticated_business_api),
+        )
         .route(
             "/v1/devices/{device_id}",
             get(|| async {
@@ -97,6 +141,9 @@ fn app_with_lab(lab_web_enabled: bool) -> Router {
             .route("/lab/app.js", get(lab_js))
             .route("/lab/status", get(lab_status))
             .route("/lab/device-targets", get(lab_device_targets))
+            .route("/lab/dashboard-preview", get(lab_dashboard_preview))
+            .route("/lab/dashboard-preview.css", get(lab_dashboard_css))
+            .route("/lab/dashboard-preview.js", get(lab_dashboard_js))
     } else {
         api
     }
@@ -170,6 +217,9 @@ mod tests {
             "/lab/app.js",
             "/lab/status",
             "/lab/device-targets",
+            "/lab/dashboard-preview",
+            "/lab/dashboard-preview.css",
+            "/lab/dashboard-preview.js",
         ] {
             let response = get_path(app(), uri).await;
             assert_eq!(response.status(), StatusCode::NOT_FOUND, "{uri}");
@@ -228,6 +278,71 @@ mod tests {
             .await
             .unwrap();
         assert_eq!(response.status(), StatusCode::METHOD_NOT_ALLOWED);
+    }
+
+    #[tokio::test]
+    async fn all_real_business_api_calls_deny_even_with_forged_tenant_role_and_host() {
+        for path in [
+            "/v1/platform/overview",
+            "/v1/platform/tenants",
+            "/v1/tenant/overview",
+            "/v1/tenant/subscribers",
+            "/v1/operations/overview",
+            "/v1/operations/devices",
+        ] {
+            for method in ["GET", "POST", "DELETE"] {
+                let response = app_with_lab(true)
+                    .clone()
+                    .oneshot(
+                        Request::builder()
+                            .method(method)
+                            .uri(path)
+                            .header("Authorization", "Bearer forged.lab.identity")
+                            .header("X-Tenant-Id", "wrong-tenant")
+                            .header("X-Verified-Role", "platform_owner")
+                            .header("Host", "other-tenant.invalid")
+                            .body(Body::empty())
+                            .unwrap(),
+                    )
+                    .await
+                    .unwrap();
+                assert_eq!(
+                    response.status(),
+                    StatusCode::UNAUTHORIZED,
+                    "{method} {path}"
+                );
+                assert_eq!(response.headers()[header::CACHE_CONTROL], "no-store");
+            }
+        }
+    }
+
+    #[tokio::test]
+    async fn all_three_preview_assets_are_private_and_never_enable_real_api() {
+        for (uri, mime) in [
+            ("/lab/dashboard-preview", "text/html; charset=utf-8"),
+            ("/lab/dashboard-preview.css", "text/css; charset=utf-8"),
+            (
+                "/lab/dashboard-preview.js",
+                "text/javascript; charset=utf-8",
+            ),
+        ] {
+            let response = get_path(app_with_lab(true), uri).await;
+            assert_eq!(response.status(), StatusCode::OK);
+            assert_eq!(response.headers()[header::CONTENT_TYPE], mime);
+            assert_eq!(response.headers()[header::CACHE_CONTROL], "no-store");
+            assert!(response.headers()["content-security-policy"]
+                .to_str()
+                .unwrap()
+                .contains("default-src 'none'"));
+            assert_eq!(
+                get_path(app_with_lab(false), uri).await.status(),
+                StatusCode::NOT_FOUND
+            );
+        }
+        assert!(LAB_DASHBOARD_PREVIEW.contains("Pengalih ini hanya mengganti tampilan"));
+        assert!(!LAB_DASHBOARD_JS.contains("document.cookie"));
+        assert!(!LAB_DASHBOARD_JS.contains("localStorage"));
+        assert!(!LAB_DASHBOARD_PREVIEW.contains("type=\"password\""));
     }
 
     #[tokio::test]

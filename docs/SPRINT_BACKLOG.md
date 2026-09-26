@@ -323,3 +323,53 @@ Build original Rust `control-api` and separate synthetic `usp-controller` into n
   and certificate rotation drills.
 - LATER: firmware and mass writes
   after approvals/recovery tests.
+
+### R6.8 tiga dashboard lab yang bisa diperiksa
+
+- MUST LAB: tiga halaman
+  visual platform, tenant
+  dan NOC, fixture jelas
+  sintetis, tidak menyimpan
+  role/cookie/API access,
+  akses hanya melalui
+  private Mac SSH tunnel
+  nonroot.
+- MUST SECURITY LAB:
+  backend /v1/platform,
+  /v1/tenant dan
+  /v1/operations fail
+  closed (401) termasuk
+  header palsu semua
+  metode; pure Rust
+  role/POP policy
+  negatif lintas tenant,
+  tanpa bulk-write.
+- MUST NEXT: IdP
+  OIDC/MFA plus verified
+  tenant membership/domain,
+  real backend-protected
+
+  menu/route policy dan
+  audit, database RLS
+  + isolated subscriptions,
+  baru buat dashboard
+  tenant sungguhan.
+- MUST NEXT: sambungkan
+  inventaris/ACS/USP
+  yang identitas dan
+  model/firmware perangkatnya
+  telah diuji agar
+  operasional bukan
+  status contoh.
+- SHOULD: saat ADR-006
+  disetujui, frontend
+  Next.js/TypeScript
+  modular, komponen
+  desain dan E2E
+  test pada domain tenant.
+- LATER: billing,
+  topology real-time
+  dan multi-vendor
+  automasi berisiko
+  dengan approval
+  dan rollback.
