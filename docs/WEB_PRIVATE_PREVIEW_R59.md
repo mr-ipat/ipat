@@ -104,3 +104,27 @@ local web preview is **not evidence** that any of these external gates passed.
 See `docs/PROJECT_STATUS.md` for dated milestone evidence. Do not claim
 public website readiness until a real, authorized, identity-protected URL has
 been independently checked from an external client.
+
+## R5.9 reviewed feature source proof (pre-docs-merge)
+
+- [PR #49](https://github.com/mr-ipat/ipat/pull/49) merged to private main
+  `466ffcb67a87ba3f88330f26a13cebda5d624e7d`; actual GitHub four-job
+  PR CI `36210434210` SUCCESS, including disposable Ubuntu 26.04 real K3s
+  and synthetic PostgreSQL jobs. The new UI is opt-in only under SSH loopback,
+  never deployed as public K3s ingress.
+- On actual unchanged Ubuntu VPS with this feature source, Rust format and
+  **81/81 locked offline Rust tests**, **42+6+6+6 lab static**,
+  **14 DB static** and **5 production gate static** tests PASS; K3s,
+  PostgreSQL and nftables remain INACTIVE. Independent real temporary
+  nonprivileged private HTTP smoke proved HTML/JS/CSS, CSP, status flags,
+  anonymous 401, unsupported POST 405 and exclusive `127.0.0.1:3000`
+  listener, with test process subsequently cleaned up.
+- Mac FileVault ON; encrypted reviewed-feature-source Restic snapshot
+  `8c40ccec` and historical selected privileged-root config snapshot
+  `abaa9827` independently recovered with full Restic pack read PASS,
+  plaintext test restores removed. Real Mac tunnel and final exact
+  documentation-merge source backup need fresh execution and reporting.
+  Post-feature-main CI `36210550883` independently returned SUCCESS for
+  all four jobs. Final tunnel evidence and docs-only merge/source backup
+  remain pending at this checkpoint. Neither provides production
+  login/domain/OOB/DB HA readiness.
