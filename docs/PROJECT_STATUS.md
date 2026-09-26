@@ -1180,3 +1180,38 @@ Added `deploy/scripts/lab/r61/test_r61_tls.py` with an ephemeral locally generat
   C320 packets or firmware
   writes were made. Commercial
   and field acceptance NO_GO.
+
+
+## R7.2 final main-CI verification — 2026-09-26
+
+- Private GitHub main and clean owner Mac checkout were verified at
+  `51763be13a7934f1e2e75a483a5adcf3853fdfcb`, merged PR #75.
+- Independent GitHub main Actions run `36251850735` finished SUCCESS:
+  `unit-tests`, `postgres-rls-restore`,
+  `postgres-physical-recovery-lab` and
+  `k3s-ubuntu26-disposable` all SUCCESS in isolated CI.
+- This is CI evidence for an **offline** firmware hash guard, NOT
+  physical OLT firmware verification, production deployment or a new
+  offsite post-merge backup. Firmware execution remains DISABLED.
+
+## R7.3 — offline C320 configured/real board alias correctness
+
+- Historical vendor-manual-shaped **synthetic** text exposed a
+  compatibility-of-format problem: version MVR may use CfgType
+  while card inventory has a distinct RealType at the same slot.
+- Shared Rust parser now preserves both card names; the offline importer
+  requires MVR to match EITHER observed name **at the exact slot**.
+  Unrelated names, incorrect slots and boot-only records are denied.
+- Changes: `crates/olt-core/src/lib.rs`,
+  `crates/olt-core/src/bin/c320-offline-review.rs`,
+  `crates/olt-core/tests/c320_fixture.rs`,
+  `deploy/scripts/lab/r71/test_r71_offline_cli.py`,
+  `docs/C320_BOARD_ALIAS_R73.md` and this status/deviation ledger.
+- Executed on owner Mac: 5/5 existing R7.1 static Python contracts PASS,
+  Python compile PASS, `git diff --check` PASS. Mac has no
+  accessible `cargo`; Rust and offline Rust-CLI tests require
+  independent CI. Do NOT count them passed before actual run.
+- DEV-01 TC-OLT-01 stays NOT RUN/untested. No SSH/OLT network
+  connection, firmware upload, firewall, VPS service or database change.
+  Missing exact physical boards/build, approved trusted private access,
+  independent recovery and verified vendor firmware/rollback remain blockers.

@@ -1,6 +1,6 @@
 use olt_core::{
-    parse_cards, parse_running_versions, review_firmware, CardStatus, Disposition, EvidenceError,
-    FirmwareReview, READ_COMMANDS, WRITE_ENABLED,
+    consistent_inventory, parse_cards, parse_running_versions, review_firmware, CardStatus,
+    Disposition, EvidenceError, FirmwareReview, READ_COMMANDS, WRITE_ENABLED,
 };
 const CARDS:&str = "ZXAN#show card\nRack Shelf Slot CfgType RealType Port HardVer SoftVer Status\n-------------------------\n1 1 1 GTGO GTGOG 8 120301 V2.0.0 INSERVICE\n1 1 3 SMXA SMXA 0 110702 V2.0.0 INSERVICE\n1 1 4 SMXA SMXA 0 110702 V2.0.0 STANDBY\n";
 const VERSIONS:&str = "ZXAN#show version-running\nPhyLoc FileType VerType VerTag BuildTime VerLength\n--------------------------------------------\n1/1/11 SCXL MVR V1.2.5 2013-01-07 11:18:49 8144910\n1/1/11 SCXL BT V1.0.0 2012-08-01 16:04:46 448032\n";
@@ -14,6 +14,7 @@ fn extracts_bounded_card_inventory_from_synthetic_vendor_format() {
     let cards = parse_cards(CARDS).unwrap();
     assert_eq!(cards.len(), 3);
     assert_eq!(cards[0].location, "1/1/1");
+    assert_eq!(cards[0].configured_type, "GTGO");
     assert_eq!(cards[0].card_type, "GTGOG");
     assert_eq!(cards[1].status, CardStatus::InService);
     assert_eq!(cards[2].status, CardStatus::Standby);
@@ -98,4 +99,43 @@ fn firmware_stays_blocked_until_every_attestation_is_observed_and_approved() {
         Disposition::Blocked("no independent approval")
     );
     // Even all booleans true never produces firmware commands or executable action.
+}
+
+#[test]
+fn c320_configured_and_real_board_names_may_differ_but_never_match_other_slots() {
+    // Historical manual-shaped SYNTHETIC text; NOT an actual DEV-01 capture.
+    let cards = parse_cards(
+        "Rack Shelf Slot CfgType RealType Port HardVer SoftVer Status\n\
+         1 1 1 ETGO ETGOD 8 091201 V1.2.5P2 INSERVICE\n\
+         1 1 3 SMXA SMXA 0 110701 V1.2.5P2 STANDBY\n",
+    )
+    .unwrap();
+    let valid = "PhyLoc FileType VerType VerTag BuildTime VerLength\n\
+                 1/1/1 ETGO MVR V1.2.5P2 2013-08-27 23:36:54 5008113\n\
+                 1/1/3 SMXA MVR V1.2.5P2 2013-08-28 07:15:09 13982546\n";
+    assert_eq!(cards[0].configured_type, "ETGO");
+    assert_eq!(cards[0].card_type, "ETGOD");
+    assert!(consistent_inventory(
+        &cards,
+        &parse_running_versions(valid).unwrap()
+    ));
+    let wrong_board = valid.replace("ETGO MVR", "UNRELATED MVR");
+    assert!(!consistent_inventory(
+        &cards,
+        &parse_running_versions(&wrong_board).unwrap()
+    ));
+    let wrong_slot = valid.replace("1/1/1 ETGO MVR", "1/1/4 ETGO MVR");
+    assert!(!consistent_inventory(
+        &cards,
+        &parse_running_versions(&wrong_slot).unwrap()
+    ));
+    let no_mvr = valid.replace("ETGO MVR", "ETGO BT");
+    assert!(!consistent_inventory(
+        &cards,
+        &parse_running_versions(&no_mvr).unwrap()
+    ));
+    assert!(!consistent_inventory(
+        &[],
+        &parse_running_versions(valid).unwrap()
+    ));
 }
