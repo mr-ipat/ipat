@@ -203,7 +203,7 @@ jobs:
             https://get.helm.sh/helm-v3.21.3-linux-amd64.tar.gz \
             -o "$helm_temp/helm.tar.gz"
           printf '%s  %s\n' \
-            76d0db4730b05d3d625eee11e80f0721b32b4d8422f4e5d093de6337bf3ac9f8 \
+            15e041a93a590dce8100f39385cd98c84a765c9e36aeeb9e2dc6ff9e4769e2e0 \
             "$helm_temp/helm.tar.gz" | sha256sum --check --status
           tar -xz -C "$helm_temp" -f "$helm_temp/helm.tar.gz" linux-amd64/helm
           sudo install -m 0755 "$helm_temp/linux-amd64/helm" /usr/local/bin/helm
