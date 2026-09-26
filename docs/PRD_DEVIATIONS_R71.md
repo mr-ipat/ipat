@@ -39,6 +39,17 @@ perubahan tetap tunduk FR-017, RBAC/ABAC dan approval PRD.
 - Ketiga dashboard privat menampilkan banner MERAH BESAR tentang
   ketidaksiapan nyata, TC-OLT-01 dan upgrade firmware tertahan.
 
+## R7.2 batas tambahan yang sudah diuji — bukan pemenuhan firmware
+
+Pemeriksa SHA-256 lokal baru dapat menerima berkas operator
+pribadi dan menghitung kecocokan terhadap checksum **yang
+dipindahkan operator sendiri**. Ini bukan autentisitas vendor,
+kecocokan kartu, bukti firmware target atau izin upgrade.
+Program tidak memiliki koneksi atau aktuator jaringan.
+Banner merah pada ketiga pratinjau dashboard tetap berlaku
+meskipun tes ini hijau. Lihat
+[C320_FIRMWARE_INTEGRITY_R72.md](C320_FIRMWARE_INTEGRITY_R72.md).
+
 ## Gerbang agar satu unit C320 bisa benar-benar diuji
 
 1. Dapatkan akses pemilik yang disetujui, verifikasi unit fisik DEV-01

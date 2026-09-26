@@ -461,3 +461,35 @@ Build original Rust `control-api` and separate synthetic `usp-controller` into n
   scope and tests, official image provenance, per-card compatibility,
   service impact and onsite rollback, independent maker-checker.
   No implementation or execution approval for firmware today.
+
+### R7.2 C320 firmware preflight / field dependency
+
+- MUST offline delivered: owner-private
+  fixed file names/modes, no link
+  SHA-256 check with explicit
+  opt-in and no firmware actuator;
+  nine synthetic positive/negative
+  contract tests and CI.
+- MUST physical read next: actual
+  owner-authorized direct trusted
+  C320 management, read-only chassis/
+  cards/running versions and basic
+  safe POP/tenant context; capture
+  real redacted evidence in private
+  operator files, not Git/chat.
+- MUST prior to any firmware pilot:
+  official release notes for exact
+  control/uplink/PON cards, licensed
+  image provenance, signed vendor
+  artifact if offered and independently
+  verified hashes; real configuration
+  recovery, spare rollback path,
+  healthy alarm/customer traffic
+  baseline, two independent human
+  approvals and approved outage window.
+
+- Firmware execution remains LATER,
+  separate ADR/security review and
+  explicit per-device authorization.
+  Do not use unproven old vendor CLI
+  commands for current actual firmware.
