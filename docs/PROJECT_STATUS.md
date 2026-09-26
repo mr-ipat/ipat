@@ -1,9 +1,8 @@
 # IPAT — Project Status
 
 **As-of:** 2026-09-26 Asia/Jakarta
-**Milestone:** R6.1 — DEV-08 owner-reported MikroTik RB951Ui-2HnD, RouterOS 7.23.7; guarded first read-only test prepared, real connection NOT YET RUN
-**Milestone state:** R6.0 feature PR #51 MERGED to private GitHub `main` `2184cda657bea315de455e8e9249c82aba8e55e4`. Feature PR CI `36219353933` SUCCESS on all four jobs, including real disposable Ubuntu 26.04 K3s app/readiness/network-policy denial and both synthetic PostgreSQL recovery jobs. Original Rust loopback-only lab adds exactly eight planned initial device target slots; browser and JSON explicitly declare **ZERO** actual physical devices and ZERO interoperability evidence; default and K3s-bound routes stay unavailable. Strict offline validator writes owner-only non-secret unapproved staging files outside Git and never touches devices. Private GitHub/Mac/actual unchanged Ubuntu 26.04.1 VPS canonical source SHA matched; actual VPS format and **83/83 locked offline Rust tests**, **42 existing lab**, **6 R5.7**, **6 R5.8**, **6 R5.9**, **6 R6.0**, **14 DB static**, **5 production gate static** tests all PASS. Actual VPS K3s/PostgreSQL/nftables INACTIVE. Mac FileVault ON; encrypted exact feature-main source Restic snapshot `4b2a0b99` independently isolated SHA-256 restored, plus independently selected privileged root-readable config snapshot `abaa9827` separately recovered and complete Restic packs read PASS; NOT full VPS/datastore recovery. Post-feature-main CI `36219447245` independently returned SUCCESS on all four jobs. Final docs-only CI/SHA/backup and Mac live browser test remain to be independently completed and posted as final PR evidence. Actual physical model/firmware/board, explicit equipment-owner permission and safe isolated lab connectivity remain unavailable; all physical devices UNTESTED. No external provider firewall integrations, real OIDC, device writes or production K3s install. Developer Mr. iPat.
-**Milestone evidence checkpoint:** R6.1 reviewed feature PR #53 MERGED to private GitHub `main` `dcacc1a5e93e04b5ce58d43a34b168b231d42da3`; feature CI `36221642643` completed SUCCESS across all four jobs including real disposable Ubuntu 26.04 K3s pod/network-policy and ephemeral PostgreSQL recovery checks. DEV-08 RB951Ui-2HnD / RouterOS 7.23.7 is owner-REPORTED only; zero actual physical devices have been connected or enrolled by IPAT. On authorized Mac and on real unchanged Ubuntu 26.04.1 VPS, eleven guarded probe tests passed including a genuine ephemeral localhost-synthetic TLS CA/SAN success and wrong-name certificate rejection, and the original R6.0 tests passed. Actual VPS clean Git main exact SHA matched GitHub/Mac; 83 locked/offline Rust tests, 11 R6.1, 6 R6.0, 42 other lab and 14 DB static contracts PASS. The exact reviewed feature source Mac Restic snapshot `74308479` was independently isolated SHA-256 restored; selected privileged-root configuration encrypted snapshot `abaa9827` independently restored; complete encrypted Restic pack read PASS. Original SSH-only browser was restarted from reviewed main on actual VPS and Mac; real Mac-to-VPS HTTP proves DEV-08 owner-report and zero physical enrollment with direct POST denial and anonymous protected data 401. GitHub post-feature-main CI `36221754351` subsequently returned SUCCESS in all four independent jobs; final docs SHA backup remains PENDING at this checkpoint. Physical router identity/isolated route/certificate, real login/read and human evidence review remain NOT RUN. Existing live VPS K3s/PostgreSQL/nftables still INACTIVE; no external/shared provider firewall integration or production OIDC/write feature is represented. Developer Mr. iPat.
+**Milestone:** R6.2 — independent Rust RouterOS DEV-08 read-only domain normalization + cross-language private evidence validation; owner's actual router physically UNTESTED.
+**Milestone state:** R6.2 feature implementation under Git review. Previous R6.1 private GitHub/Mac/actual Ubuntu 26.04.1 VPS exact clean `main` SHA `35eda016c5fce55a73b33298bf472b0a5c57864a`, final four-job CI `36221968613` SUCCESS, exact source Restic `eb439ff7` and root-readable selected config `abaa9827` independently restored. Current R6.2 isolated unprivileged actual Ubuntu 26.04.1 checkout: **99** offline Rust workspace tests, 12 R6.1 Python synthetic/negative tests, plus Python-to-Rust synthetic redacted-evidence end-to-end CLI PASS; no real router connection. R6.2 reviewed merge/final CI/backup still pending at this checkpoint. DEV-08 exact model/firmware remain owner reported and physically unverified, **zero physical devices enrolled**, no production OIDC, no K3s/PostgreSQL/nftables activation, no provider firewall integration. Operator-Mac private router-lab config directory is absent, so real HTTPS physical read remains blocked by missing verified isolated route, certificate, restricted identity and independent permission/recovery evidence. Developer: Mr. iPat.
 
 ## 1. Source of truth and provenance
 
@@ -596,3 +595,69 @@ Added `deploy/scripts/lab/r61/test_r61_tls.py` with an ephemeral locally generat
 - The authorized Mac restarted the original loopback-only Rust browser/tunnel against matching source and verified real HTTP from the Mac for `GET /lab`, local JS, CSP, exact reported DEV-08 model/RouterOS, zero enrolled physical devices, POST rejection 405 and unauthenticated real device endpoint 401. This is **not** actual router traffic.
 - Fresh encrypted exact feature-main Restic source snapshot `74308479` passed independently isolated SHA-256 restore and complete encrypted pack read; separately existing selected privileged root-readable snapshot `abaa9827` passed isolated recovery. This still is **not** independently rebuilt complete VPS, real production HA/PITR or OOB recovery.
 - Physical TC-ROS-03 remains NOT RUN until the operator supplies a separate approved isolated Mac route to the actual customer router, independent trusted CA + restricted single-purpose REST identity locally, and explicit test permission and recovery. None of these sensitive artifacts go into Git or chat.
+
+## 36. R6.2 — native Rust read-only RouterOS domain and private evidence bridge (pre-CI)
+
+- Source baseline: previous clean, synchronised private GitHub/Mac/
+  actual Ubuntu 26.04.1 VPS main SHA
+  `35eda016c5fce55a73b33298bf472b0a5c57864a`, four-job
+  post-docs-main CI `36221968613` fully successful, encrypted
+  exact prior source Restic snapshot `eb439ff7` independently
+  restored. Real owner-RB951 remains **NOT CONNECTED** and
+  test TC-ROS-03 NOT RUN.
+- Added original `crates/routeros-core` Rust crate to
+  workspace with pinned `serde`/`serde_json` lockfile
+  using available offline cached dependencies. The first
+  attempted `serde/derive` dependency was not cached on
+  the actual Ubuntu checkout; unnecessary derive feature
+  removed before tests rather than silently accessing the
+  Internet. Strict bounded field and duplicate validator
+  strips unapproved response fields and allows only
+  operator-reported DEV-08 RB951Ui-2HnD/mipsbe/7.23.7,
+  optionally the same build with stable/long-term suffix.
+  All outputs stay `UnreviewedInventory` without a
+  verified-tenant or privileged constructor.
+- Added distinct closed-schema `routeros-core::evidence`
+  parser for PRIVATE sanitized R6.1 operator-local
+  proof, rejecting redacted evidence with unexpected
+  serial/secret/unknown fields, duplicate JSON fields,
+  unapproved method/path, invalid identity/version,
+
+  fabricated enrollment, self-declared approval or tenant
+  claims. Added `routeros-lab-evidence` offline CLI with
+  owner-only file-mode/private path checks and no network
+  operations. The CLI explicitly reports syntactic schema
+  success is **NOT** a real-device authenticity proof.
+- Enhanced the original R6.1 Python HTTPS one-GET sanitizer
+  for the identical narrow RouterOS version suffix policy
+  while retaining RFC1918, separate TLS hostname/CA,
+  dedicated mode-0600 credentials and two manual real
+  network-access opt-ins. Added synthetic cross-contract
+  script that constructs fake raw serial/password/IP fields,
+  drops them in Python and verifies Rust staged evidence,
+  then checks forged tenant and injected serial files are
+  rejected. NO actual device address, password or customer
+  data is needed, read or written by this suite.
+- On an **isolated nonprivileged actual Ubuntu 26.04.1 VPS
+  checkout**, initial `cargo test --workspace --locked
+  --offline` reported **99/99 Rust tests PASS** (previous
+  83 plus 15 routeros-core unit + 1 independent offline
+  CLI integration), **12/12 R6.1 Python tests PASS**,
+  and independently invoked actual Python-to-Rust
+  offline synthetic cross-contract **PASS**. This is
+  code-level test evidence only; final reviewed GitHub
+  CI, exact merge SHA, final source backup and Mac
+  preview rollout remain pending at this checkpoint.
+- Actual authorized Mac's
+
+  `~/.local/share/ipat/router-lab/` directory was absent
+  during a read-only filename/mode preflight. Do not
+  invent a target management IP, certificate, account,
+  operator approval or non-disruptive backup. Real
+  router probing remains blocked until the operator
+  prepares verified facts locally and separately
+  authorizes the first controlled GET. Public production
+  K3s/PostgreSQL/nftables/network recovery gates unchanged.
+  This new independent crate is within the existing
+  modular-monolith ADR-003 design; DECISIONS.md unchanged
+  because no new architecture decision was approved.

@@ -275,3 +275,17 @@ customer login or automatic enrollment are in this first acceptance.
 Actual observed status cannot be promoted until human reviewer signs
 off identity/tenant permission and the read evidence. Synthetic
 negative tests alone must not pass physical TC-ROS-03.
+
+### R6.2 native Rust RouterOS normalization acceptance (lab-only)
+
+The initial customer RouterOS DEV-08 target may pass its first
+**offline parser** acceptance only when the original Rust
+`routeros-core` consumes the bounded expected read-only
+/system/resource shape, verifies RB951Ui-2HnD/mipsbe/7.23.7
+(with narrowly permitted release-channel suffix), rejects
+duplicate/oversized/ambiguous response data, and emits no
+sensitive/router-auth fields. A separate closed-schema staged
+evidence parser must interoperate with the prior Python
+allowlist-only first-GET helper without elevating the evidence.
+This is not TC-ROS-03 actual physical acceptance and grants
+no dashboard login, trusted tenant binding or configuration rights.

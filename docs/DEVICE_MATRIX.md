@@ -102,3 +102,17 @@ Twelve `usp-core` in-memory synthetic enrollment, tenant/peer-spoof, replay, mal
 ## R6.1 customer router update (NOT a physical compatibility result)
 
 Operator reported RB951Ui-2HnD with RouterOS 7.23.7 for DEV-08. Hardware board revision, dedicated restricted account, verified private management reachability and trusted HTTPS certificate remain unverified. The single read-only R6.1 probe must pass independently; a local successful probe remains unreviewed evidence until the authorized test record and tenant assignment are separately checked. All physical matrix test results remain NOT RUN and compatibility UNTESTED. See `MIKROTIK_CUSTOMER_R61.md`.
+
+## R6.2 DEV-08 native Rust offline normalization (still NOT RUN physically)
+
+The new `crates/routeros-core` crate and independent Python-Rust
+redacted-evidence synthetic contract are implementation and
+simulator test evidence only. Exact operator-reported DEV-08
+RB951Ui-2HnD / RouterOS 7.23.7 remains `untested`
+physically: Mac has no established private router-lab config,
+verified lab management route, dedicated user/TLS CA or safe
+authorized device transcript. A syntactically valid
+`UnreviewedInventory` or mode-0600 staged evidence file is
+never equivalent to owner permission, device identity, live
+compatibility or verified tenant assignment. Physical
+TC-ROS-03 remains NOT RUN. [R6.2 scope](ROUTEROS_RUST_R62.md).
