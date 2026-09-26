@@ -133,3 +133,20 @@ is required; actual hardware test TC-ROS-03 remains NOT RUN,
 physical registration ZERO and the owner-reported
 RB951Ui-2HnD/7.23.7 tuple UNTESTED. See
 [the R6.3 independent SSH identity guide](MIKROTIK_SSH_HOST_TRUST_R63.md).
+
+## R6.4 DEV-08 SSH one-read adapter prepared; real hardware STILL UNTESTED
+
+The owner-reported RB951Ui-2HnD / RouterOS 7.23.7
+has a new OFF-BY-DEFAULT SSH read-only laboratory
+transport that *could* later issue one exact three-field
+`/system resource` command after independent direct-LAN
+SSH host identity proof, dedicated restricted key and
+human recovery/scope sign-off. Its new strict synthetic
+Python-to-Rust evidence bridge is a parser/integration
+test only. The reviewed endpoint's historical/current
+RSA host keys still differ and the owner's actual router
+has NOT been authenticated, inventoried, connected or
+declared physically compatible. The private browser
+shows the previous blocker as STATIC and
+`physical_devices_enrolled=0`. See
+[restricted R6.4 lab scope](MIKROTIK_SSH_R64.md).

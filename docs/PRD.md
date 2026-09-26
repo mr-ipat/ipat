@@ -293,3 +293,24 @@ no dashboard login, trusted tenant binding or configuration rights.
 ### R6.3 security acceptance for a remotely accessible customer router
 
 Even explicit customer test approval is insufficient to authenticate if the remote SSH server host fingerprint differs from the owner-Mac pinned key. A single-host unauthenticated fingerprint preflight must refuse to send passwords or execute read-only commands after mismatch or absence of trusted historical proof. Comparison against a *different trusted direct-LAN path* and deliberate owner acceptance are required before a separately scoped login; scanning the same public path cannot satisfy independent identity verification. No automatic known_hosts rewriting, disabled host checks or product feature compatibility status upgrades are permitted. See [R6.3 security evidence](MIKROTIK_SSH_HOST_TRUST_R63.md).
+
+### R6.4 customer-router SSH first-contact acceptance (lab, not physical)
+
+Provide an optional strictly local, default-OFF SSH
+first-inventory path without ever accepting a password,
+public-only RSA scan as identity proof, unknown vendor
+commands, mutable router operations, shared host trust
+rewrite, or automatic tenant enrollment. Real execution
+requires independent trusted direct-LAN fingerprint
+match, explicit key-change acknowledgment, approved
+single customer test/recovery, dedicated least-privileged
+SSH key and local owner opt-in; an unexpected fingerprint
+must fail closed before any authentication. Exactly
+one immutable three-field read is allowed, and its
+sanitized result must pass the existing Rust closed-schema
+verification with all physical enrollment, tenant and
+configuration permissions FALSE. The owner-only private
+preview MUST explicitly show SSH identity blocked
+while the missing physical evidence remains unresolved.
+Unit/CI synthetic test completion is not actual physical
+DEV-08 interoperability.

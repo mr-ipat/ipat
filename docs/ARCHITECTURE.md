@@ -371,3 +371,24 @@ the GET occurred**. The local non-network CLI validates syntax only.
 No new HTTP route, privileged driver or Kubernetes listener is
 introduced; real device integration remains subject to independent
 verified identity, OIDC+RBAC/ABAC, approvals and physical lab evidence.
+
+## R6.4 lab-only SSH first read, distinct from production RouterOS network adapter
+
+The separately executable Python laboratory helper
+`deploy/scripts/lab/r64/ssh-first-read.py` prepares a
+**single known-device key-only, strict-host-pinned, one-read**
+candidate for DEV-08, only after separate direct-LAN identity
+proof, backup/recovery, time-limited restricted account and
+three independent owner opt-ins. It is disabled until
+those human-controlled prerequisites are met. A temporary
+one-host known_hosts key must match the separately verified
+SHA-256 fingerprint and NEVER alters the Mac's historical
+known_hosts record. The existing modular Rust domain
+`routeros-core::evidence` accepts the new strictly scoped
+SSH evidence tuple and all unverified privilege flags remain
+false; no network connector was added to the production
+Rust Control API. The loopback-only browser shows a STATIC
+security-blocker snapshot from the reviewed one-host
+unauthenticated SSH check, not a live router session.
+Production trusted tenant binding remains a separate
+architecture/milestone prerequisite.

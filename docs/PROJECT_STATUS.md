@@ -1,8 +1,8 @@
 # IPAT — Project Status
 
 **As-of:** 2026-09-26 Asia/Jakarta
-**Milestone:** R6.3 — DEV-08 public SSH endpoint reachable but CHANGED host RSA key; stop password login until independently verified by trusted direct LAN. Physical RouterOS tests NOT RUN.
-**Milestone state:** R6.3 SSH mismatch first-contact safety feature PR #57 MERGED to private GitHub `main` `017adfc382be86aec742cf24299eac794ba886be`. Its four independent PR CI jobs `36224036550` SUCCESS including real disposable Ubuntu 26.04 K3s and isolated PostgreSQL recovery. Clean private GitHub, FileVault Mac and actual unchanged Ubuntu 26.04.1 VPS canonical source matched exactly. Actual VPS 99/99 locked/offline Rust workspace, 10/10 R6.3 mock/no-login tests, 12/12 R6.1 synthetic HTTPS and negative tests, 42/42 base lab and 14/14 DB static plus Python-to-Rust offline fake-secret stripping/forged-tenant rejection PASS. Owner Mac unauthenticated single-endpoint R6.3 live preflight verified changed RSA key versus previously pinned known_hosts, exit 4, PASSWORD_SENT=NO, ROUTER_COMMANDS_RUN=NO, KNOWN_HOSTS_MODIFIED=NO. The owner-posted device credential was never transmitted, saved to file, injected into command arguments or stored in Git. Exact feature-main encrypted Restic snapshot `6bc581b5` and preexisting selected privileged root-readable config `abaa9827` independently restored and complete encrypted pack read PASS, NOT full VPS recovery. The independent router/LAN fingerprint, trusted owner-reviewed SSH destination, actual physical RB951 board/firmware, device tenant identity, restricted test account and non-disruptive recovery remain UNVERIFIED. The actual router has NOT been authenticated, physical inventory remains ZERO, live VPS K3s/PostgreSQL/nftables stay INACTIVE and no external/shared provider firewall integration exists. Independently rerun feature-main CI `36224159513` also returned SUCCESS on all four GitHub jobs; only final docs-main merge/CI/source backup and exact source browser verification remain pending at this checkpoint. Developer Mr. iPat.
+**Milestone:** R6.4 — optional one-device key-only SSH laboratory first-read and native Rust redacted evidence bridge prepared, without bypassing existing SSH host-key conflict. Physical router still NOT AUTHENTICATED or TESTED.
+**Milestone state:** R6.4 feature source under separate private Git review. Baseline clean and synchronized GitHub / FileVault Mac / actual unchanged Ubuntu 26.04.1 VPS main `cec40a5e3e602b79ef3654d371605f0c9bda1d7b`, last final four-job CI `36224396747` SUCCESS and encrypted exact source snapshot `e8b613c1` recovered. New standalone owner-Mac-only R6.4 SSH test tool has NO password authentication and cannot bypass changed SSH host key without a separately sourced owner-private direct-LAN fingerprint and three explicit flags; it does not mutate historical known_hosts. Python mocks/negative tests 12/12 passed on Mac, actual unprivileged Ubuntu26 isolated source 100 locked/offline Rust workspace, 10 original R6.4 then-expanded-to-12 Python tests, 10 R6.3 plus separate synthetic Python-to-Rust SSH evidence contract PASS. Final exact tests on expanded suite, feature PR/full CI, docs merge, latest source encrypted backup and latest loopback preview tests pending at this checkpoint. Owner-only Mac folder now has an INTENTIONALLY INVALID mode-0600 SSH template with TEST-NET endpoint, not real router access; real trusted-LAN fingerprint, approved restricted key, actual customer backup/recovery and authorized physical read remain missing. DEV-08 owner-reported RB951Ui-2HnD/RouterOS 7.23.7 physically UNTESTED, all physical inventory counts remain ZERO; production OIDC/K3s/PostgreSQL/firewall gates unchanged, no external provider firewall integration. Developer Mr. iPat.
 
 ## 1. Source of truth and provenance
 
@@ -766,3 +766,88 @@ Added `deploy/scripts/lab/r61/test_r61_tls.py` with an ephemeral locally generat
 - The Mac could open exactly the owner-provided SSH port and received only an **unverified** RouterOS-style banner. Its strict pinned-host connection failed BEFORE any user-supplied password could be sent, with unexpected RSA host-key change. An unauthenticated public RSA keyscan and the new exact-single-target R6.3 preflight independently reproduced the saved-vs-current mismatch; live helper exited 4 with explicit `PASSWORD_SENT=NO`, `ROUTER_COMMANDS_RUN=NO`, `KNOWN_HOSTS_MODIFIED=NO`. No other destination/protocol was probed and none of the exact endpoint identifiers or secrets are committed to source.
 - Actual unchanged Ubuntu VPS canonical source matched clean GitHub/Mac at reviewed feature SHA and passed 99 locked/offline Rust workspace tests, 10 R6.3 mock/negative host-key tests, 12 R6.1 synthetic tests, 42 base-lab, 14 DB static plus original Python-to-Rust fake-secret/forged-tenant cross-contract. FileVault Mac encrypted exact merged-feature Restic source snapshot `6bc581b5` was independently isolated SHA256 restored; separately selected privileged-root readable backup `abaa9827` passed independent restore and full encrypted pack read PASS. These are **not** whole live server/datastore recovery.
 - Actual trusted direct-LAN SSH fingerprint for **this exact physical RB951** has not been provided. The owner-posted credential was not used or stored in any script, documentation, repository, shell command or local credentials file. An authentic remote MikroTik read, TLS management setup, tenant assignment and all physical compatibility tests remain **NOT RUN**. The already functioning web preview must not display a false connected-device status. All live VPS K3s/PostgreSQL/nftables inactive; no externally shared provider firewall changes.
+
+## 38. R6.4 — restricted key-only RouterOS SSH first-read lab path (pre-merge)
+
+- Baseline source: reviewed R6.3 `main` SHA
+  `cec40a5e3e602b79ef3654d371605f0c9bda1d7b`
+  synchronized clean GitHub/authorized FileVault Mac/actual
+  unchanged Ubuntu 26.04.1 VPS; last final four-job
+  GitHub CI `36224396747` SUCCESS. R6.3 live
+  unauthenticated single-host check recorded previous
+  vs current RSA SSH host-key mismatch and failed
+  closed without sending any password, running a
+  router command or altering `known_hosts`.
+- Product/UI advancement: `web/lab/device-targets.json`,
+  `index.html`, `app.js`, `style.css` now display
+  the previous R6.3 finding as a STATIC security block
+  for planned DEV-08; never represent it as a live
+  router session or real telemetry. Actual physical
+  enrollment/interoperability counts stay ZERO, and
+  customer operation controls remain absent.
+- New `deploy/scripts/lab/r64/ssh-first-read.py`
+  offers OFFLINE `--requirements` and locally
+  validated `--preflight` paths with **no network**.
+  Its optional one-device `--read` requires an
+  owner-controlled mode-0600 fingerprint obtained from
+  a separate trusted direct-LAN route, independently
+  reviewed router recovery/permission, a dedicated
+
+  short-lived restricted owner-private SSH key,
+  an exact single public IP+port, and three explicit
+  local owner opt-in environment flags. A live
+  untrusted public RSA keyscan MUST match the
+  independent trusted fingerprint BEFORE any
+  public-key-only strict SSH login. Current historical
+  key conflict remains preserved, and a separate
+  acknowledgment is mandatory; no weak RSA/SHA-1
+  fallback, password, SSH agent, proxy or forwarding.
+- The ONLY allowed future physical SSH command reads
+  board, architecture and RouterOS version; raw
+  stdout is bounded, strict and never logged.
+  A matching output writes a new private
+  mode-0600 `UNREVIEWED` evidence record with
+  physical enrollment, compatibility, operator review,
+  tenant binding and configuration writes FALSE.
+  The original Rust `routeros-core::evidence` verifier
+  now accepts ONLY the exact REST or SSH read-only
+  tuple and rejects method/resource swaps and
+  forged privilege flags. It still CANNOT
+  authenticate the provenance of local JSON.
+- New `deploy/scripts/lab/r64/synthetic-ssh-cross-contract.sh`
+  combines an entirely synthetic Python three-field
+  CLI sanitizer and the Rust private-file evidence
+  validator, rejecting fake serial, forged tenant
+
+  trust, arbitrary method and write resource.
+  Initial actual nonprivileged Ubuntu 26.04.1
+  isolated checkout reported 100/100 Rust tests,
+  10/10 early R6.4 Python mock/negative tests,
+  10/10 R6.3 security tests and this independent
+  fake SSH to Rust cross-contract PASS. Two
+  additional R6.4 negative UI/ambiguous-key
+  tests passed locally, expanded to 12/12.
+- Owner-Mac owner-only folder
+  `~/.local/share/ipat/router-lab`
+  now contains ONLY a mode-0600 **unusable** R6.4
+  `ssh-read.template.json` with TEST-NET placeholder,
+  false human verification/backup/permission booleans,
+  and nonexistent dedicated key and proof paths;
+  the actual offline preflight refused it as intended.
+  No real `ssh-read.json`, independent fingerprint
+  record, dedicated SSH private key, actual authorized
+  router backup/recovery or authenticated device test
+  was created. The earlier chat-disclosed password
+  must be rotated by the owner through independent
+  trusted management and is never used in code.
+- FINAL feature four-job GitHub CI, reviewed merge,
+  exact SHA Mac/VPS source synchronization,
+  new encrypted-source isolated restore and
+  replayed private browser test are STILL PENDING
+
+  at this milestone's preliminary checkpoint.
+  Real device TC-ROS-03 and commercial
+  RouterOS capabilities remain UNTESTED.
+  `docs/DECISIONS.md` unchanged: no new
+  approved architecture decision; a new
+  lab transport is NOT a production stack choice.

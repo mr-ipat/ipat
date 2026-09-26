@@ -230,3 +230,29 @@ Build original Rust `control-api` and separate synthetic `usp-controller` into n
   support claim or customer-router configuration until
   host identity, limited account, safe read-only scope
   and equipment non-disruption are independently verified.
+
+### R6.4 first SSH read readiness while owner LAN identity is pending
+
+- MUST: one exact disabled-by-default single DEV-08
+  public-key-only SSH read-only test path; prevent all
+  login before independent trusted-LAN RSA host identity
+  proof, safe recovery, dedicated restricted key and
+  three explicit operator flags. Old pinned host key
+  must remain untouched and SHA-1 downgrade is denied.
+- MUST: validate strictly three harmless RouterOS
+  resource identity fields and return redacted private
+  *unreviewed* evidence only; reuse Rust resource identity
+  policy and extend Rust closed-schema output validator
+  without permitting fabricated tenancy/writes.
+- MUST: the private browser shows a previous check's
+  blocked host-key state and zero actual enrolled devices
+  without management endpoint information or simulated
+  success. Run R6.4 negative/mock and cross-language
+  synthetic contract in disposable CI and unchanged
+  real Ubuntu VPS checkout.
+- BLOCKED ON OPERATOR: actual trusted-LAN fingerprint,
+  safe backup/recovery, rotated exposed account credential,
+  separate limited SSH public-key account and explicit
+  non-disruptive single-device authorization. Until
+  proven, do not run real SSH, claim compatibility
+  or enable managed PPPoE/Wi-Fi/config features.

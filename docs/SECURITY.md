@@ -270,3 +270,38 @@ preflight plus mocked denial tests are in
 [MIKROTIK_SSH_HOST_TRUST_R63.md](MIKROTIK_SSH_HOST_TRUST_R63.md).
 No configuration-write permission or live physical feature
 claim follows from an SSH host-key match alone.
+
+## R6.4 safe SSH transport preconditions and no-login default
+
+Actual owner-supplied router SSH credentials were never used
+after the Mac detected an unexpected SSH host RSA key.
+R6.4 adds a **disabled-by-default** key-only SSH first-read
+helper limited to the exact initial DEV-08 board/version and
+a fixed three-field resource read. Its single untrusted
+public RSA keyscan cannot authorize access: the fingerprint
+must match an independent, owner-controlled direct-LAN
+verification file with mode 0600 in a mode-0700 directory.
+An existing historical key mismatch requires a separate
+explicit operator opt-in. The helper uses a disposable
+one-host exact public key pin, `-F /dev/null`, strict host-key
+verification with only RSA SHA-2 algorithms, a dedicated
+mode-0600 local SSH identity, BatchMode, public-key-only,
+agent disabled, no passwords, no proxy, no port forwards,
+bounded timeout and bounded command output. It never
+rewrites historical known_hosts, stores a credential in
+CLI args/CI/Git, or changes device configuration.
+
+Offline --requirements and --preflight never contact the
+router. No real --read may occur until the owner has
+independently verified physical identity, safely rotated
+the already-shared password from trusted management,
+provided explicit non-disruptive customer permission,
+established recovery and a restricted short-lived key.
+Syntactically valid local fingerprint/evidence files
+are only asserted inputs; they are NOT cryptographic
+proof of the stated trusted-LAN origin or a verified
+tenant/device assignment. Malformed model/version,
+unapproved method or forged enrollment evidence is
+rejected by the Python sanitizer and separate Rust
+closed-schema verifier. All physical tests remain
+NOT RUN until trusted human evidence is reviewed.
