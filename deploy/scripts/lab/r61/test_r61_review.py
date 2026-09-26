@@ -160,6 +160,23 @@ class ReadOnlyCustomerRouterReview(unittest.TestCase):
             self.assertNotIn("192.168.88.42", proc.stderr)
             self.assertNotIn("PLACEHOLDER_NOT_REAL", proc.stderr)
 
+    def test_invalid_output_path_fails_before_any_real_network(self):
+        with tempfile.TemporaryDirectory() as temp:
+            cfg, _, _ = self.local_config(Path(temp))
+            with patch.object(MOD.sys, "platform", "darwin"), \
+                 patch.dict(os.environ, {
+                     "IPAT_R61_REAL_READ": "YES",
+                     "IPAT_R61_OWNER_CONFIRMS_SINGLE_GET": "YES",
+                 }), \
+                 patch.object(MOD.sys, "argv", [
+                     "readonly-rest-probe.py", "--config", str(cfg),
+                     "--read", "--output", str(ROOT / "FORBIDDEN_PROBE.json"),
+                 ]), \
+                 patch.object(MOD, "read_one",
+                              side_effect=AssertionError("DEVICE_MUST_NOT_BE_CONTACTED")) as read:
+                self.assertEqual(MOD.main(), 4)
+                read.assert_not_called()
+
     def test_mocked_one_get_exact_path_no_write_or_redirect(self):
         class FakeResponse:
             status = 200

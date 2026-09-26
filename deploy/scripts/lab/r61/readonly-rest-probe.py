@@ -160,7 +160,7 @@ def read_one(config, ca, auth, connection_factory=FixedPrivateTLS):
     finally:
         conn.close()
 
-def private_output(path_text, result):
+def validate_output_path(path_text):
     if not isinstance(path_text, str):
         raise Rejected("missing output path")
     path = Path(path_text).expanduser()
@@ -171,6 +171,11 @@ def private_output(path_text, result):
         raise Rejected("output cannot enter Git")
     if not path.parent.is_dir() or stat.S_IMODE(path.parent.stat().st_mode) != 0o700:
         raise Rejected("private output directory must be mode 0700")
+    return path
+
+def private_output(path_text, result):
+    # Revalidate even after pre-read validation to avoid stale destination.
+    path = validate_output_path(path_text)
     flags = os.O_CREAT | os.O_EXCL | os.O_WRONLY | getattr(os, "O_NOFOLLOW", 0)
     fd = os.open(path, flags, 0o600)
     try:
@@ -203,8 +208,10 @@ def main():
                 or os.environ.get("IPAT_R61_OWNER_CONFIRMS_SINGLE_GET") != "YES"
                 or not args.output):
             raise Rejected("real probe requires two explicit Mac-local approvals")
+        # Reject unsafe evidence destinations BEFORE any authorized network I/O.
+        approved_output = validate_output_path(args.output)
         result = read_one(config, ca, auth)
-        private_output(args.output, result)
+        private_output(str(approved_output), result)
         print("R61_SINGLE_DEVICE_READ_EVIDENCE_STAGED=YES;"
               " REVIEW_REQUIRED=YES; ENROLLED=NO; COMPATIBILITY=UNVERIFIED")
         return 0

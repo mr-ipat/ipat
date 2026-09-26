@@ -151,7 +151,7 @@ python3 -m unittest discover deploy/scripts/lab/r61 -p 'test_r61_review.py' -v
 python3 -m unittest discover deploy/scripts/lab/r60 -p 'test_r60_review.py' -v
 ```
 
-The R6.1 unit suite mocks one exact GET and tests unexpected responses,
+The R6.1 unit suite mocks one exact GET and tests unsafe output paths BEFORE any network request, unexpected responses,
 payloads with synthetic serial/credentials/addresses, unapproved modes,
 wrong model/version, unsafe destinations/permissions and zero enrollment.
 Only the later **real authorized** network test can establish successful
