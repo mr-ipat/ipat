@@ -79,8 +79,11 @@ production services.
 ## Next owner-authorized physical steps, not completed
 
 **Current blocker:** on the authorized Mac,
-`~/.local/share/ipat/router-lab/` does not exist at this milestone
-preflight. Therefore there is **no independently configured private
+`~/.local/share/ipat/router-lab/` was initially absent at the
+first milestone preflight. It was subsequently created with ONLY
+a deliberately non-operational, mode-0600 `probe.template.json`
+whose TEST-NET address and non-confirmed permission fail preflight.
+There is no actual `probe.json`, usable CA or restricted netrc. Therefore there is **no independently configured private
 router route, trusted dedicated lab TLS CA or locally held restricted
 test account** available to the automatic workflow. Do not create
 fictional config files, silently enable router `www-ssl`, guess the
@@ -116,3 +119,32 @@ authorization/approval and physical regression. No proposed feature
 should silently be displayed as an implemented permission/menu.
 The main VPS K3s/PostgreSQL/nftables and shared external perimeter
 remain unchanged and blocked by the earlier recovery gates.
+
+## R6.2 reviewed feature evidence (before final docs merge)
+
+[Feature PR #55](https://github.com/mr-ipat/ipat/pull/55)
+merged to exact source SHA
+`9901627a1739a4cfa785ed899fed8fb2c55580fa`.
+Its actual four-job PR CI `36222753736` and independently
+repeated post-feature-main CI `36222869650` both
+finished all-success, including disposable real Ubuntu 26.04
+K3s and isolated PostgreSQL recovery. Real actual VPS
+source matched private GitHub/Mac and passed 99 Rust offline
+workspace tests, 12 R6.1 Python tests and
+cross-language fake-secret stripping + forged tenant denial.
+Feature-source encrypted Restic snapshot `b13e3f49`
+independently restored and selected root-readable config
+`abaa9827` also separately restored with full pack read PASS.
+This is not live router login, signed physical evidence,
+production PostgreSQL recovery or Kubernetes readiness.
+
+The authorized Mac's new owner-only
+`~/.local/share/ipat/router-lab/probe.template.json`
+contains **intentionally invalid** values, no actual
+connection details, and no credential, CA or owner permission.
+The offline real-helper preflight correctly rejected it
+
+without any device network traffic. Do not convert the
+placeholder to an approved configuration without separately
+verified owner permission, private route, trusted TLS certificate,
+restricted identity and backup/recovery evidence.
