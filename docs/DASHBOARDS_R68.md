@@ -200,3 +200,11 @@ kontrol risiko masing-masing.
 Dokumen ini mencatat deliverable
 desain dan test, **bukan klaim
 tiga dashboard operasional sudah selesai**.
+
+## Pengujian nyata setelah source fitur digabungkan
+
+[PR #65](https://github.com/mr-ipat/ipat/pull/65) digabungkan pada SHA `366c5fced6ae4e9f8d25e12cf4f9110ae7537292`. CI PR `36241742462` dan CI baru pada branch main `36241923607` sama-sama menyelesaikan empat job independen dengan sukses. Job unit juga menguji server Rust Axum **HTTP nyata di runner sekali pakai**: seluruh aset preview mendapat status 200/CSP/no-store, POST preview 405 dan GET/POST/DELETE `/v1/platform`, `/v1/tenant`, `/v1/operations` tetap 401 bahkan saat token/role/tenant/Host dipalsukan. Listener uji hanya 127.0.0.1 dan dihentikan setelah tes; tidak dijalankan pada VPS yang sedang memiliki preview.
+
+Pada checkout canonical VPS Ubuntu 26.04.1, 130/130 Rust `--locked --offline`, tujuh static contract R6.8 dan enam static legacy R5.9 lulus. Node tidak diinstal pada VPS (dan tidak diperlukan untuk server Rust); tes fungsional Node DOM/fetch dijalankan pada Mac pemilik dan CI GitHub, keduanya lulus. Aset GUI *sungguh* dijalankan melalui tunnel SSH Mac pemilik dengan GET HTML/CSS/JS 200 dan CSP strict, 8 calon target hardware tetapi ZERO perangkat fisik terdaftar. Tidak ada login nyata atau API bisnis yang dibuka.
+
+Snapshot encrypted Restic fitur tepat `b0be6b56` diuji restore sumber terisolasi SHA256 dan read-all-packs tanpa error. Konfigurasi privileged-root-readable yang dipilih sebelumnya diuji pemulihan terpisah; ini tidak mencakup full VPS/data aplikasi atau database riil. Readiness produksi 8/8 pemeriksaan otomatis lulus, namun seluruh 7/7 persyaratan independen eksternal masih `BLOCKED`, sehingga status produk **NO_GO**. Bukti final commit dokumentasi dan run CI berikutnya dilampirkan pada komentar PR immutable agar SHA tidak berulang akibat commit status sendiri.
