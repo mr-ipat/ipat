@@ -150,3 +150,11 @@ sebelum pengembangan login dan membership nyata,
 bukan tiga dashboard operasional siap pelanggan.
 Tidak ada perubahan firewall penyedia, listener
 publik baru, K3s/PostgreSQL produksi atau CPE.
+
+## Bukti milestone setelah penggabungan fitur R6.9
+
+Implementasi [PR #67](https://github.com/mr-ipat/ipat/pull/67) sudah MERGED sebagai commit `0d5a0298427f816b7e67d1df7ec27f03060fc8f9`. Kedua run GitHub CI independen, PR `36245565621` dan post-feature-main `36245769033`, masing-masing menyelesaikan **empat pekerjaan SUCCESS**: Rust/security/signed JWT HTTP sintetis, cluster K3s Ubuntu26 sekali pakai, serta dua jalur pemulihan PostgreSQL sintetis yang terpisah. Pada source canonical real Ubuntu26.04.1 VPS (bukan penginstalan sebagai layanan), format dan 139/139 tes Rust locked/offline, 5/5 kontrak keamanan, dan pengujian HTTP asli yang menandatangani JWT sintetis dengan OpenSSL semuanya lulus. Port pembuktian identitas khusus `127.0.0.1:3001` berhenti setelah tes tanpa mengubah PID preview dashboard privat yang sudah aktif pada `127.0.0.1:3000`. Tidak ada token, kunci pelanggan, atau tenant riil.
+
+Run pertama yang kemudian digantikan (`36245181998`) gagal pada fixture pengujian karena konflik port 3000/TIME_WAIT serta ekspektasi POST yang keliru terhadap API perangkat yang hanya GET; perbaikan pada **fixture dan pemisahan port laboratorium** diuji sebelum dua CI hijau tersebut. Kesalahan awal itu tidak disembunyikan sebagai pengujian lulus.
+
+FileVault Mac membuat snapshot sumber exact feature terenkripsi Restic `56c893f1`, berhasil di-restore terisolasi dengan hash SHA256 cocok dan semua encrypted pack terbaca. Backup konfigurasi root-readable historis juga berhasil diuji terpisah; **tidak membuktikan pemulihan seluruh VPS atau PITR database sebenarnya**. Tujuh gate keselamatan eksternal serta rilis produksi tetap NO_GO sampai bukti independen terpenuhi.
