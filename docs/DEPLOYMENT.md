@@ -94,3 +94,16 @@ an external/public endpoint. Opt-in teardown:
 See [R5.9 scope and production gates](WEB_PRIVATE_PREVIEW_R59.md). Do not
 add K3s ingress, real customer data or public HTTP/TLS until all independent
 production gates actually pass.
+
+## R6.0 credential-free hardware metadata staging
+
+`GET /lab/device-targets` is available only through the already guarded
+owner-Mac loopback SSH tunnel at `http://127.0.0.1:48765/lab`. This static
+planning catalog never contacts hardware and always reports zero physical
+registrations. Use `docs/DEVICE_TESTING_R60.md` to prepare a single
+sanitized target metadata file entirely offline in a private mode-0700
+directory outside the repository; `prepare-device-intake.py` creates a
+new unapproved mode-0600 JSON file and refuses network addresses, secrets,
+serials, unknown target IDs and unsafe paths. No live VPS privilege, network
+firewall, actual device read/probe, production ingress or K3s deployment
+is authorized by this step. A reviewed real-hardware plan is separate.

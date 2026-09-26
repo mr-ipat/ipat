@@ -157,3 +157,20 @@ Build original Rust `control-api` and separate synthetic `usp-controller` into n
   signed ADR-017 private cluster topology, production PostgreSQL HA/PITR
   and high-risk authorization audits. An information-only local browser
   is not permission to install live K3s or publish the API.
+
+### R6.0 device testing preparations
+
+- MUST (deliverable): eight exact approved target slots in the strictly
+  local read-only lab dashboard; zero real hardware enrollment status;
+  offline exact model/HW revision/firmware metadata schema with safe
+  private staging, strict unknown/secret/placeholder/address rejection,
+  Rust HTTP tests and real CI regression.
+- SHOULD (only with authorized real hardware): capture each tested unit's
+  board/model/firmware evidence and isolated management method out of Git;
+  implement its first verified read-only adapter or authenticated CWMP
+  Inform and independently test positive tenant identity and negative
+  cross-tenant paths before any true device enrollment.
+- BLOCKED (not claim complete): any actual physical device is connected,
+  USP support, true OLT/RouterOS adapter support, subscriber view,
+  privileged actions, public customer dashboard or commercial compatibility.
+  Secrets, actual device IPs and serials must not enter chat or Git.

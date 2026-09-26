@@ -246,3 +246,17 @@ No customer/tenant login or privileged menu may be presented without trusted
 OIDC membership and approved RBAC+ABAC; production-domain TLS and physical
 device support remain separate unfulfilled acceptance criteria. The original
 commercial FR-002/FR-003/FR-004 and backup/K3s security gates remain binding.
+
+### R6.0 hardware test intake slice and acceptance
+
+Before physical device testing, the strictly private browser may list only
+the eight already approved pilot *target categories*. Acceptance requires
+zero phantom physically registered devices or compatibility claims;
+exact model/firmware/board information must remain visibly unknown until
+observed. The optional non-network offline credential-free intake validator
+must reject unknown targets, ambiguous firmware, sensitive extra keys,
+embedded addresses, duplicate JSON fields and unsafe output destinations;
+output must remain unapproved, unconnected and outside Git. The existing
+PRD's original real OLT/ONT/MikroTik and authenticated tenant-binding
+functional acceptance is unchanged: only a later device-specific, owner-
+authorized, evidence-backed physical test may promote an actual device.

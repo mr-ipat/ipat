@@ -3,6 +3,8 @@
 **Date:** 2026-09-25 · **Scope:** inventory of *intended initial physical test targets*, **not supported-device list**.  
 **Current evidence:** user-approved brief supplies vendor/family only; no exact inventory/firmware/serial/test log supplied. **All device-feature combinations start `untested`.**
 
+**R6.0 progress (2026-09-26):** Eight DEV-01..08 *target slots* now appear in the strictly private browser lab; an offline schema validator can create credential-free 0600 metadata staging files. **Physical inventory remains ZERO; all physical tests NOT RUN, compatibility UNTESTED**. No device addresses, serials, credentials, tenant binding or real physical registration have been supplied. See [R6.0 intake and approval rules](DEVICE_TESTING_R60.md).
+
 ## 1. Initial confirmed physical pilot targets
 
 | ID | Class | Vendor / family | Exact model | HW rev | OS/firmware | Interfaces to inventory | Features to test | Status | Physical evidence |
