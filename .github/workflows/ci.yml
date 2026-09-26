@@ -120,6 +120,12 @@ jobs:
         run: cargo fmt --all -- --check
       - name: Run locked unit tests
         run: cargo test --workspace --locked
+      - name: Verify R7.1 ZTE C320 read-only parsing and prominent PRD risk banner
+        run: |
+          python3 -m unittest discover deploy/scripts/lab/r71 -p test_r71_contract.py -v
+          cargo test --locked -p olt-core --test c320_fixture
+          cargo build --locked -p olt-core --bin c320-offline-review
+          python3 -m unittest discover deploy/scripts/lab/r71 -p test_r71_offline_cli.py -v
       - name: R6.6 native CWMP read-only state and actual private HTTP denial smoke
         run: |
           bash -n deploy/scripts/lab/r66/cwmp-loopback-http-smoke.sh

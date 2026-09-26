@@ -318,3 +318,20 @@ Real IdP configuration, verified tenant membership,
 MFA, PostgreSQL RLS application integration
 and actual device access remain release gates.
 [Identity protocol documentation](IDENTITY_OIDC_R69.md).
+
+## R7.1 ZTE C320 owner-local offline importer ONLY
+
+Only after a trusted device operator has independently gathered
+and reviewed two READ-ONLY candidate CLI outputs, save redacted
+transcripts as cards.txt and versions.txt in a non-repository
+owner directory mode 0700, each file mode 0600 (no symlinks).
+First build/test the new olt-core Rust package using locked Cargo.
+Run c320-offline-review --requirements for its no-network
+preflight instructions. To analyze the two already-collected
+files, set IPAT_R71_OWNER_CONFIRMS_REDACTED_OFFLINE_CAPTURE=YES
+and pass --parse plus the absolute private directory path.
+This reports syntactic parsing only and marks physical device
+identity UNVERIFIED, interoperability UNTESTED and firmware
+execution DISABLED; no device is contacted or automatically
+enrolled. Unknown output is denied, not guessed.
+Live OLT access and firmware update are NOT available.

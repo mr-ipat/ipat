@@ -576,3 +576,20 @@ sementara Rust API dan SQL
 secara mandiri menolak akses
 lintas tenant/role/POP.
 [Uji dan fase R7.0](DASHBOARD_MEMBERSHIP_R70.md).
+
+### R7.1 candidate native ZTE C320 adapter safety boundary
+
+olt-core has NO network dependencies or side effects. It exposes
+two fixed read-only vendor CLI candidates and bounded offline
+parsers for card inventory and running versions. The owner-only
+offline importer accepts fixed private transcript filenames
+from an operator-controlled directory and never contacts
+or configures devices. No collected text, inferred card or
+boolean operator flags can mint a trusted physical device
+identity, tenant binding, firmware compatibility or approval.
+Firmware evaluation returns BLOCKED or HUMAN_REVIEW_ONLY and
+WRITE_ENABLED=false; there is no command execution or uploader.
+Actual read-only adapter transport requires separately validated
+firmware-specific device-management methods plus trusted
+private network identity and tenant approval. Vendor upgrade
+actuator is explicitly out of scope until hardware tests.
