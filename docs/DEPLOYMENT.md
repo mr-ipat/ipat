@@ -172,3 +172,32 @@ overwritten or ignored, and there is no fallback
 to chat-shared password authentication. No live
 VPS firewall/K3s/PostgreSQL or shared provider
 perimeter change is part of this preparation.
+
+## R6.6 original CWMP loopback parser-only runtime
+
+The new `apps/cwmp-gateway` binary is NOT
+a real ACS endpoint and refuses to start
+without `IPAT_RUN_OFFLINE_CWMP_LAB=1`.
+Its only listener is literal 127.0.0.1:3300;
+public /cwmp always returns HTTP 503.
+To verify a temporary executable, run from
+a disposable source checkout with Rust
+dependencies already pinned/cached:
+
+```bash
+cargo build --locked --offline -p cwmp-gateway
+IPAT_R66_EXACT_LOOPBACK_SMOKE=YES \
+  bash deploy/scripts/lab/r66/cwmp-loopback-http-smoke.sh
+```
+
+The smoke script stops its temporary process
+and refuses to run without explicit opt-in.
+Never add this binary or its parser route
+to public ingress. The actual ACS service,
+authentic client mTLS proof, persistent
+multi-tenant session binding, TLS secrets
+and hardware compatibility are NOT
+
+implemented. No changes to host firewall,
+shared perimeter, K3s or live PostgreSQL
+are authorized by this milestone.

@@ -106,6 +106,11 @@ jobs:
         run: cargo fmt --all -- --check
       - name: Run locked unit tests
         run: cargo test --workspace --locked
+      - name: R6.6 native CWMP read-only state and actual private HTTP denial smoke
+        run: |
+          bash -n deploy/scripts/lab/r66/cwmp-loopback-http-smoke.sh
+          cargo build --locked -p cwmp-gateway
+          IPAT_R66_EXACT_LOOPBACK_SMOKE=YES bash deploy/scripts/lab/r66/cwmp-loopback-http-smoke.sh
       - name: Verify R6.2 Rust domain and Python first-read evidence contract without equipment
         run: |
           bash -n deploy/scripts/lab/r62/synthetic-cross-contract.sh

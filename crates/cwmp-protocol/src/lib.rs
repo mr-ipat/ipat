@@ -2,6 +2,8 @@
 //! The transport adapter MUST authenticate and bind CPE identity to a tenant
 //! before queuing work or returning this module's response XML.
 
+pub mod rpc;
+
 use roxmltree::{Document, Node, ParsingOptions};
 
 const SOAP_NS: &str = "http://schemas.xmlsoap.org/soap/envelope/";

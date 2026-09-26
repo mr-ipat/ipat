@@ -167,3 +167,20 @@ actual physical board/version read, TR-069
 session initiated or RouterOS configuration
 written. TC-ROS-03 NOT RUN. See
 [the R6.5 staged access plan](MIKROTIK_CUSTOMER_R65_PREP.md).
+
+## R6.6 CWMP synthetic RPC availability is NOT real ONT interoperability
+
+The new original Rust SOAP/CWMP 1.0 profile
+can construct/read one `Device.DeviceInfo.SoftwareVersion`
+GetParameterValues request/response and sanitize
+a CWMP fault in synthetic tests, behind a sealed
+synthetic admission session. Actual Axum HTTP
+loopback parser tests DO NOT produce
+authenticated ACS sessions or reach
+any VSOL/ZTE ONT. No exact device model,
+actual enabled CWMP version, firmware,
+ACS URL/certificate or successful live Inform
+has been observed. `TC-CWMP-01` and all
+physical per-device RPC results remain
+NOT RUN; zero physical devices enrolled.
+See [R6.6 tests/release gaps](ACS_CWMP_R66.md).

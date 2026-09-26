@@ -9,3 +9,6 @@ publish = false
 [dependencies]
 cwmp-protocol = { path = "../cwmp-protocol" }
 tenant-core = { path = "../tenant-core" }
+
+[dev-dependencies]
+roxmltree = "0.21.1"

@@ -314,3 +314,31 @@ preview MUST explicitly show SSH identity blocked
 while the missing physical evidence remains unresolved.
 Unit/CI synthetic test completion is not actual physical
 DEV-08 interoperability.
+
+### R6.6 native CWMP first read RPC and synthetic session acceptance
+
+Partial fulfillment of FR-009/010 and AC-03:
+original Rust now supports a **narrow synthetic**
+SOAP 1.1/CWMP 1.0 `GetParameterValues`
+request plus bounded, correlated, type/namespace
+validated one-value response or numeric-only
+CWMP fault. Only exact
+`Device.DeviceInfo.SoftwareVersion` can be
+read in this profile. The existing sealed
+peer/tenant admission state is extended
+with the genuine empty-POST transition,
+one session read and same peer/lease
+correlation/abort. An actual Rust Axum
+process can temporarily handle a private
+127.0.0.1 synthetic HTTP Inform parser
+probe but unconditionally denies authentic
+`/cwmp` ingress and performs no enrollment.
+Acceptance is **simulator-only** until real
+client mTLS, trusted enrollment, durable
+CWMP HTTP sessions/queue and an authorized
+one-ONT exact-firmware hardware test all pass.
+Original Rust ACS and separate native USP
+remain binding; no full commercial ACS
+
+completion claim is accepted from unit tests.
+[Exact R6.6 evidence](ACS_CWMP_R66.md).

@@ -87,7 +87,18 @@ name = "cwmp-admission"
 version = "0.1.0"
 dependencies = [
  "cwmp-protocol",
+ "roxmltree",
  "tenant-core",
+]
+
+[[package]]
+name = "cwmp-gateway"
+version = "0.1.0"
+dependencies = [
+ "axum",
+ "cwmp-protocol",
+ "tokio",
+ "tower",
 ]
 
 [[package]]
