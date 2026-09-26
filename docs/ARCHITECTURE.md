@@ -355,3 +355,19 @@ mode-0600 netrc, and makes one GET of /rest/system/resource.
 The output is strictly allowlisted and only owner-private evidence,
 not automatic tenant enrollment. The browser remains
 SSH-loopback-only and never contains management IPs or credentials.
+
+## R6.2 Rust RouterOS read-only domain (NOT a driver)
+
+`crates/routeros-core` becomes the typed Rust offline normalization
+boundary for the first specifically owner-reported DEV-08 RB951Ui-2HnD
+/ RouterOS 7.23.7. It can parse only bounded /rest/system/resource
+objects, reject duplicate/oversized/ambiguous model+firmware, and
+discard unknown device fields including secret/serial/address data.
+The `UnreviewedInventory` type has no constructors granting
+authorization, verified tenant assignment or device writes.
+A separate `evidence` validator permits exactly the private redacted
+R6.1 Python first-GET output schema but **cannot authenticate that
+the GET occurred**. The local non-network CLI validates syntax only.
+No new HTTP route, privileged driver or Kubernetes listener is
+introduced; real device integration remains subject to independent
+verified identity, OIDC+RBAC/ABAC, approvals and physical lab evidence.

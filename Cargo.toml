@@ -11,6 +11,7 @@ members = [
   "crates/firewall-policy",
   "crates/diagnostic-core",
   "crates/provisioning-core",
+  "crates/routeros-core",
 ]
 
 [workspace.package]

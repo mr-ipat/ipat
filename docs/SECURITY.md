@@ -228,3 +228,24 @@ provide true OIDC/tenant binding or any write permission.
 A qualified human must ensure router www-ssl is source restricted
 and account policy is custom least-privilege (read,rest-api only
 as compatible), unlike the overprivileged built-in read group.
+
+## R6.2 RouterOS raw JSON/evidence trust boundaries
+
+An authenticated HTTPS result is untrusted until independently
+reviewed against the precise authorized device. The original Rust
+domain bounds raw bytes and field cardinality, rejects duplicate
+fields and mismatched exact reported model/architecture/version,
+drops unapproved fields, and returns only explicitly unreviewed
+metadata. The independent private evidence parser *rejects unknown
+fields*, duplicate JSON keys, missing allowed fields, fabricated
+promotion flags, unsafe HTTP methods/resources, wrong identity and
+invalid time syntax. Syntax is explicitly NOT an authenticity
+signature, authorization claim or proof of physical interoperability.
+
+The additional Rust owner-local CLI validates only an absolute path
+to a redacted, non-symlink mode-0600 evidence file in an owner-private
+directory outside its source repository; output never reproduces
+payloads or paths. Its success expressly keeps enrollment, tenant
+trust and compatibility false. Python-to-Rust synthetic cross-contract
+fixtures verify fake serial, IP and password suppression and refusal
+to promote a forged tenant record. No actual router traffic is needed.

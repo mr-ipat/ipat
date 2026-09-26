@@ -106,6 +106,10 @@ jobs:
         run: cargo fmt --all -- --check
       - name: Run locked unit tests
         run: cargo test --workspace --locked
+      - name: Verify R6.2 Rust domain and Python first-read evidence contract without equipment
+        run: |
+          bash -n deploy/scripts/lab/r62/synthetic-cross-contract.sh
+          bash deploy/scripts/lab/r62/synthetic-cross-contract.sh
 
 
   postgres-rls-restore:

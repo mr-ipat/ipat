@@ -119,3 +119,21 @@ or customer login. Do not paste the router's real management IP,
 CA private keys or test-account password into Git/chat. Leave the
 live VPS infrastructure, provider/shared perimeter and production
 identity gates unchanged.
+
+## R6.2 native Rust offline evidence contract
+
+A new `routeros-core` crate is added to the original locked
+Rust workspace; there is no new production service or live VPS
+network port. On an authorized offline-capable development host,
+run `cargo test --workspace --locked --offline` and
+`bash deploy/scripts/lab/r62/synthetic-cross-contract.sh` to
+verify that synthetic Python redacted R6.1 evidence satisfies
+the strict Rust schema and that forged tenant elevation and
+secret-containing records fail closed. If *later* an authorized
+real one-GET R6.1 read produces a private redacted mode-0600
+file, run the Rust `routeros-lab-evidence` CLI against that
+file locally with `--input` as detailed in
+[ROUTEROS_RUST_R62.md](ROUTEROS_RUST_R62.md). Its success
+is not real source authentication or device enrollment.
+Do not copy raw RouterOS output or management secrets to Git,
+start live K3s or change any externally shared perimeter.

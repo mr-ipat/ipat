@@ -64,6 +64,19 @@ class ReadOnlyCustomerRouterReview(unittest.TestCase):
         self.assertFalse(result["configuration_modified"])
         self.assertEqual(result["hardware_revision"], "NOT_OBSERVED")
 
+    def test_documented_version_suffix_only_without_accidental_upgrade(self):
+        base = {"board-name": "RB951Ui-2HnD", "architecture-name": "mipsbe"}
+        for version in ["7.23.7", "7.23.7 (stable)", "7.23.7 (long-term)"]:
+            value = MOD.sanitize_resource([dict(base, version=version)],
+                                          "RB951Ui-2HnD", "7.23.7")
+            self.assertEqual(value["routeros"], version)
+            self.assertFalse(value["compatibility_verified"])
+        for version in ["7.23.70", "7.23.6", "7.23.7 (development)",
+                        "7.23.7 (testing)", "7.23.7 (stable)\nInjected"]:
+            with self.assertRaises(MOD.Rejected):
+                MOD.sanitize_resource([dict(base, version=version)],
+                                      "RB951Ui-2HnD", "7.23.7")
+
     def test_mismatch_duplicate_or_unexpected_shape_rejected(self):
         base = {"board-name": "RB951Ui-2HnD",
                 "architecture-name": "mipsbe", "version": "7.23.7"}

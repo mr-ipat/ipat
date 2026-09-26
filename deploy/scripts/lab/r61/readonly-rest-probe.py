@@ -93,6 +93,12 @@ def validated(config_path):
         raise Rejected("untrusted credential characters")
     return data, ca, (auth[0], auth[2])
 
+def approved_routeros_version(observed, expected):
+    # RouterOS REST may include a release channel suffix. This whitelist does
+    # NOT authorize a different build or imply that a real device was read.
+    return observed in (expected, expected + " (stable)",
+                        expected + " (long-term)")
+
 def sanitize_resource(payload, expected_model, expected_version):
     if isinstance(payload, list):
         if len(payload) != 1:
@@ -106,7 +112,7 @@ def sanitize_resource(payload, expected_model, expected_version):
         raise Rejected("invalid returned platform metadata")
     if (payload["board-name"] != expected_model or
             payload["architecture-name"] != "mipsbe" or
-            payload["version"] != expected_version):
+            not approved_routeros_version(payload["version"], expected_version)):
         raise Rejected("observed identity or firmware mismatch")
     # Explicit allowlist. Drop even if response includes serials, IPs, routes,
     # PPPoE secrets or any other sensitive fields.

@@ -192,3 +192,22 @@ Build original Rust `control-api` and separate synthetic `usp-controller` into n
   PPPoE, customer and firmware functions require independently
   tested RBAC+ABAC, per-firmware checks and controlled writes.
   No claim that all features are ready.
+
+### R6.2 native Rust RouterOS domain and evidence bridge
+- MUST in laboratory: implement standalone reusable Rust
+  routeros-core normalizer for bounded exact DEV-08 read-only
+  response, negative ambiguous/mismatched/secret/duplicate tests;
+  add closed-schema offline evidence parser and non-network
+  local CLI; verify cross-language Python synthetic payload
+  stripping + forged enrollment denial and pinned Rust CI.
+- MUST for the first *real* physical test: operator supplies
+  independent dedicated private management route, actual
+  least-privileged REST account, valid trusted RouterOS TLS
+  certificate, customer permission and tested non-disruptive
+  recovery. Only run existing Mac one-GET R6.1 helper after
+  both explicit local approvals and record reviewed physical
+  evidence before changing DEV-08 compatibility status.
+- LATER: trusted per-tenant device assignment, OIDC/MFA,
+  production Rust network connector and isolated read-only
+  API. Wi-Fi, PPPoE, firewall, updates and device writes
+  need their own scopes, reviews and physical tests.
