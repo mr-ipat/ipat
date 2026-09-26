@@ -188,6 +188,9 @@ jobs:
       - name: Validate synthetic durable job state and transactional outbox (ephemeral ONLY)
         run: |
           python3 -m unittest discover deploy/db/tests -p 'test_job_outbox_integration.py' -v
+      - name: Verify R7.0 unexposed approved tenant membership and POP candidate schema
+        run: |
+          python3 -m unittest discover deploy/db/tests -p 'test_identity_memberships_integration.py' -v
 
 # Separate disposable CI runner and PostgreSQL server process.
   # This rehearses a physical base backup; it is NOT production PITR/offsite HA.

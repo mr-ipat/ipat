@@ -541,3 +541,38 @@ API plus PostgreSQL RLS. No architecture proposal
 becomes approved automatically through this
 synthetic implementation.
 [Detailed R6.9 scope](IDENTITY_OIDC_R69.md).
+
+### R7.0 keanggotaan kandidat dan batas sumber kepercayaan
+
+Migrasi sintetis
+`0003_lab_identity_memberships.sql`
+menyiapkan tiga tabel platform:
+`identity_memberships` (exact tenant,
+issuer, subject, role yang disetujui),
+`identity_pop_grants` (exact tenant,
+issuer, subject, role + POP melalui FK)
+dan `platform_principals` (role pemilik
+platform tanpa otomatis keanggotaan
+perusahaan). Semuanya FORCE RLS tanpa
+akses role `ipat_app_runtime`. Tidak
+ada endpoint lookup, operator approval
+service atau database live baru;
+data seed hanya identitas contoh.
+Skema ini belum keputusan
+ADR-005 maupun alur OIDC nyata.
+
+Batas berikutnya harus memilih
+operator/persetujuan melalui OIDC
+tepercaya; memetakan verified subject
+ke membership aktual lewat DB
+dengan audit, expiry, revoked
+dan MFA; lalu menghasilkan
+
+server-side DashboardSubject
+hanya melalui boundary yang
+tidak dapat dipalsukan klien.
+Frontend menerima subset menu,
+sementara Rust API dan SQL
+secara mandiri menolak akses
+lintas tenant/role/POP.
+[Uji dan fase R7.0](DASHBOARD_MEMBERSHIP_R70.md).

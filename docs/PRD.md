@@ -430,3 +430,32 @@ server-side filtered menus and
 same-tenant/POP backend authorization
 against PostgreSQL RLS.
 [Exact R6.9 gap/test plan](IDENTITY_OIDC_R69.md).
+
+### R7.0 — tahapan nyata ketiga dashboard dan isolasi identitas
+
+- Tahap sekarang hanya kandidat skema keanggotaan
+  tenant, POP dan platform di PostgreSQL
+  laboratorium. Runtime database role belum
+  mendapat hak baca terhadap tabel identitas;
+  endpoint dashboard nyata tetap menolak
+  seluruh pengguna sampai independen
+  diverifikasi dan diotorisasi.
+- Penambahan ini **belum** memenuhi
+  FR-002/003/005 atau AC-01 sebagai
+  jalur UI+API+DB terintegrasi. Tes DB
+  negatif hanya bagian kontrol terisolasi.
+- Prioritas MUST selanjutnya:
+  OIDC Authorization Code+PKCE/MFA,
+  keanggotaan disetujui terpisah dari
+  token claim/HTTP headers, mapping
+  verified tenant/domain/POP, server
+  RBAC+ABAC yang menyaring menu dan
+  menolak URL/API, RLS dan audit.
+  Sertakan tes penetrasi silang dua
+  tenant dan tiga workspace.
+- Waktu perkiraan bersyarat ada di
+  [roadmap R7.0](DASHBOARD_MEMBERSHIP_R70.md);
+  tidak ada rilis komersial sebelum
+
+  gate recovery/perimeter dan perangkat
+  laboratorium nyata lulus.
