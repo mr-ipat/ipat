@@ -50,6 +50,18 @@ Banner merah pada ketiga pratinjau dashboard tetap berlaku
 meskipun tes ini hijau. Lihat
 [C320_FIRMWARE_INTEGRITY_R72.md](C320_FIRMWARE_INTEGRITY_R72.md).
 
+## R7.3 — format dua nama kartu hanya pada parser offline
+
+Dokumen vendor historis menampilkan perbedaan CfgType/RealType
+pada satu slot. Importer sebelumnya menolak contoh sintetis yang
+valid karena hanya membandingkan RealType. R7.3 kini menuntut MVR
+dengan CfgType ATAU RealType dari **slot yang sama**; tipe acak,
+slot berbeda dan tanpa MVR tetap gagal. Ini hanya memperbaiki
+keterbacaan bukti OFFLINE, bukan kompatibilitas firmware/perangkat.
+Bukti tes dan keterbatasan: [R7.3](C320_BOARD_ALIAS_R73.md).
+**PERINGATAN MERAH TETAP BERLAKU: OLT FISIK BELUM TERHUBUNG
+DAN FIRMWARE TETAP DINONAKTIFKAN.**
+
 ## Gerbang agar satu unit C320 bisa benar-benar diuji
 
 1. Dapatkan akses pemilik yang disetujui, verifikasi unit fisik DEV-01

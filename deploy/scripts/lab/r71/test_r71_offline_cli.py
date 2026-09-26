@@ -52,6 +52,20 @@ class OfflineEvidence(unittest.TestCase):
         self.assertNotIn('V0.0.LAB',p.stdout)
         self.assertNotIn('GTGOG',p.stdout)
 
+    def test_configured_card_alias_is_accepted_only_for_same_slot(self):
+        self.cards.write_text(CARDS.replace("GTGO GTGOG", "ETGO ETGOD"))
+        self.versions.write_text(VERSIONS.replace("GTGOG MVR", "ETGO MVR"))
+        os.chmod(self.cards,0o600)
+        os.chmod(self.versions,0o600)
+        result=self.call()
+        self.assertEqual(result.returncode,0,result.stderr)
+        self.assertIn('PHYSICAL_DEVICE_IDENTITY=UNVERIFIED',result.stdout)
+        self.versions.write_text(
+            self.versions.read_text().replace("ETGO MVR","UNRELATED MVR")
+        )
+        os.chmod(self.versions,0o600)
+        self.assertEqual(self.call().returncode,4)
+
     def test_non_opted_in_and_unknown_flags_fail_without_access(self):
         self.assertEqual(self.call(optin=False).returncode,4)
         self.assertEqual(self.call(method='--live').returncode,4)

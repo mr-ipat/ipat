@@ -14,6 +14,8 @@ pub enum EvidenceError {
 #[derive(Debug, PartialEq, Eq)]
 pub struct Card {
     pub location: String,
+    /// Vendor CfgType, not necessarily identical to the physical RealType.
+    pub configured_type: String,
     pub card_type: String,
     pub status: CardStatus,
 }
@@ -89,6 +91,7 @@ pub fn parse_cards(input: &str) -> Result<Vec<Card>, EvidenceError> {
         }
         out.push(Card {
             location: loc,
+            configured_type: col[3].into(),
             card_type: col[4].into(),
             status,
         });
@@ -150,6 +153,21 @@ pub fn parse_running_versions(input: &str) -> Result<Vec<RunningVersion>, Eviden
     }
     Ok(out)
 }
+/// Cross-check MVR for every observed card. Some historical C320 text
+/// describes MVR by configured card type instead of physical RealType;
+/// accept only these TWO types from the same observed slot, never an
+/// unrelated type or an arbitrary same-family prefix.
+pub fn consistent_inventory(cards: &[Card], versions: &[RunningVersion]) -> bool {
+    !cards.is_empty()
+        && cards.iter().all(|c| {
+            versions.iter().any(|v| {
+                v.location == c.location
+                    && v.file_kind == "MVR"
+                    && (v.card_type == c.card_type || v.card_type == c.configured_type)
+            })
+        })
+}
+
 /// Operator inputs are NOT trusted attestations; checks only make a document
 /// eligible for human review, never unlock firmware execution.
 #[derive(Default, Clone, Copy)]

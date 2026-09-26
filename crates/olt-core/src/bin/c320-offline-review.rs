@@ -1,6 +1,6 @@
 //! Offline-only C320 operator evidence import from TWO fixed files.
 //! NEVER network, SSH, login, firmware upload or physical verification.
-use olt_core::{parse_cards, parse_running_versions, Card, RunningVersion, MAX_OUTPUT};
+use olt_core::{consistent_inventory, parse_cards, parse_running_versions, MAX_OUTPUT};
 use std::{
     env,
     fs::OpenOptions,
@@ -69,13 +69,6 @@ fn read_fixed(dir: &Path, name: &str) -> Result<String, ()> {
     }
     Ok(data)
 }
-fn consistent(cards: &[Card], versions: &[RunningVersion]) -> bool {
-    cards.iter().all(|c| {
-        versions
-            .iter()
-            .any(|v| v.location == c.location && v.card_type == c.card_type && v.file_kind == "MVR")
-    })
-}
 fn main() {
     let args: Vec<_> = env::args_os().collect();
     if args.len() == 2 && args[1] == "--requirements" {
@@ -97,7 +90,7 @@ fn main() {
         let cards = parse_cards(&read_fixed(&dir, "cards.txt")?).map_err(|_| ())?;
         let versions =
             parse_running_versions(&read_fixed(&dir, "versions.txt")?).map_err(|_| ())?;
-        if !consistent(&cards, &versions) {
+        if !consistent_inventory(&cards, &versions) {
             return Err(());
         }
         Ok((cards.len(), versions.len()))
