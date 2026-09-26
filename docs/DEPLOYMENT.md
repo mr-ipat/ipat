@@ -152,3 +152,23 @@ Do not pin unverified public scans, disable SSH host
 checking, modify live router services, change a shared
 provider perimeter or install production K3s to
 work around the blocked connection.
+
+## R6.4 first SSH read requires independent device identity
+
+On the authorized FileVault Mac, use only the owner-private
+mode-0700 `~/.local/share/ipat/router-lab/` directory
+outside Git. R6.4 creates an intentionally unusable,
+mode-0600 `ssh-read.template.json` there for operator
+preparation; it is not a real authorized probe configuration.
+Run `python3 deploy/scripts/lab/r64/ssh-first-read.py
+--requirements` with no network and consult
+[the R6.4 independent fingerprint and safe first-read
+runbook](MIKROTIK_SSH_R64.md). No real SSH read is
+allowed until actual separate direct-LAN host
+fingerprint proof, restricted dedicated key, trusted
+identity, backup/recovery and operator opt-ins.
+The previous pinned host key is NEVER deleted,
+overwritten or ignored, and there is no fallback
+to chat-shared password authentication. No live
+VPS firewall/K3s/PostgreSQL or shared provider
+perimeter change is part of this preparation.

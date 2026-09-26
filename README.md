@@ -58,3 +58,5 @@ IPAT (`IP@`) is a planned commercial multi-tenant ISP network operations platfor
 `crates/cwmp-protocol` adds **offline-only** bounded CWMP 1.0 Inform parsing and a pure response serializer, with synthetic tests. `apps/cwmp-gateway` still has no authenticated transport/session listener. `apps/usp-controller` has only an optional loopback health route; native USP trust and correlation remain synthetic. `crates/diagnostic-core` and `crates/provisioning-core` are non-networked synthetic test modules, with no live router commands, OIDC-backed privileges or persistent job store. Device interoperability remains untested.
 
 On a prepared development host: `cargo fmt --all -- --check && cargo test --workspace --locked`; run local demo with `cargo run -p control-api`. See `docs/PROJECT_STATUS.md` for **actual** test results; never infer success solely from source presence.
+
+- [R6.4 restricted SSH first-read laboratory path and explicit host identity safety](docs/MIKROTIK_SSH_R64.md)

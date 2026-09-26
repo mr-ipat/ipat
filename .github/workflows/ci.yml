@@ -110,10 +110,18 @@ jobs:
         run: |
           bash -n deploy/scripts/lab/r62/synthetic-cross-contract.sh
           bash deploy/scripts/lab/r62/synthetic-cross-contract.sh
+      - name: Verify R6.4 simulated SSH output to Rust strict evidence contract
+        run: |
+          bash -n deploy/scripts/lab/r64/synthetic-ssh-cross-contract.sh
+          bash deploy/scripts/lab/r64/synthetic-ssh-cross-contract.sh
       - name: Verify R6.3 SSH host identity mismatch fails closed without login
         run: |
           python3 -m py_compile deploy/scripts/lab/r63/ssh-host-trust-check.py
           python3 -m unittest discover deploy/scripts/lab/r63 -p 'test_r63_review.py' -v
+      - name: Verify R6.4 single-device SSH identity lock and negative path
+        run: |
+          python3 -m py_compile deploy/scripts/lab/r64/ssh-first-read.py
+          python3 -m unittest discover deploy/scripts/lab/r64 -p 'test_r64_review.py' -v
 
 
   postgres-rls-restore:

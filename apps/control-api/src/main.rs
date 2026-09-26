@@ -209,6 +209,7 @@ mod tests {
         assert!(LAB_DEVICE_TARGETS.contains("\"catalog_mode\": \"planned_targets_only\""));
         assert!(LAB_DEVICE_TARGETS.contains("\"physical_devices_enrolled\": 0"));
         assert!(LAB_DEVICE_TARGETS.contains("\"network_discovery_enabled\": false"));
+        assert!(LAB_DEVICE_TARGETS.contains("\"access_gate\": \"ssh_host_key_changed_unverified\""));
         let response = get_path(app_with_lab(false), "/lab/device-targets").await;
         assert_eq!(response.status(), StatusCode::NOT_FOUND);
     }

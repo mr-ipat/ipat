@@ -40,7 +40,7 @@
       </header>
       <main id="main">
         <section id="overview" class="hero" aria-labelledby="page-title">
-          <div class="eyebrow"><span class="green-dot" aria-hidden="true"></span> IPAT LAB CONSOLE <span class="version-tag">R6.0 Inventory Lab</span></div>
+          <div class="eyebrow"><span class="green-dot" aria-hidden="true"></span> IPAT LAB CONSOLE <span class="version-tag">R6.4 Router Security Lab</span></div>
           <h1 id="page-title">Operasional jaringan.<br><span>Dalam satu platform.</span></h1>
           <p class="hero-description">Pratinjau antarmuka IPAT untuk memvalidasi layanan laboratorium. Tidak terhubung ke OLT, ONT, pelanggan, maupun perangkat produksi.</p>
           <div class="hero-actions">
@@ -74,6 +74,7 @@
         <section id="device-targets" class="section-block device-targets" aria-labelledby="device-targets-title">
           <div class="section-header"><div><span class="section-kicker">HARDWARE TEST READINESS</span><h2 id="device-targets-title">Daftar target perangkat</h2></div><span class="subtle-tag">BUKAN PERANGKAT TERHUBUNG</span></div>
           <div class="device-warning"><div><strong><span id="candidate-count">8</span> target pengujian disiapkan · <span id="physical-count">0</span> perangkat fisik terdaftar</strong><p>Daftar ini berasal dari rencana pengujian. Belum ada klaim kompatibilitas, discovery jaringan, kredensial, atau hasil uji perangkat fisik.</p></div><span class="step-state">Menunggu data lab</span></div>
+          <div id="router-security-alert" class="device-warning" role="status" hidden><div><strong>DEV-08: akses SSH diblokir — identitas host berubah</strong><p>Pemeriksaan terakhir menemukan kunci SSH berbeda dari catatan tepercaya. Login, pembacaan perangkat asli, dan konfigurasi tidak dilakukan. Verifikasi sidik jari melalui LAN independen diperlukan sebelum pengujian fisik; informasi ini bukan status koneksi langsung.</p></div><span class="step-state">Menunggu bukti independen</span></div>
           <div class="device-list-container"><table class="device-table"><caption class="sr-only">Target laboratorium yang belum didaftarkan secara fisik</caption><thead><tr><th scope="col">ID</th><th scope="col">Jenis</th><th scope="col">Vendor / keluarga</th><th scope="col">Rencana uji</th><th scope="col">Status</th></tr></thead><tbody id="target-rows"><tr><td colspan="5">Memuat rencana perangkat...</td></tr></tbody></table></div>
           <div class="device-bottom"><p id="target-feedback" role="status" aria-live="polite">Informasi calon perangkat, bukan telemetri langsung.</p><a href="https://github.com/mr-ipat/ipat/blob/main/docs/DEVICE_MATRIX.md" target="_blank" rel="noopener noreferrer">Persyaratan model dan firmware ↗</a></div>
         </section>

@@ -98,10 +98,16 @@ pub fn normalize_staged_lab_evidence(
     let string = |key: &str| fields.strings.get(key).map(String::as_str).unwrap_or("");
     let flag = |key: &str| *fields.flags.get(key).unwrap_or(&false);
 
+    // Two strictly read-only transports may produce the SAME untrusted,
+    // redacted identity tuple. Never mix method, scope and resource values.
+    let read_only_rest = string("test_scope") == "one_authenticated_read_only_rest_get"
+        && string("method") == "GET"
+        && string("resource") == "/rest/system/resource";
+    let read_only_ssh = string("test_scope") == "one_authenticated_read_only_ssh_exec"
+        && string("method") == "SSH_EXEC"
+        && string("resource") == "/system/resource:board-name,architecture-name,version";
     if string("target_id") != "DEV-08"
-        || string("test_scope") != "one_authenticated_read_only_rest_get"
-        || string("method") != "GET"
-        || string("resource") != "/rest/system/resource"
+        || !(read_only_rest || read_only_ssh)
         || string("hardware_revision") != "NOT_OBSERVED"
         || !flag("read_observed")
         || flag("operator_review_complete")
@@ -190,6 +196,33 @@ mod tests {
             file[field] = serde_json::json!(value);
             assert!(parse(file).is_err(), "{field}");
         }
+    }
+
+    #[test]
+    fn accepts_synthetic_ssh_unreviewed_identity_without_forged_privileges() {
+        let mut file = good_evidence();
+        file["test_scope"] = serde_json::json!("one_authenticated_read_only_ssh_exec");
+        file["method"] = serde_json::json!("SSH_EXEC");
+        file["resource"] =
+            serde_json::json!("/system/resource:board-name,architecture-name,version");
+        let result = parse(file.clone()).unwrap();
+        assert_eq!(result.target_id(), "DEV-08");
+        assert!(!result.physical_read_reviewed());
+        assert!(!result.physical_enrollment_authorized());
+        assert!(!result.tenant_binding_verified());
+        assert!(!result.configuration_writes_permitted());
+        for (field, forged) in [
+            ("method", "POST"),
+            ("method", "GET"),
+            ("resource", "/system/resource/set"),
+            ("test_scope", "one_authenticated_read_only_rest_get"),
+        ] {
+            let mut altered = file.clone();
+            altered[field] = serde_json::json!(forged);
+            assert!(parse(altered).is_err(), "{field}");
+        }
+        file["tenant_binding_verified"] = serde_json::json!(true);
+        assert!(parse(file).is_err());
     }
 
     #[test]

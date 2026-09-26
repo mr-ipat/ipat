@@ -59,6 +59,7 @@ async function loadHardwareTargets() {
         || catalog.targets.some(t => !(
           t.status === "awaiting_metadata" ||
           (t.id === "DEV-08" && t.status === "operator_reported_pending_verification"
+            && t.access_gate === "ssh_host_key_changed_unverified"
             && t.family === "RB951Ui-2HnD"
             && t.firmware.includes("7.23.7"))))) {
       throw new Error("unexpected catalog provenance");
@@ -72,7 +73,7 @@ async function loadHardwareTargets() {
         device.vendor + " " + device.family,
         device.test_plan + (device.id === "DEV-08" ? " · RouterOS dilaporkan: 7.23.7" : ""),
         device.status === "operator_reported_pending_verification"
-          ? "Dilaporkan pemilik; belum terhubung" : "Menunggu metadata"];
+          ? "SSH diblokir: verifikasi identitas" : "Menunggu metadata"];
       for (let i=0;i<fields.length;i++) {
         const cell = document.createElement("td");
         cell.textContent = String(fields[i]);
@@ -84,7 +85,8 @@ async function loadHardwareTargets() {
     table.replaceChildren(fragment);
     byId("candidate-count").textContent = String(catalog.targets.length);
     byId("physical-count").textContent = "0";
-    feedback.textContent = "Rencana pengujian dimuat. Model, firmware, izin, dan konektivitas fisik belum diverifikasi.";
+    feedback.textContent = "DEV-08: SSH DIBLOKIR setelah kunci host berubah. Data ini status laboratorium terakhir, bukan pemantauan langsung. Perangkat fisik terdaftar: 0.";
+    byId("router-security-alert").hidden = false;
   } catch {
     table.replaceChildren();
     const row = document.createElement("tr");
@@ -96,6 +98,7 @@ async function loadHardwareTargets() {
     byId("candidate-count").textContent = "–";
     byId("physical-count").textContent = "–";
     feedback.textContent = "Pemeriksaan katalog gagal; jangan menafsirkan tabel ini sebagai koneksi perangkat.";
+    byId("router-security-alert").hidden = true;
   }
 }
 refresh.addEventListener("click", () => {

@@ -84,8 +84,10 @@
       "family": "RB951Ui-2HnD",
       "model_detail": "RB951Ui-2HnD (dilaporkan pemilik; belum dibaca melalui perangkat)",
       "firmware": "RouterOS 7.23.7 (dilaporkan pemilik; belum diverifikasi)",
-      "test_plan": "HTTPS REST hanya-baca: model, arsitektur, versi RouterOS; tanpa pengaturan",
-      "status": "operator_reported_pending_verification"
+      "test_plan": "SSH read-only candidate: host key changed; independent direct-LAN identity verification required before login (HTTPS remains separately gated)",
+      "status": "operator_reported_pending_verification",
+      "access_gate": "ssh_host_key_changed_unverified"
     }
-  ]
+  ],
+  "catalog_note": "STATIC LAB SNAPSHOT ONLY. SSH identity gate is from a previous read-only check, not a live connection or real device record."
 }
