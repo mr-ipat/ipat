@@ -150,3 +150,20 @@ declared physically compatible. The private browser
 shows the previous blocker as STATIC and
 `physical_devices_enrolled=0`. See
 [restricted R6.4 lab scope](MIKROTIK_SSH_R64.md).
+
+## R6.5 reported customer RB router still physically UNTESTED
+
+The owner-authorized public SSH listener was reachable in
+prior read-only checks but the owner's Mac has a different
+previously trusted RSA server key. The alternate
+default API-SSL and HTTPS ports were not verified
+reachable in a separate no-credential exact-target
+test. These observations alone do **not** verify
+the hardware or actual installed services of any
+customer router. The claimed DEV-08 RB951Ui-2HnD,
+RouterOS 7.23.7 remains operator-reported only;
+no password sent, trusted WinBox session proven,
+actual physical board/version read, TR-069
+session initiated or RouterOS configuration
+written. TC-ROS-03 NOT RUN. See
+[the R6.5 staged access plan](MIKROTIK_CUSTOMER_R65_PREP.md).
