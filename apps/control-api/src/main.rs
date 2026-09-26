@@ -2,6 +2,14 @@
 
 use axum::{http::StatusCode, routing::get, Router};
 
+fn bind_address(k3s_lab: bool) -> &'static str {
+    if k3s_lab {
+        "0.0.0.0:3000"
+    } else {
+        "127.0.0.1:3000"
+    }
+}
+
 fn app() -> Router {
     Router::new()
         .route("/healthz", get(|| async { "ok" }))
@@ -16,9 +24,10 @@ fn app() -> Router {
 
 #[tokio::main]
 async fn main() {
-    let listener = tokio::net::TcpListener::bind("127.0.0.1:3000")
+    let k3s_lab = std::env::var("IPAT_RUN_K3S_LAB").as_deref() == Ok("1");
+    let listener = tokio::net::TcpListener::bind(bind_address(k3s_lab))
         .await
-        .expect("bind local loopback");
+        .expect("bind control API laboratory listener");
     axum::serve(listener, app()).await.expect("serve API");
 }
 
@@ -27,6 +36,12 @@ mod tests {
     use super::*;
     use axum::{body::Body, http::Request};
     use tower::ServiceExt;
+
+    #[test]
+    fn network_bind_is_loopback_unless_explicit_k3s_lab() {
+        assert_eq!(bind_address(false), "127.0.0.1:3000");
+        assert_eq!(bind_address(true), "0.0.0.0:3000");
+    }
 
     #[tokio::test]
     async fn health_endpoint_responds() {

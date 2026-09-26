@@ -29,7 +29,13 @@ class SyntheticUspBoundaryTests(unittest.TestCase):
         self.assertIn('IPAT_RUN_OFFLINE_USP_LAB', APP)
         self.assertIn('127.0.0.1:3100', APP)
         self.assertIn('StatusCode::SERVICE_UNAVAILABLE', APP)
-        self.assertNotIn('"0.0.0.0:', APP)
+        # R5.8 permits pod-only wildcard bind ONLY when both separate explicit
+        # synthetic+K3s lab flags are supplied; the default is still loopback.
+        self.assertIn('IPAT_RUN_K3S_LAB', APP)
+        self.assertIn('if k3s_lab {', APP)
+        self.assertIn('bind_address(k3s_lab)', APP)
+        self.assertIn('bind_address(false), "127.0.0.1:3100"', APP)
+        self.assertIn('bind_address(true), "0.0.0.0:3100"', APP)
         self.assertEqual(APP.count("#[tokio::test]"), 3)
         self.assertEqual(CORE.count("#[test]"), 12)
 
