@@ -22,7 +22,7 @@ node_ip="$2"
 # K3s data is intentionally root-only; probe the real Unix socket via
 # narrowly scoped noninteractive privilege without relaxing its permissions.
 [[ -f "$lab_dir/kubeconfig" && -x "$lab_dir/k3s" ]] &&
-  sudo -n test -S "$lab_dir/data/agent/containerd/containerd.sock" || {
+  sudo -n test -S /run/k3s/containerd/containerd.sock || {
   echo 'R58_DENIED: require pre-existing temporary validated cluster' >&2; exit 4;
 }
 python3 - "$node_ip" <<'PY'
@@ -53,8 +53,10 @@ docker build -q -f deploy/container/usp-controller.Dockerfile \
 # external registry, live VPS, developer secret, NodePort or external ingress.
 docker save ipat/control-api:r58-lab ipat/usp-controller:r58-lab \
   -o "$lab_dir/ipat-r58-images.tar"
-sudo "$lab_dir/k3s" ctr --address "$lab_dir/data/agent/containerd/containerd.sock" \
-  -n k8s.io images import "$lab_dir/ipat-r58-images.tar" >/dev/null
+# The bundled k3s ctr is configured for the actual runtime socket in
+# /run/k3s; --data-dir changes persistent storage, NOT that socket path.
+sudo "$lab_dir/k3s" ctr -n k8s.io images import \
+  "$lab_dir/ipat-r58-images.tar" >/dev/null
 rm -f "$lab_dir/ipat-r58-images.tar"
 echo 'R58_LOCAL_CONTAINERD_IMAGES_IMPORTED=PASS'
 # Helm chart forbids externally published services; validate before install.

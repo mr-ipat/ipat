@@ -24,6 +24,8 @@ class K3sR58SourceSafety(unittest.TestCase):
             self.assertNotIn(forbidden, text)
         self.assertIn('IPAT_R58_SMOKE:-0', WRAPPER.read_text())
         self.assertIn('R58_ACTUAL_UNAPPROVED_SAME_NAMESPACE_POD_INGRESS_DENIED=PASS', text)
+        self.assertIn('test -S /run/k3s/containerd/containerd.sock', text)
+        self.assertNotIn('--address "$lab_dir/data/agent', text)
         self.assertIn('R56_EPHEMERAL_ETCD_SNAPSHOT_CREATED=PASS', WRAPPER.read_text())
 
     def test_untrusted_mac_or_real_vps_cannot_execute_app_script(self):
