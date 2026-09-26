@@ -2,7 +2,7 @@
 
 **As-of:** 2026-09-26 Asia/Jakarta
 **Milestone:** R5.9 — explicitly opted-in Mac-local browser preview backed by actual Rust Control API; public production access still blocked
-**Milestone state:** R5.9 feature implementation IN REVIEW. Previous R5.8 code/docs final private GitHub, Mac and actual Ubuntu 26.04.1 VPS main SHA `914ec432626f103a66608af0e7dc831e2d49b10e` was previously verified with four-job CI SUCCESS and encrypted source snapshot `7fdf610e` independently restored. Current R5.9 preview source was separately compiled/tested as unprivileged Rust on the real VPS in a throwaway checkout: six Control API unit tests, real strictly loopback HTTP/HTML/JS/CSP, anonymous 401, mutation 405 and actual private-only sampled port passed; CI, merge, Mac-local end-to-end tunnel and final source backup are pending. Real VPS K3s/PostgreSQL/nftables remain INACTIVE. No public domain or real OIDC/multi-tenant data access exists. Real independently working OOB console login, whole-VPS recovery, dedicated effective dual-stack perimeter and approved ADR-017/018 remain blocked; do not expose this unauthenticated lab page publicly or install live K3s. Developer Mr. iPat.
+**Milestone state:** R5.9 feature PR #49 MERGED to private GitHub `main` `466ffcb67a87ba3f88330f26a13cebda5d624e7d`; PR CI `36210434210` SUCCESS in all **four** jobs, including unchanged actual disposable Ubuntu 26.04 K3s health-only app/network-policy smoke and both synthetic PostgreSQL jobs. New original Rust Control API browser UI is read-only, disabled by default and forced off for wildcard K3s pod binding; direct 401/405 and CSP tested. Private GitHub, clean Mac and actual Ubuntu 26.04.1 VPS canonical source SHA match; actual VPS formatting, **81 locked/offline Rust tests**, **42 lab static**, **6 R5.7**, **6 R5.8**, **6 new R5.9**, **14 database static**, and **5 readiness static** tests all PASS; existing VPS K3s/PostgreSQL/nftables INACTIVE. Mac FileVault ON; latest exact feature-source encrypted Restic snapshot `8c40ccec` and separately held selected-root-readable snapshot `abaa9827` were independently restored with full pack read PASS and plaintext artifacts removed. GitHub post-feature-main CI `36210550883` also independently returned SUCCESS in all four jobs; the real Mac local-browser SSH tunnel remains PENDING at this doc checkpoint. Complete independent OOB host rescue, dedicated effective dual-stack perimeter, approved ADR-017/018, trusted OIDC and public HTTPS domain have NOT been satisfied; this is an SSH-loopback-only browser preview, never a public site. After docs merge, re-backup its exact SHA and actually test Mac tunnel; final immutable results belong in docs PR discussion. Developer: Mr. iPat.
 
 ## 1. Source of truth and provenance
 
@@ -491,3 +491,31 @@ Mac parser checks and six source safety tests passed. A fresh non-root strict SS
   OPEN; ADR-006/014/017/018 have not been silently approved. Only after
   PR CI, merge, exact source sync, encrypted restore and actual working
   SSH tunnel may the Mac-local browser preview be declared READY.
+
+### R5.9 reviewed feature PR, actual Ubuntu regression, encrypted backup checkpoint
+
+- [Feature PR #49](https://github.com/mr-ipat/ipat/pull/49) merged to private
+  GitHub `main` `466ffcb67a87ba3f88330f26a13cebda5d624e7d`. Actual PR CI
+  `36210434210` SUCCESS across all four independent GitHub jobs (Rust/static,
+  real disposable K3s Ubuntu 26.04, isolated logical PostgreSQL and synthetic
+  physical PostgreSQL backup/restore). Existing K3s health-only pod policies
+  were unchanged; the new opt-in browser UI cannot be exposed by them.
+- Private GitHub/Mac/actual Ubuntu 26.04.1 nonprivileged checkout exact SHA
+  matched. Real VPS passed Rust formatting, **81/81 offline Rust workspace
+  tests**, **42/42 existing lab**, **6/6 R5.7**, **6/6 R5.8**,
+  **6/6 new R5.9**, **14/14 database static** and
+  **5/5 production readiness static** tests without installing or activating
+  K3s/PostgreSQL/nftables. On isolated VPS source, a *real* temporary
+  private HTTP server passed HTML/assets/status/CSP/401/405 and exclusively
+  loopback listener checks, then was stopped.
+- Mac FileVault ON; exact reviewed feature-main source snapshot `8c40ccec`
+  independently passed isolated SHA-256 restoration and historic partial
+  restore. Separately encrypted selected privileged-root-readable snapshot
+  `abaa9827` independently restored sudoers/SSH hardening metadata;
+  repository complete Restic pack reading PASS; temporary plaintext removed.
+  This is NOT a complete restored independent replacement VPS or PostgreSQL
+  PITR rehearsal. Actual post-feature-main CI `36210550883` also returned
+  SUCCESS in all four jobs. The real Mac tunnel is still pending at this
+  checkpoint; after documentation merge, repeat final exact
+  source snapshot and post that SHA/backup/CI/localhost proof in PR discussion
+  rather than repeatedly changing `main`.
