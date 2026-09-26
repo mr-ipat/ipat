@@ -164,3 +164,9 @@ K3s, PostgreSQL langsung maupun layanan
 VPS produksi. Native USP Controller tetap
 terpisah dan wajib dikembangkan sesuai
 ADR-002.
+
+## Bukti setelah penggabungan fitur asli
+
+PR [#63](https://github.com/mr-ipat/ipat/pull/63) telah digabungkan pada commit `2baaf8419b3eba6933854847db73a7120612c579`. CI independen pada PR (`36239520353`) dan pada main sesudah merge (`36239646430`) sama-sama SUCCESS di seluruh empat job, mencakup pengujian Rust/mTLS, K3s disposable Ubuntu 26.04 serta dua jalur pemulihan PostgreSQL sintetis yang terpisah. Pada checkout canonical source Ubuntu 26.04.1 VPS yang **tidak diinstal sebagai layanan live**, 123/123 tes Rust terkunci/offline lulus, enam tes static-kontrak lulus dan uji TLS1.3 OpenSSL/cURL sungguhan kembali lulus tanpa listener tersisa. Checkout dan commit Mac FileVault serta GitHub sama. Backup sumber terenkripsi exact source Restic `884cc492` berhasil diuji restore SHA256 dan seluruh encrypted pack; selected historical root-readable configuration juga diuji pemulihan terpisah, bukan pemulihan seluruh VPS atau PITR PostgreSQL. Semua layanan VPS K3s/PostgreSQL/nftables masih inactive, tidak ada pelanggan atau ONT fisik yang diakses. Gate readiness otomatis 8/8 lulus pada Git branch main yang bersih, tetapi **7/7 verifikasi eksternal independen masih BLOCKED**, keputusan produksi **NO_GO**.
+
+[Status penggunaan produk dan kriteria pilot](PRODUCT_READINESS_R67.md). Bukti sumber/dokumen SHA terakhir akan direkam melalui komentar PR immutable setelah checkpoint dokumentasi digabung.
