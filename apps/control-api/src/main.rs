@@ -2,6 +2,11 @@
 //! R5.9 adds an explicitly opted-in, read-only LOCAL web preview.
 //! This is NOT an authenticated tenant dashboard or a production/public UI.
 
+mod oidc_lab;
+
+use identity_core::PinnedIssuer;
+use std::sync::Arc;
+
 use axum::{
     http::{header, HeaderMap, HeaderName, HeaderValue, StatusCode},
     response::Html,
@@ -29,6 +34,14 @@ fn bind_address(k3s_lab: bool) -> &'static str {
 
 fn lab_web_enabled(k3s_lab: bool, lab_requested: bool) -> bool {
     lab_requested && !k3s_lab
+}
+
+fn identity_lab_bind_address(k3s_lab: bool, enabled: bool) -> &'static str {
+    if !k3s_lab && enabled {
+        "127.0.0.1:3001"
+    } else {
+        bind_address(k3s_lab)
+    }
 }
 
 fn private_lab_headers(content_type: &'static str) -> HeaderMap {
@@ -112,7 +125,12 @@ async fn unauthenticated_business_api() -> (HeaderMap, StatusCode) {
     (h, StatusCode::UNAUTHORIZED)
 }
 
+#[cfg(test)]
 fn app_with_lab(lab_web_enabled: bool) -> Router {
+    app_with_lab_identity(lab_web_enabled, None)
+}
+
+fn app_with_lab_identity(lab_web_enabled: bool, verifier: Option<Arc<PinnedIssuer>>) -> Router {
     let api = Router::new()
         .route("/healthz", get(|| async { "ok" }))
         .route(
@@ -135,7 +153,8 @@ fn app_with_lab(lab_web_enabled: bool) -> Router {
             }),
         );
     if lab_web_enabled {
-        api.route("/lab", get(lab_index))
+        let mut private = api
+            .route("/lab", get(lab_index))
             .route("/lab/", get(lab_index))
             .route("/lab/style.css", get(lab_css))
             .route("/lab/app.js", get(lab_js))
@@ -143,7 +162,11 @@ fn app_with_lab(lab_web_enabled: bool) -> Router {
             .route("/lab/device-targets", get(lab_device_targets))
             .route("/lab/dashboard-preview", get(lab_dashboard_preview))
             .route("/lab/dashboard-preview.css", get(lab_dashboard_css))
-            .route("/lab/dashboard-preview.js", get(lab_dashboard_js))
+            .route("/lab/dashboard-preview.js", get(lab_dashboard_js));
+        if let Some(verifier) = verifier {
+            private = private.merge(oidc_lab::router(verifier));
+        }
+        private
     } else {
         api
     }
@@ -160,10 +183,22 @@ async fn main() {
     let lab_requested = std::env::var("IPAT_LAB_WEB").as_deref() == Ok("1");
     // Fail closed: never expose unauthenticated lab HTML through the K3s pod bind.
     let lab_web_enabled = lab_web_enabled(k3s_lab, lab_requested);
-    let listener = tokio::net::TcpListener::bind(bind_address(k3s_lab))
+    let identity =
+        if lab_web_enabled && std::env::var("IPAT_LAB_OIDC_VERIFY").as_deref() == Ok("YES") {
+            Some(
+                oidc_lab::from_owner_environment()
+                    .expect("invalid owner-controlled OIDC signature lab prerequisites"),
+            )
+        } else {
+            None
+        };
+    // Explicitly separate private identity proof from existing port 3000
+    // dashboard preview. Never bind the identity proof on a public interface.
+    let address = identity_lab_bind_address(k3s_lab, identity.is_some());
+    let listener = tokio::net::TcpListener::bind(address)
         .await
-        .expect("bind control API laboratory listener");
-    axum::serve(listener, app_with_lab(lab_web_enabled))
+        .expect("bind isolated identity/dashboard lab listener");
+    axum::serve(listener, app_with_lab_identity(lab_web_enabled, identity))
         .await
         .expect("serve API");
 }
@@ -185,6 +220,9 @@ mod tests {
     fn network_bind_is_loopback_unless_explicit_k3s_lab() {
         assert_eq!(bind_address(false), "127.0.0.1:3000");
         assert_eq!(bind_address(true), "0.0.0.0:3000");
+        assert_eq!(identity_lab_bind_address(false, true), "127.0.0.1:3001");
+        assert_eq!(identity_lab_bind_address(false, false), "127.0.0.1:3000");
+        assert_eq!(identity_lab_bind_address(true, true), "0.0.0.0:3000");
     }
 
     #[tokio::test]

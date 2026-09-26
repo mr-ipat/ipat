@@ -402,3 +402,31 @@ valid, operasi data nyata
 dan operasional ISP masih
 MUST terblokir.
 [Detail dan gate](DASHBOARDS_R68.md).
+
+### R6.9 partial identity proof for Platform/Tenant/NOC (not login)
+
+FR-002/003 advance from visual synthetic dashboard
+to a cryptographically verified, externally
+pinned RS256 JWT subject **on private
+explicitly opted-in laboratory only**.
+Signature, issuer, audience, key ID,
+expiry, nbf/iat and token lifetime
+checks are exercised using disposable
+OpenSSL RSA test identities, including
+forgery and algorithm-confusion negatives.
+Valid signature yields NO tenant/role
+privilege and real business endpoints
+remain HTTP 401. Thus FR-002 authenticated
+OIDC session with MFA, FR-003 resource
+authorization and full verified
+domain/tenant isolation are **not yet
+accepted**. Before dashboard users
+can actually log in, integrate real
+IdP discovery/JWKS lifecycle,
+Authorization Code+PKCE, host-bound
+cookies, verified DB membership,
+server-side filtered menus and
+
+same-tenant/POP backend authorization
+against PostgreSQL RLS.
+[Exact R6.9 gap/test plan](IDENTITY_OIDC_R69.md).
