@@ -107,3 +107,15 @@ new unapproved mode-0600 JSON file and refuses network addresses, secrets,
 serials, unknown target IDs and unsafe paths. No live VPS privilege, network
 firewall, actual device read/probe, production ingress or K3s deployment
 is authorized by this step. A reviewed real-hardware plan is separate.
+
+## R6.1 first customer MikroTik test (no real connection by default)
+
+Owner-reported DEV-08 RB951Ui-2HnD / RouterOS 7.23.7 has
+a separate private, opt-in **one-GET-only** lab validation
+workflow in [MIKROTIK_CUSTOMER_R61.md](MIKROTIK_CUSTOMER_R61.md).
+This is a local operator-controlled script and not a new
+open device listener, deployed K3s adapter, public control API
+or customer login. Do not paste the router's real management IP,
+CA private keys or test-account password into Git/chat. Leave the
+live VPS infrastructure, provider/shared perimeter and production
+identity gates unchanged.

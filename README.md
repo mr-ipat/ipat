@@ -18,6 +18,7 @@ IPAT (`IP@`) is a planned commercial multi-tenant ISP network operations platfor
 - [R5.8 isolated health-only Rust apps, private Helm and real K3s smoke plan](docs/K3S_APPLICATION_PACKAGING_R58.md)
 - [R5.9 local browser preview through SSH, strict guard and public-web prerequisites](docs/WEB_PRIVATE_PREVIEW_R59.md)
 - [R6.0 eight planned device test slots and private offline metadata intake](docs/DEVICE_TESTING_R60.md)
+- [R6.1 owner-reported MikroTik RB951Ui-2HnD and strictly gated first read-only REST test](docs/MIKROTIK_CUSTOMER_R61.md)
 - [Technical architecture](docs/ARCHITECTURE.md)
 - [Physical device and firmware test matrix](docs/DEVICE_MATRIX.md)
 - [Security, tenant isolation and threat model](docs/SECURITY.md)

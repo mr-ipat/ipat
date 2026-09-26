@@ -210,3 +210,21 @@ never be interpreted as approval, secure tenant binding or proof of protocol
 support. Actual physical enrollment and read-only probing require explicit
 lab/tenant owner permission, dedicated least-privileged identity, isolated
 reachable channel, audited review, exact firmware record and negative tests.
+
+## R6.1 RouterOS initial physical-read safety
+
+One customer router's reported model/version never proves physical
+reachability or service support. The candidate REST probe requires
+owner permission, separate isolated lab route confirmation, owner-Mac
+run, *two explicit* real-GET environment gates, RFC1918 single target,
+independent TLS CA/hostname verification and dedicated local mode-0600
+netrc; it does not use admin credentials, skip certificates, perform
+discovery, auto-retry or any HTTP write. Only /rest/system/resource
+is allowed, and untrusted/raw response fields including serials,
+secrets and addresses are not emitted. The allowed evidence file is
+new mode-0600 outside Git. Data still cannot be exposed via the
+unauthenticated lab UI; even a successful unreviewed probe does not
+provide true OIDC/tenant binding or any write permission.
+A qualified human must ensure router www-ssl is source restricted
+and account policy is custom least-privilege (read,rest-api only
+as compatible), unlike the overprivileged built-in read group.

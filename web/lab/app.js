@@ -56,7 +56,11 @@ async function loadHardwareTargets() {
         || catalog.compatibility_claim !== false
         || !Array.isArray(catalog.targets)
         || catalog.targets.length !== 8
-        || catalog.targets.some(t => t.status !== "awaiting_metadata")) {
+        || catalog.targets.some(t => !(
+          t.status === "awaiting_metadata" ||
+          (t.id === "DEV-08" && t.status === "operator_reported_pending_verification"
+            && t.family === "RB951Ui-2HnD"
+            && t.firmware.includes("7.23.7"))))) {
       throw new Error("unexpected catalog provenance");
     }
     const kind = {OLT:"OLT",ONT:"ONT",ROUTER_DISTRIBUTION:"Router distribusi",
@@ -65,7 +69,10 @@ async function loadHardwareTargets() {
     for (const device of catalog.targets) {
       const row = document.createElement("tr");
       const fields = [device.id,kind[device.category] || "Belum dikenal",
-        device.vendor + " " + device.family,device.test_plan,"Menunggu metadata"];
+        device.vendor + " " + device.family,
+        device.test_plan + (device.id === "DEV-08" ? " · RouterOS dilaporkan: 7.23.7" : ""),
+        device.status === "operator_reported_pending_verification"
+          ? "Dilaporkan pemilik; belum terhubung" : "Menunggu metadata"];
       for (let i=0;i<fields.length;i++) {
         const cell = document.createElement("td");
         cell.textContent = String(fields[i]);
