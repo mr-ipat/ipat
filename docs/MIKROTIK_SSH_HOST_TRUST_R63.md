@@ -145,3 +145,7 @@ management remain `untested`.
   endpoint probe in this milestone is a one-host, unauthenticated
   public RSA fingerprint check. No password was used and no
   real device hardware/model/firmware was verified.
+
+## R6.3 tested feature checkpoint (physical authentication STILL BLOCKED)
+
+Security code [PR #57](https://github.com/mr-ipat/ipat/pull/57) merged at `017adfc382be86aec742cf24299eac794ba886be`. The feature PR four-job CI `36224036550` and independent post-feature-main four-job CI `36224159513` succeeded (Rust and negative tests, disposable real Ubuntu26 K3s, two separate ephemeral PostgreSQL recovery paths). Ten R6.3 offline/mocked tests succeeded on the actual unchanged Ubuntu 26.04.1 VPS, as did the earlier 99 Rust tests and RouterOS Python-to-Rust fake-secret/forged-tenant contract. The exact feature-main source encrypted Restic snapshot `6bc581b5` was isolated restored and verified by SHA-256; separately selected root-readable backup `abaa9827` was independently recovered. Real owner-Mac unauthenticated RSA fingerprint comparison conclusively **BLOCKED** login due to existing-key mismatch. None of these tests identifies the actual customer RB951 or establishes real SSH management permission or firmware compatibility.
