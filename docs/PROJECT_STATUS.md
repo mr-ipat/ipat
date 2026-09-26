@@ -1215,3 +1215,62 @@ Added `deploy/scripts/lab/r61/test_r61_tls.py` with an ephemeral locally generat
   connection, firmware upload, firewall, VPS service or database change.
   Missing exact physical boards/build, approved trusted private access,
   independent recovery and verified vendor firmware/rollback remain blockers.
+
+
+## R7.3 final independent evidence — 2026-09-26 Asia/Jakarta
+
+- Feature PR #76 merged through reviewed squash commit
+  `7bc5e15af1a859a5cd9d819f79f9f1bd645dd021`.
+  The earlier feature CI run `36252923319` FAILED rustfmt
+  before Rust unit tests; that failure was not hidden.
+- Applied the pinned 1.98.1-compatible rustfmt formatting
+  using a nonprivileged, stdin-only Ubuntu rustfmt invocation.
+  Feature PR exact revised source SHA
+  `58170b47c470a3f99e7a72278c28d6b81ad1f4da`
+  passed independent CI `36253247630`:
+  all FOUR isolated jobs PASS (locked workspace tests and
+  offline C320 CLI tests; synthetic PostgreSQL RLS/restore;
+  separate synthetic physical PG recovery; disposable Ubuntu26 K3s).
+- Independent **post-merge main** CI `36253501422` also
+  SUCCESS for exact merged code SHA
+  `7bc5e15af1a859a5cd9d819f79f9f1bd645dd021`:
+  all four independent jobs PASS. These CI runners are
+  disposable and do not validate a production deployment.
+- The owner FileVault Mac clean `main` checkout matched the
+  above GitHub merged SHA; locally the earlier 5/5 R7.1
+  static guards and 9/9 R7.2 synthetic firmware hash tests
+  passed; read-only Rust formatting was separately checked.
+- Encrypted source-only Restic snapshot `7a5aecd9`
+  contains the exact merged `main` Git archive. Complete
+  repository pack read (108/108), isolated source-tar
+  SHA256 restore and independently restored selected
+  historical readable-config archive PASS.
+  **LIMITATION:** same-Mac local backup, NOT offsite
+  full-host restore, PostgreSQL PITR, K3s datastore
+  recovery or an approved production disaster-recovery gate.
+- **FR-016 physical / TC-OLT-01 remains BLOCKED and
+  DEV-01 remains `untested`.** No real OLT credentials,
+  SSH/SNMP session, packet exchange, board/firmware
+  inventory or vendor-validated management command was
+  exercised. New configured/physical board alias behavior
+  is synthetic offline *format* validation only.
+- **FR-017 OLT firmware updates remain hard-disabled.**
+  Hash equality with an operator-provided checksum cannot
+  prove vendor authenticity, exact-card suitability,
+  recoverability or human approval; no OLT write actuator.
+  Real field pilot requires trusted owner-approved
+  private management, exact boards/build, independent
+  recovery; high-impact firmware needs official matching
+  vendor release, onsite rollback, maintenance approval
+  and separate maker/checker sign-off.
+- This final documentation checkpoint changes evidence only;
+  binding architecture ADRs are unchanged. It does NOT
+  remove the large RED deviations banner in the three
+  private dashboards, nor authorize VPS firewall, database,
+  K3s, customer router or physical firmware changes.
+- Open tracking: Issue #72 (authorized DEV-01 first physical
+  read) and Issue #73 (separate firmware safety approval).
+  Next work: independently supply private real C320
+  capabilities to lab operator, first read-only test,
+  review sanitized observations and update DEVICE_MATRIX
+  per exact tuple, with failures/uncertainty included.

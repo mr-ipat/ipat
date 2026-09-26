@@ -241,3 +241,15 @@ DEV-01 remains `untested`
 and firmware actuators remain
 disabled; see
 [C320 integrity runbook](C320_FIRMWARE_INTEGRITY_R72.md).
+
+## R7.3 offline C320 output correlation — NOT physical acceptance
+
+The Rust offline parser now differentiates `CfgType` and `RealType` in
+synthetic `show card` text and matches `MVR` only against those two
+observed names at the **same slot**. Mismatched names/slots and boot-only
+rows have negative tests. Feature and post-merge-main four-job CI passed;
+see `PROJECT_STATUS.md` R7.3. **No DEV-01 session was executed**:
+TC-OLT-01 remains `NOT RUN`, ZTE C320 physical support `untested` and
+firmware upgrades disabled. Do not promote an offline parser format test
+to physical evidence. Hardware, build, private owner-approved access and
+recovery are mandatory for the first actual field capture.
