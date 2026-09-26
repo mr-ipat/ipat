@@ -1,8 +1,8 @@
 # IPAT — Project Status
 
 **As-of:** 2026-09-26 Asia/Jakarta
-**Milestone:** R6.9 — actual pinned RS256 cryptographic JWT lab verification, private Axum signature probe for all three dashboard identities, and backend business API deny-by-default until verified independent tenant membership, roles and MFA.
-**Milestone state:** R6.9 original Rust pinned RS256 JWT signature and private owner-opted-in Axum proof feature PR #67 MERGED at `0d5a0298427f816b7e67d1df7ec27f03060fc8f9`. Corrected feature PR GitHub CI `36245565621` and independent post-feature-main CI `36245769033` both FOUR independent jobs SUCCESS (locked Rust including real signed JWT synthetic HTTP on disposable runner, actual disposable Ubuntu26 K3s, separate ephemeral PostgreSQL RLS/logical and physical recoveries). Initial superseded CI `36245181998` failed due disposable HTTP test sharing old preview port 3000/TIME_WAIT and overstrict expectation for POST on GET-only device API; fixed by dedicated `127.0.0.1:3001`, safe SO_REUSEADDR preflight and exact device POST405 negative; corrected synthetic test independently passed both GitHub CI runs and actual Ubuntu lab. Actual clean unchanged Ubuntu 26.04.1 VPS canonical checkout exactly matches clean GitHub/main and FileVault Mac feature SHA: rustfmt PASS, 139/139 locked offline Rust workspace tests, 5/5 R6.9 negative trust Python tests, genuine disposable OpenSSL ephemeral RS256 signing and actual nonroot loopback HTTP positive/issuer-forgery negatives PASS; signed test JWT with forged admin/tenant claims leaves real Platform/Tenant/NOC APIs HTTP401, device GET401/POST405; only /lab/auth/verify on owner-opted-in localhost3001 returns signature validated with ALL membership/roles/business flags FALSE. Existing authorized private dashboard preview localhost3000 remained running with unchanged PID, synthetic key folder and new test listener cleaned; production services K3s/PostgreSQL/nftables all inactive, no public listener, provider firewall or physical device changes. Exact feature-main Mac encrypted Restic source `56c893f1` isolated SHA256 restored and full encrypted packs read PASS; selected historical privileged-root-readable configuration independently restored, NOT whole live VPS or real database PITR. The three R6.8 visual workspaces are still private synthetic previews; real Keycloak OIDC discovery/JWKS lifecycle/PKCE/MFA, independently approved tenant/POP database memberships, server-side RBAC+ABAC/RLS and real operations integrations remain UNIMPLEMENTED. Documentation review PR and final new SHA/CI and backup proof pending at this checkpoint. Developer Mr. iPat.
+**Milestone:** R7.0 — unexposed synthetic PostgreSQL candidate for independently approved OIDC subject→tenant role→POP membership and separate platform principals; NOT authenticated runtime dashboards or commercial SaaS.
+**Milestone state:** R7.0 started from merged reviewed R6.9 docs GitHub main `04c711c956bcc89fb30e83b9ec44713841ca9135`, whose original pinned RS256 JWT verifier still does NOT grant tenant roles or expose business APIs. The new synthetic-only migration and disposable CI tests cover platform/tenant/POP structural isolation with no SELECT or write GRANTS for `ipat_app_runtime`; actual Keycloak authorization-code login/MFA, verified persisted membership runtime lookup, domain/session policy, per-user menus, real operational data and device interoperability are UNIMPLEMENTED. All three visual workspaces remain private synthetic previews. GitHub feature R7.0 CI and exact final source backup pending in this draft; no public deploy, root firewall, database/K3s service installation, customer traffic or provider firewall changes are authorized. Conditional UI/MFA lab 1–2 weeks, integrated initial admin/tenant/NOC 4–6 weeks, physical pilot 8–12 weeks; NOT delivery promises. Seven independent production safety gates remain BLOCKED. Developer Mr. iPat.
 
 ## 1. Source of truth and provenance
 
@@ -1047,3 +1047,48 @@ Added `deploy/scripts/lab/r61/test_r61_tls.py` with an ephemeral locally generat
   Tidak ada perubahan live
   K3s, PostgreSQL, firewall
   penyedia ataupun perangkat.
+
+## R7.0 — skema kandidat identitas dan keanggotaan dashboard (laboratorium saja)
+
+- Setelah R6.9, dokumentasi autentikasi pratinjau
+  melalui PR #68 digabung setelah empat job CI
+  sukses pada `36245992222`, ke baseline sumber
+  `04c711c956bcc89fb30e83b9ec44713841ca9135`.
+  Kode Rust R6.9 sebelumnya hanya memeriksa
+  tanda tangan token RS256, **tidak** keanggotaan,
+  role, MFA maupun hak bisnis; API bisnis tetap 401.
+- Memulai R7.0 `0003_lab_identity_memberships.sql`,
+  **kandidat** model identitas PostgreSQL sintetis.
+  Menambahkan keanggotaan tenant-issuer-subject-role,
+  grant POP FK gabungan tenant+issuer+subject+role
+  dan prinsip `platform_owner` yang terpisah.
+  Semua tabel `ENABLE+FORCE RLS` dan tidak
+  mempunyai grants maupun policies untuk
+  `ipat_app_runtime`; tidak ada fungsi
+  SECURITY DEFINER maupun endpoint lookup
+  yang bisa menerima klaim sub/tenant palsu.
+- Menambahkan pengujian PostgreSQL 16 disposable
+  `test_identity_memberships_integration.py`
+  untuk penolakan runtime, batas tenant+POP,
+  validasi role/expiry dan pemisahan platform.
+  CI mengeksekusi suite ini sesudah migrasi
+  dasar RLS serta outbox sintetis, bukan
+
+  terhadap database VPS nyata.
+- Rencana bersyarat untuk ketiga dashboard:
+  UI privat sudah ada; login/MFA/permissions
+  lab membutuhkan kira-kira 1–2 minggu;
+  integrasi admin/tenant/NOC memakai
+  PostgreSQL/observability awal 4–6 minggu;
+  pilot ISP perangkat fisik 8–12 minggu,
+  semuanya bergantung pada sumber daya,
+  identitas/akses dan tujuh gate independen.
+  Detail [rencana terukur R7.0](DASHBOARD_MEMBERSHIP_R70.md).
+- **Belum selesai:** operator-approved DB
+  enrollment nyata, OIDC Keycloak login+PKCE+MFA,
+  verifikasi domain, runtime role/POP membership,
+  frontend server-driven menus, device
+  inventory/telemetry/ACS real, real HA/PITR.
+  Produksi NO_GO; proyek tidak menggunakan
+  firewall penyedia hosting atau mengubah
+  K3s/PostgreSQL/firewall live.

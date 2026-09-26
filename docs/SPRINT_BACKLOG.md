@@ -405,3 +405,41 @@ Build original Rust `control-api` and separate synthetic `usp-controller` into n
 - LATER: commercial branding/package/billing
   workflows and high-risk mass provisioning
   after reviewed approval paths exist.
+
+### R7.0 next dashboard phase and conditional estimates
+
+- DONE for lab candidate: explicit
+  `identity_memberships` tenant+OIDC
+  issuer/subject/approved role,
+  `identity_pop_grants` exact composite
+  foreign key, separated `platform_principals`,
+  FORCE RLS and zero app-runtime
+  grants/policies; disposable
+  PostgreSQL negative suite and CI
+  integration.
+- MUST next: approved real IdP
+  Keycloak/discovery+JWKS lifecycle,
+  Authorization Code+PKCE,
+  MFA/account lifecycle, HTTP session
+  CSRF/state/nonce and verified
+  per-domain redirect/cookie rules.
+- MUST next: trusted subject→membership
+  lookup from independently
+  approved database, expiry/revocation/
+  tenant state/POP, backend RBAC+ABAC
+  and server-provided hidden menus
+  with negative tenant+POP+API tests.
+- MUST later: actual inventory/NOC
+  data, device onboarding from
+
+  authenticated ACS/USP, observability
+  and action-specific approvals.
+- Planning only: login/MFA lab
+  1–2 weeks; integrated admin/tenant/
+  NOC baseline 4–6 weeks;
+  physical ISP pilot 8–12 weeks,
+  contingent on device access and
+  production safety gates.
+- Production NO_GO pending real
+  recovery/perimeter and signed
+  architecture decisions.

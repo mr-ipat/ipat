@@ -476,3 +476,38 @@ resource/POP-specific RLS remain unimplemented.
 No public port, provider firewall or
 production secrets change in R6.9.
 See [identity proof and blockers](IDENTITY_OIDC_R69.md).
+
+### R7.0 tenant identity schema candidate, no runtime entitlement granted
+
+R6.9 PinnedIssuer only validates an RS256
+token signature, not authorization.
+New R7.0 synthetic PostgreSQL candidate
+separates approved identity membership
+by tenant+issuer+subject+role from
+exact POP grants via composite FK,
+and platform principals into an
+independent table. All three tables
+have ENABLE/FORCE RLS and grant the
+existing application DB runtime role
+**NO access**. Tests reject runtime
+read/write/enumeration, wrong-tenant
+POP assignment, unapproved role,
+structural expiry and missing approver.
+Superuser fixture in disposable CI
+is NOT the intended operational
+operator-approval mechanism.
+
+No online actor can currently read
+the membership tables or create
+trusted DashboardSubject from them.
+JWT custom roles/tenant claims,
+Host or X-Tenant-ID still must be
+
+ignored for privilege. Before any
+enablement: trusted IdP OIDC
+discovery/JWKS pin rotation, PKCE,
+MFA assurance, independent approval,
+backend policy, RLS session-scope,
+audit, CSRF and custom-domain
+ownership verification.
+[Exact R7.0 tests/gaps](DASHBOARD_MEMBERSHIP_R70.md).
