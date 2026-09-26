@@ -48,6 +48,11 @@ jobs:
           bash -n deploy/scripts/lab/r57/restore-systemd-k3s.sh
           bash -n deploy/scripts/lab/r57/nft-rollback-drill.sh
           python3 -m unittest discover deploy/scripts/lab/r57 -p 'test_r57_review.py' -v
+      - name: Verify R5.8 private Helm app packaging and fail-closed CI scope
+        run: |
+          bash -n deploy/scripts/lab/r58/app-smoke.sh
+          python3 -m py_compile deploy/scripts/lab/r58/verify-rendered.py
+          python3 -m unittest discover deploy/scripts/lab/r58 -p 'test_r58_review.py' -v
       - name: Verify Mac encrypted-backup and external provider probe safety contracts (static)
         run: |
           bash -n deploy/scripts/lab/backup-mac-restic.sh
@@ -178,12 +183,32 @@ jobs:
   # GitHub-hosted Ubuntu 26.04 VM. It NEVER installs on the IPAT VPS.
   k3s-ubuntu26-disposable:
     runs-on: ubuntu-26.04
-    timeout-minutes: 25
+    timeout-minutes: 35
     env:
       IPAT_K3S_DISPOSABLE_LAB: "1"
+      IPAT_R58_SMOKE: "1"
     steps:
       - name: Check out sources (pinned SHA)
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Prepare disposable Rust/musl, signed-checksum Helm and local-only manifest tests
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y musl-tools python3-yaml
+          rustup toolchain install 1.98.1 --profile minimal --target x86_64-unknown-linux-musl
+          rustup default 1.98.1
+          helm_temp="$(mktemp -d /tmp/ipat-r58-helm.XXXXXXXX)"
+          trap 'rm -rf "$helm_temp"' EXIT
+          curl --proto '=https' --tlsv1.2 --fail --location --retry 3 \
+            --connect-timeout 10 --max-time 120 \
+            https://get.helm.sh/helm-v3.21.3-linux-amd64.tar.gz \
+            -o "$helm_temp/helm.tar.gz"
+          printf '%s  %s\n' \
+            76d0db4730b05d3d625eee11e80f0721b32b4d8422f4e5d093de6337bf3ac9f8 \
+            "$helm_temp/helm.tar.gz" | sha256sum --check --status
+          tar -xz -C "$helm_temp" -f "$helm_temp/helm.tar.gz" linux-amd64/helm
+          sudo install -m 0755 "$helm_temp/linux-amd64/helm" /usr/local/bin/helm
+          helm lint deploy/helm/ipat-lab
+          python3 -m unittest discover deploy/scripts/lab/r58 -p test_r58_manifest.py -v
       - name: Verify pinned K3s CI safety before any root action
         run: |
           bash -n deploy/scripts/lab/k3s-ubuntu26-ephemeral-ci.sh

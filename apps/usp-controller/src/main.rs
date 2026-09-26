@@ -6,6 +6,14 @@
 
 use axum::{http::StatusCode, routing::get, Router};
 
+fn bind_address(k3s_lab: bool) -> &'static str {
+    if k3s_lab {
+        "0.0.0.0:3100"
+    } else {
+        "127.0.0.1:3100"
+    }
+}
+
 fn app() -> Router {
     Router::new()
         .route("/healthz", get(|| async { "synthetic-usp-lab-only" }))
@@ -18,9 +26,10 @@ async fn main() {
         eprintln!("USP network/MTP not implemented. Set IPAT_RUN_OFFLINE_USP_LAB=1 only for local health checks.");
         std::process::exit(2);
     }
-    let listener = tokio::net::TcpListener::bind("127.0.0.1:3100")
+    let k3s_lab = std::env::var("IPAT_RUN_K3S_LAB").as_deref() == Ok("1");
+    let listener = tokio::net::TcpListener::bind(bind_address(k3s_lab))
         .await
-        .expect("bind loopback-only synthetic USP health listener");
+        .expect("bind synthetic USP laboratory health listener");
     axum::serve(listener, app())
         .await
         .expect("serve loopback health only");
@@ -31,6 +40,12 @@ mod tests {
     use super::*;
     use axum::{body::Body, http::Request};
     use tower::ServiceExt;
+
+    #[test]
+    fn network_bind_is_loopback_unless_explicit_k3s_lab() {
+        assert_eq!(bind_address(false), "127.0.0.1:3100");
+        assert_eq!(bind_address(true), "0.0.0.0:3100");
+    }
 
     #[tokio::test]
     async fn private_lab_health_is_available() {

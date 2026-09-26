@@ -215,4 +215,8 @@ sudo "$lab_dir/k3s" etcd-snapshot save \
 sudo find "$lab_dir/data/server/db/snapshots" -maxdepth 1 -type f \
   -name 'ipat-ephemeral-smoke*' -size +1k | grep -q .
 echo 'R56_EPHEMERAL_ETCD_SNAPSHOT_CREATED=PASS'
+if [[ "${IPAT_R58_SMOKE:-0}" == 1 ]]; then
+  # R5.8 only: same disposable CI runner, after actual Node/DNS/snapshot passed.
+  bash deploy/scripts/lab/r58/app-smoke.sh "$lab_dir" "$node_ip"
+fi
 echo 'R56_LIMITATION=ONE_DISPOSABLE_RUNNER_NOT_MULTI_NODE_HA_OR_OFFHOST_RESTORE'
