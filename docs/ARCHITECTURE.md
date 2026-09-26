@@ -472,3 +472,39 @@ otorisasi tenancy. Revocation/CRL,
 handshake throttle dan session
 recovery belum diuji untuk beban
 nyata. Lihat [lingkup R6.7](ACS_MTLS_R67.md).
+
+## R6.8 presentasi tiga dashboard bukan identitas tiga tenant
+
+Frontend saat ini baru satu
+**proses nonroot private preview**
+`control-api` berbasis Rust/Axum
+yang menampilkan varian Platform,
+Tenant dan NOC dari fixture
+sintetis lokal. Pemilihan
+tampilan melalui JavaScript
+hanya untuk menguji informasi
+dan UX, **tidak menentukan
+hak akses**. API nyata
+`/v1/platform/*`, `/v1/tenant/*`
+dan `/v1/operations/*`
+tetap mengembalikan 401
+untuk semua permintaan sampai
+OIDC dan tenant membership
+tepercaya dibangun. Serving
+aset /lab/dashboard-preview
+hanya diaktifkan pada
+non-K3s loopback + tunnel.
+`authz-core::dashboard`
+memiliki kebijakan pure
+platform-metadata vs
+
+tenant/POP yang ditujukan
+bagi server-side entitlement
+setelah konteks pengguna
+diverifikasi dari IdP+DB.
+Jangan menautkan selector
+browser ke entitlement,
+atau menganggap policy
+pure sebagai middleware
+autentikasi yang tersedia.
+Lihat [R6.8](DASHBOARDS_R68.md).

@@ -235,3 +235,48 @@ K3s, PostgreSQL di server
 nyata atau perubahan
 perangkat dalam milestone ini.
 [Runbook R6.7](ACS_MTLS_R67.md).
+
+## R6.8 preview dashboard terpisah dari login dan produksi
+
+R6.8 menambahkan
+`/lab/dashboard-preview`
+beserta CSS/JS dan
+tautan dari halaman lab.
+Proses hanya dapat
+menampilkannya bila
+`IPAT_LAB_WEB=1`
+dan `IPAT_RUN_K3S_LAB`
+tidak dinyalakan;
+literal bind nonroot
+127.0.0.1:3000
+tetap menjadi sumber
+private Mac SSH tunnel.
+Untuk menguji kode
+di checkout development:
+
+```bash
+cargo fmt --all -- --check
+cargo test --workspace --locked --offline
+python3 -m unittest discover deploy/scripts/lab/r68 -p test_dashboard_preview.py -v
+node --check web/lab/dashboard-preview.js
+node deploy/scripts/lab/r68/test_dashboard_preview.mjs
+
+```
+
+Jangan memasang
+dashboard sebagai
+portal publik, menambah
+custom domain tanpa
+verifikasi atau
+menggunakan selector
+UI lab sebagai
+pengganti OIDC, RBAC
+dan RLS. Proses
+lama restart hanya
+setelah source canonical
+sudah clean dan CI
+independen lulus.
+Tidak ada apply
+production K3s/PG/
+host firewall.
+[Lingkup R6.8](DASHBOARDS_R68.md).

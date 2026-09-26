@@ -400,3 +400,48 @@ session atau model firmware
 interop. Tidak ada public ingress,
 firewall maupun customer secret
 yang diubah. [Kontrak R6.7](ACS_MTLS_R67.md).
+
+## R6.8 role-preview UI dan API deny/default wajib dibedakan
+
+R6.8 menyediakan tiga
+tampilan UI berbasis
+data sintetis yang semua
+dapat dipilih dalam satu
+browser lab privat.
+Ini sengaja **bukan**
+RBAC atau akun
+platform/tenant sungguhan.
+Privat bukan pengganti
+login OIDC dan cookie
+tenant yang benar.
+API platform/tenant/NOC
+masih menolak semua
+GET/POST/DELETE dengan
+HTTP 401 bahkan jika
+Authorization, Host,
+X-Tenant-Id dan role
+palsu dikirim klien.
+Endpoint browser preview
+tidak ada pada K3s
+public-pod bind,
+memakai CSP same-origin
+
+dan no-store, hanya
+membaca endpoint status
+laboratorium dan tidak
+mengirim data pelanggan.
+
+Pure dashboard policy
+menguji isolasi peran
+platform vs tenant dan
+POP, tidak mengizinkan
+mass-write. Policy
+belum dipakai dalam
+runtime sebelum
+token OIDC/MFA
+terverifikasi, domain
+diikat ke membership
+DB, FORCE RLS,
+session CSRF dan
+audit action diuji.
+Lihat [kontrak R6.8](DASHBOARDS_R68.md).

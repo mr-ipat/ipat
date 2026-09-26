@@ -1,5 +1,7 @@
 //! Pure authorization policy. Authentication / trusted identity are NOT implemented.
 
+pub mod dashboard;
+
 use tenant_core::TenantId;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]

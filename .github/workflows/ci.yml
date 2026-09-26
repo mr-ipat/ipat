@@ -102,6 +102,14 @@ jobs:
           python3 -m py_compile deploy/db/tests/test_job_outbox_integration.py
           python3 -m unittest discover deploy/db/tests -p 'test_migration_contract.py' -v
           python3 -m unittest discover deploy/db/tests -p 'test_job_migration_contract.py' -v
+      - name: R6.8 three lab dashboard previews, pure scoped policy and real API denial
+        run: |
+          python3 -m unittest discover deploy/scripts/lab/r68 -p test_dashboard_preview.py -v
+          node --check web/lab/dashboard-preview.js
+          node deploy/scripts/lab/r68/test_dashboard_preview.mjs
+          bash -n deploy/scripts/lab/r68/private-dashboard-http-smoke.sh
+          cargo build --locked -p control-api
+          IPAT_R68_PRIVATE_HTTP_SMOKE=YES bash deploy/scripts/lab/r68/private-dashboard-http-smoke.sh
       - name: Verify formatting
         run: cargo fmt --all -- --check
       - name: Run locked unit tests

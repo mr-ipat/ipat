@@ -1,8 +1,8 @@
 # IPAT — Project Status
 
 **As-of:** 2026-09-26 Asia/Jakarta
-**Milestone:** R6.7 — original Rust gateway TLS 1.3 mandatory cryptographic mutual client certificates on a fixed private loopback port, with disposable independent real TLS positive/negative handshakes; physical ACS and tenant mapping NOT DONE.
-**Milestone state:** R6.7 original Rust true mutual TLS1.3 lab transport security feature PR #63 MERGED at source `2baaf8419b3eba6933854847db73a7120612c579`; original private GitHub, clean owner FileVault Mac and unchanged real Ubuntu 26.04.1 VPS main all synchronized exactly. Independent feature PR GitHub CI `36239520353` and new feature-main CI `36239646430` each completed SUCCESS in all four jobs (Rust and TLS, disposable Ubuntu26 K3s, two isolated PostgreSQL backup/recovery jobs). Actual canonical Ubuntu VPS SOURCE (nonprivileged; not a live ACS service) passed 123/123 locked offline Rust workspace, 6/6 R6.7 static denial tests and REAL disposable OpenSSL/cURL TLS1.3 CA-signed client positive plus no cert/rogue CA/wrong EKU/bad server hostname/bad server CA/unsafe server key negatives, synthetic parser redaction, real /cwmp HTTP503 even with trusted client cert and spoofed headers, exclusive loopback and verified temporary process teardown PASS. Clean feature-main readonly production gates 8/8 automatic PASS but ALL 7/7 independent external gates BLOCKED: NO_GO; checks correctly returned 7/8 while docs work branch was not clean main. Exact merged-feature Mac encrypted source Restic `884cc492` independently isolated restored SHA256 + full read-all-packs PASS; separately selected historical privileged root-readable config independently restored, NOT entire VPS/PG PITR. Actual VSOL/ZTE ONT model/firmware compatibility, per-device certificate/SPKI+tenant-approved enrollment, revocation, real CWMP sessions+RPC over mTLS and PostgreSQL durability remain UNIMPLEMENTED. Physical enrollment remains ZERO. Live VPS K3s/Postgres/nftables all INACTIVE and no public ACS or hosting-provider network/firewall changes. Reviewed product readiness classification is in docs/PRODUCT_READINESS_R67.md. Docs-only reviewed checkpoint PR and final SHA/CI/backup verification pending at this evidence cutline. Developer Mr. iPat.
+**Milestone:** R6.8 — private laboratory previews for Platform Admin, Tenant Admin and ISP NOC, with pure Rust tenant/POP policy tests and unconditional API refusal before real OIDC/MFA/tenant identity.
+**Milestone state:** R6.8 local implementation initial checkpoint: inherited private GitHub, clean FileVault Mac and unchanged actual Ubuntu 26.04.1 VPS baseline main SHA `aefecde834c25e3fef0411055ecd3ad3e41756df`; final baseline CI `36240026208` four independent jobs SUCCESS and encrypted exact source backup `cb4fa206` independently restored/verified. New dashboard responsive HTML/CSS/JS shows three role-scoped synthetic UI presentations ONLY behind existing local nonroot SSH tunnel; it does not authenticate, authorize, or access any customer. New real business API `/v1/platform/*`, `/v1/tenant/*`, `/v1/operations/*` always deny all methods 401 despite forged OIDC/tenant/host headers. New pure reference Rust policy partitions platform metadata vs tenant/POP, with deny-default and all bulk writes blocked; not connected to runtime until actual verified OIDC/DB tenant membership. Isolated actual Ubuntu 26.04.1 checkout passed cargo fmt and 130/130 locked/offline Rust workspace tests (including 10 control-api + 9 authz-core), seven static R6.8 security/UI tests and all six existing R5.9 private-preview safety tests; Mac Node fake-DOM role selector and strict no-real-API contract PASS. Policy was hardened to deny NOC cross-POP aggregate overviews and auditor unassigned POP audit. Independent GitHub PR CI, reviewed canonical post-merge backup and actual Mac private HTTP preview are still PENDING. All real ACS/USP/ONT tenant operations remain unavailable; physical enrollment ZERO, live VPS K3s/PG/nftables INACTIVE, production NO_GO. Developer Mr. iPat.
 
 ## 1. Source of truth and provenance
 
@@ -972,3 +972,78 @@ Added `deploy/scripts/lab/r61/test_r61_tls.py` with an ephemeral locally generat
 
   gabung; hindari commit status baru yang
   terus mengubah SHA sebelumnya.
+
+## R6.8 — tiga workspace dashboard privat, tanpa promosi identitas tenant palsu
+
+- Rancangan UI yang dapat dicoba untuk tiga workspace:
+  **Platform Admin**, **Tenant Admin ISP contoh**, dan
+  **Operasional/NOC ISP contoh**, dari sumber
+  `web/lab/dashboard-preview.{html,css,js}`.
+  Link ditempatkan pada halaman lab R5.9;
+  dihidangkan hanya melalui toggle preview
+  privat nonroot dan **tidak pernah** dari
+  router K3s/public bind.
+- Selector peran hanya mengubah
+  data ilustrasi dan menu sintetis,
+  **bukan autentikasi**, bukan impersonasi,
+  bukan klaim entitlement yang aktif.
+  Pratinjau memakai tiga GET same-origin
+  saja dari lab health, status dan
+  katalog delapan target rencana;
+  hasil fisik terdaftar tetap nol.
+  CSP strict, no-store dan tidak
+  memakai CDN, secret, form atau
+  backend mutasi.
+- Endpoint nyata wildcard platform,
+  tenant dan operations selalu
+  HTTP 401/no-store, seluruh metode,
+
+  meskipun klien menambahkan
+  Authorization, X-Tenant-Id,
+  X-Verified-Role dan Host
+  yang dipalsukan.
+  Sejumlah tes Rust pada
+  `control-api` memastikan
+  preview absen pada mode K3s
+  dan tidak membuka API.
+- Kebijakan pure
+  `crates/authz-core/src/dashboard.rs`
+  menyediakan matriks referensi
+  berbeda untuk metadata platform
+  dan data tenant/POP, termasuk
+  admin, NOC, helpdesk dan auditor,
+  dengan penolakan silang dan
+  bulk PPPoE berisiko tanpa
+  persetujuan. **Belum terhubung
+  ke endpoint** karena JWT OIDC
+  dan membership tenant terverifikasi
+  belum diimplementasikan.
+  Exact role matrix tetap
+  proposal menurut ADR-009.
+- Bukti awal real Ubuntu
+  terisolasi: sepuluh tes
+
+  `control-api`, sembilan
+  tes `authz-core` dan
+  enam kontrak Python serta
+  satu uji Node DOM/fake-fetch
+  untuk switching sintetis
+  dan larangan akses real API.
+  Bukti total workspace, HTTP
+  privat di owner Mac, empat
+  CI GitHub independen,
+  encrypted exact source backup
+  dan final SHA harus dicatat
+  setelah review.
+- R6.8 **menambah produk
+  yang dapat ditinjau**, tidak
+  mengubah keputusan produksi
+  NO_GO: platform admin, tenant
+  dan NOC sungguhan tetap perlu
+  login OIDC/MFA, verified tenant
+  domains, DB RLS+audit, device
+  onboarding ACS/USP dan uji
+  interoperabilitas fisik.
+  Tidak ada perubahan live
+  K3s, PostgreSQL, firewall
+  penyedia ataupun perangkat.

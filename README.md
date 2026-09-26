@@ -64,3 +64,4 @@ On a prepared development host: `cargo fmt --all -- --check && cargo test --work
 - [R6.6 original Rust CWMP bounded read RPC, sealed synthetic session and opt-in loopback HTTP gateway](docs/ACS_CWMP_R66.md)
 - [R6.7 pengujian TLS 1.3 mTLS asli berbasis CA sintetis pada gateway ACS Rust yang hanya menerima localhost](docs/ACS_MTLS_R67.md)
 - [R6.7 status kesiapan produk: laboratorium privat, bukan ACS/USP/SaaS produksi](docs/PRODUCT_READINESS_R67.md)
+- [R6.8 tiga pratinjau dashboard Platform Admin, Tenant Admin dan NOC, dengan API nyata tetap terkunci](docs/DASHBOARDS_R68.md)

@@ -366,3 +366,39 @@ pada satu ONT nyata dengan
 model/firmware tercatat
 tetap MUST dan NOT DONE.
 [Detail R6.7](ACS_MTLS_R67.md).
+
+### R6.8 validasi rancangan tiga dashboard (belum produksi)
+
+Preview privat Platform Admin,
+Tenant Admin dan NOC tersedia
+dari satu backend dan frontend
+laboratorium tanpa data pengguna
+atau perangkat asli. Menu dan
+metrik menggunakan skenario
+ilustratif, bukan role
+sungguhannya. Endpoint API
+nyata per area platform/
+tenant/operations selalu
+HTTP 401 untuk setiap metode
+dan header identitas palsu.
+Kebijakan Rust referensi
+deny-default memisahkan
+platform-only metadata,
+tenant dan POP, namun
+belum jadi authenticated
+runtime middleware.
+Kriteria acceptance:
+UI dan tombol hanya
+berfungsi sebagai mockup,
+backend tetap menolak
+
+akses tidak terverifikasi,
+status tidak mengaku
+pelanggan/perangkat aktif.
+FR-002 autentikasi, FR
+perusahaan/tenant, menu
+terfilter dengan identitas
+valid, operasi data nyata
+dan operasional ISP masih
+MUST terblokir.
+[Detail dan gate](DASHBOARDS_R68.md).
