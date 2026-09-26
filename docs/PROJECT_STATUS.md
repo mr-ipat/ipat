@@ -1,8 +1,8 @@
 # IPAT — Project Status
 
 **As-of:** 2026-09-26 Asia/Jakarta
-**Milestone:** R6.4 — optional one-device key-only SSH laboratory first-read and native Rust redacted evidence bridge prepared, without bypassing existing SSH host-key conflict. Physical router still NOT AUTHENTICATED or TESTED.
-**Milestone state:** R6.4 feature source under separate private Git review. Baseline clean and synchronized GitHub / FileVault Mac / actual unchanged Ubuntu 26.04.1 VPS main `cec40a5e3e602b79ef3654d371605f0c9bda1d7b`, last final four-job CI `36224396747` SUCCESS and encrypted exact source snapshot `e8b613c1` recovered. New standalone owner-Mac-only R6.4 SSH test tool has NO password authentication and cannot bypass changed SSH host key without a separately sourced owner-private direct-LAN fingerprint and three explicit flags; it does not mutate historical known_hosts. Python mocks/negative tests 12/12 passed on Mac, actual unprivileged Ubuntu26 isolated source 100 locked/offline Rust workspace, 10 original R6.4 then-expanded-to-12 Python tests, 10 R6.3 plus separate synthetic Python-to-Rust SSH evidence contract PASS. Final exact tests on expanded suite, feature PR/full CI, docs merge, latest source encrypted backup and latest loopback preview tests pending at this checkpoint. Owner-only Mac folder now has an INTENTIONALLY INVALID mode-0600 SSH template with TEST-NET endpoint, not real router access; real trusted-LAN fingerprint, approved restricted key, actual customer backup/recovery and authorized physical read remain missing. DEV-08 owner-reported RB951Ui-2HnD/RouterOS 7.23.7 physically UNTESTED, all physical inventory counts remain ZERO; production OIDC/K3s/PostgreSQL/firewall gates unchanged, no external provider firewall integration. Developer Mr. iPat.
+**Milestone:** R6.5 — customer router protocol access decision, owner-Mac local dedicated key and two-port alternate access preflight; actual physical router configuration NOT APPLIED, identity still blocked.
+**Milestone state:** R6.5 protocol and lab-access preparation, NOT a device-onboarding success. Baseline private GitHub/Mac/unchanged actual Ubuntu 26.04.1 VPS clean main af1f12259957557e22a8306e767287d5dd57043e, both latest four-job CI runs 36226064609 and 36226186394 SUCCESS. One exact public SSH service was previously reachable but its RSA host key changed vs authorized Mac pinned trust; physical device ID and password session remain UNVERIFIED and auth is NOT attempted. Minimal additional unauthenticated exact-target API-SSL default and standard HTTPS port checks showed no verified-reachable TLS service (routing/NAT uncertain), no credentials sent. Owner Mac has existing separately generated owner-private RSA keypair for new restricted lab account and an intentionally unusable ssh-read template; no independent trusted direct-LAN fingerprint/proven owner recovery/valid live login/config exists. WinBox app is present and running on owner Mac, but current remote automation lacks macOS Accessibility permission; app presence is NOT proof of authenticated access. New R6.5 reviewed runbook explicitly separates SSH, TLS binary API/HTTPS REST and optional tr069-client and prohibits activation through unverified management. Actual customer RB951Ui-2HnD v7.23.7 remains owner-reported only, physical enrollment ZERO, K3s/PG/nftables live inactive, no shared/provider firewall integration. This milestone creates documentation only; any real router write requires separate independently verified identity, per-device backup/recovery and owner-approved narrowly scoped change. Developer Mr. iPat.
 
 ## 1. Source of truth and provenance
 
@@ -851,3 +851,62 @@ Added `deploy/scripts/lab/r61/test_r61_tls.py` with an ephemeral locally generat
   `docs/DECISIONS.md` unchanged: no new
   approved architecture decision; a new
   lab transport is NOT a production stack choice.
+
+## R6.5 — first-customer management path decision after R6.4 code merge
+
+- User confirms permission for a temporary customer-router test with
+  one previously provided public SSH endpoint; API-SSL or TR-069
+  may alternatively be considered. **The previous unexpected
+  host-key change remains unresolved**, so no supplied existing
+  password was ever used in this milestone and no actual router
+  management login or configuration occurred.
+- Read-only source-of-truth recheck: private GitHub `main`,
+  clean owner FileVault Mac `main` and clean unchanged
+  Ubuntu 26.04.1 VPS `main` all matched
+  `af1f12259957557e22a8306e767287d5dd57043e`.
+  Actual GitHub CI `36226064609` and `36226186394` both
+  independently SUCCESS for all four jobs. Real VPS K3s,
+  PostgreSQL and nftables remain inactive.
+- Owner Mac maintains the separately generated restricted
+  DEV-08 SSH RSA public/private key in its owner-private
+  router-lab folder. The `ssh-read.template.json` remains
+  deliberately unusable until physical identity, actual
+  authorized source, non-disruptive recovery, and trusted LAN
+  fingerprint are confirmed. No real customer configuration
+  file or new router-account secret was prepared or deployed.
+- Additional unauthenticated, **single exact user-provided
+  endpoint** two-port availability check: default binary
+  API-SSL port and standard HTTPS port were not
+
+  verified reachable. They may differ behind NAT/source
+  restrictions; this result does not establish actual
+  RouterOS service configuration. No passwords/certificates
+  sent, TLS trust bypasses or arbitrary subnet scans.
+- WinBox application is installed/running on owner Mac,
+  but macOS Accessibility permission for remote UI
+  automation was rejected; no known authenticated
+  WinBox session or independent direct LAN identity
+  is available to remote tooling. No GUI router edits.
+- The documented first step is owner/trusted-LAN WinBox
+  validation, private recovery proof, then new dedicated
+  least-privileged read-only SSH account bound to the
+  actual approved management-client source, using the
+  already-generated owner-private public key. Existing
+  SSH listener, NAT, firewall and subscriber connectivity
+  remain untouched. The R6.4 strict key-only read
+  cannot start without its independent proof and
+  deliberate local owner authorizations.
+- API-SSL and TR-069 are independent future branches,
+  NOT silent substitutes: the former requires real
+  TLS server identity, an actual binary API adapter
+  and restricted private route; the latter requires
+  actual verified installed tr069-client package
+  matching RouterOS/architecture plus a tested,
+  isolated and TLS-trusted custom IPAT ACS endpoint.
+
+- This milestone is documents/protocol decision
+  only. R6.3/6.4 and full-product acceptance gates
+  remain unchanged: physical devices enrolled ZERO;
+  actual reported customer firmware NOT VERIFIED,
+  production readiness NO_GO. No new architecture
+  decision requiring a DECISIONS.md change.

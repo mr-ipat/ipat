@@ -60,3 +60,4 @@ IPAT (`IP@`) is a planned commercial multi-tenant ISP network operations platfor
 On a prepared development host: `cargo fmt --all -- --check && cargo test --workspace --locked`; run local demo with `cargo run -p control-api`. See `docs/PROJECT_STATUS.md` for **actual** test results; never infer success solely from source presence.
 
 - [R6.4 restricted SSH first-read laboratory path and explicit host identity safety](docs/MIKROTIK_SSH_R64.md)
+- [R6.5 actual customer router access alternatives and independently verified WinBox preparation](docs/MIKROTIK_CUSTOMER_R65_PREP.md)

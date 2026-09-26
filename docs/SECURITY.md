@@ -305,3 +305,22 @@ unapproved method or forged enrollment evidence is
 rejected by the Python sanitizer and separate Rust
 closed-schema verifier. All physical tests remain
 NOT RUN until trusted human evidence is reviewed.
+
+## R6.5 temporary customer router password authorization and alternatives
+
+Owner permission for temporary password login does NOT authenticate
+a server whose RSA SSH host key unexpectedly differs from the
+previously pinned owner-Mac record. No credential should be
+transmitted to that public endpoint until the actual physical
+router is independently identified from a separate trusted
+direct-LAN WinBox/console path and the discrepancy is explained.
+The separate new owner-Mac keypair permits creation of a
+restricted SSH read-only identity **after** that verification;
+never use the already disclosed general-purpose password.
+Default binary API-SSL and HTTPS availability checks were
+unauthenticated and did not find a verified-reachable TLS endpoint.
+TR-069 provisioning requires a separate authenticated and
+TLS-trusted client-to-ACS path. No provider firewall,
+RouterOS management service, account or production
+cluster was changed. See
+[the R6.5 operator access protocol plan](MIKROTIK_CUSTOMER_R65_PREP.md).
