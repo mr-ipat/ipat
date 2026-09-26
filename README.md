@@ -16,6 +16,7 @@ IPAT (`IP@`) is a planned commercial multi-tenant ISP network operations platfor
 - [R5.6 real disposable Ubuntu 26.04 K3s node, networking smoke and etcd snapshot](docs/K3S_UBUNTU26_R56.md)
 - [R5.7 cross-host K3s restore, stale-node reconciliation and precise nft rollback](docs/K3S_CROSS_HOST_RECOVERY_R57.md)
 - [R5.8 isolated health-only Rust apps, private Helm and real K3s smoke plan](docs/K3S_APPLICATION_PACKAGING_R58.md)
+- [R5.9 local browser preview through SSH, strict guard and public-web prerequisites](docs/WEB_PRIVATE_PREVIEW_R59.md)
 - [Technical architecture](docs/ARCHITECTURE.md)
 - [Physical device and firmware test matrix](docs/DEVICE_MATRIX.md)
 - [Security, tenant isolation and threat model](docs/SECURITY.md)

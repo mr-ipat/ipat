@@ -144,3 +144,16 @@ The distinct native Rust `usp-core` synthetic controller boundary and explicit o
 
 ### R5.8 MUST: disposable K3s health-only Rust app deployment
 Build original Rust `control-api` and separate synthetic `usp-controller` into non-root scratch OCI images; validate exact private Helm manifests with negative mutation tests; deploy them inside the **already isolated** ephemeral Ubuntu 26 K3s job, verify actual health and deny-by-default routes, record precise CI and encrypted merged-source recovery. SHOULD next: independently instrument and test real OIDC-issued membership/POP claims before enabling data APIs and complete isolated multi-node/private-CNI trials. LATER/production: only after independent OOB rescue, full-host recovery, dedicated dual-stack ingress, approved ADR-017/018 and stateful DB PITR may any live server services be installed or exposed.
+
+### R5.9 web access boundary
+- MUST: source-controlled, explicitly enabled Mac-local browser preview,
+  actual Rust HTTP/CSP/denied-request test, fail-closed SSH forwarding,
+  six negative source/deployment contracts and exact-source encrypted backup.
+- SHOULD: decide and approve ADR-006 frontend/OIDC provider and ADR-014
+  verified custom domains; build authenticated login/membership/POP test
+  before showing real tenant-specific menus or customer data.
+- BLOCKED for public deployment: actual usable independent rescue console,
+  whole VPS separate-host restore, verified dedicated IPv4+IPv6 perimeter,
+  signed ADR-017 private cluster topology, production PostgreSQL HA/PITR
+  and high-risk authorization audits. An information-only local browser
+  is not permission to install live K3s or publish the API.
