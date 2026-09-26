@@ -59,14 +59,32 @@ sudo "$lab_dir/k3s" ctr -n k8s.io images import \
   "$lab_dir/ipat-r58-images.tar" >/dev/null
 rm -f "$lab_dir/ipat-r58-images.tar"
 echo 'R58_LOCAL_CONTAINERD_IMAGES_IMPORTED=PASS'
+# Inspect only normalized synthetic image references, never registry credentials.
+images="$(sudo "$lab_dir/k3s" ctr -n k8s.io images list -q)"
+for app in control-api usp-controller; do
+  if ! grep -Eq "(^|/)ipat/${app}:r58-lab$" <<< "$images"; then
+    echo "R58_IMAGE_REF_MISMATCH_${app}" >&2; exit 4
+  fi
+done
+echo 'R58_BOTH_NORMALIZED_LOCAL_IMAGES_PRESENT=PASS'
 # Helm chart forbids externally published services; validate before install.
 helm lint deploy/helm/ipat-lab >/dev/null
 helm template ipat-r58 deploy/helm/ipat-lab -n ipat-r58 \
   > "$lab_dir/ipat-r58-rendered.yaml"
 python3 deploy/scripts/lab/r58/verify-rendered.py "$lab_dir/ipat-r58-rendered.yaml"
 k create namespace ipat-r58 >/dev/null
-sudo helm install ipat-r58 deploy/helm/ipat-lab -n ipat-r58 \
-  --kubeconfig "$lab_dir/kubeconfig" --wait --timeout 240s >/dev/null
+if ! sudo helm install ipat-r58 deploy/helm/ipat-lab -n ipat-r58 \
+  --kubeconfig "$lab_dir/kubeconfig" --wait --timeout 105s >/dev/null; then
+  # Deliberately never print pod env/spec/images, event messages or logs.
+  k -n ipat-r58 get deployments -o json 2>/dev/null | \
+    python3 deploy/scripts/lab/r58/ci-safe-status.py deployments || :
+  k -n ipat-r58 get pods -o json 2>/dev/null | \
+    python3 deploy/scripts/lab/r58/ci-safe-status.py pods || :
+  k -n ipat-r58 get events -o json 2>/dev/null | \
+    python3 deploy/scripts/lab/r58/ci-safe-status.py events || :
+  echo 'R58_HELM_ROLLOUT_FAILED_WITH_SAFE_STATUS_ONLY' >&2
+  exit 1
+fi
 k -n ipat-r58 rollout status deployment/ipat-control-api --timeout=180s >/dev/null
 k -n ipat-r58 rollout status deployment/ipat-usp-controller --timeout=180s >/dev/null
 echo 'R58_BOTH_ACTUAL_K3S_APP_PODS_READY=PASS'

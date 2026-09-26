@@ -77,5 +77,23 @@ class K3sR58SourceSafety(unittest.TestCase):
         self.assertIn('test_r58_review.py', ci)
         self.assertIn('test_r58_manifest.py', ci)
 
+    def test_helm_rollout_diagnostics_are_redacted_and_bounded(self):
+        from importlib.util import module_from_spec, spec_from_file_location
+        from contextlib import redirect_stdout
+        from io import StringIO
+        helper = ROOT / 'deploy/scripts/lab/r58/ci-safe-status.py'
+        spec = spec_from_file_location('ipat_ci_safe', helper)
+        assert spec and spec.loader
+        mod = module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        output = StringIO()
+        fake = {'items':[{'reason':'Failed','message':'NEVER_PRINT_SECRET=example'}]}
+        with redirect_stdout(output):
+            mod.report('events', fake)
+        self.assertIn('R58_SAFE_EVENT_REASON Failed', output.getvalue())
+        self.assertNotIn('NEVER_PRINT_SECRET', output.getvalue())
+        self.assertIn('R58_HELM_ROLLOUT_FAILED_WITH_SAFE_STATUS_ONLY', SCRIPT.read_text())
+        self.assertIn('R58_BOTH_NORMALIZED_LOCAL_IMAGES_PRESENT=PASS', SCRIPT.read_text())
+
 if __name__=='__main__':
     unittest.main()
