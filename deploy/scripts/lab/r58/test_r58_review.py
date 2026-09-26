@@ -60,6 +60,9 @@ class K3sR58SourceSafety(unittest.TestCase):
                            'allowPrivilegeEscalation: false'):
                 self.assertIn(marker, text)
             self.assertIn('drop: ["ALL"]', text)
+            docker = (ROOT / f'deploy/container/{name}.Dockerfile').read_text()
+            self.assertIn('COPY --chmod=0755 ', docker)
+            self.assertIn('USER 65532:65532', docker)
             for hazard in ('type: NodePort', 'type: LoadBalancer',
                            'hostNetwork: true', 'privileged: true', 'hostPath:'):
                 self.assertNotIn(hazard, text)
@@ -92,6 +95,12 @@ class K3sR58SourceSafety(unittest.TestCase):
             mod.report('events', fake)
         self.assertIn('R58_SAFE_EVENT_REASON Failed', output.getvalue())
         self.assertNotIn('NEVER_PRINT_SECRET', output.getvalue())
+        classified = StringIO()
+        with redirect_stdout(classified):
+            mod.report('events', {'items':[{'reason':'Failed',
+                'message':'OCI runtime permission denied NEVER_PRINT_SECRET=example'}]})
+        self.assertIn('R58_SAFE_EVENT_CLASS EXEC_PERMISSION', classified.getvalue())
+        self.assertNotIn('NEVER_PRINT_SECRET', classified.getvalue())
         self.assertIn('R58_HELM_ROLLOUT_FAILED_WITH_SAFE_STATUS_ONLY', SCRIPT.read_text())
         self.assertIn('R58_BOTH_NORMALIZED_LOCAL_IMAGES_PRESENT=PASS', SCRIPT.read_text())
 

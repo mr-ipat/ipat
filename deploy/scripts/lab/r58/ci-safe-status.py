@@ -56,6 +56,18 @@ def report(kind: str, doc: dict) -> None:
             if reason not in ALLOWED_REASONS:
                 reason = "other"
             print("R58_SAFE_EVENT_REASON", reason)
+            # Output only fixed diagnostic category names. Event messages
+            # may contain paths, host data or sensitive environment values.
+            message = str(item.get("message") or "").lower()
+            signatures = {
+                "EXEC_PERMISSION": ("permission denied", "operation not permitted"),
+                "EXEC_FORMAT": ("exec format error",),
+                "OCI_RUNTIME": ("runc", "failed to create containerd task"),
+                "IMAGE_PULL": ("imagepull", "image pull", "image not present"),
+            }
+            for label, needles in signatures.items():
+                if any(needle in message for needle in needles):
+                    print("R58_SAFE_EVENT_CLASS", label)
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
