@@ -84,3 +84,11 @@ ADR-001/002/012 tetap berlaku; FR-016 maju hanya untuk parser
 offline, TC-OLT-01 dan FR-017 write tetap NOT RUN/BLOCKED.
 Tidak ada perubahan firewall penyedia, jaringan customer,
 K3s, PostgreSQL dan firmware unit fisik pada milestone ini.
+
+## Bukti fitur R7.1 setelah review independen
+
+[PR #71](https://github.com/mr-ipat/ipat/pull/71) MERGED at exact original code SHA d452d1be6943bb4b3685b2136ad30b587e6af1e9. Actual independent four-job feature PR GitHub CI 36249894205 and new feature-main CI 36250108104 both SUCCESS. The nonprivileged actual Ubuntu 26.04.1 VPS canonical SOURCE passed 145 locked offline Rust tests, five real offline Rust-CLI synthetic file/permission tests, five big-red PRD/firmware-no-execution contracts and seven previous R6.8 dashboard static tests; unrelated Node DOM existing test ran independently on authorized Mac (Node v22.22). No OLT management network packets were sent.
+
+Owner Mac and VPS Git checkouts matched GitHub main at feature SHA. Existing private preview was safely restarted only through the owner Mac SSH tunnel; REAL HTTP GET 200/no-store for HTML, CSS and JS proved the prominently sized BRIGHT RED PRD warning is visible on all three role-selectable previews; all platform, tenant and operations APIs continued to deny unauthenticated GET HTTP401. FileVault encrypted source backup Restic snapshot 63c7c461 was isolated SHA256 restored and all packs read; selected historical root-readable configuration independently restored, NOT entire VPS or production database PITR. Live VPS K3s/PostgreSQL/nftables remain inactive. Clean-main readiness 8/8 automatic PASS but 7/7 independent external safety gates BLOCKED, commercial NO_GO.
+
+Missing physical test inputs and owner approvals remain unchanged. A real authorized C320 first-read is tracked in [Issue #72](https://github.com/mr-ipat/ipat/issues/72); proposed firmware upgrade with its own high-risk approval/backup/rollback is tracked in [Issue #73](https://github.com/mr-ipat/ipat/issues/73). Success of parsing synthetic text and manual flags never changes the OLT status from UNTESTED to VALIDATED, and neither issue means firmware execution was scheduled.
