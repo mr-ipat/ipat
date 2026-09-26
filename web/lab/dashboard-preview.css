@@ -4,6 +4,11 @@ body{margin:0;min-width:320px}button,select{font:inherit}a{color:inherit;text-de
 .skip-link{position:absolute;left:12px;top:-100px;z-index:8;background:white;color:#09111d;padding:10px}.skip-link:focus{top:12px}
 .top-warning{background:#48321b;color:#ffdd9d;border-bottom:1px solid #a77739;padding:10px 22px;font-size:11px;text-align:center;letter-spacing:.01em}
 .top-warning strong{font-size:10px;letter-spacing:.12em;padding-right:5px;color:#fff2d8}
+.prd-deviation-alert{margin:0;background:#420a11;color:#ffe5e7;border:4px solid #ff3434;padding:18px 24px;box-shadow:inset 0 0 0 2px #7f191e}
+.prd-deviation-alert strong{display:block;color:#fff;font-size:clamp(19px,2.8vw,30px);font-weight:900;line-height:1.25;letter-spacing:.01em;text-transform:uppercase}
+.prd-deviation-alert p{font-size:clamp(13px,1.5vw,17px);font-weight:620;line-height:1.55;max-width:1100px;margin:9px 0}
+.prd-deviation-alert b{color:#fff;font-weight:900;text-decoration:underline}
+.prd-deviation-alert a{display:inline-block;color:#fff;text-decoration:underline;font-size:14px;font-weight:750}
 .layout{display:flex;min-height:calc(100vh - 38px)}
 .sidebar{width:262px;flex:0 0 262px;display:flex;flex-direction:column;position:sticky;top:0;align-self:flex-start;min-height:calc(100vh - 38px);padding:29px 17px 25px;background:#0c1827;border-right:1px solid #233448}
 .brand{display:flex;align-items:center;gap:12px;padding:0 9px 22px}

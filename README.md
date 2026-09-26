@@ -67,3 +67,4 @@ On a prepared development host: `cargo fmt --all -- --check && cargo test --work
 - [R6.8 tiga pratinjau dashboard Platform Admin, Tenant Admin dan NOC, dengan API nyata tetap terkunci](docs/DASHBOARDS_R68.md)
 - [R6.9 pinned RS256 OIDC signature lab and deny-by-default Platform/Tenant/NOC auth boundary](docs/IDENTITY_OIDC_R69.md)
 - [R7.0 PostgreSQL kandidat keanggotaan tenant, peran dan POP, plus jadwal bersyarat tiga dashboard](docs/DASHBOARD_MEMBERSHIP_R70.md)
+- [R7.1 PERINGATAN MERAH: status PRD DEV-01 ZTE C320 fisik dan firmware belum siap, Rust parser offline saja](docs/PRD_DEVIATIONS_R71.md)

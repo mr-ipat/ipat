@@ -511,3 +511,22 @@ backend policy, RLS session-scope,
 audit, CSRF and custom-domain
 ownership verification.
 [Exact R7.0 tests/gaps](DASHBOARD_MEMBERSHIP_R70.md).
+
+### R7.1 native OLT read-only boundary and protected firmware gate
+
+ZTE C320 parsing runs offline on bounded text; it rejects
+control characters, unexpected table layout and duplicate slots.
+The offline importer checks exact filenames, absolute owner
+directory 0700, file mode 0600, no symlinks/hardlinks, rechecks
+file identity with O_NOFOLLOW and never echoes raw CLI transcripts.
+The binary has NO live equipment transport, firmware image
+upload, dangerous configuration command or web listener.
+Even all firmware check flags only mark HUMAN_REVIEW_ONLY;
+the flags themselves are not trustworthy signed attestations.
+Actual write automation must additionally prove exact
+device/card/version compatibility with authenticated operator
+and maker-checker authorization, tested restoration, onsite
+independent rescue and maintenance/customer impact controls.
+Do not distribute customer firmware images or management secrets
+in Git/chat. This feature does NOT bypass seven blocked
+live-production infrastructure safety gates.

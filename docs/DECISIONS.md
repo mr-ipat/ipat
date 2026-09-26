@@ -45,3 +45,18 @@
 ## 3. Sources and external reference maintenance
 
 Binding decision source: `IPAT_PROJECT_BRIEF.md`. Reference versions checked 2026-09-25: Broadband Forum *in force* TR-069 Amendment 6 Corrigendum 1, TR-369 Amendment 5, and TR-181 Issue 2 Amendment 21. Standards change/interop impact evaluated at each release; standards publication is not implementation certification.
+
+## ADR-019 (OPEN): ZTE C320 controlled firmware upgrade request — R7.1
+
+Owner requests real DEV-01 early read-only pilot and firmware
+upgrade. This is a high-risk scope expansion beyond guaranteed
+first-week deliverables, NOT implementation approval.
+Alternatives: remain read-only pending tests; supervised manual
+vendor-led isolated upgrade under independent OLT owner process;
+or later native IPAT staged firmware job after exact model/card/
+release proof, offline vendor image checksum, two-person approved
+maintenance, blast radius caps, backup restore and onsite rollback.
+Selection requires actual chassis/board/firmware, official
+matching vendor upgrade/rollback release notes and signed
+product/security/ISP owner authorization. No candidate
+can be labeled implemented or validated by synthetic flags.

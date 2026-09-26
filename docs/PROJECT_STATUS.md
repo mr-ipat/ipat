@@ -1,8 +1,8 @@
 # IPAT — Project Status
 
 **As-of:** 2026-09-26 Asia/Jakarta
-**Milestone:** R7.0 — unexposed synthetic PostgreSQL candidate for independently approved OIDC subject→tenant role→POP membership and separate platform principals; NOT authenticated runtime dashboards or commercial SaaS.
-**Milestone state:** R7.0 started from merged reviewed R6.9 docs GitHub main `04c711c956bcc89fb30e83b9ec44713841ca9135`, whose original pinned RS256 JWT verifier still does NOT grant tenant roles or expose business APIs. The new synthetic-only migration and disposable CI tests cover platform/tenant/POP structural isolation with no SELECT or write GRANTS for `ipat_app_runtime`; actual Keycloak authorization-code login/MFA, verified persisted membership runtime lookup, domain/session policy, per-user menus, real operational data and device interoperability are UNIMPLEMENTED. All three visual workspaces remain private synthetic previews. GitHub feature R7.0 CI and exact final source backup pending in this draft; no public deploy, root firewall, database/K3s service installation, customer traffic or provider firewall changes are authorized. Conditional UI/MFA lab 1–2 weeks, integrated initial admin/tenant/NOC 4–6 weeks, physical pilot 8–12 weeks; NOT delivery promises. Seven independent production safety gates remain BLOCKED. Developer Mr. iPat.
+**Milestone:** R7.1 — original Rust ZTE C320 strict offline read-only inventory/version evidence parser and owner-private importer, non-executable firmware review, prominent red PRD deviation notice; real TC-OLT-01/FW physical tests BLOCKED.
+**Milestone state:** R7.1 candidate feature branch from clean R7.0 private GitHub/Mac/actual Ubuntu main `55eb1826eb462985b64bace6cf406c958109e020`. Source-only ZTE C320 adapter recognizes synthetic vendor-format show card/show version-running output, enforces bounded parser and zero network/firmware operations; owner-private 0700/0600 fixed-file offline CLI parses only evidence and never promotes physical status. New red banner on all three private dashboards explicitly declares physical TC-OLT-01 and firmware NOT RUN; a PRD gap ledger explains FR-016 simulator permission and separately requested high-risk firmware extension (not guaranteed S1). Actual isolated Ubuntu 26.04.1 disposable source checkout: rustfmt PASS, 145/145 locked offline whole-workspace Rust tests PASS (including 6 ZTE C320 synthetic Rust parsing/firmware gate tests), 5/5 actual built offline-Rust-CLI synthetic file/permission/negative tests PASS, 5/5 PRD red-alert/firmware-deny Python contracts PASS and 7/7 existing R6.8 dashboard Python tests PASS. Ubuntu VPS lacks Node so existing R6.8 Node synthetic DOM test independently ran and PASSED on authorized Mac Node v22.22.0. Real physical ZTE hardware access ZERO. All CI, final GitHub merge and encrypted exact-source recovery STILL PENDING at this source checkpoint. GitHub CI, refreshed final exact-main backup and independent postmerge checks PENDING at this point. No actual physical ZTE management path, exact installed boards/firmware, vendor image/rollback or authorized onsite upgrade operator has been confirmed. Live VPS K3s, PostgreSQL, nftables remain INACTIVE; production NO_GO and seven independent external gates BLOCKED. Developer Mr. iPat.
 
 ## 1. Source of truth and provenance
 
@@ -1092,3 +1092,31 @@ Added `deploy/scripts/lab/r61/test_r61_tls.py` with an ephemeral locally generat
   Produksi NO_GO; proyek tidak menggunakan
   firewall penyedia hosting atau mengubah
   K3s/PostgreSQL/firewall live.
+
+## R7.1 — ZTE C320 safety-first, real physical test still blocked
+
+- User requested immediate one-OLT real connection and firmware upgrade.
+  Reported expectation does NOT match actual readiness: physical DEV-01
+  has no verified card/firmware, approved private management access
+  or independently tested device recovery; TC-OLT-01 remains NOT RUN.
+  Original FR-016 permits a simulator when physical access is unavailable;
+  actual firmware updates are outside initial seven-day guarantee and
+  must meet FR-017 exact-tuple proof and high-impact approval requirements.
+- Built pure Rust offline crate olt-core with bounded parsers for two
+  candidate read-only ZTE C320 CLI outputs (show card and
+  show version-running), duplicate/unsafe/malformed input rejection
+  and non-executable firmware approval gate. WRITE_ENABLED=false.
+- Built a separate offline owner-private Rust importer for two
+  fixed output files in a mode-0700 directory with owner-only mode-0600
+  files, no symlink/hardlink, no network. Successful output explicitly
+  says physical identity UNVERIFIED, compatibility UNTESTED, no firmware.
+- Added large bright RED PRD gap alert across three synthetic
+  preview dashboards plus PRD_DEVIATIONS_R71.md audit. Even operator
+  declarations satisfying all software checks produce HUMAN_REVIEW_ONLY;
+  there is no firmware image transport, upload or executable upgrader.
+- R7.1 tests are synthetic and isolated. Physical connection remains
+  BLOCKED until approved access, exact real card/firmware versions,
+  private trusted management route and safe onsite rollback are provided.
+
+  No K3s/PG/nftables live services, shared provider firewall or
+  customer device configuration was touched by this feature.

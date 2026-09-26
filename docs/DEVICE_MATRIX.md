@@ -203,3 +203,21 @@ tetap `untested` per exact model/
 firmware/protokol; jumlah enrolled
 fisik tetap nol.
 [Detail milestone](ACS_MTLS_R67.md).
+
+## R7.1 DEV-01 ZTE C320: offline parsing is NOT physical interoperability
+
+Original DEV-01 row and TC-OLT-01 stay untested/NOT RUN.
+R7.1 Rust parser and secure offline owner-file importer recognize
+bounded synthetic CLI table shapes for show card and
+show version-running; they do NOT use or contact a real OLT.
+All exact chassis/controller/PON/uplink cards, HW revisions,
+management channel capability and running firmware remain unknown.
+Vendor command availability/output may differ by actual firmware.
+No physical result, credential, serial, tenant assignment or
+compatibility claim is produced from an offline parsing pass.
+New proposed TC-OLT-FW-01 firmware test: NOT SCHEDULED/NOT RUN;
+requires separate scope approval, official matching release
+notes and image checksum, tested backup+recovery, verified
+alarm-free state, two approvers, customer impact window
+and onsite console before an actuator could exist.
+See PRD_DEVIATIONS_R71.md for visible red status ledger.

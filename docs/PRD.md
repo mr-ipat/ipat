@@ -459,3 +459,19 @@ against PostgreSQL RLS.
 
   gate recovery/perimeter dan perangkat
   laboratorium nyata lulus.
+
+### R7.1 user-requested DEV-01 ZTE C320 early pilot and firmware change (scope alert)
+
+FR-016 accepts simulator if physical OLT is unavailable. Pure
+offline parser and red safety alert are partial implementation,
+NOT actual device integration or TC-OLT-01 completion.
+FR-017 prohibits enabling writes on an untested exact tuple.
+The additional user request for firmware upgrade is NOT a
+previously promised first-week MVP feature. It is now tracked
+as a proposed high-impact extension, with independent owner
+authorization, exact vendor release/card compatibility,
+authenticated private transport, onsite recovery, validated
+backup/restore, approved maintenance window and two-person
+approval before any actual write feature could be implemented.
+Any mismatch is conspicuously RED on all three dashboard previews.
+See PRD_DEVIATIONS_R71.md for the requirement-by-requirement audit.

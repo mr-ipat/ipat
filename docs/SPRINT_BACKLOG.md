@@ -443,3 +443,21 @@ Build original Rust `control-api` and separate synthetic `usp-controller` into n
 - Production NO_GO pending real
   recovery/perimeter and signed
   architecture decisions.
+
+### R7.1 ZTE C320 requested physical onboarding and firmware extension
+
+- DONE synthetic candidate: bounded Rust vendor-format read-only
+  inventory/version parsers, fixed-command allowlist, owner-only
+  offline input importer, non-executable firmware review gate
+  and red full-dashboard PRD gap notification.
+- MUST NEXT (real DEV-01): verified exact C320 chassis/card
+  revisions and current running versions; authorized private
+  management method, trusted host identity and least-privileged
+  read-only account; independently prepared operator recovery.
+- MUST ACCEPT FR-016: exactly one verified real chassis safe
+  inventory read, redacted evidence, isolated tenant device
+  mapping and negative no-write audit; keep untested until then.
+- PROPOSED HIGH-RISK LATER: sign off new exact-firmware update
+  scope and tests, official image provenance, per-card compatibility,
+  service impact and onsite rollback, independent maker-checker.
+  No implementation or execution approval for firmware today.
