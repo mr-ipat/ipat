@@ -58,6 +58,11 @@ jobs:
           bash -n deploy/scripts/lab/r59/start-private-web-mac.sh
           bash -n deploy/scripts/lab/r59/stop-private-web-mac.sh
           python3 -m unittest discover deploy/scripts/lab/r59 -p 'test_r59_review.py' -v
+      - name: Verify R6.0 physical-device intake is offline and no compatibility is inferred
+        run: |
+          python3 -m py_compile deploy/scripts/lab/r60/prepare-device-intake.py
+          python3 -m json.tool web/lab/device-targets.json >/dev/null
+          python3 -m unittest discover deploy/scripts/lab/r60 -p 'test_r60_review.py' -v
       - name: Verify Mac encrypted-backup and external provider probe safety contracts (static)
         run: |
           bash -n deploy/scripts/lab/backup-mac-restic.sh

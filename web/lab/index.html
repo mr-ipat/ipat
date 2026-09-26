@@ -22,6 +22,7 @@
       <nav aria-label="Halaman informasi laboratorium">
         <a class="nav-active" href="#overview"><span aria-hidden="true">◈</span> Ringkasan</a>
         <a href="#modules"><span aria-hidden="true">⬡</span> Modul yang diuji</a>
+        <a href="#device-targets"><span aria-hidden="true">▥</span> Target perangkat</a>
         <a href="#security"><span aria-hidden="true">◇</span> Gerbang keamanan</a>
       </nav>
       <div class="sidebar-spacer"></div>
@@ -39,7 +40,7 @@
       </header>
       <main id="main">
         <section id="overview" class="hero" aria-labelledby="page-title">
-          <div class="eyebrow"><span class="green-dot" aria-hidden="true"></span> IPAT LAB CONSOLE <span class="version-tag">R5.9 Preview</span></div>
+          <div class="eyebrow"><span class="green-dot" aria-hidden="true"></span> IPAT LAB CONSOLE <span class="version-tag">R6.0 Inventory Lab</span></div>
           <h1 id="page-title">Operasional jaringan.<br><span>Dalam satu platform.</span></h1>
           <p class="hero-description">Pratinjau antarmuka IPAT untuk memvalidasi layanan laboratorium. Tidak terhubung ke OLT, ONT, pelanggan, maupun perangkat produksi.</p>
           <div class="hero-actions">
@@ -69,6 +70,12 @@
               <p class="metric-note">Menunggu autentikasi, pemulihan, dan jaringan aman</p>
             </article>
           </div>
+        </section>
+        <section id="device-targets" class="section-block device-targets" aria-labelledby="device-targets-title">
+          <div class="section-header"><div><span class="section-kicker">HARDWARE TEST READINESS</span><h2 id="device-targets-title">Daftar target perangkat</h2></div><span class="subtle-tag">BUKAN PERANGKAT TERHUBUNG</span></div>
+          <div class="device-warning"><div><strong><span id="candidate-count">8</span> target pengujian disiapkan · <span id="physical-count">0</span> perangkat fisik terdaftar</strong><p>Daftar ini berasal dari rencana pengujian. Belum ada klaim kompatibilitas, discovery jaringan, kredensial, atau hasil uji perangkat fisik.</p></div><span class="step-state">Menunggu data lab</span></div>
+          <div class="device-list-container"><table class="device-table"><caption class="sr-only">Target laboratorium yang belum didaftarkan secara fisik</caption><thead><tr><th scope="col">ID</th><th scope="col">Jenis</th><th scope="col">Vendor / keluarga</th><th scope="col">Rencana uji</th><th scope="col">Status</th></tr></thead><tbody id="target-rows"><tr><td colspan="5">Memuat rencana perangkat...</td></tr></tbody></table></div>
+          <div class="device-bottom"><p id="target-feedback" role="status" aria-live="polite">Informasi calon perangkat, bukan telemetri langsung.</p><a href="https://github.com/mr-ipat/ipat/blob/main/docs/DEVICE_MATRIX.md" target="_blank" rel="noopener noreferrer">Persyaratan model dan firmware ↗</a></div>
         </section>
         <div class="content-grid">
           <section id="modules" class="panel" aria-labelledby="modules-title">

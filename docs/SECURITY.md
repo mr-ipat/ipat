@@ -192,3 +192,21 @@ trust in user headers or private tenant menu rendered to unauthenticated
 users. NEVER route this through public ingress, proxy or alternate domain.
 Production OIDC, real RBAC+ABAC, domain ownership, verified recovery and
 IPv4+IPv6 isolation remain unverified and are not replaced by this preview.
+
+## R6.0 hardware intake trust boundary and sensitive-field denial
+
+A planned vendor/target row is NOT a discovered or assigned physical device.
+The private laboratory dashboard displays only generic public test-family
+planning data with an explicit zero real devices count. Browser GET requires
+the already reviewed Mac-loopback-only SSH preview; default/K3s routers
+return 404 and mutation endpoints 405. No private management IP, credential,
+serial or subscriber info may be embedded in HTTP or source-controlled
+fixtures. The independent offline Python intake tool uses an allowlist of
+required metadata keys and protocol *candidates*, duplicate-key rejection,
+bounded strict field syntax, sensitive-field/IPv4 pattern denial and exclusive
+0600 write under an owner-only 0700 directory outside Git; the output is
+ALWAYS marked unverified and unconnected. A credential-free local file must
+never be interpreted as approval, secure tenant binding or proof of protocol
+support. Actual physical enrollment and read-only probing require explicit
+lab/tenant owner permission, dedicated least-privileged identity, isolated
+reachable channel, audited review, exact firmware record and negative tests.

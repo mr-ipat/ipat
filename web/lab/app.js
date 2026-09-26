@@ -41,5 +41,59 @@ async function checkPrivateLab() {
     refresh.disabled = false;
   }
 }
-refresh.addEventListener("click", checkPrivateLab);
+// This is an immutable product *test plan*, never hardware enrollment.
+async function loadHardwareTargets() {
+  const table = byId("target-rows");
+  const feedback = byId("target-feedback");
+  try {
+    const response = await fetch("/lab/device-targets", {cache:"no-store"});
+    if (!response.ok) throw new Error("catalog unavailable");
+    const catalog = await response.json();
+    if (catalog.schema !== 1 || catalog.catalog_mode !== "planned_targets_only"
+        || catalog.physical_devices_enrolled !== 0
+        || catalog.physical_interoperability_verified !== 0
+        || catalog.network_discovery_enabled !== false
+        || catalog.compatibility_claim !== false
+        || !Array.isArray(catalog.targets)
+        || catalog.targets.length !== 8
+        || catalog.targets.some(t => t.status !== "awaiting_metadata")) {
+      throw new Error("unexpected catalog provenance");
+    }
+    const kind = {OLT:"OLT",ONT:"ONT",ROUTER_DISTRIBUTION:"Router distribusi",
+      CUSTOMER_ROUTER:"Router pelanggan"};
+    const fragment = document.createDocumentFragment();
+    for (const device of catalog.targets) {
+      const row = document.createElement("tr");
+      const fields = [device.id,kind[device.category] || "Belum dikenal",
+        device.vendor + " " + device.family,device.test_plan,"Menunggu metadata"];
+      for (let i=0;i<fields.length;i++) {
+        const cell = document.createElement("td");
+        cell.textContent = String(fields[i]);
+        if (i === 4) cell.className = "pending-text";
+        row.appendChild(cell);
+      }
+      fragment.appendChild(row);
+    }
+    table.replaceChildren(fragment);
+    byId("candidate-count").textContent = String(catalog.targets.length);
+    byId("physical-count").textContent = "0";
+    feedback.textContent = "Rencana pengujian dimuat. Model, firmware, izin, dan konektivitas fisik belum diverifikasi.";
+  } catch {
+    table.replaceChildren();
+    const row = document.createElement("tr");
+    const cell = document.createElement("td");
+    cell.colSpan = 5;
+    cell.textContent = "Katalog tidak tersedia. Status fisik tidak dapat disimpulkan.";
+    row.appendChild(cell);
+    table.appendChild(row);
+    byId("candidate-count").textContent = "–";
+    byId("physical-count").textContent = "–";
+    feedback.textContent = "Pemeriksaan katalog gagal; jangan menafsirkan tabel ini sebagai koneksi perangkat.";
+  }
+}
+refresh.addEventListener("click", () => {
+  void checkPrivateLab();
+  void loadHardwareTargets();
+});
 void checkPrivateLab();
+void loadHardwareTargets();

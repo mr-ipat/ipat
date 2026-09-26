@@ -12,6 +12,8 @@ use axum::{
 const LAB_INDEX: &str = include_str!("../../../web/lab/index.html");
 const LAB_CSS: &str = include_str!("../../../web/lab/style.css");
 const LAB_JS: &str = include_str!("../../../web/lab/app.js");
+// Public project target taxonomy only. Not an enrollment record or real device data.
+const LAB_DEVICE_TARGETS: &str = include_str!("../../../web/lab/device-targets.json");
 const LAB_STATUS: &str = r#"{"mode":"ssh-loopback-only","production_access":false,"authentication_enabled":false,"device_operations_enabled":false,"backend":"online"}"#;
 
 fn bind_address(k3s_lab: bool) -> &'static str {
@@ -71,6 +73,13 @@ async fn lab_status() -> (HeaderMap, &'static str) {
     )
 }
 
+async fn lab_device_targets() -> (HeaderMap, &'static str) {
+    (
+        private_lab_headers("application/json; charset=utf-8"),
+        LAB_DEVICE_TARGETS,
+    )
+}
+
 fn app_with_lab(lab_web_enabled: bool) -> Router {
     let api = Router::new()
         .route("/healthz", get(|| async { "ok" }))
@@ -87,6 +96,7 @@ fn app_with_lab(lab_web_enabled: bool) -> Router {
             .route("/lab/style.css", get(lab_css))
             .route("/lab/app.js", get(lab_js))
             .route("/lab/status", get(lab_status))
+            .route("/lab/device-targets", get(lab_device_targets))
     } else {
         api
     }
@@ -159,6 +169,7 @@ mod tests {
             "/lab/style.css",
             "/lab/app.js",
             "/lab/status",
+            "/lab/device-targets",
         ] {
             let response = get_path(app(), uri).await;
             assert_eq!(response.status(), StatusCode::NOT_FOUND, "{uri}");
@@ -184,6 +195,38 @@ mod tests {
         assert!(LAB_INDEX.contains("Mode terbatas"));
         assert!(LAB_INDEX.contains("Mr. iPat"));
         assert!(!LAB_INDEX.contains("type=\"password\""));
+    }
+
+    #[tokio::test]
+    async fn planned_device_targets_are_private_preview_only_and_not_enrollment() {
+        let response = get_path(app_with_lab(true), "/lab/device-targets").await;
+        assert_eq!(response.status(), StatusCode::OK);
+        assert_eq!(response.headers()[header::CACHE_CONTROL], "no-store");
+        assert_eq!(
+            response.headers()[header::CONTENT_TYPE],
+            "application/json; charset=utf-8"
+        );
+        assert!(LAB_DEVICE_TARGETS.contains("\"catalog_mode\": \"planned_targets_only\""));
+        assert!(LAB_DEVICE_TARGETS.contains("\"physical_devices_enrolled\": 0"));
+        assert!(LAB_DEVICE_TARGETS.contains("\"network_discovery_enabled\": false"));
+        let response = get_path(app_with_lab(false), "/lab/device-targets").await;
+        assert_eq!(response.status(), StatusCode::NOT_FOUND);
+    }
+
+    #[tokio::test]
+    async fn private_catalog_rejects_mutation_without_fake_authentication() {
+        let response = app_with_lab(true)
+            .oneshot(
+                Request::builder()
+                    .method("POST")
+                    .uri("/lab/device-targets")
+                    .header("X-Tenant-Id", "kangnet")
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(response.status(), StatusCode::METHOD_NOT_ALLOWED);
     }
 
     #[tokio::test]

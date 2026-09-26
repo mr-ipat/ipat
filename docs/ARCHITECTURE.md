@@ -326,3 +326,18 @@ routes. A key-only SSH tunnel to the authorized Mac, bound to localhost on
 both sides, is the only supported preview access. The production frontend
 technology and domain/OIDC architecture remain PROPOSED ADR-006/OPEN ADR-014;
 a local demo is not a final Next.js/tenant-session decision.
+
+## R6.0 project hardware candidate inventory (not a runtime device connector)
+
+The original Rust Control API gains a strictly opt-in SSH-loopback-only
+read-only static test-target catalog at `GET /lab/device-targets`. It
+records exactly the approved eight initial *candidate families* as
+`awaiting_metadata`, zero actual physically enrolled devices, zero
+interoperability proof, and no automatic network discovery or privileged
+actions. K3s pod-bound and default HTTP routers cannot serve the catalog.
+The frontend uses text-only DOM rendering and refuses inconsistent provenance.
+An independent offline private Python validator stages exact-model/firmware
+metadata outside Git; it does NOT grant network access, tenant enrollment,
+API authentication or any implicit compatibility claim. Production inventory
+requires trusted OIDC + resource-level RBAC/ABAC, verified tenant/device
+identities, per-feature hardware test evidence and isolated access.

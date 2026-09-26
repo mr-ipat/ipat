@@ -519,3 +519,41 @@ Mac parser checks and six source safety tests passed. A fresh non-root strict SS
   checkpoint; after documentation merge, repeat final exact
   source snapshot and post that SHA/backup/CI/localhost proof in PR discussion
   rather than repeatedly changing `main`.
+
+## 33. R6.0 — planned physical-device targets and credential-free intake (pre-CI)
+
+- Source of truth remains the already verified clean private GitHub/Mac/
+  Ubuntu 26.04.1 VPS `main` `1b649b90cd4920d0dddbbc125f928cf92b75286c`.
+  The original R5.9 private Mac browser tunnel was verified against this
+  source. Actual VPS K3s, PostgreSQL and nftables remain INACTIVE.
+- The next product slice presents all **eight** original DEV-01..08
+  targets in the private browser (ZTE C320, C-DATA OLT, VSOL/ZTE ONT,
+  MikroTik x86/CCR/distribution RB and customer RB), not fictitious
+  connected devices. Exact model/firmware, permissions and real lab
+  reachability are missing. Lab JSON explicitly declares ZERO physical
+  devices, ZERO interoperability, no network discovery and no
+  compatibility claims. The browser rejects catalog provenance mismatch.
+- The same original Rust lab-only API adds a read-only target-list endpoint,
+  absent in default/K3s mode and rejecting mutations. An independent
+  offline Python validator accepts only exact approved target IDs and
+  strictly bounded observed model/board/firmware and *candidate* protocol,
+  rejects secrets, serials, management addresses, duplicate keys,
+  placeholders, unsafe paths and overwrites, and writes new mode-0600
+  unapproved metadata **outside Git** only. It NEVER contacts equipment
+  or automatically authorizes registration/tenant/device claims.
+- Files: `web/lab/{device-targets.json,index.html,app.js,style.css}`,
+  `apps/control-api/src/main.rs`,
+  `deploy/scripts/lab/r60/{prepare-device-intake.py,test_r60_review.py}`,
+
+  `.github/workflows/ci.yml`, `docs/DEVICE_TESTING_R60.md` and
+  updated authoritative PRD/architecture/security/device matrix/backlog/
+  deployment/status docs. Local six Python R6.0 review tests passed;
+  exact final Rust/CI, reviewed merge, actual final laptop preview,
+  new encrypted source backup and any REAL device evidence remain
+  pending at this checkpoint. No external provider firewall integrations.
+- NEXT actual hardware gate: operator supplies a true locally observed
+  model, firmware and board for at least ONE specifically authorized,
+  isolated reachable physical target. Independent review and a safe
+  physical read-only evidence record must precede any notification that
+  a real device was actually added for testing. No untested vendor,
+  model or firmware may be marked `validated`.
