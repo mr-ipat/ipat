@@ -475,3 +475,31 @@ backup/restore, approved maintenance window and two-person
 approval before any actual write feature could be implemented.
 Any mismatch is conspicuously RED on all three dashboard previews.
 See PRD_DEVIATIONS_R71.md for the requirement-by-requirement audit.
+
+### R7.2 target DEV-01 firmware integrity, not an early upgrade commitment
+
+FR-016 S1 permits C320 simulator
+read-only evidence if real OLT
+is unavailable. Local SHA-256
+integrity of a synthetic or
+operator-private image is now
+available through a fully offline,
+non-executable check. It does NOT
+meet FR-017 per-model/firmware
+validated write operations,
+nor TC-OLT-01/TC-OLT-FW-01
+physical test acceptance.
+Actual board/firmware inventory,
+manufacturer image origin,
+recovery, maintenance/impact
+window, dual approval and
+post-change physical tests
+remain missing. No automatic
+firmware upgrade is permitted.
+This request is outside
+guaranteed initial 7-day MVP
+and remains gated by original
+high-risk security policy.
+See [visible red PRD gap
+
+and R7.2 procedures](C320_FIRMWARE_INTEGRITY_R72.md).

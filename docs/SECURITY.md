@@ -530,3 +530,33 @@ independent rescue and maintenance/customer impact controls.
 Do not distribute customer firmware images or management secrets
 in Git/chat. This feature does NOT bypass seven blocked
 live-production infrastructure safety gates.
+
+## R7.2 ZTE C320 offline vendor file-integrity gate is not an authorization gate
+
+A separate Python standard-library
+tool can calculate one local SHA256
+from an operator-private exact-name
+image (mode0600, no links, bounded
+size, O_NOFOLLOW) and compare to
+the checksum copied by the operator
+into a second private file.
+It is explicitly opt-in, refuses
+root, and has no network/library
+support for firmware execution.
+Output can prove **only local
+arithmetic file integrity**,
+not independently verified ZTE
+image provenance, compatibility
+with C320 cards, disaster recovery,
+maintenance approval or physical
+interoperability. All firmware
+execution flags are permanently
+FALSE. Official vendor release
+notes, permitted image source,
+cryptographic vendor evidence
+when available, two distinct
+approvers, real host backup/
+
+restore and onsite console
+remain independent human gates.
+See [R7.2 preflight](C320_FIRMWARE_INTEGRITY_R72.md).

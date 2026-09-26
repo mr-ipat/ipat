@@ -1120,3 +1120,63 @@ Added `deploy/scripts/lab/r61/test_r61_tls.py` with an ephemeral locally generat
 
   No K3s/PG/nftables live services, shared provider firewall or
   customer device configuration was touched by this feature.
+
+## R7.2 — hard-disabled local C320 firmware SHA-256 check and PRD gap visibility
+
+- Project source-of-truth R7.1 pre-checked on
+  clean private GitHub/Mac: `bbcffda3fb13689162561cde2abd872eb1f59985`,
+  final independent CI `36250596792` SUCCESS.
+  Existing red banner on all Platform Admin,
+  Tenant Admin and NOC private previews
+  continues to state physical OLT and
+  firmware functionality **NOT DONE**.
+- Added `deploy/scripts/lab/r72/c320-firmware-check.py`
+  for nonroot local integrity only: exact
+  owner-private mode0700 directory,
+  three fixed 0600 operator-owned no-link
+  files, safe `O_NOFOLLOW`, bounded
+  syntax and image size, strict DEV-01
+  C320 metadata, SHA256 over bytes
+  compared to **operator-supplied checksum**
+  only after explicit offline opt-in.
+  Zero network access, no firmware
+  upload/actuator, no device writes.
+  Output permanently marks physical
+  firmware compatibility, vendor
+  authenticity and human approvals
+  FALSE, even if hash matches.
+- Nine local synthetic Python tests
+
+  exercise positive **fake** image hash,
+  corrupt image, fraudulent checksum,
+  wrong model, metadata injection,
+  lack of consent, unsafe directory/
+  file permissions, links and absence
+  of firmware remote commands.
+  Initial negative traversal test
+  failed because release metadata
+  permitted `..` inside a field;
+  implementation was corrected and
+  all nine tests then passed, before
+  CI review or merge.
+- CI now repeats the new checks on
+  disposable runners with no real
+  firmware bytes. Extended red PRD
+  ledger and R7.2 runbook. Still
+  requires physical C320 identification,
+  independently approved access
+  and firmware release/build/board
+  compatibility as well as external
+  recovery, maker-checker and
+  owner-approved maintenance window.
+  Issues #72 and #73 remain OPEN.
+- Only feature implementation
+  is complete at this initial
+
+  local checkpoint. Independent
+  CI, final exact-main backup
+  and commit evidence must be
+  verified separately. No actual
+  C320 packets or firmware
+  writes were made. Commercial
+  and field acceptance NO_GO.

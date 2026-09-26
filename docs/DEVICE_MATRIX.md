@@ -221,3 +221,23 @@ notes and image checksum, tested backup+recovery, verified
 alarm-free state, two approvers, customer impact window
 and onsite console before an actuator could exist.
 See PRD_DEVIATIONS_R71.md for visible red status ledger.
+
+## R7.2 image digest is not C320 firmware interoperability
+
+Only an operator-supplied SHA-256
+claim for an owner-private local
+file can be compared bytewise
+by the new offline check. No
+vendor image or live physical
+C320 was downloaded or used.
+Installed chassis, controller,
+uplink and GPON board revisions
+and running build are unknown.
+No firmware compatibility
+claim, OLT SSH/SNMP test,
+TC-OLT-01 or TC-OLT-FW-01
+pass is created by SHA-256.
+DEV-01 remains `untested`
+and firmware actuators remain
+disabled; see
+[C320 integrity runbook](C320_FIRMWARE_INTEGRITY_R72.md).
