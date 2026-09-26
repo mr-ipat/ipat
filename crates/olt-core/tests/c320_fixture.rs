@@ -108,18 +108,34 @@ fn c320_configured_and_real_board_names_may_differ_but_never_match_other_slots()
         "Rack Shelf Slot CfgType RealType Port HardVer SoftVer Status\n\
          1 1 1 ETGO ETGOD 8 091201 V1.2.5P2 INSERVICE\n\
          1 1 3 SMXA SMXA 0 110701 V1.2.5P2 STANDBY\n",
-    ).unwrap();
+    )
+    .unwrap();
     let valid = "PhyLoc FileType VerType VerTag BuildTime VerLength\n\
                  1/1/1 ETGO MVR V1.2.5P2 2013-08-27 23:36:54 5008113\n\
                  1/1/3 SMXA MVR V1.2.5P2 2013-08-28 07:15:09 13982546\n";
     assert_eq!(cards[0].configured_type, "ETGO");
     assert_eq!(cards[0].card_type, "ETGOD");
-    assert!(consistent_inventory(&cards, &parse_running_versions(valid).unwrap()));
+    assert!(consistent_inventory(
+        &cards,
+        &parse_running_versions(valid).unwrap()
+    ));
     let wrong_board = valid.replace("ETGO MVR", "UNRELATED MVR");
-    assert!(!consistent_inventory(&cards, &parse_running_versions(&wrong_board).unwrap()));
+    assert!(!consistent_inventory(
+        &cards,
+        &parse_running_versions(&wrong_board).unwrap()
+    ));
     let wrong_slot = valid.replace("1/1/1 ETGO MVR", "1/1/4 ETGO MVR");
-    assert!(!consistent_inventory(&cards, &parse_running_versions(&wrong_slot).unwrap()));
+    assert!(!consistent_inventory(
+        &cards,
+        &parse_running_versions(&wrong_slot).unwrap()
+    ));
     let no_mvr = valid.replace("ETGO MVR", "ETGO BT");
-    assert!(!consistent_inventory(&cards, &parse_running_versions(&no_mvr).unwrap()));
-    assert!(!consistent_inventory(&[], &parse_running_versions(valid).unwrap()));
+    assert!(!consistent_inventory(
+        &cards,
+        &parse_running_versions(&no_mvr).unwrap()
+    ));
+    assert!(!consistent_inventory(
+        &[],
+        &parse_running_versions(valid).unwrap()
+    ));
 }
