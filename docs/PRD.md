@@ -236,3 +236,13 @@ Urutan M1–M4 berbasis dependensi/hasil tes, **tanpa janji tanggal atau klaim i
 **Sumber primer:** `IPAT_PROJECT_BRIEF.md` (transferred approved design baseline, 2026-09-25); Project Instructions IPAT. Verifikasi referensi publik pada 2026-09-25: Broadband Forum TR-069 Amendment 6 Corrigendum 1 dan TR-369 Amendment 5 sebagai versi *in force*, TR-181 Issue 2 Amendment 21, dokumentasi MikroTik REST/API, PostgreSQL RLS, Ubuntu 26.04 LTS, KEDA. Link rinci di `ARCHITECTURE.md`. Rujukan publik menginformasikan pilihan standar, **bukan** bukti perangkat IPAT kompatibel.
 
 **Kontrol perubahan:** setiap perubahan lingkup → PRD dan backlog; perubahan teknis → ADR + ARCHITECTURE/SECURITY; hasil fisik → DEVICE_MATRIX; semua milestone → PROJECT_STATUS. Versi berikutnya baru berstatus approved setelah review owner dan para penanggung jawab yang ditunjuk.
+
+### R5.9 interim restricted web demonstration (not new commercial acceptance)
+
+The private web preview acceptance requires explicit owner opt-in, successful
+same-machine localhost-only SSH tunneling, a functional first-party lab-only
+browser status page, default route denial, CSP and HTTP negative tests.
+No customer/tenant login or privileged menu may be presented without trusted
+OIDC membership and approved RBAC+ABAC; production-domain TLS and physical
+device support remain separate unfulfilled acceptance criteria. The original
+commercial FR-002/FR-003/FR-004 and backup/K3s security gates remain binding.

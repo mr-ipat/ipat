@@ -178,3 +178,17 @@ R5.7 confirms three security-relevant failure modes in disposable Ubuntu 26.04 Q
 
 ## R5.8 synthetic-only K3s packaging boundary
 Only explicit disposable GitHub CI runs bind the original Rust health-only app processes on their pod network. The separate native USP stub has no USP Record/MTP, and the Control API device route returns anonymous 401 regardless of fake tenant headers. Helm app templates remain ClusterIP-only, non-root, no token mounts/capabilities/host namespaces, read-only and default-deny application egress with smoke-pod-only ingress. A strict rendered-Helm validator rejects unsafe drift, and CI tests deliberate negative policy mutations. Cluster smoke traffic does not itself prove the selected CNI enforces every policy, and none of this authorizes a real VPS installation. See [R5.8 lab application boundary](K3S_APPLICATION_PACKAGING_R58.md).
+
+## R5.9 local-only web preview (not an authentication perimeter)
+
+The optional Rust browser status preview is absent unless explicitly requested,
+and the executable masks it when binding to the K3s pod network. Default
+security boundary is `127.0.0.1:3000`; the only approved preview path is the
+authorized Mac's strict-host-key key-only SSH tunnel bound to
+`127.0.0.1:48765`. Its CSP forbids external resources/inline scripts,
+framing and forms; read-only status exposes no operational data or secrets,
+and anonymous device requests still return 401. There is no pseudo-login,
+trust in user headers or private tenant menu rendered to unauthenticated
+users. NEVER route this through public ingress, proxy or alternate domain.
+Production OIDC, real RBAC+ABAC, domain ownership, verified recovery and
+IPv4+IPv6 isolation remain unverified and are not replaced by this preview.

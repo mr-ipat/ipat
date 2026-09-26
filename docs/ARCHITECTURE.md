@@ -314,3 +314,15 @@ R5.7 demonstrates a real checksum-pinned K3s systemd source node on disposable U
 
 ## R5.8 synthetic K3s app packaging (not production)
 A single disposable Ubuntu 26.04 embedded-etcd K3s node (R5.6) will build and import the existing `control-api` and independent `usp-controller` offline synthetic Rust HTTP binaries as separate static-musl, scratch, non-root pods. Two private ClusterIP Services and smoke-pod-only NetworkPolicies have no external exposure, data storage, USP MTP, real OIDC or customer-device I/O. Rendered manifests are strictly validated prior to ephemeral Helm install. This is an application orchestration test only; HA topology and private CNI selection remain ADR-017 OPEN. See [R5.8 scope](K3S_APPLICATION_PACKAGING_R58.md).
+
+## R5.9 private web preview boundary (PROPOSED production frontend unchanged)
+
+The original Rust Control API now optionally embeds a read-only, static
+first-party laboratory overview (`web/lab`) when explicitly enabled by
+`IPAT_LAB_WEB=1` **and only with its default loopback network bind**. It does
+not implement multi-tenant identity, login or any subscriber/device operations.
+Its separate K3s bind mode forcibly disables these unauthenticated preview
+routes. A key-only SSH tunnel to the authorized Mac, bound to localhost on
+both sides, is the only supported preview access. The production frontend
+technology and domain/OIDC architecture remain PROPOSED ADR-006/OPEN ADR-014;
+a local demo is not a final Next.js/tenant-session decision.

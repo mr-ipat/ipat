@@ -79,3 +79,18 @@ Run the read-only `python3 deploy/scripts/production/readiness.py` only from a c
 
 ## R5.7 K3s restore and native-firewall laboratory proof
 A two-VM Ubuntu 26.04 QEMU rehearsal now proves a pinned K3s systemd node can snapshot embedded etcd and restore the synthetic cluster state onto a different disposable VM when the original mode-0600 server token is supplied. The recovery runbook must remove stale source Node/pod objects, wait for CoreDNS to be recreated, and validate runtime recovery with a newly created pod after service restart rather than trusting stale Pod Ready state. A separate nftables drill proved both K3s coexistence and an intentional SSH lockout followed by automatic deletion of only the IPAT lab table using a precise systemd timer. See `K3S_CROSS_HOST_RECOVERY_R57.md`. Do not transpose QEMU addresses or rules to the live VPS; production still requires OOB rescue, full host restore, dedicated dual-stack ingress and approved ADR-017/018.
+
+## R5.9 SSH-only private browser preview
+
+After reviewed Git `main` matches GitHub, Mac and the actual VPS, opt in
+*on the authorized FileVault-enabled Mac only* with
+`IPAT_R59_ENABLE_PRIVATE_WEB=YES bash deploy/scripts/lab/r59/start-private-web-mac.sh`.
+The guard independently verifies Git identity and strict SSH, builds the
+unprivileged Rust API offline from the exact reviewed main and tests private
+server/tunnel health. The resulting URL
+`http://127.0.0.1:48765/lab` works ONLY on the connected Mac and is never
+an external/public endpoint. Opt-in teardown:
+`IPAT_R59_STOP_PRIVATE_WEB=YES bash deploy/scripts/lab/r59/stop-private-web-mac.sh`.
+See [R5.9 scope and production gates](WEB_PRIVATE_PREVIEW_R59.md). Do not
+add K3s ingress, real customer data or public HTTP/TLS until all independent
+production gates actually pass.

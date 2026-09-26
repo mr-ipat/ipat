@@ -53,6 +53,11 @@ jobs:
           bash -n deploy/scripts/lab/r58/app-smoke.sh
           python3 -m py_compile deploy/scripts/lab/r58/verify-rendered.py
           python3 -m unittest discover deploy/scripts/lab/r58 -p 'test_r58_review.py' -v
+      - name: Verify R5.9 SSH-loopback-only web preview and negative deployment guards
+        run: |
+          bash -n deploy/scripts/lab/r59/start-private-web-mac.sh
+          bash -n deploy/scripts/lab/r59/stop-private-web-mac.sh
+          python3 -m unittest discover deploy/scripts/lab/r59 -p 'test_r59_review.py' -v
       - name: Verify Mac encrypted-backup and external provider probe safety contracts (static)
         run: |
           bash -n deploy/scripts/lab/backup-mac-restic.sh

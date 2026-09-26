@@ -1,8 +1,8 @@
 # IPAT — Project Status
 
 **As-of:** 2026-09-26 Asia/Jakarta
-**Milestone:** R5.8 — health-only Rust app container packaging and private Helm deployment on disposable K3s; production host still NO_GO
-**Milestone state:** R5.8 feature PR #47 MERGED to private GitHub `main` `34ba659194da35c7033d3d1f4799e1997de618df`. Final reviewed PR CI `36208247637` SUCCESS in all **four** jobs. Real disposable Ubuntu 26.04 K3s job verified checksum-pinned binary, private RFC1918 API, real Node/CoreDNS/BusyBox DNS, embedded-etcd snapshot, statically compiled original Rust health-only Control API and synthetic USP stub scratch images, local containerd import, strict no-public-Service Helm validation, actual **both app pods Ready**, exact lab health and **401 anonymous API denial**, plus **real unapproved same-namespace pod ingress denied**. Private GitHub/Mac/actual Ubuntu 26.04.1 VPS source SHA matched the feature merge; actual VPS `cargo fmt --check`, **78/78 locked offline Rust tests**, **42 lab static**, **6 R5.7 static**, **6 R5.8 static**, **14 database static** and **5 production admission static** checks PASS; actual VPS K3s/PostgreSQL/nftables all INACTIVE. Mac FileVault ON; fresh exact feature-source encrypted Restic snapshot `8fd042aa` was independently SHA-256 restored, and separately encrypted selected privileged-root-config snapshot `abaa9827` isolated-restored; complete Restic pack read PASS, plaintext temporary restores cleaned. GitHub post-merge main CI `36209497564` independently returned SUCCESS in all four jobs; docs-only follow-up SHA will need a separate exact-SHA backup documented in PR discussion. No actual VPS firewall/cluster/database or shared external provider perimeter was changed, no real OIDC/native TR-369 transport or physical ISP support proved. Live deployment still blocked pending genuine out-of-band console login, complete independently recovered replacement VPS, a dedicated dual-stack perimeter and approved production ADR-017/018. Developer Mr. iPat.
+**Milestone:** R5.9 — explicitly opted-in Mac-local browser preview backed by actual Rust Control API; public production access still blocked
+**Milestone state:** R5.9 feature implementation IN REVIEW. Previous R5.8 code/docs final private GitHub, Mac and actual Ubuntu 26.04.1 VPS main SHA `914ec432626f103a66608af0e7dc831e2d49b10e` was previously verified with four-job CI SUCCESS and encrypted source snapshot `7fdf610e` independently restored. Current R5.9 preview source was separately compiled/tested as unprivileged Rust on the real VPS in a throwaway checkout: six Control API unit tests, real strictly loopback HTTP/HTML/JS/CSP, anonymous 401, mutation 405 and actual private-only sampled port passed; CI, merge, Mac-local end-to-end tunnel and final source backup are pending. Real VPS K3s/PostgreSQL/nftables remain INACTIVE. No public domain or real OIDC/multi-tenant data access exists. Real independently working OOB console login, whole-VPS recovery, dedicated effective dual-stack perimeter and approved ADR-017/018 remain blocked; do not expose this unauthenticated lab page publicly or install live K3s. Developer Mr. iPat.
 
 ## 1. Source of truth and provenance
 
@@ -464,3 +464,30 @@ Mac parser checks and six source safety tests passed. A fresh non-root strict SS
 
 ### R5.8 fifth real disposable CI finding: non-root OCI application binaries exit 128
 - Actual PR #47 workflow `36207928773`: all three Rust/static and PostgreSQL CI jobs PASS. Real Ubuntu 26.04 K3s checksum-pinned node, private API, CoreDNS/pod DNS, etcd snapshot, static-musl Rust release build, imported normalized OCI image names and strict Helm-rendered no-public-exposure manifest validation **all PASS**. Actual Helm rollout still failed. Newly safe-redacted Kubernetes diagnostics prove **both** original Rust application pods entered `CrashLoopBackOff` with their previous container exit code **128**, and Kubernetes reported only allowlisted Failed/BackOff event reasons (no event message or app secret was logged). The feature's outer shell deliberately uses `umask 077` to protect temporary secrets; Docker `COPY` without an explicit destination mode can preserve an executable file unreadable to non-root UID 65532, which is a plausible cause (not proven until a rerun). Both `scratch` Dockerfiles now explicitly set `COPY --chmod=0755` on the **single non-secret app executable** while preserving root-only temporary K3s secrets and all pod confinement. The failure reporter was additionally extended to emit only fixed event error categories, never raw event messages or logs. Re-run real ephemeral CI; do not claim pod readiness yet. The actual VPS and shared external perimeter are unchanged.
+
+## 32. R5.9 — browser preview safely accessible on authorized Mac (pre-review)
+
+- Verified the clean R5.8 private GitHub, Mac and actual Ubuntu 26.04.1 VPS
+  canonical `main` matches `914ec432626f103a66608af0e7dc831e2d49b10e`.
+  Live VPS remains K3s, PostgreSQL and nftables INACTIVE; SSH rollback marker
+  absent and no real customer/device protocols activated.
+- On isolated unprivileged Ubuntu 26.04.1 source checkout, the new
+  explicitly opted-in Rust local-only browser routes compiled and **six
+  Control API unit tests PASS** (initial handler signature compile failure
+  was corrected before any merge). A real, temporary local-only HTTP process
+  served HTML, CSS, JS and JSON with CSP, returned 401 for anonymous device
+  data and 405 for attempted status POST; actual listener bound
+  `127.0.0.1:3000` ONLY. The temporary process was stopped.
+- The first-party responsive Indonesian information-only UI is under
+  `web/lab`; the server includes it only with `IPAT_LAB_WEB=1` and
+  expressly masks it in K3s pod bind mode. The Mac private-tunnel launcher
+  refuses mismatched Git/SSH/port/process identity and changes no host
+  firewall or externally managed Security Group. Negative source tests
+  and real Mac→VPS end-to-end tunnel are separate review/verification gates.
+- Paths: `web/lab/*`, `apps/control-api/src/main.rs`,
+  `deploy/scripts/lab/r59/*`, `.github/workflows/ci.yml`,
+  `docs/WEB_PRIVATE_PREVIEW_R59.md` and affected canonical documents.
+  All production public ingress/OIDC/real USP/customer-data gates remain
+  OPEN; ADR-006/014/017/018 have not been silently approved. Only after
+  PR CI, merge, exact source sync, encrypted restore and actual working
+  SSH tunnel may the Mac-local browser preview be declared READY.
