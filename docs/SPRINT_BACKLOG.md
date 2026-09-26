@@ -211,3 +211,22 @@ Build original Rust `control-api` and separate synthetic `usp-controller` into n
   production Rust network connector and isolated read-only
   API. Wi-Fi, PPPoE, firewall, updates and device writes
   need their own scopes, reviews and physical tests.
+
+### R6.3 unexpected router SSH host-key change — block authentication
+- MUST: retain old known_hosts record unchanged; never send
+  the user-posted password or automate accepting the new
+  untrusted public endpoint fingerprint.
+- MUST: independently compare new observed public RSA key
+  to the **same actual** router over a separate trusted
+  direct-LAN management channel with known device hardware;
+  verify any expected legitimate key regeneration, and
+  rotate already-shared credentials using a trusted path.
+- COMPLETE (pre-CI): implement single-host, zero-credential
+  SSH fingerprint read-only validator with default mismatch
+  exit 4, no hidden known_hosts rewrite, optional strict
+  owner-controlled independent proof file, mocked negative
+  tests and exact-target live unauthenticated denial test.
+- BLOCKED: actual RouterOS SSH login/read, any physical
+  support claim or customer-router configuration until
+  host identity, limited account, safe read-only scope
+  and equipment non-disruption are independently verified.

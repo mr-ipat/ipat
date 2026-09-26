@@ -289,3 +289,7 @@ evidence parser must interoperate with the prior Python
 allowlist-only first-GET helper without elevating the evidence.
 This is not TC-ROS-03 actual physical acceptance and grants
 no dashboard login, trusted tenant binding or configuration rights.
+
+### R6.3 security acceptance for a remotely accessible customer router
+
+Even explicit customer test approval is insufficient to authenticate if the remote SSH server host fingerprint differs from the owner-Mac pinned key. A single-host unauthenticated fingerprint preflight must refuse to send passwords or execute read-only commands after mismatch or absence of trusted historical proof. Comparison against a *different trusted direct-LAN path* and deliberate owner acceptance are required before a separately scoped login; scanning the same public path cannot satisfy independent identity verification. No automatic known_hosts rewriting, disabled host checks or product feature compatibility status upgrades are permitted. See [R6.3 security evidence](MIKROTIK_SSH_HOST_TRUST_R63.md).
