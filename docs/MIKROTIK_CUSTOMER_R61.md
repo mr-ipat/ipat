@@ -147,7 +147,7 @@ reviewed secure tenant-bound product integration exists.
 Run on a disposable checkout without touching physical devices:
 
 ```bash
-python3 -m unittest discover deploy/scripts/lab/r61 -p 'test_r61_review.py' -v
+python3 -m unittest discover deploy/scripts/lab/r61 -p 'test_r61*.py' -v
 python3 -m unittest discover deploy/scripts/lab/r60 -p 'test_r60_review.py' -v
 ```
 
@@ -157,3 +157,5 @@ wrong model/version, unsafe destinations/permissions and zero enrollment.
 Only the later **real authorized** network test can establish successful
 readability for this actual customer router, and only a reviewed identity
 binding can allow onboarding in the production app.
+
+**Additional synthetic TLS test:** `test_r61_tls.py` generates an ephemeral local test CA and signed server certificate, connects only to a loopback HTTP fixture while intercepting the expected sample RFC1918/443 socket, confirms the real Python TLS client accepts valid CA/SAN and makes only one GET, then fails closed on a different TLS hostname. The first local run with a deficient synthetic CA keyUsage extension failed; the test certificate generator was corrected and the full 11-test local run subsequently passed. This is not the real router or proof of a real certificate/route.

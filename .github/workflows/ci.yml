@@ -66,7 +66,7 @@ jobs:
       - name: Verify R6.1 exact owner-reported MikroTik and safe first read-only REST tool
         run: |
           python3 -m py_compile deploy/scripts/lab/r61/readonly-rest-probe.py
-          python3 -m unittest discover deploy/scripts/lab/r61 -p 'test_r61_review.py' -v
+          python3 -m unittest discover deploy/scripts/lab/r61 -p 'test_r61*.py' -v
       - name: Verify Mac encrypted-backup and external provider probe safety contracts (static)
         run: |
           bash -n deploy/scripts/lab/backup-mac-restic.sh
