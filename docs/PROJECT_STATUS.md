@@ -1,8 +1,8 @@
 # IPAT — Project Status
 
 **As-of:** 2026-09-26 Asia/Jakarta
-**Milestone:** R5.9 — explicitly opted-in Mac-local browser preview backed by actual Rust Control API; public production access still blocked
-**Milestone state:** R5.9 feature PR #49 MERGED to private GitHub `main` `466ffcb67a87ba3f88330f26a13cebda5d624e7d`; PR CI `36210434210` SUCCESS in all **four** jobs, including unchanged actual disposable Ubuntu 26.04 K3s health-only app/network-policy smoke and both synthetic PostgreSQL jobs. New original Rust Control API browser UI is read-only, disabled by default and forced off for wildcard K3s pod binding; direct 401/405 and CSP tested. Private GitHub, clean Mac and actual Ubuntu 26.04.1 VPS canonical source SHA match; actual VPS formatting, **81 locked/offline Rust tests**, **42 lab static**, **6 R5.7**, **6 R5.8**, **6 new R5.9**, **14 database static**, and **5 readiness static** tests all PASS; existing VPS K3s/PostgreSQL/nftables INACTIVE. Mac FileVault ON; latest exact feature-source encrypted Restic snapshot `8c40ccec` and separately held selected-root-readable snapshot `abaa9827` were independently restored with full pack read PASS and plaintext artifacts removed. GitHub post-feature-main CI `36210550883` also independently returned SUCCESS in all four jobs; the real Mac local-browser SSH tunnel remains PENDING at this doc checkpoint. Complete independent OOB host rescue, dedicated effective dual-stack perimeter, approved ADR-017/018, trusted OIDC and public HTTPS domain have NOT been satisfied; this is an SSH-loopback-only browser preview, never a public site. After docs merge, re-backup its exact SHA and actually test Mac tunnel; final immutable results belong in docs PR discussion. Developer: Mr. iPat.
+**Milestone:** R6.0 — eight planned device test slots in the SSH-private browser and strict offline metadata intake; physical devices ZERO
+**Milestone state:** R6.0 feature PR #51 MERGED to private GitHub `main` `2184cda657bea315de455e8e9249c82aba8e55e4`. Feature PR CI `36219353933` SUCCESS on all four jobs, including real disposable Ubuntu 26.04 K3s app/readiness/network-policy denial and both synthetic PostgreSQL recovery jobs. Original Rust loopback-only lab adds exactly eight planned initial device target slots; browser and JSON explicitly declare **ZERO** actual physical devices and ZERO interoperability evidence; default and K3s-bound routes stay unavailable. Strict offline validator writes owner-only non-secret unapproved staging files outside Git and never touches devices. Private GitHub/Mac/actual unchanged Ubuntu 26.04.1 VPS canonical source SHA matched; actual VPS format and **83/83 locked offline Rust tests**, **42 existing lab**, **6 R5.7**, **6 R5.8**, **6 R5.9**, **6 R6.0**, **14 DB static**, **5 production gate static** tests all PASS. Actual VPS K3s/PostgreSQL/nftables INACTIVE. Mac FileVault ON; encrypted exact feature-main source Restic snapshot `4b2a0b99` independently isolated SHA-256 restored, plus independently selected privileged root-readable config snapshot `abaa9827` separately recovered and complete Restic packs read PASS; NOT full VPS/datastore recovery. Post-feature-main CI `36219447245` independently returned SUCCESS on all four jobs. Final docs-only CI/SHA/backup and Mac live browser test remain to be independently completed and posted as final PR evidence. Actual physical model/firmware/board, explicit equipment-owner permission and safe isolated lab connectivity remain unavailable; all physical devices UNTESTED. No external provider firewall integrations, real OIDC, device writes or production K3s install. Developer Mr. iPat.
 
 ## 1. Source of truth and provenance
 
@@ -557,3 +557,25 @@ Mac parser checks and six source safety tests passed. A fresh non-root strict SS
   physical read-only evidence record must precede any notification that
   a real device was actually added for testing. No untested vendor,
   model or firmware may be marked `validated`.
+
+### R6.0 reviewed feature, nonprivileged Ubuntu and recovery checkpoint
+
+- Feature [PR #51](https://github.com/mr-ipat/ipat/pull/51) merged as
+  `2184cda657bea315de455e8e9249c82aba8e55e4`; actual reviewed PR
+  workflow `36219353933` returned SUCCESS in all four jobs: Rust+static,
+  real isolated Ubuntu26 K3s Node/etcd/DNS + real existing health-only app pods
+  and ingress policy denial, PostgreSQL synthetic logical+physical recovery.
+- Private GitHub/Mac/actual Ubuntu 26.04.1 VPS clean source aligned exactly
+  at the feature SHA. Actual host, with no new privileged installation,
+  passed Rust formatting and 83 locked offline Rust tests, 42 base static,
+  6 R5.7, 6 R5.8, 6 R5.9, 6 R6.0, 14 DB static and 5 admission static tests.
+  Actual VPS K3s/PostgreSQL/nftables all remained INACTIVE.
+- Mac FileVault ON. Encrypted feature-main Git source snapshot `4b2a0b99`
+  and separately encrypted selected root-readable snapshot `abaa9827`
+  were independently SHA-256/SSH-sudoers restored, with complete Restic data
+  check PASS and plaintext temporary artifacts removed. This does NOT prove
+  a complete replacement VPS/production PostgreSQL restore.
+- Next actual physical test still requires real exact hardware+firmware
+  evidence, equipment-owner authorization and isolated lab connectivity.
+  Eight software candidate records are NOT eight connected devices;
+  simulator/protocol tests must not be relabelled as physical evidence.
