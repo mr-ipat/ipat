@@ -159,3 +159,9 @@ readability for this actual customer router, and only a reviewed identity
 binding can allow onboarding in the production app.
 
 **Additional synthetic TLS test:** `test_r61_tls.py` generates an ephemeral local test CA and signed server certificate, connects only to a loopback HTTP fixture while intercepting the expected sample RFC1918/443 socket, confirms the real Python TLS client accepts valid CA/SAN and makes only one GET, then fails closed on a different TLS hostname. The first local run with a deficient synthetic CA keyUsage extension failed; the test certificate generator was corrected and the full 11-test local run subsequently passed. This is not the real router or proof of a real certificate/route.
+
+## Reviewed feature implementation and strict evidence boundaries
+
+GitHub PR #53 (`dcacc1a5e93e04b5ce58d43a34b168b231d42da3`) feature CI `36221642643` and post-feature-main CI `36221754351` each passed all four jobs. On the actual unchanged Ubuntu 26.04.1 VPS as a read-only source checkout, 83 original Rust tests and 11 R6.1 guarded synthetic/negative tests passed. A real ephemeral locally signed synthetic HTTPS server validated the Python probe's CA/SAN handshake and independent rejection of a wrong TLS name; synthetic metadata containing a fake serial never enters output. This is a test of the tool, not the actual RB951.
+
+Private Mac UI → SSH tunnel → real unprivileged Rust loopback served the owner-reported DEV-08 exact model/version and *zero* enrolled physical devices. Direct catalog POST was denied and the still-unauthenticated protected device API returned 401. All live device test claims remain prohibited before a separately authorized one-target physical read and human review.
