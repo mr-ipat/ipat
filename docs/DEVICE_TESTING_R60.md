@@ -110,3 +110,30 @@ record with safely recorded *observed* model/firmware/board, approved
 isolated-lab reachability, identity binding and an independently logged
 device-specific physical read/Inform test. A planned target row or
 offline metadata file alone must not trigger a “device added” notification.
+
+### R6.0 reviewed feature, nonprivileged Ubuntu and recovery checkpoint
+
+- Feature [PR #51](https://github.com/mr-ipat/ipat/pull/51) merged as
+  `2184cda657bea315de455e8e9249c82aba8e55e4`; actual reviewed PR
+  workflow `36219353933` returned SUCCESS in all four jobs: Rust+static,
+  real isolated Ubuntu26 K3s Node/etcd/DNS + real existing health-only app pods
+  and ingress policy denial, PostgreSQL synthetic logical+physical recovery.
+- Private GitHub/Mac/actual Ubuntu 26.04.1 VPS clean source aligned exactly
+  at the feature SHA. Actual host, with no new privileged installation,
+  passed Rust formatting and 83 locked offline Rust tests, 42 base static,
+  6 R5.7, 6 R5.8, 6 R5.9, 6 R6.0, 14 DB static and 5 admission static tests.
+  Actual VPS K3s/PostgreSQL/nftables all remained INACTIVE.
+- Mac FileVault ON. Encrypted feature-main Git source snapshot `4b2a0b99`
+  and separately encrypted selected root-readable snapshot `abaa9827`
+  were independently SHA-256/SSH-sudoers restored, with complete Restic data
+  check PASS and plaintext temporary artifacts removed. This does NOT prove
+  a complete replacement VPS/production PostgreSQL restore.
+- Next actual physical test still requires real exact hardware+firmware
+  evidence, equipment-owner authorization and isolated lab connectivity.
+  Eight software candidate records are NOT eight connected devices;
+  simulator/protocol tests must not be relabelled as physical evidence.
+
+- Post-feature-merge canonical main CI `36219447245` independently
+  returned SUCCESS in all four jobs, repeating real disposable Ubuntu26
+  K3s application/network-policy and both synthetic PostgreSQL checks.
+  No device was connected or probed by this CI run.
