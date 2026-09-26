@@ -445,3 +445,34 @@ DB, FORCE RLS,
 session CSRF dan
 audit action diuji.
 Lihat [kontrak R6.8](DASHBOARDS_R68.md).
+
+## R6.9 verified signature is not tenant or administrator authority
+
+The new pinned RSA RS256 JWT verifier requires exact issuer,
+single audience, fixed key ID, time-bounded exp/nbf/iat,
+short token lifetime and rejects asymmetric/symmetric
+algorithm confusion, forged signatures, JOSE remote
+key resolution and malicious identity claims.
+No token-provided role, group, tenant or POP
+is trusted or promoted to RBAC subject.
+Operator-local public-key file is owner-only
+in an owner-only directory, opened using
+no-follow protection. The private probe
+does not log or echo verified subject
+and exists only by explicit loopback opt-in.
+
+A cryptographically valid JWT MUST NOT be
+mistaken for authenticated Keycloak login,
+verified MFA, trusted active membership or
+business authorization. Existing platform,
+tenant and NOC business endpoints remain
+401 even on signed token and spoofed headers.
+Real Keycloak discovery and JWKS provenance,
+key rotation/revocation, OIDC PKCE/nonce/state,
+
+host-only tenant cookies, CSRF, operator-
+authorized memberships and database-backed
+resource/POP-specific RLS remain unimplemented.
+No public port, provider firewall or
+production secrets change in R6.9.
+See [identity proof and blockers](IDENTITY_OIDC_R69.md).

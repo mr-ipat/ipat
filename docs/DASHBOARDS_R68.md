@@ -208,3 +208,20 @@ tiga dashboard operasional sudah selesai**.
 Pada checkout canonical VPS Ubuntu 26.04.1, 130/130 Rust `--locked --offline`, tujuh static contract R6.8 dan enam static legacy R5.9 lulus. Node tidak diinstal pada VPS (dan tidak diperlukan untuk server Rust); tes fungsional Node DOM/fetch dijalankan pada Mac pemilik dan CI GitHub, keduanya lulus. Aset GUI *sungguh* dijalankan melalui tunnel SSH Mac pemilik dengan GET HTML/CSS/JS 200 dan CSP strict, 8 calon target hardware tetapi ZERO perangkat fisik terdaftar. Tidak ada login nyata atau API bisnis yang dibuka.
 
 Snapshot encrypted Restic fitur tepat `b0be6b56` diuji restore sumber terisolasi SHA256 dan read-all-packs tanpa error. Konfigurasi privileged-root-readable yang dipilih sebelumnya diuji pemulihan terpisah; ini tidak mencakup full VPS/data aplikasi atau database riil. Readiness produksi 8/8 pemeriksaan otomatis lulus, namun seluruh 7/7 persyaratan independen eksternal masih `BLOCKED`, sehingga status produk **NO_GO**. Bukti final commit dokumentasi dan run CI berikutnya dilampirkan pada komentar PR immutable agar SHA tidak berulang akibat commit status sendiri.
+
+## R6.9 signed JWT authentication proof after visual R6.8
+
+The three R6.8 workspaces remain private **synthetic**
+previews. R6.9 adds a separate owner-opted-in
+cryptographic RS256 signature-check endpoint
+that reports `jwt_signature_verified` without
+granting Platform/Tenant/NOC rights.
+Even a valid signed test JWT containing
+forged administrator or tenant role claims
+receives HTTP 401 from all real business
+endpoints. No full Keycloak login/MFA,
+tenant membership, verified domain,
+backend RLS or real operations data
+is activated by this stage.
+[Acceptance evidence and conditional
+delivery roadmap](IDENTITY_OIDC_R69.md).

@@ -373,3 +373,35 @@ Build original Rust `control-api` and separate synthetic `usp-controller` into n
   automasi berisiko
   dengan approval
   dan rollback.
+
+### R6.9 signed token boundary for three dashboard workspaces
+
+- DONE synthetic: independently pinned RS256 public-key
+  validator checks signature, fixed issuer/audience/kid,
+  exp/nbf/iat and bounded lifetime; rejects forged
+  tokens and attacker-controlled JOSE key URLs.
+- DONE synthetic: optional private JWT proof route
+  accepts a genuinely signed test token but
+  NEVER creates tenant/role membership or opens
+  Platform/Tenant/NOC business endpoints.
+- MUST NEXT: real independently trusted Keycloak/OIDC
+  discovery and JWKS rotation, Authorization
+  Code+PKCE, MFA and host-only cookies/CSRF;
+  server-sourced tenant/POP membership binding
+  with full resource API enforcement and RLS.
+- MUST NEXT: genuinely authenticated Platform
+  Tenant Admin and operations data integration,
+  two independently active synthetic tenants,
+  hidden unauthorized menu plus direct URL/API
+  cross-tenant/POP IDOR regression suite.
+- MUST before pilot: real approved domain
+  verification, approved audited operator
+  actions, device/telemetry data ingestion
+
+  and independent recovery/security signoff.
+- SHOULD: reusable OIDC test IdP via disposable
+  environment, session expiry/revocation and
+  documented JWKS rollover drill.
+- LATER: commercial branding/package/billing
+  workflows and high-risk mass provisioning
+  after reviewed approval paths exist.

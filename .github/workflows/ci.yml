@@ -110,6 +110,12 @@ jobs:
           bash -n deploy/scripts/lab/r68/private-dashboard-http-smoke.sh
           cargo build --locked -p control-api
           IPAT_R68_PRIVATE_HTTP_SMOKE=YES bash deploy/scripts/lab/r68/private-dashboard-http-smoke.sh
+      - name: R6.9 real pinned RS256 JWT verification and private HTTP business-denial lab
+        run: |
+          python3 -m unittest discover deploy/scripts/lab/r69 -p test_r69_review.py -v
+          bash -n deploy/scripts/lab/r69/oidc-private-http-smoke.sh
+          cargo build --locked -p control-api
+          IPAT_R69_RUN_SYNTHETIC_HTTP=YES bash deploy/scripts/lab/r69/oidc-private-http-smoke.sh
       - name: Verify formatting
         run: cargo fmt --all -- --check
       - name: Run locked unit tests

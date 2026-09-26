@@ -508,3 +508,36 @@ atau menganggap policy
 pure sebagai middleware
 autentikasi yang tersedia.
 Lihat [R6.8](DASHBOARDS_R68.md).
+
+## R6.9 identity boundary for Platform, Tenant and NOC dashboards
+
+Original Rust `crates/identity-core` verifies one trusted
+operator-pinned issuer/audience/RSA key ID and genuine RS256 JWT
+signature with bounded time/size. The signer public key is supplied
+separately through trusted owner-local configuration, never from
+an incoming JWT's JOSE `jku`, `jwk`, `x5u` or HTTP headers.
+The resulting opaque `VerifiedSubject` contains ONLY subject
+and expiry, not tenant membership, administrator role,
+POP authorization or MFA evidence.
+
+`apps/control-api/src/oidc_lab.rs` demonstrates this signature
+boundary only behind the existing privately opted-in
+127.0.0.1:3000 lab; `GET /lab/auth/verify` returns a
+redacted success response that explicitly denies
+verified tenant membership and all business access.
+The normal public/K3s router does not have that lab
+route. ALL real Platform/Tenant/NOC business APIs
+still reject with 401 even if bearer signature succeeds
+and attacker-controlled tenant/role headers are supplied.
+
+Next separate production architecture work: independently
+validate Keycloak discovery over trusted TLS, maintain
+
+rotating trusted issuer JWKS and client audience,
+perform Authorization Code+PKCE and MFA/session binding;
+query verified tenant and POP membership in database
+and apply policy at server-side menu and every resource
+API plus PostgreSQL RLS. No architecture proposal
+becomes approved automatically through this
+synthetic implementation.
+[Detailed R6.9 scope](IDENTITY_OIDC_R69.md).

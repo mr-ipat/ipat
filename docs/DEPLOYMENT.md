@@ -280,3 +280,41 @@ Tidak ada apply
 production K3s/PG/
 host firewall.
 [Lingkup R6.8](DASHBOARDS_R68.md).
+
+## R6.9 private pinned JWT proof only — no SaaS dashboard login
+
+On an isolated checkout, `identity-core` contains
+no network I/O: its public key MUST originate
+from a separately reviewed issuer, never from
+untrusted request headers/JWT. The optional
+proof route is created only when the existing
+operator loopback preview is opted in and
+`IPAT_LAB_OIDC_VERIFY=YES`, plus an owner-only
+`IPAT_LAB_OIDC_PUBLIC_KEY_FILE` PEM file
+in a 0700 directory with file mode 0600,
+`IPAT_LAB_OIDC_ISSUER`, `IPAT_LAB_OIDC_AUDIENCE`
+and `IPAT_LAB_OIDC_KID`. Without those,
+the private test path does not exist;
+K3s never receives a lab identity route.
+
+Reproduce **synthetic** code and HTTP tests on a
+disposable host with localhost identity-probe port 3001 free,
+not on a running IPAT preview:
+
+```bash
+cargo fmt --all -- --check
+cargo test --workspace --locked --offline
+
+cargo build --locked --offline -p control-api
+python3 -m unittest discover deploy/scripts/lab/r69 -p test_r69_review.py -v
+IPAT_R69_RUN_SYNTHETIC_HTTP=YES bash \
+  deploy/scripts/lab/r69/oidc-private-http-smoke.sh
+```
+
+This does NOT run Keycloak, create an authenticated
+tenant session, configure any production issuer,
+enroll customers or enable business APIs.
+Real IdP configuration, verified tenant membership,
+MFA, PostgreSQL RLS application integration
+and actual device access remain release gates.
+[Identity protocol documentation](IDENTITY_OIDC_R69.md).
