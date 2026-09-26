@@ -111,6 +111,12 @@ jobs:
           bash -n deploy/scripts/lab/r66/cwmp-loopback-http-smoke.sh
           cargo build --locked -p cwmp-gateway
           IPAT_R66_EXACT_LOOPBACK_SMOKE=YES bash deploy/scripts/lab/r66/cwmp-loopback-http-smoke.sh
+      - name: R6.7 genuine ephemeral TLS 1.3 client-mTLS handshake and negative identity proof
+        run: |
+          bash -n deploy/scripts/lab/r67/mtls-loopback-contract.sh
+          python3 -m unittest discover deploy/scripts/lab/r67 -p test_r67_review.py -v
+          cargo build --locked -p cwmp-gateway --bin cwmp-mtls-lab
+          IPAT_R67_RUN_SYNTHETIC_MTLS_TEST=YES bash deploy/scripts/lab/r67/mtls-loopback-contract.sh
       - name: Verify R6.2 Rust domain and Python first-read evidence contract without equipment
         run: |
           bash -n deploy/scripts/lab/r62/synthetic-cross-contract.sh

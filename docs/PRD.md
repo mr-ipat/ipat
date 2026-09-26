@@ -342,3 +342,27 @@ remain binding; no full commercial ACS
 
 completion claim is accepted from unit tests.
 [Exact R6.6 evidence](ACS_CWMP_R66.md).
+
+### R6.7 autentikasi mTLS asli — laboratorium saja
+
+ACS Rust kini memiliki bukti
+aktual TLS1.3 mutual TLS di
+proses terpisah hanya 127.0.0.1,
+dengan client CA yang diverifikasi,
+sertifikat klien wajib dan uji
+negatif tanpa cert/CA salah/
+EKU salah/identitas server salah.
+Ini *partial implementation*
+FR-009 transport cryptography,
+bukan penyelesaian FR-009
+atau AC-03 karena perangkat
+dan tenant belum dikaitkan
+secara aman dan semua /cwmp
+real tetap 503. Enrolment
+tepercaya dan sesi CWMP
+durable, authenticated
+Inform/InformResponse/read
+pada satu ONT nyata dengan
+model/firmware tercatat
+tetap MUST dan NOT DONE.
+[Detail R6.7](ACS_MTLS_R67.md).

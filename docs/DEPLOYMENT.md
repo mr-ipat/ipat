@@ -201,3 +201,37 @@ and hardware compatibility are NOT
 implemented. No changes to host firewall,
 shared perimeter, K3s or live PostgreSQL
 are authorized by this milestone.
+
+## R6.7 opt-in real private mutual TLS *test*, bukan deploy ACS pelanggan
+
+Jalankan hanya di checkout
+pengujian Ubuntu 26.04 dengan
+Rust terkunci dan sertifikat
+OpenSSL **sintetis sekali pakai**.
+Tidak perlu menggunakan atau
+menginstal sertifikat/router
+pelanggan:
+
+```bash
+cargo build --locked --offline -p cwmp-gateway --bin cwmp-mtls-lab
+python3 -m unittest discover deploy/scripts/lab/r67 -p test_r67_review.py -v
+IPAT_R67_RUN_SYNTHETIC_MTLS_TEST=YES \
+  bash deploy/scripts/lab/r67/mtls-loopback-contract.sh
+```
+
+Biner menolak start tanpa flag
+`IPAT_RUN_PRIVATE_CWMP_MTLS_LAB=YES`
+dan ketiga file CA/cert/key
+di private owner-only folder
+yang memenuhi syarat. Jangan
+menambahkan listener ini ke
+Helm production/ingress publik:
+
+biner sengaja tidak memiliki
+enrollment tenant, revocation
+production dan real CWMP RPC.
+Tidak ada apply firewall,
+K3s, PostgreSQL di server
+nyata atau perubahan
+perangkat dalam milestone ini.
+[Runbook R6.7](ACS_MTLS_R67.md).

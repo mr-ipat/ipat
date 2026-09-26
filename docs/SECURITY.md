@@ -359,3 +359,44 @@ interop. No live TLS certs, public listener,
 real subscriber secrets, hosted perimeter,
 PostgreSQL or K3s were changed.
 See [R6.6 acceptance boundaries](ACS_CWMP_R66.md).
+
+## R6.7 pembuktian nyata mutual TLS dan penolakan identitas palsu
+
+Biner Rustls TLS1.3 mTLS yang benar
+hanya membuka 127.0.0.1:3433 setelah
+opt-in eksplisit dan sertifikat
+CA klien/server+private key yang sah
+dari folder pemilik pribadi. Verifier
+harus menerima CA tepercaya,
+memvalidasi masa berlaku serta
+EKU clientAuth; tanpa sertifikat,
+CA klien palsu dan sertifikat
+serverAuth di sisi klien ditolak.
+Klien juga menguji verifikasi
+CA/DNS server tanpa mengizinkan
+TLS trust bypass. Berkas hanya
+dimiliki akun nonroot, parent 0700,
+file 0600 dan no-symlink/hardlink.
+Sertifikat sementara dikunci dalam
+folder tes sekali pakai, dibersihkan
+setelah server tes berhenti.
+
+**Batas keamanan yang belum
+terpenuhi:** ini autentikasi
+*transport berbasis CA*, BUKAN
+
+otorisasi device/tenant. Bahkan
+sertifikat valid CA tidak
+boleh mengakses endpoint /cwmp
+(503). Tidak ada koneksi bridge
+kepada sealed Rust synthetic
+AuthenticatedPeer, belum
+ada pin SPKI spesifik perangkat,
+sertifikat dicabut belum diuji,
+belum ada private production
+issuer/secret rotation, trusted
+operator approval, persistent
+session atau model firmware
+interop. Tidak ada public ingress,
+firewall maupun customer secret
+yang diubah. [Kontrak R6.7](ACS_MTLS_R67.md).

@@ -434,3 +434,41 @@ The current lab in-memory engine has none
 of these production properties. Native USP
 Controller is still an independent service.
 See [R6.6 exact tested scope](ACS_CWMP_R66.md).
+
+## R6.7 bukti transport mTLS asli tetapi belum mendapat identitas tenant
+
+Satu proses original Rust baru
+`apps/cwmp-gateway/src/bin/cwmp-mtls-lab.rs`
+mendemonstrasikan mTLS TLS 1.3 nyata memakai
+`rustls::server::WebPkiClientVerifier`
+dengan satu CA laboratorium dan kewajiban
+sertifikat klien. Ini gateway **hanya loopback**
+untuk membuktikan handshake, bukan jalur ACS
+produksi. Konfigurasi secara eksplisit menolak
+root, sertifikat/kunci tidak aman, dan
+default tidak dapat memulai listener.
+HTTP POST SOAP Inform yang melewati mTLS
+tetap hanya parser sintetis, tanpa
+`AuthenticatedPeer`, tenant/session
+assignment, InformResponse atau RPC.
+Seluruh `/cwmp` selalu ditolak (503).
+`cwmp-admission` dan parser asli R6.6
+tidak diubah semantiknya, demikian pula
+native USP Controller tetap proses terpisah.
+
+Tahap berikutnya adalah komponen
+transport terautentikasi yang *memiliki*
+pemrosesan TLS handshake yang benar
+
+dan memetakan leaf SPKI yang benar
+kepada enrollment persisten yang
+telah disetujui operator dengan
+tenant tervalidasi, tanpa jalur
+membuat `AuthenticatedPeer`
+dari header atau klaim SOAP.
+Mempunyai client cert dari satu
+CA tidak cukup untuk memutuskan
+otorisasi tenancy. Revocation/CRL,
+handshake throttle dan session
+recovery belum diuji untuk beban
+nyata. Lihat [lingkup R6.7](ACS_MTLS_R67.md).
