@@ -324,3 +324,38 @@ TLS-trusted client-to-ACS path. No provider firewall,
 RouterOS management service, account or production
 cluster was changed. See
 [the R6.5 operator access protocol plan](MIKROTIK_CUSTOMER_R65_PREP.md).
+
+## R6.6 CWMP first read RPC, sealed session and private HTTP trust boundary
+
+The only newly generated ACS RPC is the
+allowlisted non-mutating `GetParameterValues`
+for `Device.DeviceInfo.SoftwareVersion`.
+Parsing rejects SOAP/correlation/method/type/
+namespace/oversize/DTD violations and sanitizes
+CWMP faults to numeric codes without logging
+untrusted freeform fault strings. Rust admission
+may advance only a sealed already-admitted
+synthetic peer/tenant/opaque lease after
+a genuinely empty POST; session evidence
+never enables enrollment or config writes.
+The running Rust gateway is **not yet an ACS
+device endpoint**. It starts only with
+a local explicit opt-in, binds exclusively to
+127.0.0.1, and always denies external-style
+`/cwmp` requests, including spoofed
+`x-client-cert-verified` / tenant claims.
+The safe synthetic parser route never issues
+SOAP responses and echoes no device identifiers.
+
+Threat-model blockers remain independent
+real TLS CA/mTLS cryptographic CPE proof,
+
+trusted operator enrollment, anti-replay
+durable multi-pod ownership, resource
+exhaustion limits at TLS edge, real HTTP
+timeout/keepalive correctness, redacted
+auditing and exact per-firmware physical
+interop. No live TLS certs, public listener,
+real subscriber secrets, hosted perimeter,
+PostgreSQL or K3s were changed.
+See [R6.6 acceptance boundaries](ACS_CWMP_R66.md).

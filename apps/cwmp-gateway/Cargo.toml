@@ -1,0 +1,15 @@
+[package]
+name = "cwmp-gateway"
+version = "0.1.0"
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+publish = false
+
+[dependencies]
+axum = "0.8"
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "net"] }
+cwmp-protocol = { path = "../../crates/cwmp-protocol" }
+
+[dev-dependencies]
+tower = { version = "0.5", features = ["util"] }

@@ -7,6 +7,10 @@
 //! This module uses bounded IN-MEMORY replay/session state: NOT resilient to
 //! restarts or suitable for production ACS retry/idempotency guarantees.
 
+pub mod read;
+#[cfg(test)]
+mod read_tests;
+
 use cwmp_protocol::{inform_response, parse_inform};
 use std::collections::{HashMap, HashSet};
 use tenant_core::TenantId;
@@ -93,9 +97,16 @@ pub struct AuthenticatedPeer {
     client_spki_sha256: [u8; 32],
 }
 
+enum ReadStage {
+    InformOnly,
+    Awaiting { id: String },
+    Completed,
+}
+
 struct Active {
     ticket: u64,
     spki: [u8; 32],
+    read_stage: ReadStage,
 }
 
 /// Server-internal ephemeral session capability; not an HTTP bearer token.
@@ -129,6 +140,9 @@ pub enum Error {
     ReplayTableFull,
     TicketExhausted,
     InvalidLease,
+    InvalidEmptyPost,
+    InvalidReadState,
+    InvalidRpc,
 }
 
 pub struct AdmissionRegistry {
@@ -221,6 +235,7 @@ impl AdmissionRegistry {
             Active {
                 ticket,
                 spki: peer.client_spki_sha256,
+                read_stage: ReadStage::InformOnly,
             },
         );
         Ok(Admission {
@@ -239,6 +254,9 @@ impl AdmissionRegistry {
         let active = self.active.get(&lease.device).ok_or(Error::InvalidLease)?;
         if active.ticket != lease.ticket || active.spki != peer.client_spki_sha256 {
             return Err(Error::InvalidLease);
+        }
+        if matches!(active.read_stage, ReadStage::Awaiting { .. }) {
+            return Err(Error::InvalidReadState);
         }
         self.active.remove(&lease.device);
         Ok(())

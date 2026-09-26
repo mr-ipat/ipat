@@ -392,3 +392,45 @@ security-blocker snapshot from the reviewed one-host
 unauthenticated SSH check, not a live router session.
 Production trusted tenant binding remains a separate
 architecture/milestone prerequisite.
+
+## R6.6 current original Rust CWMP implementation vs release blockers
+
+The original Rust ACS boundary has three pieces:
+`cwmp-protocol::rpc` bounds and parses one synthetic
+SOAP 1.1/CWMP 1.0 read RPC; `cwmp-admission::read`
+extends the existing synthetic, nonconstructible
+`AuthenticatedPeer` + opaque `Lease` with
+Inform → InformResponse → true empty CPE POST
+→ one fixed read RPC → correlated response/fault
+→ close/abort. Returned raw parameter values
+never enter redacted `ReadEvidence`. A separate
+`apps/cwmp-gateway` executable is an opt-in
+127.0.0.1:3300 **parser-only** lab HTTP boundary;
+its real `/cwmp` path always denies HTTP 503
+until trusted network binding exists. The lab
+parser route cannot construct synthetic trusted
+peers or enroll any device. The real executable
+is useful for ingress XML/HTTP rejection tests,
+not proof of CPE interoperability.
+
+Future ACS adapter MUST perform genuine HTTPS
+TLS server identity and independent CPE client
+certificate chain/expiry/revocation/SPKI
+verification, fetch trusted operator enrollment
+
+under authenticated tenant binding, and mint
+the sealed Rust peer type ONLY after these
+checks, never from headers or CWMP XML.
+For authentic CWMP HTTP binding, the ACS
+returns one RPC as the HTTP response to
+the CPE empty POST; a later CPE HTTP POST
+delivers the correlated SOAP response/fault.
+This state needs durable tenant-scoped
+replay/session ownership, timeout, crash
+recovery, bounded retries, source and
+resource budgets and audited secret-safe
+read retention before any ingress exposure.
+The current lab in-memory engine has none
+of these production properties. Native USP
+Controller is still an independent service.
+See [R6.6 exact tested scope](ACS_CWMP_R66.md).

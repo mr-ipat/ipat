@@ -256,3 +256,41 @@ Build original Rust `control-api` and separate synthetic `usp-controller` into n
   non-disruptive single-device authorization. Until
   proven, do not run real SSH, claim compatibility
   or enable managed PPPoE/Wi-Fi/config features.
+
+### R6.6 original ACS first-RPC milestone and follow-on release gates
+
+- DONE (synthetic): one-parameter bounded
+  SOAP/CWMP 1.0 GetParameterValues serializer,
+  strict value/fault parser and wrong method,
+  namespace, type, correlation, DTD and
+  oversize rejection tests.
+- DONE (synthetic): existing sealed trusted
+  peer + tenant + lease admits Inform, truly
+  empty CPE POST, one correlated read or
+  numeric CWMP fault, and explicit session
+  close/abort without promoting raw values
+  to physical trust.
+- DONE (loopback-only): opt-in actual Rust
+  Axum HTTP parser process on fixed 127.0.0.1
+  with unconditional /cwmp 503 deny and
+  temporary real HTTP safety regression.
+- MUST NEXT: full cryptographically
+  authenticated HTTPS client mTLS adapter
+  and operator-approved durable tenant/device
+  enrollment (never trust request headers);
+  actual CWMP empty-POST/response/fault
+  HTTP binding, timeouts, persisted replay/
+  lease and multi-pod device owner locks.
+
+- MUST RELEASE: RLS-scoped runtime audit,
+  one exact ONT model/firmware live lab
+  Inform + independently verified parameter
+  RPC and failure/restore tests. Without
+  these, FR-009/010 and physical AC-03
+  stay partial/blocked.
+- SHOULD: safe parameter discovery, wider
+  negotiated CWMP versions and per-device
+  profile after exact interoperability.
+- LATER: customer-facing writes, firmware
+  operations and broad parameter campaigns
+  only with change approval and rollback.
