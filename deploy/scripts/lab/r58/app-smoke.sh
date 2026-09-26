@@ -19,8 +19,10 @@ set -Eeuo pipefail
 }
 lab_dir="$1"
 node_ip="$2"
-[[ -d "$lab_dir/data/agent/containerd" && -f "$lab_dir/kubeconfig" &&
-   -x "$lab_dir/k3s" ]] || {
+# K3s data is intentionally root-only; probe the real Unix socket via
+# narrowly scoped noninteractive privilege without relaxing its permissions.
+[[ -f "$lab_dir/kubeconfig" && -x "$lab_dir/k3s" ]] &&
+  sudo -n test -S "$lab_dir/data/agent/containerd/containerd.sock" || {
   echo 'R58_DENIED: require pre-existing temporary validated cluster' >&2; exit 4;
 }
 python3 - "$node_ip" <<'PY'
