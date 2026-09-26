@@ -294,3 +294,32 @@ Build original Rust `control-api` and separate synthetic `usp-controller` into n
 - LATER: customer-facing writes, firmware
   operations and broad parameter campaigns
   only with change approval and rollback.
+
+### R6.7 real mutually authenticated TLS gate (lab only)
+- MUST delivered lab: real rustls TLS1.3
+  client-CA-verified handshake, fixed
+  127.0.0.1:3433, opt-in and private
+  file checks, real OpenSSL/cURL
+  synthetic CA positive/negative
+  tests, no public /cwmp access.
+- MUST next: per-device pinned
+  public-key certificate/issuer,
+  revocation/expiry+rotation,
+  independently audited tenant
+  enrollment and actual secure
+  transition to the sealed
+  CWMP admission Rust state.
+- MUST before pilot: time-bound
+  authenticated CWMP network
+  InformResponse + CPE empty
+  POST + read RPC; PostgreSQL
+  tenant-specific persisted
+  replay/sessions, privileges
+  and audit, and at least one
+  actual ONT model/firmware test.
+- SHOULD: finite handshake
+  concurrency/timeouts/load
+
+  and certificate rotation drills.
+- LATER: firmware and mass writes
+  after approvals/recovery tests.

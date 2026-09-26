@@ -184,3 +184,22 @@ has been observed. `TC-CWMP-01` and all
 physical per-device RPC results remain
 NOT RUN; zero physical devices enrolled.
 See [R6.6 tests/release gaps](ACS_CWMP_R66.md).
+
+## R6.7 mTLS TLS 1.3 gateway tidak membuktikan kompatibilitas CPE
+
+Server TLS1.3 wajib client cert
+lulus tes CA, no-client, CA palsu,
+EKU salah serta hostname/CA server
+salah dengan CA laboratorium sintetis.
+Tidak ada ONT nyata yang
+menjalankan handshake terhadap IPAT,
+dan sertifikat klien sintetis
+bukan identitas asli perangkat.
+Tidak ada InformResponse jaringan
+kepada perangkat atau RPC yang
+diterima dan dicatat dari ONT.
+VSOL/ZTE dan semua target fisik
+tetap `untested` per exact model/
+firmware/protokol; jumlah enrolled
+fisik tetap nol.
+[Detail milestone](ACS_MTLS_R67.md).

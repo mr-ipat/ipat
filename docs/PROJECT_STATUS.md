@@ -1,8 +1,8 @@
 # IPAT — Project Status
 
 **As-of:** 2026-09-26 Asia/Jakarta
-**Milestone:** R6.6 — original Rust CWMP strict one-parameter read RPC, sealed synthetic session state, real Axum loopback HTTP parser gateway with unauthenticated CPE ingestion denied; actual ACS mTLS, DB durability and physical interoperability NOT DONE.
-**Milestone state:** R6.6 original Rust strictly bounded one-read SOAP/CWMP 1.0 core + sealed synthetic lease/session + explicitly private real Axum HTTP parser feature PR #61 MERGED at source `380633f68b38a83b8607d3042944ef4e5aaf41a8`; independent feature PR GitHub CI `36237639478` and post-feature-main CI `36237754400` both four independent jobs SUCCESS, including real disposable Ubuntu 26.04 K3s and two isolated PostgreSQL restores (no live deployment). Clean private GitHub, owner FileVault Mac and unchanged actual Ubuntu 26.04.1 VPS source all matched feature SHA. Real VPS canonical locked/offline whole-workspace Rust 121/121 PASS, 3/3 existing static CWMP admission, 10/10 R6.3 host trust and 12/12 R6.4 SSH security Python PASS. Real temporary Axum `127.0.0.1:3300` synthetic HTTP Inform parse-only, unverified actual `/cwmp` HTTP 503 even spoofed trust headers, malformed/unsafe/oversize denial and exact bind+cleanup PASS. Original Rust source encrypted exact-feature Restic snapshot `034c20c9` independently isolated SHA256 restored with full encrypted pack read PASS; previously selected privileged root-readable config backup independently restored, NOT full VPS state or real PostgreSQL PITR. Real mTLS and independently approved tenant enrollment/persistent CWMP sessions/real ONT firmware interoperability NOT DONE, all physical devices unverified and zero enrolled. VPS K3s, PostgreSQL and nftables remain INACTIVE; no public ACS, external/shared firewall or real device changes. Docs-only reviewed evidence integration + final SHA backup/CI pending at this checkpoint. Developer Mr. iPat.
+**Milestone:** R6.7 — original Rust gateway TLS 1.3 mandatory cryptographic mutual client certificates on a fixed private loopback port, with disposable independent real TLS positive/negative handshakes; physical ACS and tenant mapping NOT DONE.
+**Milestone state:** R6.7 implementation at initial local verification: private GitHub, authorized Mac and unchanged Ubuntu 26.04.1 VPS baseline main all clean at `707f5f8762ec702938724ab3b096d87bff50d78e`; baseline four-job final CI `36238034867` SUCCESS, prior encrypted exact-source Restic `eb6870fe` isolated SHA256 recovery PASS. R6.7 adds a distinct real Rustls 0.23.45/axum-server 0.7.3 TLS1.3 client-certificate-verifying gateway process, no default opt-in, nonroot, private key/CA file permissions/owner/O_NOFOLLOW checks and exclusive loopback 127.0.0.1:3433. Existing /cwmp is still hard-disabled HTTP503; only synthetic parser is exposed AFTER cryptographic client mTLS, without real tenant/device enrollment. Actual disposable Ubuntu26 isolated-source tests passed Rust gateway bin 2 tests, actual ephemeral CA-signed TLS1.3 client positive plus no cert/untrusted CA/wrong EKU/bad server DNS/bad server CA/private-key symlink/insecure mode rejections, synthetic XML parsing and cleanup with no residual listener. Six additional static trust contract tests PASS on Mac. Full-workspace regression, independent GitHub PR CI, post-merge exact source backup and main CI pending at this initial checkpoint. Live VPS K3s/PostgreSQL/nftables inactive; zero physical ONT verified or enrolled, no production ACS listener or provider firewall changes. Developer Mr. iPat.
 
 ## 1. Source of truth and provenance
 
@@ -919,3 +919,56 @@ Added `deploy/scripts/lab/r61/test_r61_tls.py` with an ephemeral locally generat
 - New `deploy/scripts/lab/r66/cwmp-loopback-http-smoke.sh` executes the real binary in a temporary private listener with real synthetic HTTP calls. It verifies default opt-out, XML acceptance/negative input, HTTP 503 on `/cwmp`, no echoed identifiers and exact loopback bind, then cleans up the temporary process. Added this exact network-smoke run to unit-tests CI, without any real router/ONT traffic.
 - Actual disposable Ubuntu 26.04.1 source checkout passed initial 9 new RPC, 7 new session/lease and 5 new gateway Rust tests; direct temporary real loopback HTTP smoke PASS after correcting a case-insensitive HTTP header check in the test script. Full locked-workspace final regression and independent reviewed final GitHub CI are tracked as additional evidence; no live VPS ACS service, external TLS port, PostgreSQL service, K3s, firewall, tenant enrollment or physical device access is activated.
 - Commercial/physical AC-03 and full FR-009/010 **NOT COMPLETE**: real server TLS/mTLS CPE trust-anchor/SPKI verification, distinct operator-authorized persistent enrollment, full authenticated HTTP CWMP session semantics/timeout and durable locks/replay, per-device data model, correlated live RPC and tested exact ONT firmware are outstanding. USP remains separate and mandatory per ADR-002. Existing no-provider-firewall decision unchanged.
+
+## R6.7 — asli TLS 1.3 mTLS wajib pada gerbang ACS Rust, lingkungan terbatas
+
+- Baseline resmi dari sumber utama dan keputusan: ACS Rust tetap asli, tidak
+  memakai GenieACS; USP/TR-369 tetap proses wajib terpisah. Protokol R6.6
+  dan sealed Rust synthetic-peer *belum otomatis* memiliki autentikasi
+  jaringan. Ini blocker penting menuju perangkat fisik.
+- Kode baru `apps/cwmp-gateway/src/bin/cwmp-mtls-lab.rs`: listener
+  TLS1.3 aktual berbasis Rustls, wajib sertifikat klien dengan
+  rantai CA yang dipercaya dan tujuan clientAuth tepat. Proses
+  hanya dapat diaktifkan khusus untuk laboratorium
+  `IPAT_RUN_PRIVATE_CWMP_MTLS_LAB=YES`, melarang root,
+  mengikat literal 127.0.0.1:3433, dan menerima berkas
+  CA, sertifikat server serta key server di folder privat 0700,
+  mode 0600, pemilik sama, no symlink, no hardlink,
+  `O_NOFOLLOW`, batas ukuran 32 KiB. Tidak ada trust-bypass,
+  autentikasi client anonim, maupun TLS early data.
+- Hanya `/lab/mtls/parse-inform` memvalidasi SOAP
+  Inform sintetis setelah handshake mTLS. Respons hanya
+  menyatakan transport CA terverifikasi, *bukan* device
+  enrollment, tenant binding ataupun izin provisioning.
+  Semua request `/cwmp` tetap HTTP 503,
+  sekalipun sertifikat klien benar dan header palsu
+  mengklaim identitas klien atau tenant.
+- Skrip `deploy/scripts/lab/r67/mtls-loopback-contract.sh` menggunakan
+
+  OpenSSL untuk membuat CA/server/client EC sintetis
+  **sementara**, dan cURL tepercaya untuk memverifikasi
+  TLS1.3 sungguhan dengan private listener Rust. Uji
+  tanpa sertifikat, CA salah, EKU serverAuth untuk klien,
+  hostname server salah, CA server salah,
+  private key symlink, mode private key tidak aman,
+  DTD SOAP terlarang dan setiap akses real /cwmp
+  ditolak. Skrip menghentikan proses **miliknya**
+  dan menghapus semua material kriptografis tes.
+  Enam test statis tambahan memverifikasi invariant.
+- **Belum diuji perangkat asli, belum siap SaaS/produksi:**
+  CA tepercaya saja tidak membuktikan kepemilikan
+  ONT maupun tenant. Belum ada cert leaf/SPKI pinned
+  per device, pemetaan ke enrollment terverifikasi,
+  pencabutan cert/rotasi kunci terkelola,
+  integrasi kepada sealed AuthenticatedPeer,
+  penyimpanan sesi PostgreSQL, request-response
+  CWMP sungguhan, atau uji model/firmware ONT fisik.
+  No-go operasional tetap berlaku; tidak ada
+  perubahan server publik, firewall penyedia,
+  K3s atau database live, dan tidak ada
+  penggunaan kredensial pelanggan.
+- Bukti real VPS+CI+Restic final perlu dicatat
+  sebagai komentar PR immutable setelah source
+
+  gabung; hindari commit status baru yang
+  terus mengubah SHA sebelumnya.
