@@ -174,3 +174,9 @@ USP Controller remain required. An actual ACS release
 must link evidence for the **real gateway trust
 boundary**, durable tenant-scoped sessions and
 one physical per-firmware device test.
+
+## 5. Reviewed R6.6 feature results on the unchanged Ubuntu development host
+
+Feature [PR #61](https://github.com/mr-ipat/ipat/pull/61) merged at `380633f68b38a83b8607d3042944ef4e5aaf41a8`. Independent PR CI `36237639478` and new main CI `36237754400` passed all four jobs each (locked Rust, disposable Ubuntu26 K3s, ephemeral RLS/logical backup and separate physical PostgreSQL recovery). The real unchanged Ubuntu 26.04.1 VPS **source checkout** passed 121 locked/offline Rust tests, previous three CWMP static trust tests and existing R6.3/R6.4 security tests. The compiled original Rust Axum gateway passed **real** temporary localhost HTTP acceptance: fixed 127.0.0.1:3300 only, /cwmp HTTP 503 even spoofed client identity headers, safe synthetic parser-only response, negative content/malformed/DTD/oversize denial and process cleanup. There was no live CPE TLS handshake or real device session.
+
+The separately authorized owner Mac saved exact-feature encrypted Restic source snapshot `034c20c9`, independently restored with source SHA256 and read-all-packs PASS. Previously selected encrypted root-readable configuration was also independently restored and its encrypted packs verified, but these do NOT cover full server recovery, new PostgreSQL PITR or real ACS customer state. The live VPS K3s, PostgreSQL and nftables remain inactive; no external hosting-provider network integration or public ACS exposure exists.
