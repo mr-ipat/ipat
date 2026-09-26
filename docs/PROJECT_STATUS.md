@@ -1,8 +1,8 @@
 # IPAT — Project Status
 
 **As-of:** 2026-09-26 Asia/Jakarta
-**Milestone:** R6.2 — independent Rust RouterOS DEV-08 read-only domain normalization + cross-language private evidence validation; owner's actual router physically UNTESTED.
-**Milestone state:** R6.2 original Rust domain/strict offline CLI feature PR #55 MERGED to private GitHub `main` `9901627a1739a4cfa785ed899fed8fb2c55580fa`; real feature PR CI `36222753736` all four jobs SUCCESS (including actual disposable Ubuntu 26.04 K3s health-only apps and isolated PostgreSQL recovery). Private GitHub, clean authorized FileVault Mac and actual unchanged Ubuntu 26.04.1 VPS canonical main exact SHA match. Actual VPS 99/99 offline locked Rust workspace, 12/12 R6.1, 6/6 R6.0, 42/42 other lab static and 14/14 DB contract tests PASS, plus executed R6.2 Python-to-Rust offline fake-secret-stripping/forged-tenant denial contract PASS. Mac exact feature-source encrypted Restic snapshot `b13e3f49` and selected privileged root-readable config snapshot `abaa9827` were independently isolated restored; full Restic pack read PASS and temporary plaintext removed. GitHub post-feature-main CI `36222869650` also returned SUCCESS in all four independent jobs; only final docs-merge SHA/restic still pending at this documentation checkpoint. **ZERO real physical routers enrolled, no actual RB951 network read, no production OIDC, and actual VPS K3s/PostgreSQL/nftables still INACTIVE.** Mac owner-private router lab directory now contains ONLY a deliberately INVALID 0600 `probe.template.json`, with TEST-NET 192.0.2.1, owner permission not confirmed and no real probe.json/CA/netrc. Running actual offline R6.1 preflight against the placeholder returned expected DENY; no network I/O occurred. Independent actual owner permission, backup/recovery, isolated real management route, trusted router TLS CA and restricted account remain prerequisites before a separately approved first one-GET physical test. No external provider firewall integration. Developer Mr. iPat.
+**Milestone:** R6.3 — DEV-08 public SSH endpoint reachable but CHANGED host RSA key; stop password login until independently verified by trusted direct LAN. Physical RouterOS tests NOT RUN.
+**Milestone state:** R6.3 confirmed high-severity identity safety BLOCKER. The operator explicitly authorized a single public SSH endpoint for DEV-08. The authorized Mac already has a saved RSA SSH host key for that endpoint, but strict SSH returned REMOTE HOST IDENTIFICATION HAS CHANGED before offering or sending the provided password. Separate unauthenticated single-endpoint RSA key scan showed a different SHA-256 fingerprint; the remote banner looks like RouterOS but neither the banner nor scan proves device identity. New no-credential one-host fail-closed R6.3 validator reproduced actual endpoint mismatch, exiting 4 with PASSWORD_SENT=NO, ROUTER_COMMANDS_RUN=NO and KNOWN_HOSTS_MODIFIED=NO. Ten local mocked negative/positive-gate tests PASS; actual Ubuntu 26.04.1 isolated unchanged VPS source checkout passed 10 R6.3, 12 previous RouterOS Python, 42 lab, 14 DB, 99 locked/offline Rust, Python-to-Rust redaction contract. No real login, no device configuration or verified physical model/version/tenant. R6.3 feature GitHub PR/CI and exact postmerge backups pending; previous trusted source is verified 77d20406e6d51e324384239ece22cd97c61a10ab. Developer Mr. iPat.
 
 ## 1. Source of truth and provenance
 
@@ -702,3 +702,60 @@ Added `deploy/scripts/lab/r61/test_r61_tls.py` with an ephemeral locally generat
   exact merged documentation-source encrypted backup and
   browser loopback re-verification will be captured in
   PR review discussion to avoid recursive SHA-changing commits.
+
+## 37. R6.3 — customer-router public SSH server RSA key changed (authentication BLOCKED)
+
+- The owner supplied explicit permission to attempt SSH to ONE
+  public endpoint (address and port not source-controlled). A Mac
+  TCP connection succeeded and an unauthenticated remote banner
+  resembled MikroTik RouterOS SSH. The authorized Mac already
+  holds a previously trusted RSA key for this exact endpoint,
+  **but strict SSH returned REMOTE HOST IDENTIFICATION HAS CHANGED**
+  before offering or sending any password. An independent
+  unauthenticated one-host RSA key scan found a distinct current
+  fingerprint. SSH fingerprint is public, but the old and new
+  full endpoint-specific fingerprints were presented in the
+  owner's private chat rather than persisted in Git.
+- **NO password was transmitted or stored, no RouterOS command
+  executed, no SSH host-key override or deletion, no router
+  settings changed, and NO physical hardware model/firmware
+  compatibility or customer tenant identity verified.**
+  This might indicate a legitimate RouterOS host-key
+  regeneration, different NAT destination or an adversarial
+  SSH endpoint; a `ROSSSH` banner alone is insufficient.
+- Added `deploy/scripts/lab/r63/ssh-host-trust-check.py`,
+  a strictly unauthenticated single-public-IPv4/port SSH
+  host-key observer that compares current RSA SHA-256 with
+  the previous owner-Mac key. A mismatch exits 4; the optional
+
+  independent fingerprint gate requires an owner-controlled
+  mode-0600 file in a private mode-0700 folder and the explicit
+  owner confirmation that the value came from a **separate
+  trusted direct-LAN check**. It never logs in, sends or
+  requests a password, updates `known_hosts`, retries
+  authentication or accepts the current public scan as
+  independent identity proof.
+- Actual owner-Mac **live unauthenticated** test of the
+  supplied exact public endpoint returned
+  `HOST_KEY_CHANGED_UNVERIFIED` with expected exit 4
+  and explicit no-password/no-RouterOS-command/no-hostkey-change
+  evidence. Ten pure negative/mock tests passed on Mac and on isolated actual Ubuntu 26.04.1 VPS (mocked network, no credentials).
+  The new project documentation details a separate verified
+  direct-LAN fingerprint procedure, credential rotation,
+  temporary strictly pinned host-key approach after explicit
+  sign-off and zero client-configuration changes.
+- NEXT: independently compare current public-endpoint
+  fingerprint to actual RB951's direct-LAN SSH host key
+  from trusted WinBox/LAN management. If inconsistent,
+  do NOT authenticate; investigate forwarding and
+  possible host-key compromise. If consistent, obtain
+  owner approval for a separate, strictly host-pinned,
+  single read-only login preferably via SSH public key
+  after rotation of the already disclosed credential.
+
+  Until then, real TC-ROS-03 remains NOT RUN and DEV-08
+  remains operator-reported, zero physical enrollment.
+- CI, exact reviewed merge, post-merge recovery/snapshot
+  and final endpoint reprobe pending at this preliminary
+  checkpoint. No changes to the live VPS provider/network
+  perimeter, k3s, PostgreSQL, nftables or firewall.

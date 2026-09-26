@@ -137,3 +137,18 @@ file locally with `--input` as detailed in
 is not real source authentication or device enrollment.
 Do not copy raw RouterOS output or management secrets to Git,
 start live K3s or change any externally shared perimeter.
+
+## R6.3 unexpected customer SSH host key: fail closed
+
+Never run the real customer MikroTik probe or log in with a
+chat-posted password when OpenSSH reports host-key change.
+The owner-Mac one-host, unauthenticated
+`deploy/scripts/lab/r63/ssh-host-trust-check.py`
+reproduces the saved-vs-current fingerprint conflict
+without credentials or any changes to `known_hosts`.
+Refer to [R6.3 independent direct-LAN verification and
+password-rotation runbook](MIKROTIK_SSH_HOST_TRUST_R63.md).
+Do not pin unverified public scans, disable SSH host
+checking, modify live router services, change a shared
+provider perimeter or install production K3s to
+work around the blocked connection.

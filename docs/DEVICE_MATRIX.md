@@ -116,3 +116,20 @@ authorized device transcript. A syntactically valid
 never equivalent to owner permission, device identity, live
 compatibility or verified tenant assignment. Physical
 TC-ROS-03 remains NOT RUN. [R6.2 scope](ROUTEROS_RUST_R62.md).
+
+## R6.3 DEV-08 SSH connectivity vs verified router identity
+
+The owner-supplied public SSH endpoint was TCP-reachable and
+returned an untrusted RouterOS-like SSH banner. However,
+the owner's Mac **previously saved a DIFFERENT RSA server
+fingerprint** for that exact endpoint, so strict OpenSSH
+denied the connection *before the password or any RouterOS
+read-only command could be sent*. This is a security
+STOP condition, NOT a tested RB951 firmware or
+device-management capability. Host identity cannot be
+established by scanning the same untrusted public endpoint
+again. Independent direct-LAN SSH fingerprint comparison
+is required; actual hardware test TC-ROS-03 remains NOT RUN,
+physical registration ZERO and the owner-reported
+RB951Ui-2HnD/7.23.7 tuple UNTESTED. See
+[the R6.3 independent SSH identity guide](MIKROTIK_SSH_HOST_TRUST_R63.md).

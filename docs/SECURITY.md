@@ -249,3 +249,24 @@ payloads or paths. Its success expressly keeps enrollment, tenant
 trust and compatibility false. Python-to-Rust synthetic cross-contract
 fixtures verify fake serial, IP and password suppression and refusal
 to promote a forged tenant record. No actual router traffic is needed.
+
+## R6.3 immutable SSH host key conflict before any router credential is sent
+
+The customer-router public SSH endpoint is reachable and presents
+a MikroTik-style SSH banner, but the currently presented RSA key
+**does not match** the authorized Mac's prior pinned RSA key
+for the exact endpoint. OpenSSH strict checking correctly aborted
+before any authentication. Do not interpret a public key scan
+or software banner from the same network path as proof of
+device identity. No chat-disclosed device password was
+transmitted, written to local files, injected into process
+arguments or stored in source, and no host trust was overridden.
+A changed key requires an independent trusted direct-LAN
+identity comparison, owner acceptance of the exact device,
+investigation of possible different NAT/port-forwarding,
+and credential rotation using a separate trusted path.
+A new no-credential, no-login, one-host SSH fingerprint
+preflight plus mocked denial tests are in
+[MIKROTIK_SSH_HOST_TRUST_R63.md](MIKROTIK_SSH_HOST_TRUST_R63.md).
+No configuration-write permission or live physical feature
+claim follows from an SSH host-key match alone.
