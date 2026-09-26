@@ -16,7 +16,7 @@
 | DEV-05 | Router (distribution) | MikroTik x86 | **TBD** | TBD | RouterOS version/build **TBD** | Verify `api-ssl` or HTTPS REST where version allows | Read inventory, PPPoE secret/session, controlled demo batch | `untested` | None supplied |
 | DEV-06 | Router (distribution) | MikroTik CCR | **TBD exact CCR** | TBD | RouterOS version/build **TBD** | Verify `api-ssl`/REST | Same scoped profile | `untested` | None supplied |
 | DEV-07 | Router (distribution) | MikroTik RB | **TBD exact RB** | TBD | RouterOS version/build **TBD** | Verify `api-ssl`/REST | Same scoped profile | `untested` | None supplied |
-| DEV-08 | Customer router | MikroTik RB | **TBD exact RB** | TBD | RouterOS version/build **TBD** | Verify accessible interface and management route | Read-only inventory; controlled changes only after safety review | `untested` | None supplied |
+| DEV-08 | Customer router | MikroTik RB | **RB951Ui-2HnD (reported, not verified)** | HW revision not observed | **RouterOS 7.23.7 (reported, not verified)** | HTTPS REST candidate; private route and trusted TLS pending | One authenticated HTTPS GET of system/resource, no changes | `untested` | Model/version reported by operator 2026-09-26; no physical read yet |
 
 **NOT confirmed for physical pilot:** VSOL GPON OLT. Track only in future candidate list unless test access is explicitly confirmed.
 
@@ -98,3 +98,7 @@ On the actual Ubuntu 26.04 lab, `cwmp-admission` eleven **offline synthetic** un
 ## R5.0 synthetic USP boundary evidence (NO real-agent interoperability)
 
 Twelve `usp-core` in-memory synthetic enrollment, tenant/peer-spoof, replay, malformed reply, request-correlation and capacity checks plus three optional `usp-controller` loopback-router health/deny tests passed on an isolated actual Ubuntu 26.04 checkout. **No official USP Record/Msg protobuf, MTP, broker or real CPE agent was used.** This is `synthetic-domain-only` evidence, **NOT TC-USP-01 acceptance** and not an upgrade of any physical device test tuple from `untested`. [R5.0 scope](USP_SYNTHETIC_R50.md).
+
+## R6.1 customer router update (NOT a physical compatibility result)
+
+Operator reported RB951Ui-2HnD with RouterOS 7.23.7 for DEV-08. Hardware board revision, dedicated restricted account, verified private management reachability and trusted HTTPS certificate remain unverified. The single read-only R6.1 probe must pass independently; a local successful probe remains unreviewed evidence until the authorized test record and tenant assignment are separately checked. All physical matrix test results remain NOT RUN and compatibility UNTESTED. See `MIKROTIK_CUSTOMER_R61.md`.

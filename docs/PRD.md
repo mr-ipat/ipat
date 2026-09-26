@@ -260,3 +260,18 @@ output must remain unapproved, unconnected and outside Git. The existing
 PRD's original real OLT/ONT/MikroTik and authenticated tenant-binding
 functional acceptance is unchanged: only a later device-specific, owner-
 authorized, evidence-backed physical test may promote an actual device.
+
+### R6.1 concrete RouterOS customer unit first-read acceptance
+
+The initially targeted DEV-08 customer-router SKU is operator-reported
+RB951Ui-2HnD with RouterOS 7.23.7, still physically UNTESTED.
+The first slice is **not** full device management: a distinctly
+approved private HTTPS read-only first-contact probe of *this exact*
+model/firmware, certificate and least-privilege verification, only
+one system resource query, exact board-name/architecture/version
+match and redacted private evidence. No subscriber data, configuration
+read/export, PPPoE writes, firmware upgrades, Wi-Fi operations,
+customer login or automatic enrollment are in this first acceptance.
+Actual observed status cannot be promoted until human reviewer signs
+off identity/tenant permission and the read evidence. Synthetic
+negative tests alone must not pass physical TC-ROS-03.

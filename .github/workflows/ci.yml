@@ -63,6 +63,10 @@ jobs:
           python3 -m py_compile deploy/scripts/lab/r60/prepare-device-intake.py
           python3 -m json.tool web/lab/device-targets.json >/dev/null
           python3 -m unittest discover deploy/scripts/lab/r60 -p 'test_r60_review.py' -v
+      - name: Verify R6.1 exact owner-reported MikroTik and safe first read-only REST tool
+        run: |
+          python3 -m py_compile deploy/scripts/lab/r61/readonly-rest-probe.py
+          python3 -m unittest discover deploy/scripts/lab/r61 -p 'test_r61*.py' -v
       - name: Verify Mac encrypted-backup and external provider probe safety contracts (static)
         run: |
           bash -n deploy/scripts/lab/backup-mac-restic.sh

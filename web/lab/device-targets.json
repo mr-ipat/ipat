@@ -81,11 +81,11 @@
       "id": "DEV-08",
       "category": "CUSTOMER_ROUTER",
       "vendor": "MikroTik",
-      "family": "RB",
-      "model_detail": "Exact RB / RouterOS belum dicatat",
-      "firmware": "Belum dicatat",
-      "test_plan": "Inventaris CPE read-only",
-      "status": "awaiting_metadata"
+      "family": "RB951Ui-2HnD",
+      "model_detail": "RB951Ui-2HnD (dilaporkan pemilik; belum dibaca melalui perangkat)",
+      "firmware": "RouterOS 7.23.7 (dilaporkan pemilik; belum diverifikasi)",
+      "test_plan": "HTTPS REST hanya-baca: model, arsitektur, versi RouterOS; tanpa pengaturan",
+      "status": "operator_reported_pending_verification"
     }
   ]
 }

@@ -38,8 +38,11 @@ class HardwareIntakeSafety(unittest.TestCase):
         self.assertEqual(0, CATALOG["physical_interoperability_verified"])
         self.assertFalse(CATALOG["network_discovery_enabled"])
         self.assertFalse(CATALOG["compatibility_claim"])
-        self.assertEqual({"awaiting_metadata"},
-                         {t["status"] for t in CATALOG["targets"]})
+        self.assertEqual(["awaiting_metadata"] * 7,
+                         [t["status"] for t in CATALOG["targets"][:7]])
+        self.assertEqual("operator_reported_pending_verification",
+                         CATALOG["targets"][7]["status"])
+        self.assertEqual("RB951Ui-2HnD", CATALOG["targets"][7]["family"])
         self.assertEqual(["ZTE", "C-DATA", "VSOL", "ZTE", "MikroTik",
                           "MikroTik", "MikroTik", "MikroTik"],
                          [t["vendor"] for t in CATALOG["targets"]])

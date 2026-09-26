@@ -341,3 +341,17 @@ metadata outside Git; it does NOT grant network access, tenant enrollment,
 API authentication or any implicit compatibility claim. Production inventory
 requires trusted OIDC + resource-level RBAC/ABAC, verified tenant/device
 identities, per-feature hardware test evidence and isolated access.
+
+## R6.1 exact customer MikroTik first-read boundary
+
+DEV-08 is owner-reported as RB951Ui-2HnD / RouterOS 7.23.7;
+its claim remains unverified until a scoped, approved *physical*
+read succeeds. A separate single-purpose Python lab probe is
+**not** the production Rust RouterOS device adapter. It defaults
+offline, only permits a manually selected RFC1918 IP to a fixed
+HTTPS port, verifies an independently specified TLS DNS name against
+a private trusted CA, loads dedicated credentials from a local
+mode-0600 netrc, and makes one GET of /rest/system/resource.
+The output is strictly allowlisted and only owner-private evidence,
+not automatic tenant enrollment. The browser remains
+SSH-loopback-only and never contains management IPs or credentials.

@@ -174,3 +174,21 @@ Build original Rust `control-api` and separate synthetic `usp-controller` into n
   USP support, true OLT/RouterOS adapter support, subscriber view,
   privileged actions, public customer dashboard or commercial compatibility.
   Secrets, actual device IPs and serials must not enter chat or Git.
+
+### R6.1 DEV-08 targeted real router test
+- MUST now: register operator-*reported* RB951Ui-2HnD RouterOS
+  7.23.7 in DEV-08, leaving physical enrollment and compatibility
+  at zero. Add one dedicated safe/offline-by-default HTTPS REST
+  first-read probe with strict TLS and secretless output; exercise
+  malicious/wrong model/firmware, private address, permissions and
+  unauthorised-operation negatives with no physical I/O.
+- MUST before *actual physical* read: approved non-disruptive
+  customer-router test scope, independent router recovery/backup,
+  isolated Mac-to-router private path, www-ssl TLS certificate
+  validation, restricted single-purpose account and separate
+  two-flag explicit one-GET operator execution.
+- LATER: reviewed physical identity evidence + tenant-bound
+  backend onboarding; full Rust adapter, managed config, Wi-Fi,
+  PPPoE, customer and firmware functions require independently
+  tested RBAC+ABAC, per-firmware checks and controlled writes.
+  No claim that all features are ready.
