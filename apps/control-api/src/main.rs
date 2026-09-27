@@ -3,6 +3,7 @@
 //! This is NOT an authenticated tenant dashboard or a production/public UI.
 
 mod oidc_lab;
+mod tenant_membership_lab;
 
 use identity_core::PinnedIssuer;
 use std::sync::Arc;
@@ -141,6 +142,14 @@ fn app_with_lab(lab_web_enabled: bool) -> Router {
 }
 
 fn app_with_lab_identity(lab_web_enabled: bool, verifier: Option<Arc<PinnedIssuer>>) -> Router {
+    app_with_lab_identity_and_store(lab_web_enabled, verifier, None)
+}
+
+fn app_with_lab_identity_and_store(
+    lab_web_enabled: bool,
+    verifier: Option<Arc<PinnedIssuer>>,
+    store: Option<Arc<tenant_membership_lab::Store>>,
+) -> Router {
     let api = Router::new()
         .route("/healthz", get(|| async { "ok" }))
         .route(
@@ -176,6 +185,9 @@ fn app_with_lab_identity(lab_web_enabled: bool, verifier: Option<Arc<PinnedIssue
             .route("/lab/dashboard-preview.js", get(lab_dashboard_js));
         if let Some(verifier) = verifier {
             private = private.merge(oidc_lab::router(verifier));
+            if let Some(store) = store {
+                private = private.merge(tenant_membership_lab::router(store));
+            }
         }
         private
     } else {
@@ -203,15 +215,33 @@ async fn main() {
         } else {
             None
         };
-    // Explicitly separate private identity proof from existing port 3000
-    // dashboard preview. Never bind the identity proof on a public interface.
+    // A database-backed membership lab MUST be both explicit and identity
+    // verified; it cannot be silently enabled on the public K3s bind.
+    let scoped_requested = std::env::var("IPAT_LAB_SCOPED_MEMBERSHIP").as_deref() == Ok("YES");
+    if scoped_requested && identity.is_none() {
+        panic!("private membership lab requires an opted-in pinned OIDC verifier");
+    }
+    let store = if scoped_requested {
+        Some(
+            tenant_membership_lab::from_owner_environment(
+                identity.clone().expect("verified issuer required"),
+            )
+            .expect("invalid owner-provisioned restricted PostgreSQL lab prerequisites"),
+        )
+    } else {
+        None
+    };
+    // Never serve restricted membership proof from the public K3s interface.
     let address = identity_lab_bind_address(k3s_lab, identity.is_some());
     let listener = tokio::net::TcpListener::bind(address)
         .await
         .expect("bind isolated identity/dashboard lab listener");
-    axum::serve(listener, app_with_lab_identity(lab_web_enabled, identity))
-        .await
-        .expect("serve API");
+    axum::serve(
+        listener,
+        app_with_lab_identity_and_store(lab_web_enabled, identity, store),
+    )
+    .await
+    .expect("serve API");
 }
 
 #[cfg(test)]

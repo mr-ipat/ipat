@@ -556,3 +556,22 @@ privilege tests. It does NOT implement real OIDC/MFA membership
 provisioning, integrated menu/API/worker/RLS isolation or
 commercial-domain AC-09. No existing acceptance case is
 claimed complete by these narrower synthetic tests.
+
+
+## R7.8 partial private end-to-end identity acceptance proof
+
+R7.8 now joins the existing pinned RS256 verifier, restricted exact
+PostgreSQL identity membership lookup and fail-closed tenant/POP
+read-only menu policy inside the real Rust Axum binary, guarded
+by two explicit nonroot private-only opt-ins and a Unix-only
+DB connection. A disposable PostgreSQL CI login role is the
+ONLY newly created login identity; this is an integrated
+synthetic pilot, not a real Keycloak MFA user or company tenant.
+Per-tenant JWT custom claims, request Host and forged headers
+remain untrusted, with real business APIs HTTP401.
+FR-001/002/003, AC-01/02 are PARTIAL until actual human
+IdP/MFA, operator-approved memberships, live persistent backend
+API/RLS/queue scoping and complete negative E2E tests pass.
+FR-004/AC-09 remain M2 commercial domain verification per
+the owner-approved ADR-020; customer DNS pointing alone does
+not enable a domain or a platform role.

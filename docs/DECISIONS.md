@@ -93,3 +93,19 @@ audit/MFA grant workflow, fixed application identity broker,
 credential/storage isolation and cross-tenant real API RLS tests,
 recovery/rollback and negative privilege escalation tests.
 FR-001/002/003 remain mandatory despite ADR-020 domain deferral.
+
+
+## ADR-024 — PROPOSED LAB ONLY: real Axum OIDC→scoped SQL menu adapter (R7.8)
+
+For isolated private demonstration ONLY, join the pinned OIDC verifier
+to the separately tested exact-membership PostgreSQL function and
+existing fail-closed Rust menu policy using a dedicated restricted
+`ipat_lab_identity_reader` role and a private Unix socket. Explicit
+double opt-in is mandatory, with separate nonroot 127.0.0.1:3001
+binding and no public/K3s activation or real business route access.
+The only seeded LOGIN account is disposable CI-only. Actual IdP MFA,
+independently approved human membership, audited approver identity,
+rotation/revocation handling, transactional RLS data access,
+trusted production identity broker and commercial custom domains
+remain UNSOLVED. No production approval or automatic live DB
+migration is authorized; do not confuse this with full FR-002.
