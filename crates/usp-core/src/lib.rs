@@ -1,8 +1,9 @@
 //! Native Rust USP Controller *domain-boundary* simulator.
 //!
-//! This crate DOES NOT parse, serialize or implement TR-369 USP protobuf,
-//! any MTP (MQTT/STOMP/WebSocket), a real TLS client verifier, or physical
-//! agent interoperability. Its types model synthetic read-only request
+//! Domain logic below NEVER trusts unverified wire input; the separate
+//! wire14 module implements a REAL, bounded BBF v1.4 OFFLINE protobuf subset,
+//! NOT any USP MTP (MQTT/STOMP/WebSocket), authenticated TLS client or physical
+//! agent interoperability. Domain types model synthetic read-only request
 //! correlation, tenant/agent enrollment and fail-closed replay admission.
 //! VerifiedAgent and TrustedOperator have NO public constructors; future
 //! adapters must verify actual cryptographic identities before creating them.

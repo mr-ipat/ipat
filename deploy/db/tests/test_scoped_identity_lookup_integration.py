@@ -109,8 +109,13 @@ class ScopedIdentityLookup(unittest.TestCase):
           AND issuer='{ISSUER}' AND subject='{SUBJECT}'""")
         self.assertEqual(match(), "DENIED")
         self.assertEqual(match(tenant=TB, role="helpdesk", pop="pop-b"), "R77-REVIEWER-B")
+        # Deterministic already-expired membership must still satisfy the
+        # real schema CHECK (expires_at > created_at), independent of runner
+        # scheduling and sub-second test timing.
         sql(f"""UPDATE ipat_platform.identity_memberships
-          SET revoked_at=NULL, expires_at=statement_timestamp() - interval '1 second'
+          SET revoked_at=NULL,
+              created_at=statement_timestamp() - interval '2 days',
+              expires_at=statement_timestamp() - interval '1 day'
           WHERE tenant_id='{TA}' AND issuer='{ISSUER}' AND subject='{SUBJECT}'""")
         self.assertEqual(match(), "DENIED")
         sql(f"""UPDATE ipat_platform.identity_memberships
