@@ -78,6 +78,26 @@ and lab-only virtual device tests.
 These are verified software tests,
 not actual IdP provider conformance.
 
+## Important standards compatibility cut-line
+
+OpenID Connect Core 1.0 Section 3.1.3.8 explicitly treats
+`at_hash` as OPTIONAL when the ID Token and access token
+both come back over an approved confidential HTTPS
+Authorization Code Token Endpoint. This R8.7 offline
+verifier is intentionally a STRICTER, at_hash-REQUIRED
+reviewed **lab profile**, NOT a claim that a real Keycloak
+issuer will always emit `at_hash` under code flow.
+Before integrating a real issuer, independently test its
+actual signed code-flow ID Token. If `at_hash` is absent,
+the next architecturally reviewed implementation must
+bind both tokens to the authenticated confidential TLS
+token endpoint and verify nonce/issuer/client/subject/MFA
+without silently weakening the existing strict entrypoint.
+Do NOT bypass validation by injecting or fabricating a
+hash and do not enable physical device access based on
+an unverified provider. Official normative source:
+https://openid.net/specs/openid-connect-core-1_0-18.html#CodeFlowTokenValidation
+
 ## Explicit remaining PRD MUST work
 
 1. An independently consented, real HTTPS
@@ -121,3 +141,56 @@ Manager, full actual ACS/USP device
 connection, live network condition,
 firmware approval or full verified
 offsite disaster recovery.
+
+
+## Verified actual software release evidence
+
+R8.7 source feature PR #102
+`be3df17377ef57076de7931655be8a6d94e26923`
+passed four-of-four GitHub CI
+run `36317730147`. Canonical
+merged code SHA
+`c45e09bc772ef0eab36c458e87d1123692cd9a59`
+passed separate independent
+post-code-main run
+`36318026887` 4/4 SUCCESS.
+Real actual Ubuntu26 nonroot
+isolated worktree plus exact
+merged canonical VPS source
+both passed full locked offline
+Rust workspace and rustfmt,
+five genuine ephemeral RSA
+positive/negative test cases
+and four static fail-closed
+contracts. The test suite
+preserved actual disposable
+PostgreSQL maker-checker
+multi-company security tests
+and disposable single-node
+Ubuntu26 K3s and separate
+ephemeral Postgres recovery.
+Mac owner, GitHub and actual
+nonroot VPS matched exact
+verified code main SHA using
+SHA256-verified Git bundle.
+
+Owner encrypted Restic
+SOURCE-only snapshot
+`2461545a` had 156/156
+encrypted pack full-read
+without errors, SHA256-exact
+isolated source restore
+and selected historical
+PARTIAL readable root
+config restore. This is not
+whole-host/customer DB or
+live K3s datastore DR.
+The new original verified
+ID+access primitive is
+OFFLINE only and is not
+called by the current
+browser callback; no
+real human IdP or MFA,
+live tenant UI session,
+device route or firmware
+operation was enabled.

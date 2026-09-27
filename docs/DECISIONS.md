@@ -354,4 +354,15 @@ confidential HTTPS PKCE code exchange,
 server-side Secure session and separate
 approved tenant/role/POP SQL membership
 remain binding OPEN MUST gates.
+This strict lab method REQUIRES at_hash as an
+explicit local profile, though OIDC Core 1.0
+section 3.1.3.8 makes at_hash OPTIONAL for an
+Authorization Code Token Endpoint response.
+Do NOT assume a real Keycloak issuer emits it;
+prove actual provider behavior before choosing
+the real BFF policy. A future code-flow method
+may instead use verified confidential HTTPS
+endpoint binding if documented/reviewed, but
+must never fabricate at_hash or silently reuse
+this strict method under weaker assumptions.
 See docs/R87_PINNED_OIDC_ID_TOKEN_NONCE_AT_HASH_OFFLINE.md.
