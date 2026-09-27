@@ -163,3 +163,78 @@ process are SOFTWARE LAB only. TC-USP-01
 MTP with verified controller identity)
 is NOT RUN. No physical device and no
 customer USP traffic were involved.
+
+
+## Verified feature-code release evidence (immutable)
+
+Feature [PR #90](https://github.com/mr-ipat/ipat/pull/90)
+finished at SHA
+`82e26a606d2c1411a0f44caa022c26ab8189cc5f`
+and GitHub Actions feature run
+`36299321859` passed
+ALL FOUR independent jobs.
+Final code merged to main
+`fbed8eaeb93090966e68337ed544ea81c6b0b6c1`;
+separate post-code-main run
+`36299574222` also
+passed ALL FOUR jobs
+on exactly that SHA.
+The actual ephemeral
+Ubuntu26 K3s/Helm smoke
+and two separate
+disposable PostgreSQL
+RLS/backup jobs are
+NOT customer cloud or
+production recovery tests.
+
+Actual owner Mac and
+nonroot Ubuntu26 VPS code
+were separately SHA-matched
+to that exact code main.
+VPS real locked
+offline Rust workspace,
+real native protobuf
+independent golden tests,
+mock tenant/peer/replay
+correlation, real binary
+loopback HTTP positive/
+negative tests and
+historical boundary
+tests all PASSED.
+Mac localhost browser
+preview was restarted
+and three real business
+API namespaces denied
+forged Host/tenant/role
+requests with HTTP401.
+
+Owner Mac encrypted
+source-only Restic
+snapshot `83505eaa`
+passed 136/136 full
+encrypted pack reads,
+isolated exact Git
+source SHA256 restore
+and selected historical
+PARTIAL readable-root
+config restore. This
+is NOT a complete
+offsite VPS, PostgreSQL
+or K3s recovery.
+Initial CI revealed
+historic static-count,
+nondeterministic
+R7.7 expiry-fixture
+and existing K3s
+health sentinel
+regressions, all
+corrected and retested
+BEFORE the successful
+feature SHA. Latest
+post-final-docs-main
+CI and immutable source
+sync evidence (if any)
+will be attached to
+the docs PR after it
+runs, not asserted
+prospectively here.
