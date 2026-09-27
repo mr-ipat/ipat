@@ -865,3 +865,24 @@ MFA mapper and verified server-side sessions;
 the independent PostgreSQL R8.3 and R8.4
 registrar, reader and reviewer membership functions
 remain the only currently proven tenant/POP grants.
+
+
+## R8.6 provider-bound browser OIDC authorization initiation (local test only)
+
+A distinct original Rust module now owns strictly
+loopback-only Keycloak-candidate OIDC browser initiation,
+using new identity-core RFC7636 S256 cryptography and
+one-use 300-second bounded memory state plus nonce.
+It is mounted ONLY when an independently pinned
+private OIDC verifier, explicit separate browser flag,
+and nonpublic nonroot local mode are all enabled.
+The registered current SSH-tunnel callback is fixed
+to owner Mac loopback, not a trusted customer domain.
+Valid shaped callback ALWAYS returns HTTP503,
+clearing cookie and dropping unredeemed code/state:
+there is intentionally no real OAuth token exchange,
+persistent session, verified ID token nonce, MFA
+provenance, tenant principal or business API access.
+Production requires independently vetted metadata,
+secure confidential BFF over real TLS, DB backed
+server sessions and true approved role+POP membership.

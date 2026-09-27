@@ -122,6 +122,15 @@ jobs:
           cargo test --locked -p identity-core --test oidc_cli
           cargo build --locked -p identity-core --bin oidc-mfa-preflight
           target/debug/oidc-mfa-preflight --requirements
+      - name: R8.6 genuine OIDC S256 PKCE browser start/callback consume-once (NO LOGIN)
+        run: |
+          python3 -m unittest discover deploy/scripts/lab/r86 -p test_r86_contract.py -v
+          python3 -m py_compile deploy/scripts/lab/r86/browser_http_smoke.py
+          bash -n deploy/scripts/lab/r86/browser-http-smoke.sh
+          cargo test --locked -p identity-core
+          cargo test --locked -p control-api
+          cargo build --locked -p control-api
+          IPAT_R86_BROWSER_TEST=YES bash deploy/scripts/lab/r86/browser-http-smoke.sh
       - name: Verify non-executable sealed provisioning jobs (static)
         run: python3 -m unittest discover deploy/scripts/lab -p 'test_provisioning_synthetic_review.py' -v
       - name: Verify production infrastructure never auto-authorizes unsafe deployment

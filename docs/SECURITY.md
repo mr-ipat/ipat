@@ -864,3 +864,25 @@ permission to contact equipment.
 Approve and verify real human
 MFA via the IdP before enabling
 any actual customer device or admin APIs.
+
+
+## R8.6 browser OIDC PKCE proof threat boundary
+
+Untrusted login redirects, token headers, Host, state
+replay and leaked authorization codes are explicitly
+negative-tested. Cryptographic OS entropy produces
+three independent random 256-bit state, nonce and
+PKCE verifier; SHA256 S256 sends ONLY challenge, never
+verifier. Pending browser state is capped at 16,
+TTL 300 seconds, cookie HttpOnly/SameSite=Lax,
+callback Host and cookie/state match enforced
+in constant time, state consumed before returning
+503. No subject, tenant, auth code, verifier or
+credential appears in HTTP body or logs.
+This lab cookie intentionally lacks Secure on a
+strictly localhost HTTP-over-owner-SSH-tunnel proof.
+It cannot be reused as the customer/public cookie.
+Independent approved actual TLS, signed nonce-checked
+ID token, confidential OAuth exchange, session
+rotation, CSRF defenses, secure __Host- cookie and
+MFA enrollment remain unimplemented external gates.

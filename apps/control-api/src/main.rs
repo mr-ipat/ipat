@@ -4,6 +4,7 @@
 
 mod device_review_lab;
 mod device_workbench_lab;
+mod oidc_browser_lab;
 mod oidc_lab;
 mod tenant_membership_lab;
 
@@ -277,6 +278,18 @@ async fn main() {
     }
     if let Some(reviewer) = review {
         app = app.merge(device_review_lab::router(reviewer));
+    }
+    // Distinct opt-in private browser START/CALLBACK proof only; never a
+    // public IdP callback, token exchange or login entitlement.
+    let browser_requested = std::env::var("IPAT_R86_BROWSER_FLOW").as_deref() == Ok("YES");
+    if browser_requested {
+        if !lab_web_enabled || std::env::var("IPAT_LAB_OIDC_VERIFY").as_deref() != Ok("YES") {
+            panic!("browser flow requires independently verified private OIDC laboratory");
+        }
+        app = app.merge(oidc_browser_lab::router(
+            oidc_browser_lab::from_owner_environment()
+                .expect("unsafe or missing explicitly approved browser provider configuration"),
+        ));
     }
     axum::serve(listener, app).await.expect("serve API");
 }

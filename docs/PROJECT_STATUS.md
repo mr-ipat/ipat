@@ -1,7 +1,7 @@
 # IPAT — Project Status
 
 **As-of:** 2026-09-27 Asia/Jakarta
-**Current milestone:** R8.5 VERIFIED SOFTWARE — original independent, strictly private Rust signed-MFA OIDC real-IdP preflight; genuine ephemeral independently signed RSA process tests and exact post-code-merge independent CI 4/4 PASS. Prior R8.4 independent metadata maker-checker also verified. ACTUAL human MFA enrollment, OIDC authorization-code browser BFF, authenticated persistent tenant dashboard, real physical device admission/telemetry and production full recovery remain OPEN. No real provider access was claimed.
+**Current milestone:** R8.6 IN PROGRESS — original gated private Rust browser S256 PKCE authorization-start+strict replay-safe callback proof; even correct callback deliberately rejects HTTP503 pending real HTTPS confidential token redemption and human MFA. R8.5 pinned signed MFA preflight and R8.4 separate actual disposable SQL maker-checker remain software-verified. Actual real signed-in tenant dashboard, physical device admission/telemetry and full production DR remain OPEN; see latest appended evidence.
 **Historical R7.1 state (superseded by later entries):** R7.1 original Rust ZTE C320 strict offline read-only evidence parser, owner-private non-network importer, hard-disabled firmware and large RED unfulfilled-PRD warning across all three private dashboard previews FEATURE PR #71 MERGED at code SHA d452d1be6943bb4b3685b2136ad30b587e6af1e9. Both independent feature-PR GitHub CI 36249894205 and post-feature-main CI 36250108104 completed SUCCESS in all four independent jobs (locked Rust/security/UI/OLT offline, disposable Ubuntu26 K3s and two isolated synthetic PostgreSQL recovery jobs, none deployed live). Actual clean unchanged Ubuntu 26.04.1 VPS canonical source, private GitHub and owner FileVault Mac main synchronized at feature SHA; actual VPS rustfmt and 145/145 locked OFFLINE whole-workspace Rust tests, 5/5 synthetic offline CLI permission/data tests, 5/5 source PRD red warning + disabled firmware checks and 7/7 existing R6.8 Python dashboard tests PASS. Existing R6.8 synthetic Node DOM proof rerun on Mac Node v22.22, actual authorized Mac private dashboard served LARGE red PRD alert via real HTTP 200/no-store/CSS high contrast while 3 business APIs remained HTTP401. FileVault Mac encrypted exact merged-feature-source Restic snapshot 63c7c461 independently isolated SHA256 restored plus full encrypted pack read PASS; selected historical root-readable config separately restored, NOT full VPS or real PostgreSQL PITR. Clean main production readiness 8/8 automatic gates PASS, ALL 7/7 independent external safety gates BLOCKED, production NO_GO; live VPS K3s/PostgreSQL/nftables inactive. ZTE C320 actual model/boards/running firmware, authenticated private device route and owner recovery/maintenance approval still unavailable; TC-OLT-01 physical NOT RUN, no firmware update or device changes. Separate physical blocker Issue #72 and high-risk firmware Issue #73 OPEN. Final docs-only checkpoint independent CI, exact updated source synchronization and backup to be logged immutably after docs merge to avoid recursive SHA-changing commits. Developer Mr. iPat.
 
 ## 1. Source of truth and provenance
@@ -2841,3 +2841,41 @@ approved private hardware read-only
 admission. The fact that a signed
 synthetic JWT passed R8.5 is
 NOT proof actual human MFA.
+
+
+## R8.6 real browser PKCE initiation security milestone — work in progress 2026-09-27
+
+Owner priority stays real user authorization and visible
+Device Manager before allowing actual OLT/ONT network
+operations. The preceding R8.5 docs-main independent
+CI run `36314168433` revealed a genuine nondeterministic
+early-exit race in the **test fixture**, not a verified
+production login failure: intentionally default-denied
+standalone identity preflight may exit before the parent
+writes to its stdin, producing BrokenPipe. R8.6 corrects
+the regression test to allow BrokenPipe only in the
+explicit default-denied path; enabled positive path
+still requires a full successful write. Independent
+feature and main runs are mandatory to verify the fix.
+
+New original identity-core RFC7636 PKCE S256 generator
+uses three independent 256-bit OS random values,
+SHA256, fixed registered owner Mac-loopback callback
+and a reviewed owner-controlled Keycloak-candidate
+issuer association. New gated original Rust Axum
+private browser START/CALLBACK uses bounded
+16-pending/300-second one-use memory state,
+cookie correlation, denied malicious Host/query/
+cookie/replay, and intentionally returns HTTP503
+even on correctly correlated callback:
+NO token exchange/secure user session yet.
+A real compiled independent synthetic issuer
+Python→Rust loopback HTTP socket probe passed
+303 state+nonce+S256/cookie, bad Host, invalid
+callback, 503 on valid shaped code, replay 403,
+and all real business namespaces HTTP401 on an
+isolated nonroot Ubuntu26 code worktree.
+The genuine broader CI and final exact source
+backup/release evidence will be appended
+only after it is independently executed.
+Physical equipment and live full system stay CLOSED.

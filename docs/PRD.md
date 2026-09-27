@@ -754,3 +754,20 @@ stdin, reject unsafe key files and never print identity,
 session, token, tenant or roles. This preflight utility
 is NOT a substitute for actual human MFA or real
 customer login and MUST NOT activate a production endpoint.
+
+
+## R8.6 browser OIDC S256 PKCE initiation guard (MUST readiness, lab-only)
+
+Original Rust browser BFF MUST initialize signed-in flows
+with OS-CS-PRNG, independent 256-bit state/nonce/PKCE,
+RFC7636 S256, exact owner-pinned HTTPS issuer authorization
+endpoint, registered redirect, bounded five-minute pending
+state and browser correlation cookie; mismatched Host/cookie,
+unknown query, replay and expired state MUST fail closed.
+Until actual operator-approved IdP, human MFA enrollment,
+confidential server-side code redemption, nonce-verified
+ID token, secure session and checked exact PostgreSQL
+tenant/POP membership, every callback MUST reject login,
+and every real device API MUST remain denied. Passing
+cryptographic synthetic browser tests is NOT real human
+login or an approved physical adoption prerequisite.
