@@ -366,3 +366,32 @@ endpoint binding if documented/reviewed, but
 must never fabricate at_hash or silently reuse
 this strict method under weaker assumptions.
 See docs/R87_PINNED_OIDC_ID_TOKEN_NONCE_AT_HASH_OFFLINE.md.
+
+
+## ADR-036 — APPROVED OFFLINE IDENTITY-ONLY OPAQUE BFF SESSION; LIVE LOGIN OPEN (R8.8)
+
+The approved development order requires a genuine secure
+browser session primitive backed by cryptographically
+verified independent OIDC ID+access signed pair and
+separately approved exact tenant/POP SQL membership
+before attempting actual OLT/ONT adoption. The new
+original Rust SessionVault issues separately random
+256-bit opaque handle and CSRF, stores only SHA256
+digests plus bounded issuer/subject/expiry, caps
+memory at 64, enforces cryptographic token expiry
+and five-minute idle, and supports explicit revocation.
+A separately UNMOUNTED private Control API bridge
+first requires the R8.7 strict nonce/at_hash/MFA
+signed-pair proof AND the genuine restricted sealed
+SQL active membership lookup, then rechecks that SQL
+on EVERY tenant/POP read or mutation. Host/origin
+MUST be independently checked; mutation also
+requires constant-time CSRF proof.
+The _Secure HttpOnly SameSite=Strict __Host-_
+cookie helper is a future HTTPS policy fixture
+and is NEVER actually emitted from today's HTTP
+lab. No actual IdP/MFA, confidential network
+token exchange, secure production TLS, shared
+durable session storage, device privileges or
+production API route is approved by this ADR.
+See docs/R88_OFFLINE_SIGNED_PAIR_SEALED_SQL_SESSION_FOUNDATION.md.

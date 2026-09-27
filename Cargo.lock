@@ -244,11 +244,13 @@ version = "0.1.0"
 dependencies = [
  "authz-core",
  "axum",
+ "base64",
  "identity-core",
  "jsonwebtoken",
  "libc",
  "serde",
  "serde_json",
+ "sha2",
  "subtle",
  "tempfile",
  "tenant-core",

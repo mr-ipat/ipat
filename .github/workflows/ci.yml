@@ -135,6 +135,10 @@ jobs:
         run: |
           python3 -m unittest discover deploy/scripts/lab/r87 -p test_r87_contract.py -v
           cargo test --locked -p identity-core --test oidc_id_token
+      - name: R8.8 genuine signed ID/access-bound opaque browser BFF session primitives OFFLINE ONLY
+        run: |
+          python3 -m unittest discover deploy/scripts/lab/r88 -p test_r88_contract.py -v
+          cargo test --locked -p identity-core --test oidc_id_token
       - name: Verify non-executable sealed provisioning jobs (static)
         run: python3 -m unittest discover deploy/scripts/lab -p 'test_provisioning_synthetic_review.py' -v
       - name: Verify production infrastructure never auto-authorizes unsafe deployment
@@ -304,6 +308,9 @@ jobs:
       - name: R8.4 distinct signed MFA reviewer with real restricted PG, reviewer-independent audit and negative self/cross-tenant HTTP
         run: |
           cargo test --locked -p control-api device_review_lab::pg_integration::r84_real_signed_mfa_claim_two_humans_actual_postgres_immutable_review -- --exact
+      - name: R8.8 real RSA signed synthetic ID/access pair into separate sealed real two-tenant PostgreSQL membership then opaque BFF session
+        run: |
+          cargo test --locked -p control-api browser_session_lab::tests::r88_real_rsa_pair_to_disposable_postgres_tenant_pop_then_opaque_session -- --exact
 
 # Separate disposable CI runner and PostgreSQL server process.
   # This rehearses a physical base backup; it is NOT production PITR/offsite HA.

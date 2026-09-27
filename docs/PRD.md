@@ -790,3 +790,29 @@ genuine ephemeral-RSA negative tests, but keep
 real login/BFF session and hardware review
 disabled until actual IdP and enrolled human MFA
 plus separately authorized SQL membership exist.
+
+
+## R8.8 identity-first device dashboard acceptance
+
+Before physical device adoption or the authenticated
+commercial Device Manager, independently signed
+matching issuer/subject ID and access tokens
+MUST bind to private server nonce, reviewed
+MFA semantics and exact sealed SQL active
+tenant/POP membership. An opaque browser
+session MUST never embed or trust JWT roles,
+tenant Host, POP claim or API headers;
+each requested resource MUST independently
+recheck current database membership.
+Write endpoints MUST require independently
+verified trusted HTTPS origin and anti-CSRF
+proof in addition to the session and DB.
+An OFFLINE compiled signed+real disposable
+PostgreSQL two-company integration test
+may validate the design, but shall NOT
+pass real-human-MFA or customer-readiness
+acceptance until an external real IdP,
+confidential code exchange, real approved
+membership and Secure browser callback
+are independently verified. Current
+physical hardware admission remains BLOCKED.

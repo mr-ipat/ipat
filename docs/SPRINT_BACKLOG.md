@@ -842,3 +842,39 @@ device review UI and narrow approval/audit.
 MUST after review: real vendor firmware-matched
 read-only device adapter with source integrity;
 no fabricated device condition.
+
+
+## R8.8 signed identity→sealed SQL→opaque BFF groundwork
+
+MUST in software-before-device laboratory:
+real signed ID/access pair bound to
+original challenge nonce; OS-random
+separate opaque and anti-CSRF tokens,
+digests-only storage, capacity/idle/
+crypto expiry, rotation and deny-
+by-default request-level exact
+restricted PostgreSQL tenant/POP
+membership checks. Add real
+disposable SQL+Rust integration to
+GitHub CI (not mere mocks).
+MUST next before real commercial
+login: external independently approved
+real MFA IdP, exact provider code
+flow at_hash review, confidential
+HTTPS PKCE exchange, trusted
+customer TLS/Host+Origin, actual
+server session middleware, genuine
+production PostgreSQL restricted
+memberships and reviewer UI.
+MUST next before equipment:
+real approved C320 first-read
+private target/fingerprint and
+model/firmware collection,
+documented ONT actual CWMP/USP
+versions, approved physical
+identity/recovery and evidence-
+derived health; no unreviewed
+firmware changes. Multi-host
+K3s/whole-host+DB recovery
+remains blocked on its own
+external gates.

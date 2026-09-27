@@ -36,6 +36,7 @@ IPAT (`IP@`) is a planned commercial multi-tenant ISP network operations platfor
 - [R8.5 original Rust independent real IdP pinned signed MFA claim preflight (NO live login)](docs/R85_INDEPENDENT_REAL_IDP_SIGNED_MFA_ADMISSION_PREFLIGHT.md)
 - [R8.6 Rust private OIDC S256 PKCE browser start/callback guard (CALLBACK ALWAYS DENIED)](docs/R86_PRIVATE_BROWSER_OIDC_PKCE_BEGIN_FAIL_CLOSED.md)
 - [R8.7 original Rust pinned OIDC ID+access JWT nonce/at_hash signed pair validation (offline, NO SESSION)](docs/R87_PINNED_OIDC_ID_TOKEN_NONCE_AT_HASH_OFFLINE.md)
+- [R8.8 original Rust offline opaque BFF session and sealed real PostgreSQL scoped identity bridge (NOT real login)](docs/R88_OFFLINE_SIGNED_PAIR_SEALED_SQL_SESSION_FOUNDATION.md)
 - [Technical architecture](docs/ARCHITECTURE.md)
 - [Physical device and firmware test matrix](docs/DEVICE_MATRIX.md)
 - [Security, tenant isolation and threat model](docs/SECURITY.md)

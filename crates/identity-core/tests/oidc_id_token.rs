@@ -225,3 +225,246 @@ fn malformed_and_future_id_tokens_rejected() {
         )
         .is_err());
 }
+
+#[test]
+fn r88_signed_pair_issues_opaque_unprivileged_session_and_csrf_gates() {
+    use identity_core::browser_session::{BrowserSessionVault, RequestKind};
+    let f = Fixture::new();
+    let access = f.access();
+    let id = f.sign(&f.id(&access), KID, "JWT");
+    let identity = f
+        .pinned
+        .verify_offline_browser_pair(CLIENT, NONCE, &id, &access)
+        .unwrap();
+    let expiry = identity.expires_at();
+    let mut vault = BrowserSessionVault::default();
+    let issued = vault
+        .issue(identity, clock())
+        .expect("signed identity-only");
+    assert_eq!(issued.cookie_secret().len(), 43);
+    assert_eq!(issued.csrf_secret().len(), 43);
+    assert_ne!(issued.cookie_secret(), issued.csrf_secret());
+    assert!(issued.expires_at() <= expiry);
+    let policy = issued.secure_cookie_header();
+    assert!(policy.contains("__Host-ipat_session="));
+    assert!(policy.contains("Secure; HttpOnly; SameSite=Strict; Path=/;"));
+    assert!(!policy.contains(issued.csrf_secret()));
+    let max_age: u64 = policy.split("Max-Age=").last().unwrap().parse().unwrap();
+    assert!(max_age > 0 && max_age <= 180);
+    assert!(vault
+        .authenticate(
+            issued.cookie_secret(),
+            None,
+            RequestKind::Read,
+            false,
+            clock()
+        )
+        .is_none());
+    assert!(vault
+        .authenticate(
+            issued.cookie_secret(),
+            None,
+            RequestKind::Mutation,
+            true,
+            clock()
+        )
+        .is_none());
+    assert!(vault
+        .authenticate(
+            issued.cookie_secret(),
+            Some("bogus"),
+            RequestKind::Mutation,
+            true,
+            clock()
+        )
+        .is_none());
+    let verified = vault
+        .authenticate(
+            issued.cookie_secret(),
+            Some(issued.csrf_secret()),
+            RequestKind::Mutation,
+            true,
+            clock(),
+        )
+        .unwrap();
+    assert_eq!(verified.issuer(), ISS);
+    assert_eq!(verified.subject(), "human-synthetic-only");
+    assert_eq!(verified.expires_at(), issued.expires_at());
+    assert!(vault.revoke(issued.cookie_secret()));
+    assert!(!vault.revoke(issued.cookie_secret()));
+    assert!(vault
+        .authenticate(
+            issued.cookie_secret(),
+            Some(issued.csrf_secret()),
+            RequestKind::Mutation,
+            true,
+            clock()
+        )
+        .is_none());
+}
+#[test]
+fn r88_wrong_nonce_or_mfa_cannot_mint_session_and_expiry_revokes() {
+    use identity_core::browser_session::{BrowserSessionVault, RequestKind};
+    let f = Fixture::new();
+    let access = f.access();
+    let good = f.sign(&f.id(&access), KID, "JWT");
+    assert!(f
+        .pinned
+        .verify_offline_browser_pair(CLIENT, &"x".repeat(43), &good, &access)
+        .is_err());
+    let mut weak = f.id(&access);
+    weak["amr"] = json!(["pwd"]);
+    assert!(f
+        .pinned
+        .verify_offline_browser_pair(CLIENT, NONCE, &f.sign(&weak, KID, "JWT"), &access)
+        .is_err());
+    let identity = f
+        .pinned
+        .verify_offline_browser_pair(CLIENT, NONCE, &good, &access)
+        .unwrap();
+    let expiry = identity.expires_at();
+    let mut vault = BrowserSessionVault::default();
+    let issued = vault.issue(identity, clock()).unwrap();
+    let old = issued.cookie_secret().to_owned();
+    assert!(vault
+        .authenticate(
+            &old,
+            Some(issued.csrf_secret()),
+            RequestKind::Mutation,
+            true,
+            expiry
+        )
+        .is_none());
+    assert_eq!(vault.active_count(), 0);
+    assert!(!vault.revoke(&old));
+}
+#[test]
+fn r88_session_rotation_invalidates_prior_cookie_and_csrf() {
+    use identity_core::browser_session::{BrowserSessionVault, RequestKind};
+    let f = Fixture::new();
+    let access = f.access();
+    let id = f.sign(&f.id(&access), KID, "JWT");
+    let mut vault = BrowserSessionVault::default();
+    let first = vault
+        .issue(
+            f.pinned
+                .verify_offline_browser_pair(CLIENT, NONCE, &id, &access)
+                .unwrap(),
+            clock(),
+        )
+        .unwrap();
+    assert!(vault.revoke(first.cookie_secret()));
+    let next = vault
+        .issue(
+            f.pinned
+                .verify_offline_browser_pair(CLIENT, NONCE, &id, &access)
+                .unwrap(),
+            clock(),
+        )
+        .unwrap();
+    assert_ne!(first.cookie_secret(), next.cookie_secret());
+    assert_ne!(first.csrf_secret(), next.csrf_secret());
+    assert!(vault
+        .authenticate(
+            first.cookie_secret(),
+            Some(first.csrf_secret()),
+            RequestKind::Mutation,
+            true,
+            clock()
+        )
+        .is_none());
+    assert!(vault
+        .authenticate(
+            next.cookie_secret(),
+            Some(first.csrf_secret()),
+            RequestKind::Mutation,
+            true,
+            clock()
+        )
+        .is_none());
+    assert!(vault
+        .authenticate(
+            next.cookie_secret(),
+            Some(next.csrf_secret()),
+            RequestKind::Mutation,
+            true,
+            clock()
+        )
+        .is_some());
+}
+
+#[test]
+fn r88_capacity_timing_malformed_cookies_and_missing_origin_fail_closed() {
+    use identity_core::browser_session::{BrowserSessionVault, RequestKind};
+    let f = Fixture::new();
+    let access = f.access();
+    let signed_id = f.sign(&f.id(&access), KID, "JWT");
+    let mut vault = BrowserSessionVault::default();
+    let first = vault
+        .issue(
+            f.pinned
+                .verify_offline_browser_pair(CLIENT, NONCE, &signed_id, &access)
+                .unwrap(),
+            clock(),
+        )
+        .unwrap();
+    assert!(vault
+        .authenticate(
+            "q".repeat(43).as_str(),
+            None,
+            RequestKind::Read,
+            true,
+            clock()
+        )
+        .is_none());
+    assert!(vault
+        .authenticate("invalid!", None, RequestKind::Read, true, clock())
+        .is_none());
+    assert!(vault
+        .authenticate(
+            first.cookie_secret(),
+            None,
+            RequestKind::Mutation,
+            false,
+            clock()
+        )
+        .is_none());
+    assert!(vault
+        .authenticate(
+            first.cookie_secret(),
+            None,
+            RequestKind::Read,
+            true,
+            clock()
+        )
+        .is_some());
+    for _ in 1..64 {
+        let identity = f
+            .pinned
+            .verify_offline_browser_pair(CLIENT, NONCE, &signed_id, &access)
+            .unwrap();
+        assert!(vault.issue(identity, clock()).is_some());
+    }
+    assert_eq!(vault.active_count(), 64);
+    let overflow = f
+        .pinned
+        .verify_offline_browser_pair(CLIENT, NONCE, &signed_id, &access)
+        .unwrap();
+    assert!(vault.issue(overflow, clock()).is_none());
+    assert!(vault
+        .authenticate(
+            first.cookie_secret(),
+            None,
+            RequestKind::Read,
+            true,
+            first.expires_at()
+        )
+        .is_none());
+    vault.prune(first.expires_at());
+    assert_eq!(vault.active_count(), 0);
+    let too_late = f
+        .pinned
+        .verify_offline_browser_pair(CLIENT, NONCE, &signed_id, &access)
+        .unwrap();
+    assert!(vault.issue(too_late, first.expires_at()).is_none());
+}
