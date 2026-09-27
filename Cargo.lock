@@ -637,6 +637,7 @@ name = "identity-core"
 version = "0.1.0"
 dependencies = [
  "jsonwebtoken",
+ "libc",
  "serde",
  "serde_json",
  "tempfile",

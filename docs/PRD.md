@@ -734,3 +734,23 @@ change UNKNOWN health, enroll/operate firmware or
 magically grant real user MFA. CI on real disposable PG
 plus actual signed Rust Axum tests is the software
 acceptance; real IdP/BFF hardware adoption remains BLOCKED.
+
+
+## R8.5 independent real human IdP onboarding preflight
+
+MUST authenticate future operators with an independently
+approved OIDC IdP using proper second-factor enrollment,
+confidential Authorization Code+PKCE browser BFF,
+server-only session and exact DB-approved tenant/role/POP
+membership; no protected menu without matching backend
+authorization. A signed `amr:mfa` claim from a pinned
+issuer is necessary reviewer evidence but is NOT alone
+proof that an actual customer IdP configured and
+challenged an independent second factor.
+As prerequisite source acceptance, an original Rust
+nonroot CLI MUST verify exact pinned short-lived signed
+RSA issuer/audience/kid and `amr:mfa` from protected
+stdin, reject unsafe key files and never print identity,
+session, token, tenant or roles. This preflight utility
+is NOT a substitute for actual human MFA or real
+customer login and MUST NOT activate a production endpoint.

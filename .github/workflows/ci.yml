@@ -116,6 +116,12 @@ jobs:
         run: |
           python3 -m unittest discover deploy/scripts/lab/r84 -p test_r84_contract.py -v
           python3 -m py_compile deploy/db/tests/test_device_maker_checker_integration.py
+      - name: R8.5 unprivileged actual original Rust signed OIDC MFA preflight, never real operator rights
+        run: |
+          python3 -m unittest discover deploy/scripts/lab/r85 -p test_r85_contract.py -v
+          cargo test --locked -p identity-core --test oidc_cli
+          cargo build --locked -p identity-core --bin oidc-mfa-preflight
+          target/debug/oidc-mfa-preflight --requirements
       - name: Verify non-executable sealed provisioning jobs (static)
         run: python3 -m unittest discover deploy/scripts/lab -p 'test_provisioning_synthetic_review.py' -v
       - name: Verify production infrastructure never auto-authorizes unsafe deployment

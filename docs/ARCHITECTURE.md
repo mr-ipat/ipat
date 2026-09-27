@@ -841,3 +841,27 @@ lock→state transition→append-only review
 guarantees only one metadata verdict; physical
 adoption/telemetry is a later independently
 authorized state machine, not these DB rows.
+
+
+## R8.5 real independently provisioned IdP preflight trust split
+
+Use the existing original Rust `PinnedIssuer`
+strict signed JWT verifier as a standalone audited
+nonroot operator-controlled IDP preflight binary,
+rather than inventing a login from browser headers.
+Its independently sourced RSA public PEM is a
+strictly checked 0600 single-link regular file
+in 0700 owner folder, pinned HTTPS issuer,
+audience and key identifier configured out of Git.
+A bounded protected stdin carries the ephemeral
+access JWT; result is ONLY a boolean signed
+`amr:mfa` property plus clear statements that
+actual human MFA login and production authorization
+have NOT been verified. No subject, tokens or
+untrusted role/tenant claims are serialized.
+Separate future BFF needs real confidential
+OIDC Code+S256 PKCE, state+nonce, issuer-specific
+MFA mapper and verified server-side sessions;
+the independent PostgreSQL R8.3 and R8.4
+registrar, reader and reviewer membership functions
+remain the only currently proven tenant/POP grants.
