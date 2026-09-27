@@ -493,3 +493,22 @@ Build original Rust `control-api` and separate synthetic `usp-controller` into n
   explicit per-device authorization.
   Do not use unproven old vendor CLI
   commands for current actual firmware.
+
+
+## R7.5 owner-approved ordering (ADR-020)
+
+MUST NOW: existing strict private loopback prototype; physical DEV-01
+identity and restricted first read-only evidence only after owner/reviewer
+preflight; original CWMP/USP simulator and verified identity-to-tenant/POP
+API + server filtered menu tests. Keep FR-001/002/003 and AC-01/02 S1
+tenant/POP isolation and authorization tests even with only one private URL.
+Zero actual tenant customer data before trusted authentication.
+
+SHOULD NEXT: dashboard lab data sourced through verified subject,
+server policy and RLS, then observation normalization and safe diagnostics.
+
+DEFERRED TO M2 AFTER WORKING PRIVATE LAB: FR-004/AC-09 verified
+subdomains/custom domains, per-domain certificates, trusted Host routing,
+cookies, CSRF and OIDC callback isolation (ADR-014 still OPEN).
+This is an approved scheduling decision, NOT removal of a requirement.
+Do not enable a shared PUBLIC tenant endpoint as a temporary shortcut.

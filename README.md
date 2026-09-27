@@ -23,6 +23,7 @@ IPAT (`IP@`) is a planned commercial multi-tenant ISP network operations platfor
 - [R6.3 SSH host-key mismatch safety gate and independent customer router identity verification](docs/MIKROTIK_SSH_HOST_TRUST_R63.md)
 - [R7.4 audited PRD gaps for Platform/Tenant/NOC dashboards](docs/DASHBOARD_PRD_AUDIT_R74.md)
 - [R7.4 isolated C320 laboratory first-read safety runbook](docs/C320_ISOLATED_LAB_R74.md)
+- [R7.5 approved rollout order: private integrated lab first, verified customer domains later](docs/LAB_FIRST_DOMAIN_LATER_R75.md)
 - [Technical architecture](docs/ARCHITECTURE.md)
 - [Physical device and firmware test matrix](docs/DEVICE_MATRIX.md)
 - [Security, tenant isolation and threat model](docs/SECURITY.md)

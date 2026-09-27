@@ -130,3 +130,14 @@ mengubah status fisik, membuka koneksi atau mengizinkan firmware.
 PRD tetap dipertahankan; gap aktual terperinci pada
 [DASHBOARD_PRD_AUDIT_R74.md](DASHBOARD_PRD_AUDIT_R74.md) serta
 [C320_ISOLATED_LAB_R74.md](C320_ISOLATED_LAB_R74.md).
+
+
+## R7.5 product-owner approved scheduling, not PRD completion
+
+Subdomain/custom domain verification and inter-DOMAIN session isolation
+(FR-004/AC-09) explicitly DEFERRED to M2 following private integrated
+lab (ADR-020). No requirement removed. **LARGE RED GAP REMAINS** in
+all three real-user dashboards: no OIDC/MFA+verified membership/POP,
+server-controlled menu, real cross-tenant backend/RLS tests or live
+device data. Shared private localhost URL never proves tenant
+isolation. Device TC-OLT-01 NOT RUN, firmware still HARD-DISABLED.

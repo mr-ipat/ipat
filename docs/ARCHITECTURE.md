@@ -593,3 +593,22 @@ Actual read-only adapter transport requires separately validated
 firmware-specific device-management methods plus trusted
 private network identity and tenant approval. Vendor upgrade
 actuator is explicitly out of scope until hardware tests.
+
+
+## R7.5 staged hostname rollout (ADR-020, 2026-09-27)
+
+The first integrated device lab uses a SINGLE existing non-public
+SSH-forwarded localhost URL. The browser demo may switch synthetic
+workspaces, but no request header or localhost address supplies
+tenant authorization. Customer domain ingress is NOT added to the
+current laboratory. The private lab GET /lab/rollout-phase is a static
+read-only release-state manifest, not a feature flag or authorization
+service. No production code path may use it to skip tenant policy.
+
+Actual multi-tenant API and server-driven menus, when introduced,
+require OIDC/MFA + approved membership/POP, ABAC and backend/RLS/job
+enforcement before use even if all users share one internal URL.
+Before any real customer-facing hostname is opened, implement
+ADR-014 domain verification, distinct host-only cookies, callback
+and CSRF allowlists, takeover and cross-domain negative tests.
+The previous verified-domain architecture remains the end state.

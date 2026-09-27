@@ -28,3 +28,14 @@ MUST tahap dashboard lab terautentikasi: OIDC Authorization Code + PKCE & MFA, i
 SHOULD: agregasi data perangkat/diagnostik lebih luas sesudah sumber data valid. LATER: transaksi billing, advanced SSO, dan kampanye firmware massal dengan persetujuan tersendiri. Arsitektur ADR-005/006/009/014 tetap sesuai status dalam register; tidak ada persetujuan baru diam-diam.
 
 Rujukan: PRD.md, DASHBOARDS_R68.md, DASHBOARD_MEMBERSHIP_R70.md, PRD_DEVIATIONS_R71.md, SECURITY.md dan PROJECT_STATUS.md.
+
+
+## R7.5 sequencing clarification
+
+The owner has approved delaying FR-004 verified subdomain/custom-domain
+and across-domain cookie/session work to M2 after private lab integration
+(ADR-020). Platform Admin FR-004 is a planned later dependency,
+not a completed feature or blocker to private simulator/read-only lab.
+FR-001/002/003 authorized data/POP isolation and credible customer
+login/backend/menu are NOT deferred. The three dashboards remain
+synthetic previews and retain red PRD gaps.

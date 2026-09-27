@@ -71,6 +71,22 @@ html=request("/lab/dashboard-preview")[2].decode()
 assert "Platform Admin" in html and "Tenant Admin" in html
 assert "Operasional" in html and "Data contoh sintetis" in html
 assert request("/lab/dashboard-preview","POST")[0]==405
+phase_code,phase_headers,phase_body=request("/lab/rollout-phase")
+assert phase_code==200 and phase_headers["content-type"]=="application/json; charset=utf-8"
+assert "no-store" in phase_headers["cache-control"]
+phase=json.loads(phase_body)
+assert phase["domain_verification_deferred"] is True
+assert phase["custom_domains_enabled"] is False
+assert phase["public_tenant_hostnames_enabled"] is False
+assert phase["tenant_isolation_mandatory"] is True
+assert phase["tenant_isolation_end_to_end_verified"] is False
+assert phase["authenticated_tenant_data_apis_enabled"] is False
+assert phase["physical_device_connected"] is False
+assert phase["device_reads_approved"] is False
+assert phase["firmware_updates_enabled"] is False
+for method in ("POST","PUT","DELETE"):
+    assert request("/lab/rollout-phase",method)[0]==405
+assert "ISOLASI DATA TENANT TIDAK BOLEH DITUNDA" in html
 state=request("/lab/status")
 assert state[0]==200
 payload=json.loads(state[2])

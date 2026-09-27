@@ -13,6 +13,8 @@ JS = (ROOT/"web/lab/dashboard-preview.js").read_text()
 RUST = (ROOT/"apps/control-api/src/main.rs").read_text()
 AUTHZ = (ROOT/"crates/authz-core/src/dashboard.rs").read_text()
 INDEX = (ROOT/"web/lab/index.html").read_text()
+PHASE = (ROOT/"web/lab/rollout-phase.json").read_text()
+import json
 
 class Parser(HTMLParser):
     def __init__(self):
@@ -41,6 +43,10 @@ class DashboardPreviewContract(unittest.TestCase):
         self.assertIn('id="metric-grid"',HTML)
         self.assertIn('id="demo-nav"',HTML)
         self.assertIn('id="prd-gap-list"',HTML)
+        self.assertIn('id="rollout-status"',HTML)
+        self.assertIn('ISOLASI DATA TENANT TIDAK BOLEH DITUNDA',HTML)
+        self.assertTrue(json.loads(PHASE)['tenant_isolation_mandatory'])
+        self.assertFalse(json.loads(PHASE)['custom_domains_enabled'])
         self.assertIn('GAP_LEDGER',JS)
         self.assertIn('FR-016 / TC-OLT-01',JS)
         self.assertIn('border:2px solid #ff3434',CSS)
@@ -71,6 +77,9 @@ class DashboardPreviewContract(unittest.TestCase):
                          'fetch("/lab/device-targets"'):
             self.assertIn(endpoint,JS)
         self.assertIn('catalog.physical_devices_enrolled !== 0',JS)
+        self.assertIn('fetch("/lab/rollout-phase"',JS)
+        self.assertIn('phase.tenant_isolation_mandatory !== true',JS)
+        self.assertIn('phase.custom_domains_enabled !== false',JS)
         self.assertIn('catalog.targets.length !== 8',JS)
         self.assertIn('status.authentication_enabled !== false',JS)
         self.assertIn('status.device_operations_enabled !== false',JS)

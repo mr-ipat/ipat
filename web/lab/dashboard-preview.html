@@ -65,6 +65,15 @@
           <div><span class="dot amber"></span><strong>Keamanan tetap aktif</strong><p>Semua endpoint perusahaan sesungguhnya ditolak tanpa identitas yang diverifikasi.</p></div>
           <span class="no-go">PRODUKSI · NO_GO</span>
         </section>
+        <section class="rollout-phase" aria-label="Urutan rilis dan batas isolasi tenant">
+          <div>
+            <strong>TAHAP LAB PRIVAT · CUSTOM DOMAIN DITUNDA</strong>
+            <p>Subdomain perusahaan, custom domain dan sesi lintas domain masuk tahap komersial setelah uji sistem inti.
+            <b>ISOLASI DATA TENANT TIDAK BOLEH DITUNDA</b> sebelum API perusahaan atau data riil diaktifkan.</p>
+            <span id="rollout-status" role="status" aria-live="polite">Kondisi fase backend belum diverifikasi</span>
+          </div>
+          <span class="no-go">DOMAIN PUBLIK TERKUNCI</span>
+        </section>
         <section id="overview" class="section">
           <div class="section-header"><div><span class="eyebrow">OVERVIEW</span><h2 id="overview-title">Platform at a glance</h2></div><span class="subtle">SIMULASI · BUKAN TELEMETRI</span></div>
           <div id="metric-grid" class="metric-grid" aria-label="Metrik demonstrasi"></div>
