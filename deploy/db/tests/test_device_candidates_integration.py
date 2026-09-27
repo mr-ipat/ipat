@@ -134,6 +134,13 @@ class CandidateRegistry(unittest.TestCase):
          ).stdout.strip(),"1")
 
     def test_04_revocation_and_tenant_suspension_deny_new_writes(self):
+        # A disposable PostgreSQL CI job runs later signed-token tests against
+        # the SAME fixture. Always restore shared tenant and membership state.
+        self.addCleanup(lambda: sql(f"""UPDATE ipat_platform.tenants
+          SET state='active' WHERE id='{TA}'"""))
+        self.addCleanup(lambda: sql(f"""UPDATE ipat_platform.identity_memberships
+          SET revoked_at=NULL WHERE tenant_id='{TA}' AND issuer='{ISS}'
+          AND subject='{SUB}' AND role='tenant_admin'"""))
         zero="00000000-0000-0000-0000-000000000000"
         sql(f"""UPDATE ipat_platform.identity_memberships SET
             revoked_at=statement_timestamp() WHERE tenant_id='{TA}'

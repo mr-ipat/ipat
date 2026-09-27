@@ -35,7 +35,7 @@ def main():
     assert headers.get("x-frame-options")=="DENY"
     assert call("/lab/device-workbench.css")[0]==200
     assert call("/lab/device-workbench.js")[0]==200
-    assert b"Device Manager" in call("/lab/dashboard-preview")[2]
+    assert b"Tambah &amp; kelola perangkat" in call("/lab/dashboard-preview")[2]
     assert b"Device Manager" in call("/lab")[2]
     s,_,body=call(PATH)
     state=json.loads(body)
