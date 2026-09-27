@@ -2108,3 +2108,145 @@ ADR-029 records approved
 virtual slice only. TC-USP-01
 real agent NOT RUN, complete
 USP native MTP still OPEN.
+
+
+## R8.1 VERIFIED original protobuf + private Rust binary checkpoint — 2026-09-27
+
+**Canonical merged code milestone:** original feature
+PR #90 at final feature SHA
+`82e26a606d2c1411a0f44caa022c26ab8189cc5f`
+passed GitHub run `36299321859`
+in all FOUR independent jobs: locked
+Rust workspace including REAL
+BBF v1.4 protobuf independent
+goldens and actual private
+Rust HTTP process smoke,
+separate disposable PostgreSQL16
+RLS/restore and physical-recovery
+jobs, and real disposable Ubuntu
+26 single-node K3s/Helm pod
+readiness + deny-default smoke.
+It merged as exact code main SHA
+`fbed8eaeb93090966e68337ed544ea81c6b0b6c1`.
+INDEPENDENT post-code-main
+run `36299574222` also
+finished SUCCESS 4/4 on that
+exact merged code revision.
+These disposable runners are
+NOT the owner's live K3s,
+live PostgreSQL, physical
+CPE or cross-provider cluster.
+
+**Regressions caught and repaired BEFORE release:**
+first feature CI detected historic
+R5 USP static expectations hard-coded
+to exactly three former controller
+HTTP tests and twelve old domain
+tests; updated historical gates now
+explicitly require the older named
+trust/deny checks AND the newer
+strict real-protobuf and virtual
+agent correlation tests. An
+intermittent R7.7 PostgreSQL
+membership-expiry fixture violated
+the actual invariant
+`expires_at > created_at` at
+sub-second timing: the updated
+synthetic fixture deterministically
+uses created_at two days ago and
+expires_at one day ago.
+Next feature CI caught a health
+string regression on existing
+disposable K3s Helm smoke,
+which checks the prior
+`synthetic-usp-lab-only` sentinel:
+the new K3s health-only
+route now retains exactly that
+historical compatible string,
+but DOES NOT mount the private
+`/lab/inspect-usp14` parser
+or expose `/v1/usp`.
+Final feature CI 4/4
+demonstrates all three fixes.
+NO failure was hidden or
+declared passed prematurely.
+
+**Actual owner hardware/code safety
+after feature merge:** GitHub
+canonical main, clean owner
+FileVault Mac and actual
+nonroot Ubuntu 26.04.1
+VPS source all matched exact
+code SHA `fbed8ea...` after
+SHA256-verified Git bundle and
+guarded clean fast-forward.
+Owner Mac source-only
+encrypted Restic snapshot
+`83505eaa` read ALL
+136/136 encrypted packs
+without errors, restored
+isolated exact current Git
+source SHA256 and separately
+selected HISTORICAL PARTIAL
+root-readable config SHA256
+PASS. NOT offsite full-VPS,
+live PG PITR or etcd restore.
+
+On the actual nonroot Ubuntu
+VPS at exact merged code SHA
+full offline locked Rust
+workspace and rustfmt PASS,
+independent synthetic
+USP manual binary fixtures
+PASS, historical static USP
+3/3 PASS and new R8.1
+4/4 independent static PASS,
+real compiled `usp-controller`
+live `127.0.0.1:3100`
+HTTP valid protobuf/reject
+invalid/oversized/duplicated
+and forged-agent headers
+PASS, exclusive loopback
+binding PASS and test binary
+stopped. Previous private
+nonroot web preview was
+guardedly restarted from the
+same code SHA on owner Mac
+over the original localhost
+SSH tunnel: /lab/auth/sections
+and /lab/auth/devices stayed
+404 because real operator IdP/
+PG were NOT activated; forged
+Host:ipat.fadly.id,
+claimed role/tenant/bearer
+for all three real business
+API namespaces returned
+HTTP401. Firmware and
+physical device operations
+remain HARD DISABLED.
+
+**OPEN / PRD NOT COMPLETE:**
+Actual native TR-369 MQTT
+MTP, peer certificate
+verification and approved
+tenant→agent enrollment,
+secure Record/session
+protocol and standards
+interop remain unimplemented;
+TC-USP-01 real device NOT RUN.
+Real ACS authenticated
+Inform→RPC interoperability,
+customer MFA onboarding,
+production business
+dashboard endpoints, physical
+OLT/ONT/RouterOS tests,
+a live cross-provider
+K3s worker, true offsite
+whole-host+DB restore
+and customer public TLS
+remain pending. R8.1 is
+a verified original
+PROTOBUF SOFTWARE LAB
+subset, not end-to-end
+USP conformance or
+enterprise product GO.
