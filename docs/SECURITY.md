@@ -560,3 +560,23 @@ approvers, real host backup/
 restore and onsite console
 remain independent human gates.
 See [R7.2 preflight](C320_FIRMWARE_INTEGRITY_R72.md).
+
+
+## R7.5 explicit scope of allowed domain deferral (2026-09-27)
+
+Only domain OWNERSHIP VERIFICATION and isolation of cookies/sessions
+ACROSS DIFFERENT CUSTOMER HOSTNAMES are deferred to M2.
+The existing developer/operator preview stays in owner-controlled
+SSH localhost; it contains NO real customer records, credentials or
+authenticated customer workspace and uses only no-store GETs.
+Never replace this constraint with a publicly accessible shared
+login/tenant UI. No use of Host/X-Forwarded-Host to select a trusted
+tenant, regardless of temporary deployment phase.
+
+Tenant record/query/job/export/POP secrecy and deny-by-default
+API/menu/backend/database enforcement (FR-001/002/003) remain MUST
+BEFORE ANY multi-tenant data is exposed. Existing RLS candidate and
+synthetic role tests do NOT prove production isolation. Early physical
+C320 reads remain isolated operator-managed lab activity, NOT
+authenticated tenant device enrollment, and require independent
+host verification, read-only permission and backup.

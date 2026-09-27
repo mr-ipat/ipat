@@ -1387,3 +1387,43 @@ reported before treating source as merged.
   authoritative tenant/POP membership, server-driven menus and
   integrated backend/DB negatives; never turn on UI access merely
   because the browser switches workspace.
+
+
+## R7.5 — owner-approved domain-later/private-lab-first implementation
+
+**2026-09-27.** Product owner approves sequencing only: subdomain/custom
+domain verification and across-DOMAIN session isolation to M2 after
+working integrated private system. Existing FR-004 commercial priority,
+AC-09 and SaaS target unchanged. No approval to postpone tenant data
+isolation FR-001/002/003, MFA/verified membership, backend/RLS/job
+negative tests or expose a public multi-tenant URL. Recorded as
+ADR-020 APPROVED_SEQUENCE while ADR-014 DNS/OIDC technical choices
+remain OPEN.
+
+Implementation candidate: single existing private SSH loopback URL;
+new static control-api private GET /lab/rollout-phase returning
+only explicitly deferred domain policy and FALSE for physical,
+customer auth, real verified tenant isolation and firmware.
+No endpoint mutation or runtime auth bypass. Updated all
+three private dashboard previews with prominent domain-deferred
+banner plus MUST tenant isolation warning and fail-closed
+phase fetch/check. Extended Rust Axum tests for opt-in-only,
+no-store, JSON false gate and POST/PUT/DELETE 405; Node DOM
+tests reject forged domain-enabled/tenant-isolation-disabled
+manifest; disposable ephemeral real HTTP smoke verifies
+read-only route and unchanged forged business API HTTP401.
+Source: web/lab/rollout-phase.json, apps/control-api/src/main.rs,
+web/lab/dashboard-preview.html/.css/.js,
+deploy/scripts/lab/r68/test_dashboard_preview.py/.mjs,
+deploy/scripts/lab/r68/private-dashboard-http-smoke.sh,
+docs/LAB_FIRST_DOMAIN_LATER_R75.md, affected PRD,
+ARCHITECTURE, SECURITY, DECISIONS, sprint, and this status.
+
+Initial owner Mac check: JSON syntax PASS, Node JS parse/
+synthetic UI+negative phase test PASS, 7/7 R6.8 static Python
+tests PASS, git diff --check PASS. Real Rust compilation, CI,
+reviewed merge, live private preview refresh and exact source
+restore must be verified separately and not inferred here.
+No C320 device connection or firmware change;
+TC-OLT-01 remains NOT RUN. Existing VPS firewalls/K3s/
+PostgreSQL production safety gates unchanged.

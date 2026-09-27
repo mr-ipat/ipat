@@ -22,6 +22,9 @@ const LAB_DASHBOARD_CSS: &str = include_str!("../../../web/lab/dashboard-preview
 const LAB_DASHBOARD_JS: &str = include_str!("../../../web/lab/dashboard-preview.js");
 // Public project target taxonomy only. Not an enrollment record or real device data.
 const LAB_DEVICE_TARGETS: &str = include_str!("../../../web/lab/device-targets.json");
+// Product-owner approved rollout SEQUENCING, not a trusted entitlement or
+// authority for actual devices. Runtime never learns a tenant from Host.
+const LAB_ROLLOUT_PHASE: &str = include_str!("../../../web/lab/rollout-phase.json");
 const LAB_STATUS: &str = r#"{"mode":"ssh-loopback-only","production_access":false,"authentication_enabled":false,"device_operations_enabled":false,"backend":"online"}"#;
 
 fn bind_address(k3s_lab: bool) -> &'static str {
@@ -117,6 +120,13 @@ async fn lab_device_targets() -> (HeaderMap, &'static str) {
     )
 }
 
+async fn lab_rollout_phase() -> (HeaderMap, &'static str) {
+    (
+        private_lab_headers("application/json; charset=utf-8"),
+        LAB_ROLLOUT_PHASE,
+    )
+}
+
 async fn unauthenticated_business_api() -> (HeaderMap, StatusCode) {
     // No OIDC verifier, verified tenant membership, or permission to reveal
     // even aggregate business information yet. NEVER trust role/tenant headers.
@@ -160,6 +170,7 @@ fn app_with_lab_identity(lab_web_enabled: bool, verifier: Option<Arc<PinnedIssue
             .route("/lab/app.js", get(lab_js))
             .route("/lab/status", get(lab_status))
             .route("/lab/device-targets", get(lab_device_targets))
+            .route("/lab/rollout-phase", get(lab_rollout_phase))
             .route("/lab/dashboard-preview", get(lab_dashboard_preview))
             .route("/lab/dashboard-preview.css", get(lab_dashboard_css))
             .route("/lab/dashboard-preview.js", get(lab_dashboard_js));
@@ -255,6 +266,7 @@ mod tests {
             "/lab/app.js",
             "/lab/status",
             "/lab/device-targets",
+            "/lab/rollout-phase",
             "/lab/dashboard-preview",
             "/lab/dashboard-preview.css",
             "/lab/dashboard-preview.js",
@@ -300,6 +312,56 @@ mod tests {
         assert!(LAB_DEVICE_TARGETS.contains("\"access_gate\": \"ssh_host_key_changed_unverified\""));
         let response = get_path(app_with_lab(false), "/lab/device-targets").await;
         assert_eq!(response.status(), StatusCode::NOT_FOUND);
+    }
+
+    #[tokio::test]
+    async fn private_phase_may_defer_domains_but_never_tenant_isolation() {
+        let response = get_path(app_with_lab(true), "/lab/rollout-phase").await;
+        assert_eq!(response.status(), StatusCode::OK);
+        assert_eq!(response.headers()[header::CACHE_CONTROL], "no-store");
+        assert_eq!(
+            response.headers()[header::CONTENT_TYPE],
+            "application/json; charset=utf-8"
+        );
+        let bytes = axum::body::to_bytes(response.into_body(), 4096)
+            .await
+            .unwrap();
+        let policy: serde_json::Value = serde_json::from_slice(&bytes).unwrap();
+        assert_eq!(policy["phase"], "private_single_endpoint_device_lab");
+        assert_eq!(policy["domain_verification_deferred"], true);
+        assert_eq!(policy["custom_domains_enabled"], false);
+        assert_eq!(policy["public_tenant_hostnames_enabled"], false);
+        assert_eq!(policy["tenant_isolation_mandatory"], true);
+        assert_eq!(policy["tenant_isolation_end_to_end_verified"], false);
+        assert_eq!(policy["authenticated_tenant_data_apis_enabled"], false);
+        assert_eq!(policy["physical_device_connected"], false);
+        assert_eq!(policy["device_reads_approved"], false);
+        assert_eq!(policy["firmware_updates_enabled"], false);
+        assert_eq!(
+            get_path(app(), "/lab/rollout-phase").await.status(),
+            StatusCode::NOT_FOUND
+        );
+    }
+
+    #[tokio::test]
+    async fn rollout_status_cannot_be_mutated_to_enable_domains_or_device_access() {
+        for method in ["POST", "PUT", "DELETE"] {
+            let response = app_with_lab(true)
+                .clone()
+                .oneshot(
+                    Request::builder()
+                        .method(method)
+                        .uri("/lab/rollout-phase")
+                        .header("Host", "forged.customer.invalid")
+                        .header("X-Tenant-Id", "synthetic-b")
+                        .header("X-Verified-Role", "platform_owner")
+                        .body(Body::empty())
+                        .unwrap(),
+                )
+                .await
+                .unwrap();
+            assert_eq!(response.status(), StatusCode::METHOD_NOT_ALLOWED);
+        }
     }
 
     #[tokio::test]

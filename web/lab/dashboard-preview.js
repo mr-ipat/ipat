@@ -163,29 +163,47 @@ async function checkPrivateEnvironment() {
   const abort = new AbortController();
   const timeout = window.setTimeout(() => abort.abort(), 6000);
   try {
-    const [health, summary, devices] = await Promise.all([
+    const [health, summary, devices, rollout] = await Promise.all([
       fetch("/healthz", {cache:"no-store",signal:abort.signal}),
       fetch("/lab/status", {cache:"no-store",signal:abort.signal}),
-      fetch("/lab/device-targets", {cache:"no-store",signal:abort.signal})
+      fetch("/lab/device-targets", {cache:"no-store",signal:abort.signal}),
+      fetch("/lab/rollout-phase", {cache:"no-store",signal:abort.signal})
     ]);
-    if (!health.ok || !summary.ok || !devices.ok || (await health.text()).trim() !== "ok") {
+    if (!health.ok || !summary.ok || !devices.ok || !rollout.ok
+        || (await health.text()).trim() !== "ok") {
       throw new Error("No private lab");
     }
-    const [status, catalog] = await Promise.all([summary.json(),devices.json()]);
+    const [status, catalog, phase] = await Promise.all([
+      summary.json(),devices.json(),rollout.json()
+    ]);
     if (status.mode !== "ssh-loopback-only" || status.production_access !== false
         || status.authentication_enabled !== false || status.device_operations_enabled !== false
         || catalog.catalog_mode !== "planned_targets_only"
         || catalog.physical_devices_enrolled !== 0
         || catalog.physical_interoperability_verified !== 0
         || catalog.compatibility_claim !== false
-        || !Array.isArray(catalog.targets) || catalog.targets.length !== 8) {
+        || !Array.isArray(catalog.targets) || catalog.targets.length !== 8
+        || phase.schema !== 1
+        || phase.phase !== "private_single_endpoint_device_lab"
+        || phase.domain_verification_deferred !== true
+        || phase.custom_domains_enabled !== false
+        || phase.public_tenant_hostnames_enabled !== false
+        || phase.private_loopback_transport_only !== true
+        || phase.tenant_isolation_mandatory !== true
+        || phase.tenant_isolation_end_to_end_verified !== false
+        || phase.authenticated_tenant_data_apis_enabled !== false
+        || phase.physical_device_connected !== false
+        || phase.device_reads_approved !== false
+        || phase.firmware_updates_enabled !== false) {
       throw new Error("Untrusted or unexpected laboratory state");
     }
     text($("checked"), "Control API privat terhubung · tanpa login ataupun data perangkat");
+    text($("rollout-status"), "Fase backend cocok · custom domain terkunci · isolasi tenant belum tervalidasi");
     text($("device-summary"), "8 target yang direncanakan · 0 perangkat nyata terdaftar");
     text($("device-badge"), "BUKAN TELEMETRI");
   } catch {
     text($("checked"), "Status belum terverifikasi; periksa tunnel privat");
+    text($("rollout-status"), "Fase backend tidak terverifikasi · jangan aktifkan akses tenant atau domain");
     text($("device-summary"), "Katalog tidak tersedia; status perangkat tidak dapat disimpulkan");
     text($("device-badge"), "TIDAK DIKETAHUI");
   } finally {

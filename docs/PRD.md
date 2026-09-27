@@ -503,3 +503,23 @@ high-risk security policy.
 See [visible red PRD gap
 
 and R7.2 procedures](C320_FIRMWARE_INTEGRITY_R72.md).
+
+
+## R7.5 rollout scheduling clarification, 2026-09-27
+
+Product owner has expressly requested delaying FR-004 subdomain and
+custom-domain verification and **domain-specific** session isolation until
+after an integrated private laboratory runs correctly. This is scheduling,
+not deletion or weakening of FR-004/AC-09, which remain mandatory before
+customer public-domain onboarding (ADR-020). Existing FR-004 priority C
+and the commercial stage are unchanged.
+
+**SECURITY INVARIANT:** FR-001/002/003 and AC-01/02 tenant data and
+authorization isolation are NOT delayed. Shared private lab URL is not an
+identity provider, domain verification, or an alternative to server-trusted
+tenant membership. Business endpoints remain HTTP401 until real verified
+OIDC/MFA, POP membership and denial-at-menu/API/DB/job are proven. Two
+synthetic tenant negative tests remain baseline S1, independent of DNS.
+An unverified domain cannot be used to serve tenant data. No new approved
+public deployment, firmware operation or physical compatibility claim.
+See LAB_FIRST_DOMAIN_LATER_R75.md and DECISIONS.md ADR-020.
