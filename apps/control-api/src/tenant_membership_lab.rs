@@ -569,7 +569,7 @@ pub(super) fn router(store: Arc<Store>) -> Router {
         .route("/lab/auth/device-candidates", get(list_candidates))
         .with_state(store)
 }
-fn read_owner_file(path: &Path) -> Result<String, &'static str> {
+pub(super) fn read_owner_file(path: &Path) -> Result<String, &'static str> {
     let parent = path.parent().ok_or("missing private directory")?;
     if !path.is_absolute()
         || path.components().any(|p| {
@@ -1057,7 +1057,11 @@ mod tests {
             assert!(!items.is_empty() && items.len() <= 100);
             assert_eq!(body["count"].as_u64().unwrap() as usize, items.len());
             assert!(items.iter().any(|d| d["id"] == required));
-            assert!(items.iter().all(|d| d["adoption_state"] == "pending_review"
+            // Prior R8.4 disposable maker-checker tests legitimately review
+            // OTHER synthetic candidates in this shared tenant; assert OUR
+            // exact newly registered draft remains pending, not all rows.
+            assert!(items.iter().any(|d| d["id"] == required
+                && d["adoption_state"] == "pending_review"
                 && d["connectivity"] == "unknown"
                 && d["health"] == "not_measured"
                 && d["last_verified_at"].is_null()));

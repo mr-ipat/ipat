@@ -715,3 +715,22 @@ declared ready without real MFA, high-risk
 approval, live verified peer binding,
 vendor firmware interoperability and
 independent offsite disaster recovery.
+
+
+## R8.4 — identity/MFA review stage and maker-checker metadata acceptance
+
+Before physical adoption, two separately authenticated tenant
+people MUST participate: an approved tenant_admin may propose
+a pending candidate; a distinct approved security_admin
+with a short-lived PINNED-SIGNED JWT carrying exact `amr:mfa`
+MUST approve/reject candidate metadata. Reviewer is never
+authorized merely by untrusted token role or Host.
+The DB MUST check the exact issuer/subject, active own
+tenant and distinct human every request, use a row lock,
+append immutable audited review reason/idempotency evidence
+atomically and reject cross-tenant/revoked/expired/self approval.
+Metadata approval MUST NOT enqueue physical reads,
+change UNKNOWN health, enroll/operate firmware or
+magically grant real user MFA. CI on real disposable PG
+plus actual signed Rust Axum tests is the software
+acceptance; real IdP/BFF hardware adoption remains BLOCKED.

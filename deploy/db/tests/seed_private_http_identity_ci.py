@@ -56,6 +56,39 @@ def main():
       has_function_privilege('ipat_lab_identity_reader','{write}','EXECUTE')::int,
       has_function_privilege('ipat_lab_identity_reader','{read}','EXECUTE')::int"""
        ).stdout.strip()=="1|0|0|1"
+    # R8.4 distinct VERIFIED signed reviewer (not the tenant-admin maker),
+    # only on disposable PostgreSQL. These are fake 2048-bit ephemeral CI keys.
+    assert sql("SELECT to_regrole('ipat_lab_device_reviewer') IS NULL").stdout.strip()=="t"
+    sql("""CREATE ROLE ipat_lab_device_reviewer LOGIN INHERIT
+      NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS
+      PASSWORD 'local_ci_synthetic_only'""")
+    sql("GRANT ipat_device_review_execute TO ipat_lab_device_reviewer")
+    sql(f"""INSERT INTO ipat_platform.identity_memberships
+      (tenant_id,issuer,subject,role,approved_by,expires_at) VALUES
+      ('{TA}','{ISSUER}','synthetic-checker','security_admin','OTHER-CHECKER-A',
+         statement_timestamp() + interval '1 day'),
+      ('{TB}','{ISSUER}','synthetic-checker','security_admin','OTHER-CHECKER-B',
+         statement_timestamp() + interval '1 day'),
+      ('{TA}','{ISSUER}','{SUB}','security_admin','SELF-DENIAL-A',
+         statement_timestamp() + interval '1 day')""")
+    review="ipat_platform.review_lab_device_candidate(text,text,uuid,uuid,uuid,text,text)"
+    queue="ipat_platform.list_lab_device_review_queue(text,text,uuid)"
+    permit="ipat_platform.lookup_lab_device_reviewer(text,text,uuid)"
+    for role in ("ipat_lab_device_reviewer","ipat_lab_identity_reader",
+                 "ipat_lab_device_registrar"):
+        for table in ("ipat_ops.device_candidates","ipat_ops.device_candidate_reviews",
+                      "ipat_platform.identity_memberships"):
+            for privilege in ("SELECT","INSERT","UPDATE","DELETE"):
+                assert sql(f"""SELECT has_table_privilege(
+                  '{role}','{table}','{privilege}')::int""").stdout.strip()=="0"
+    assert sql(f"""SELECT
+       has_function_privilege('ipat_lab_device_reviewer','{review}','EXECUTE')::int,
+       has_function_privilege('ipat_lab_device_reviewer','{queue}','EXECUTE')::int,
+       has_function_privilege('ipat_lab_device_reviewer','{permit}','EXECUTE')::int,
+       has_function_privilege('ipat_lab_identity_reader','{review}','EXECUTE')::int,
+       has_function_privilege('ipat_lab_device_registrar','{review}','EXECUTE')::int"""
+       ).stdout.strip()=="1|1|1|0|0"
+    print("R84_DISPOSABLE_DISTINCT_REVIEWER_DB_AND_MFA_CLAIM_MEMBERSHIPS")
     print("R83_DISPOSABLE_SEPARATE_READER_AND_REGISTER_WRITER_NO_DIRECT_TABLE_ACCESS")
 if __name__=="__main__":
     main()
