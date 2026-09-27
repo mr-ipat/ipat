@@ -234,3 +234,48 @@ COPY before passing its fixed `cards.txt`
 and `versions.txt` to existing R7.1
 offline Rust evidence review. Zero real
 sessions have been run in this milestone.
+
+
+## Verified R7.9 code release and exact scope
+
+Original feature PR #87
+`370aa6863bb1f5d6f6de09435ea8e2a2cd580e3b`
+passed run `36289356652` (all 4 jobs);
+it merged to code main
+`6ce2e79686caddcaeafa275255b67b49a9befabe`.
+Separate post-code-main run `36289553986`
+also PASSED all 4 jobs. New 17 R7.9
+tests ran in locked Rust job including
+the ACTUAL compiled Rust C320 parser
+but only SYNTHETIC mocked SSH input.
+The disposable Ubuntu26 K3s job ran
+the new multi-provider PRIVATE PLAN
+tests and existing real SINGLE-NODE
+K3s smoke. No real second node joined.
+
+Owner Mac Restic source-only
+`0e5eda33` was completely checked
+(130/130 encrypted packs) and
+isolated exact code SHA256 source
+restored; separately selected
+historical PARTIAL root config
+also restored, NOT a whole-server
+offsite replacement test.
+SHA256-verified Git bundle safely
+moved the exact code SHA to
+clean real nonroot Ubuntu26 VPS
+checkout, where full locked Rust
+workspace, real C320 offline
+binary, and all 17 synthetic R7.9
+cross-contract tests PASSED again.
+Read-only modinfo located both
+WireGuard and VXLAN kernel
+module files on that host,
+without loading either module.
+Existing private lab localhost
+web service was restarted,
+business API forged-Host/
+tenant/role HTTP401 reverified.
+Product physical and public
+K3s deployment gates remain
+explicitly UNFINISHED.
