@@ -40,6 +40,10 @@ class DashboardPreviewContract(unittest.TestCase):
         self.assertIn('href="/lab/dashboard-preview"',INDEX)
         self.assertIn('id="metric-grid"',HTML)
         self.assertIn('id="demo-nav"',HTML)
+        self.assertIn('id="prd-gap-list"',HTML)
+        self.assertIn('GAP_LEDGER',JS)
+        self.assertIn('FR-016 / TC-OLT-01',JS)
+        self.assertIn('border:2px solid #ff3434',CSS)
 
     def test_preview_css_js_stay_same_origin_and_dom_safe(self):
         h=Parser()

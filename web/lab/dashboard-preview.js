@@ -74,6 +74,24 @@ const DEMOS = Object.freeze({
     ])
   })
 });
+// Audited PRD implementation gaps, NOT calculated privileges or live readiness.
+const GAP_LEDGER = Object.freeze({
+  platform: Object.freeze([
+    ["FR-002","OIDC/MFA dan identitas pemilik platform belum terintegrasi"],
+    ["FR-004","Verifikasi subdomain/custom domain dan isolasi sesi belum diterapkan"],
+    ["FR-005/008","Onboarding tenant serta paket/kuota runtime belum tersedia"]
+  ]),
+  tenant: Object.freeze([
+    ["FR-001/003","Isolasi dua tenant dan POP belum terbukti melalui alur UI/API nyata"],
+    ["FR-002","Login MFA, membership dan menu berbasis izin nyata belum tersedia"],
+    ["FR-018/023","Inventaris ONT/subscriber nyata dan ikatan tenant belum tersedia"]
+  ]),
+  operations: Object.freeze([
+    ["FR-016 / TC-OLT-01","ZTE C320 fisik belum terhubung; sintaks CLI hanya diuji offline"],
+    ["FR-009/010","Sesi CWMP + parameter RPC pada ONT nyata belum lulus"],
+    ["FR-020/024/029","PPPoE massal nyata, korelasi dan telemetri operasional belum aktif"]
+  ])
+});
 function text(node, value) { node.textContent = String(value); }
 function element(tag, className, content) {
   const el = document.createElement(tag);
@@ -128,6 +146,15 @@ function updateWorkspace(key) {
     rows.appendChild(row);
   }
   $("focus-rows").replaceChildren(rows);
+  const gaps = document.createDocumentFragment();
+  for (const [fr, detail] of GAP_LEDGER[key] || GAP_LEDGER.platform) {
+    const li = element("li");
+    li.appendChild(element("span", "", fr));
+    li.appendChild(element("strong", "", detail));
+    li.appendChild(element("b", "", "BELUM"));
+    gaps.appendChild(li);
+  }
+  $("prd-gap-list").replaceChildren(gaps);
 }
 async function checkPrivateEnvironment() {
   const button = $("check");

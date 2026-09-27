@@ -80,6 +80,12 @@ await new Promise((resolve)=>setImmediate(resolve));
 assert.equal(byId("metric-grid").children.length,3);
 assert.equal(byId("focus-rows").children.length,3);
 assert.equal(byId("demo-nav").children.length,4);
+function gaps() {
+  return byId("prd-gap-list").nodes.map(n=>n.textContent).join(" ");
+}
+assert.match(gaps(),/FR-002/);
+assert.match(gaps(),/FR-004/);
+assert.doesNotMatch(gaps(),/TC-OLT-01/);
 assert.match(byId("page-title").nodes.map(x=>x.textContent).join(""),/Platform Admin/);
 assert.match(byId("checked").textContent,/privat terhubung/);
 assert.match(byId("device-summary").textContent,/8 target.*0 perangkat nyata/);
@@ -99,6 +105,8 @@ assert.ok(menu.some(x=>x.includes("Tim & akses")));
 assert.ok(!menu.some(x=>x.includes("Paket")));
 assert.ok(!menu.some(x=>x.includes("Insiden")));
 assert.match(byId("scope-menu").textContent,/tidak boleh mengelola platform/i);
+assert.match(gaps(),/FR-001\/003/);
+assert.doesNotMatch(gaps(),/FR-004/);
 
 byId("workspace").events.change({target:{value:"operations"}});
 assert.match(byId("page-title").nodes.map(x=>x.textContent).join(""),/Operasional NOC/);
@@ -107,6 +115,9 @@ assert.ok(menu.some(x=>x.includes("Insiden & tugas")));
 assert.ok(!menu.some(x=>x.includes("Tenant & domain")));
 assert.ok(!menu.some(x=>x.includes("Tim & akses")));
 assert.match(byId("scope-menu").textContent,/POP/);
+assert.match(gaps(),/TC-OLT-01/);
+assert.match(gaps(),/FR-009\/010/);
+assert.doesNotMatch(gaps(),/FR-004/);
 
 assert.deepEqual(calls,["/healthz","/lab/status","/lab/device-targets"],
   "Changing visual workspace MUST NOT contact a protected API");

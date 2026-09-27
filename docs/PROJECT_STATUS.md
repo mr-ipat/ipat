@@ -1,8 +1,8 @@
 # IPAT — Project Status
 
-**As-of:** 2026-09-26 Asia/Jakarta
-**Milestone:** R7.1 — original Rust ZTE C320 strict offline read-only inventory/version evidence parser and owner-private importer, non-executable firmware review, prominent red PRD deviation notice; real TC-OLT-01/FW physical tests BLOCKED.
-**Milestone state:** R7.1 original Rust ZTE C320 strict offline read-only evidence parser, owner-private non-network importer, hard-disabled firmware and large RED unfulfilled-PRD warning across all three private dashboard previews FEATURE PR #71 MERGED at code SHA d452d1be6943bb4b3685b2136ad30b587e6af1e9. Both independent feature-PR GitHub CI 36249894205 and post-feature-main CI 36250108104 completed SUCCESS in all four independent jobs (locked Rust/security/UI/OLT offline, disposable Ubuntu26 K3s and two isolated synthetic PostgreSQL recovery jobs, none deployed live). Actual clean unchanged Ubuntu 26.04.1 VPS canonical source, private GitHub and owner FileVault Mac main synchronized at feature SHA; actual VPS rustfmt and 145/145 locked OFFLINE whole-workspace Rust tests, 5/5 synthetic offline CLI permission/data tests, 5/5 source PRD red warning + disabled firmware checks and 7/7 existing R6.8 Python dashboard tests PASS. Existing R6.8 synthetic Node DOM proof rerun on Mac Node v22.22, actual authorized Mac private dashboard served LARGE red PRD alert via real HTTP 200/no-store/CSS high contrast while 3 business APIs remained HTTP401. FileVault Mac encrypted exact merged-feature-source Restic snapshot 63c7c461 independently isolated SHA256 restored plus full encrypted pack read PASS; selected historical root-readable config separately restored, NOT full VPS or real PostgreSQL PITR. Clean main production readiness 8/8 automatic gates PASS, ALL 7/7 independent external safety gates BLOCKED, production NO_GO; live VPS K3s/PostgreSQL/nftables inactive. ZTE C320 actual model/boards/running firmware, authenticated private device route and owner recovery/maintenance approval still unavailable; TC-OLT-01 physical NOT RUN, no firmware update or device changes. Separate physical blocker Issue #72 and high-risk firmware Issue #73 OPEN. Final docs-only checkpoint independent CI, exact updated source synchronization and backup to be logged immutably after docs merge to avoid recursive SHA-changing commits. Developer Mr. iPat.
+**As-of:** 2026-09-27 Asia/Jakarta
+**Milestone:** R7.4 — explicit dashboard PRD audit per workspace, safe offline C320 isolated-lab prerequisite packet; runtime dashboards and physical TC-OLT-01 remain BLOCKED.
+**Historical R7.1 state (superseded by later entries):** R7.1 original Rust ZTE C320 strict offline read-only evidence parser, owner-private non-network importer, hard-disabled firmware and large RED unfulfilled-PRD warning across all three private dashboard previews FEATURE PR #71 MERGED at code SHA d452d1be6943bb4b3685b2136ad30b587e6af1e9. Both independent feature-PR GitHub CI 36249894205 and post-feature-main CI 36250108104 completed SUCCESS in all four independent jobs (locked Rust/security/UI/OLT offline, disposable Ubuntu26 K3s and two isolated synthetic PostgreSQL recovery jobs, none deployed live). Actual clean unchanged Ubuntu 26.04.1 VPS canonical source, private GitHub and owner FileVault Mac main synchronized at feature SHA; actual VPS rustfmt and 145/145 locked OFFLINE whole-workspace Rust tests, 5/5 synthetic offline CLI permission/data tests, 5/5 source PRD red warning + disabled firmware checks and 7/7 existing R6.8 Python dashboard tests PASS. Existing R6.8 synthetic Node DOM proof rerun on Mac Node v22.22, actual authorized Mac private dashboard served LARGE red PRD alert via real HTTP 200/no-store/CSS high contrast while 3 business APIs remained HTTP401. FileVault Mac encrypted exact merged-feature-source Restic snapshot 63c7c461 independently isolated SHA256 restored plus full encrypted pack read PASS; selected historical root-readable config separately restored, NOT full VPS or real PostgreSQL PITR. Clean main production readiness 8/8 automatic gates PASS, ALL 7/7 independent external safety gates BLOCKED, production NO_GO; live VPS K3s/PostgreSQL/nftables inactive. ZTE C320 actual model/boards/running firmware, authenticated private device route and owner recovery/maintenance approval still unavailable; TC-OLT-01 physical NOT RUN, no firmware update or device changes. Separate physical blocker Issue #72 and high-risk firmware Issue #73 OPEN. Final docs-only checkpoint independent CI, exact updated source synchronization and backup to be logged immutably after docs merge to avoid recursive SHA-changing commits. Developer Mr. iPat.
 
 ## 1. Source of truth and provenance
 
@@ -1274,3 +1274,54 @@ Added `deploy/scripts/lab/r61/test_r61_tls.py` with an ephemeral locally generat
   capabilities to lab operator, first read-only test,
   review sanitized observations and update DEVICE_MATRIX
   per exact tuple, with failures/uncertainty included.
+
+
+## R7.4 — Per-dashboard PRD gap audit + isolated nonproduction C320 preparation
+
+**2026-09-27, developer Mr. iPat. Status implementation:** candidate source
+tested locally; independent feature PR and clean main CI must be separately
+reported before treating source as merged.
+
+- Owner states physical trial units are DEDICATED LAB HARDWARE, not active ISP
+  subscribers. This declaration reduces intended blast radius, not the
+  obligation to verify actual isolated topology, ownership, exact build,
+  recovery and a restricted management channel.
+- Audited three existing private-only browser previews against existing
+  v0.1 FR items. Platform Admin misses real OIDC/MFA, verified domains,
+  tenant/plan runtime; Tenant Admin misses trusted tenant/POP membership
+  and server-driven menus; NOC lacks physical OLT/ACS telemetry, operational
+  diagnostics and approved live PPPoE flows. All business APIs stay 401.
+  NO PRD scope reduction or new architecture ADR is approved.
+- Added large RED, context-specific PRD gap lists for each workspace in
+  private dashboard JS/HTML/CSS. The selector remains demonstrative only:
+  it never confers role, tenant membership or API access.
+- Added a separate Python DEV-01 OFFLINE-ONLY lab packet validator that
+  reads exactly private 0700 packet folder stage.json and plan.json,
+  both mode0600, rejects duplicates/extra keys, unknown target/production
+  declarations/unsafe file permissions and all undeclared or false gates.
+  Even when all human statements are true it returns
+  HUMAN_REVIEW_REQUIRED and all physical/firmware authorization fields FALSE.
+  Existing R6.0 metadata staging and R7.1 offline Rust C320 parser stay
+  separate. No network/SSH transport or firmware actuator was added.
+- Source paths changed: web/lab/dashboard-preview.html/.js/.css,
+  deploy/scripts/lab/r68/test_dashboard_preview.py/.mjs,
+  deploy/scripts/lab/r74/lab-readiness.py and test_lab_readiness.py,
+  .github/workflows/ci.yml, docs/DASHBOARD_PRD_AUDIT_R74.md,
+  docs/C320_ISOLATED_LAB_R74.md, docs/PRD_DEVIATIONS_R71.md,
+  docs/DEVICE_MATRIX.md and this PROJECT_STATUS.md.
+- Local owner Mac: Python R68 static tests 7/7 PASS,
+  JS R68 DOM/role demo no-API synthetic test PASS,
+  R74 offline packet 8/8 tests PASS, Python compilation and
+  git diff --check PASS at initial source checkpoint.
+  CI/post-merge evidence will be recorded separately.
+- MUST next: physical operator console identifies real C320 exact boards
+  and firmware, confirms isolated lab, trusted private management route,
+  dedicated read-only account and backup; peer-reviews packet. Then ONE
+  actual read-only test per independently supported vendor command,
+  sanitize evidence and update exact tuple in DEVICE_MATRIX.
+  TC-OLT-01 currently NOT RUN, firmware hard-disabled, production NO_GO.
+- MUST separately for actual dashboards: approved identity provider +
+  MFA, approved membership + verified POP mapping, server-driven
+  entitlements, API/RLS/cookie/domain negative tests and audit.
+  No VPS firewall/K3s/real PostgreSQL deployment in this milestone;
+  external seven production safety gates are not bypassed.
