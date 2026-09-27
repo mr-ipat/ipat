@@ -1,7 +1,7 @@
 # IPAT — Project Status
 
 **As-of:** 2026-09-27 Asia/Jakarta
-**Current milestone:** R8.4 IN PROGRESS — independent security_admin maker-checker metadata-only approval, append-only PostgreSQL audit, signed short-lived JWT exact MFA claim and separately gated nonroot reviewer Rust endpoints; full real disposable PostgreSQL+signed Rust CI is required before claiming this milestone verified. R8.3 private Device Manager remains available; actual operator IdP/MFA, authenticated browser dashboard and real physical device adoption remain OPEN.
+**Current milestone:** R8.4 VERIFIED — original signed synthetic MFA claim, independent security_admin maker-checker metadata-only approval, real append-only PostgreSQL audit and separately gated reviewer Rust endpoints: exact post-merge code-main independent CI 4/4 PASS, real nonroot Ubuntu26 workspace PASS. Existing R8.3 private Device Manager works. Actual human MFA IdP, authenticated tenant browser login, reviewer UI and physical OLT/ONT/RouterOS adoption remain OPEN (NOT production-ready).
 **Historical R7.1 state (superseded by later entries):** R7.1 original Rust ZTE C320 strict offline read-only evidence parser, owner-private non-network importer, hard-disabled firmware and large RED unfulfilled-PRD warning across all three private dashboard previews FEATURE PR #71 MERGED at code SHA d452d1be6943bb4b3685b2136ad30b587e6af1e9. Both independent feature-PR GitHub CI 36249894205 and post-feature-main CI 36250108104 completed SUCCESS in all four independent jobs (locked Rust/security/UI/OLT offline, disposable Ubuntu26 K3s and two isolated synthetic PostgreSQL recovery jobs, none deployed live). Actual clean unchanged Ubuntu 26.04.1 VPS canonical source, private GitHub and owner FileVault Mac main synchronized at feature SHA; actual VPS rustfmt and 145/145 locked OFFLINE whole-workspace Rust tests, 5/5 synthetic offline CLI permission/data tests, 5/5 source PRD red warning + disabled firmware checks and 7/7 existing R6.8 Python dashboard tests PASS. Existing R6.8 synthetic Node DOM proof rerun on Mac Node v22.22, actual authorized Mac private dashboard served LARGE red PRD alert via real HTTP 200/no-store/CSS high contrast while 3 business APIs remained HTTP401. FileVault Mac encrypted exact merged-feature-source Restic snapshot 63c7c461 independently isolated SHA256 restored plus full encrypted pack read PASS; selected historical root-readable config separately restored, NOT full VPS or real PostgreSQL PITR. Clean main production readiness 8/8 automatic gates PASS, ALL 7/7 independent external safety gates BLOCKED, production NO_GO; live VPS K3s/PostgreSQL/nftables inactive. ZTE C320 actual model/boards/running firmware, authenticated private device route and owner recovery/maintenance approval still unavailable; TC-OLT-01 physical NOT RUN, no firmware update or device changes. Separate physical blocker Issue #72 and high-risk firmware Issue #73 OPEN. Final docs-only checkpoint independent CI, exact updated source synchronization and backup to be logged immutably after docs merge to avoid recursive SHA-changing commits. Developer Mr. iPat.
 
 ## 1. Source of truth and provenance
@@ -2614,3 +2614,73 @@ tenant/POP evidence health. Metadata
 approval alone cannot adopt
 equipment or authorize any
 firmware update.
+
+
+## R8.4 verified atomic maker-checker metadata review checkpoint — 2026-09-27
+
+**What was materially integrated:** PR #96 merged original
+Rust signed MFA-claim boundary, separately restricted PostgreSQL
+independent security_admin reviewer, own-tenant queue excluding
+the maker, row-locked one-time approval/rejection with exact
+idempotent retry and append-only one-decision audit.
+A reviewer cannot self-approve, access another tenant, override
+an already reviewed draft, bypass a revoked/expired membership
+or upgrade a candidate from UNKNOWN/NOT_MEASURED merely because
+metadata was reviewed. There is no network device admission
+or firmware operation in this milestone.
+
+**Reproducible proof:** Merged canonical source code main exact
+`c032d3759103d6b3d28b21df83bd923e85ce60ae`;
+independent AFTER-MERGE GitHub run
+`36311222833` returned **SUCCESS in all 4/4 jobs**:
+genuine disposable PostgreSQL 16 ordered migrations including
+0007 and actual reviewer/maker-role and immutable-audit tests,
+actual short-lived signed RS256 synthetic MFA claim from
+two distinct imaginary humans through original Rust
+Axum into separately restricted real PostgreSQL,
+full locked Rust and R8.4 static 5/5 checks,
+independent disposable PostgreSQL physical restore
+and genuine disposable Ubuntu26 single-node K3s.
+No actual customer IdP or physical equipment
+was involved.
+
+**Actual owner environment:** private GitHub,
+owner FileVault Mac and actual nonroot Ubuntu26 VPS
+were synchronized to the same exact code SHA via
+SHA256-verified Git bundle clean fast-forward.
+Actual canonical Ubuntu26 VPS `cargo fmt --check`,
+full `cargo test --workspace --locked --offline`
+and R8.4 5/5 security static tests PASSED.
+Owner Mac encrypted source-only Restic snapshot
+`2a2a43d7` verified FULL 146/146 pack
+reads and isolated source SHA256-exact restore;
+separately selected historical PARTIAL readable
+root configuration restored SHA256-exact, which
+is NOT complete offsite whole-host/PG/K3s recovery.
+Existing real Mac→VPS tunnel private
+Device Manager was restarted from exact
+source SHA and actual owner Mac HTTP verified
+dashboard CSS/JS/HTML remained HTTP200,
+unprovisioned exact signed registry and
+review endpoints remained HTTP404,
+all three platform/tenant/operations real
+business API namespaces remained HTTP401,
+and the actual physical device count and
+live firmware capability remained disabled.
+
+**PRD GAP — HIGH:** An independent real human
+MFA enrollment in a production-approved OIDC
+issuer, approved role memberships and operator
+browser login have NOT been provisioned.
+A cryptographically signed synthetic `amr:mfa`
+JWT is *NOT* actual physical human MFA proof.
+The standalone reviewer API is intentionally
+not mounted in the existing default owner preview.
+A metadata approval never authorizes actual
+C320/ONT/RouterOS SSH/SNMP/CWMP/USP access;
+firmware tasks remain hard disabled. Next
+MUST: independently provision and verify
+actual MFA IdP plus authenticated BFF/browser
+session and per-tenant restricted real DB
+connection/role mapping, then trusted read-only
+device identity and evidence.
