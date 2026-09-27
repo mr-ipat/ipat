@@ -27,6 +27,7 @@ IPAT (`IP@`) is a planned commercial multi-tenant ISP network operations platfor
 - [R7.6 Fadly intended custom domain, SSH hostname collision and issuer-bound menu lab](docs/DOMAIN_INTENT_FADLY_R76.md)
 - [R7.7 restricted disposable PostgreSQL identity lookup with negative RLS/privilege tests](docs/R77_SCOPED_IDENTITY_LOOKUP.md)
 - [R7.8 joined private signed OIDC→restricted PostgreSQL→scoped server menu (synthetic CI proof)](docs/R78_PRIVATE_IDENTITY_TO_POSTGRES_MENU.md)
+- [R7.9 remote-only C320 read candidate and VPS-provider-neutral private K3s planning](docs/C320_REMOTE_AND_K3S_PROVIDER_NEUTRAL_R79.md)
 - [Technical architecture](docs/ARCHITECTURE.md)
 - [Physical device and firmware test matrix](docs/DEVICE_MATRIX.md)
 - [Security, tenant isolation and threat model](docs/SECURITY.md)

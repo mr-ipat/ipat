@@ -663,3 +663,35 @@ or authenticated real business API is enabled. Dedicated disposable
 CI creates an isolated scoped login actor and exercises real
 RS256 token→actual Axum→actual PostgreSQL→menu positives and
 negatives, not a fake membership fixture.
+
+
+## R7.9 IP-reachable OLT transport and provider-neutral K3s
+
+Separate OLT transport contract from ACS CPE:
+DEV-01 remote OLT candidate is strictly two read-only
+ZTE CLI commands through operator-provisioned SSH
+public-key auth over a privately routed RFC1918
+endpoint with exact pinned host key. Raw output
+stays in private encrypted owner storage pending
+redaction, then the prior Rust offline parser
+normalizes the exact observed tuple. This optional
+read route requires no serial/L1 cable, but it does
+not remotely provision, upgrade, or enroll an
+unreviewed OLT. SNMPv3 is a candidate for the
+next telemetry transport after verified device
+MIB and credentials. No OLT TR-069 API assumed.
+
+K3s does not integrate any VPS vendor firewall
+API. The new offline topology generator supports
+single-node private K3s or distributed private
+worker access via a preexisting authenticated
+`wg-ipat` WireGuard mesh and Flannel VXLAN
+inside that mesh (not exposed on public UDP 8472).
+Its parameters must be REVIEWED, not blindly
+executed. A single initial server remains
+a SPOF and NOT production HA. Same-site
+low-latency server quorum and separate PostgreSQL
+primary/standby + offhost PITR are future
+HA design gates. Rust protocol/worker safety
+continues to require bounded idempotent jobs,
+tenant/POP authorization, no device auto-write.

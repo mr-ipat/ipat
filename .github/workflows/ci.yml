@@ -146,6 +146,13 @@ jobs:
           python3 -m py_compile deploy/scripts/lab/r74/lab-readiness.py
           python3 -m unittest discover deploy/scripts/lab/r74 -p test_lab_readiness.py -v
           python3 deploy/scripts/lab/r74/lab-readiness.py --requirements
+      - name: R7.9 provider-neutral K3s and synthetic SSH to REAL Rust C320 parser cross test (NO real device)
+        run: |
+          python3 -m py_compile deploy/scripts/lab/r79/*.py
+          cargo build --locked -p olt-core --bin c320-offline-review
+          python3 -m unittest discover deploy/scripts/lab/r79 -p 'test_*.py' -v
+          python3 deploy/scripts/lab/r79/c320-ssh-readonly.py --requirements
+          python3 deploy/scripts/lab/r79/k3s-provider-neutral-plan.py --example | python3 -m json.tool >/dev/null
       - name: R6.6 native CWMP read-only state and actual private HTTP denial smoke
         run: |
           bash -n deploy/scripts/lab/r66/cwmp-loopback-http-smoke.sh
@@ -306,6 +313,10 @@ jobs:
         run: |
           bash -n deploy/scripts/lab/k3s-ubuntu26-ephemeral-ci.sh
           python3 -m unittest discover deploy/scripts/lab -p 'test_k3s_ubuntu26_ephemeral_review.py' -v
+      - name: R7.9 check heterogeneous provider-neutral private WireGuard network PLAN on real disposable Ubuntu26
+        run: |
+          python3 -m unittest discover deploy/scripts/lab/r79 -p test_k3s_provider_neutral.py -v
+          python3 deploy/scripts/lab/r79/k3s-provider-neutral-plan.py --example | python3 -m json.tool >/dev/null
       - name: Install and smoke-test checksum-pinned K3s on disposable Ubuntu 26.04
         run: |
           timeout --signal=TERM --kill-after=15s 1200s bash             deploy/scripts/lab/k3s-ubuntu26-ephemeral-ci.sh

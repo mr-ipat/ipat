@@ -1774,3 +1774,67 @@ Next MUST: audited real human IdP+membership
 read integration, genuinely restricted server
 menus/APIs/RLS/jobs, then separately approved
 first physical read of C320 in isolated lab.
+
+
+## R7.9 remote C320 and provider-neutral K3s — 2026-09-27
+
+Owner clarifies that a ZTE C320 needs supported
+REMOTE IP-based management rather than a local
+physical L1/serial connection for initial
+read-only integration. Historical ZTE product
+description documents SSH CLI and SNMPv3
+capability at product-family level ONLY;
+no real firmware/board support certified.
+ADR-025 records approved product direction,
+R7.4 conservative strict physical packet
+remains an OPTIONAL alternative only, not
+a gate on the separately guarded R7.9
+read-only remote path. Firmware continues
+HARD DISABLED and requires independent
+tested out-of-band recovery for high-risk writes.
+
+Owner also requires portable heterogeneous
+K3s workers from ANY capable provider,
+without mandatory vendor firewall integration.
+ADR-026 records direction and PROPOSED
+WireGuard-private inter-provider worker
+network, one initial control-plane server,
+NO unsupported across-cloud etcd HA.
+No host firewall installation occurred
+or is mandatory software dependency; true
+private encrypted ingress and authenticated
+node connectivity remain security requirements.
+This does NOT waive production deployment
+recovery, external complete backup,
+approved live network or testing gates.
+
+New source: deploy/scripts/lab/r79/
+c320-ssh-readonly.py; k3s-provider-neutral-plan.py
+and negative unit and true Rust offline
+parser cross-contract tests. Both use
+explicit private-only networks and refuse
+arbitrary unsafe user strings; K3s output
+installation_authorized remains false.
+Mac 16/16 synthetic tests PASS, actual
+nonroot Ubuntu26 temp clean main worktree
+built REAL locked olt-core C320 Rust parser
+and ran 17/17 synthetic-only R7.9
+Python tests (including fake SSH data
+consumed and validated by ACTUAL
+compiled Rust binary) PASS. Old actual
+Ubuntu VPS nonroot K3s read-only
+inventory shows Ubuntu 26.04.1 LTS,
+KVM, x86_64, 16 logical CPUs and
+cgroup v2. Overlay and related kernel
+modules were NOT LOADED/VISIBLE
+in that sample; this alone neither
+proves unsupported nor readiness.
+No physical OLT IP/hostpin/auth or
+real second VPS private overlay is
+currently provisioned. TC-OLT-01
+real device NOT RUN and real
+multi-provider cluster NOT TESTED.
+No firewall, DNS, public ingress,
+root K3s or firmware change.
+GitHub feature PR and CI evidence
+will be recorded ONLY after run.

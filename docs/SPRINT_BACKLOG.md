@@ -571,3 +571,34 @@ SHOULD: formal versioned key rotation and CSRF/logout
 when public tenant domains are approved. LATER domain
 branding ipat.fadly.id/ipat.id with ownership/TLS
 and management SSH route separation.
+
+
+## R7.9 owner-approved remote transport and provider-neutral K3s slice
+
+MUST source: fixed remote ZTE C320 private SSH
+read-only guarded collector, strict owner
+private identity/key files, independent hostpin,
+two static SHOW commands, bounded capture and
+synthetic mock SSH→REAL Rust parser test.
+MUST independent interop next: owner-only private
+management route, pin verification from trusted
+channel, exact firmware/board and vendor CLI
+support; run first ACTUAL approved remote read
+with no live subscriber impact and redact
+private evidence into DEVICE_MATRIX.
+Fallback candidate SNMPv3 must independently
+verify exact vendor firmware and vendor MIB.
+
+MUST source: VPS-provider-neutral OFFLINE K3s
+single-server or WireGuard-private multi-worker
+topology planner rejecting internet-exposed
+address proposals, CIDR overlap, unsafe
+cross-cloud etcd assumptions and hidden
+secrets/provider firewall API dependencies.
+NEXT independently test second real
+heterogeneous VPS overlay peering,
+authorized 6443/8472 traffic only in
+the private tunnel, node join/drain,
+and offsite whole-host recovery.
+No real root installation on the original
+VPS while rescue/restore gates fail.
