@@ -663,3 +663,25 @@ TC-USP-01 actual authenticated agent
 interop remains **NOT RUN**, even
 if the entire R8.1 software slice
 passes CI.
+
+
+## R8.2 original virtual ONT hardware-free SOAP acceptance
+
+The software-first original Rust ACS MUST demonstrate
+actual loopback HTTP handling of a FIXED synthetic CWMP
+1.0 Inform→InformResponse and a separately generated
+GetParameterValues request with a separately parsed
+correlated response/fault. It MUST deny non-synthetic
+identity, disallowed methods/parameters, malformed,
+DTD, duplicate and oversized input, leak no fake
+device values and leave the production device /cwmp
+endpoint disabled. The virtual proof MUST require
+separate opt-in and never activate from public K3s.
+CI MUST exercise the actual compiled Rust binary
+through a real local HTTP socket with an independent
+Python XML validator. These are strictly virtual
+software-acceptance scenarios and NOT a substituted
+TC-CWMP-01 result against the actual VSOL/ZTE ONT.
+Actual certified onboarding, persistent sessions,
+actual physical interoperability, broad RPC
+coverage and production release remain MUST.

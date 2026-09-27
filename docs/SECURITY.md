@@ -736,3 +736,26 @@ session and physical agent capability
 verification are NOT IMPLEMENTED
 and MUST precede any real USP
 operational endpoint or upgrade.
+
+
+## R8.2 synthetic CWMP SOAP HTTP-only threat controls
+
+Untrusted SOAP source fields, HTTP Host, tenant headers
+and forged mTLS claims NEVER prove a real CPE identity.
+The local proof permits exactly one fixed fake CPE
+manufacturer/OUI/product/serial/event/correlation;
+the read-only request has one fixed allowed path
+and fixed ID; the reply parser rejects fake correlation,
+duplicate/unrequested/secret paths and all writes.
+No raw fake SOAP identity, returned SoftwareVersion
+or fault private text enters HTTP output.
+Global HTTP 64 KiB bounds include ALL newly
+mounted routes (a discovered initial draft
+mistakenly put the Axum layer before new
+routes; the new HTTP oversize test caught
+and caused its correction). A second explicit
+opt-in, loopback-only bind, K3s absence
+and unconditional real `/cwmp` HTTP503
+prevent silent device enrollment.
+This IS NOT device-level mTLS proof
+or production session replay protection.

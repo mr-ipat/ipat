@@ -1,7 +1,7 @@
 # IPAT — Project Status
 
 **As-of:** 2026-09-27 Asia/Jakarta
-**Current milestone:** R8.1 — original genuine BBF USP 1.4 protobuf Get/GetResp subset and private Rust Axum virtual-agent structural HTTP integrated on actual nonroot Ubuntu26; trustworthy MQTT MTP, authenticated physical agents, real CWMP service and full product/DR remain OPEN. Prior R8.0 signed JWT→real disposable PostgreSQL→private Axum tenant/POP inventory passed full CI. Detailed immutable evidence is appended below.
+**Current milestone:** R8.2 — original CWMP 1.0 synthetic virtual ONT now executes real localhost SOAP InformResponse and strict read-only GetParameterValues HTTP; CI feature is PENDING and real authenticated ACS/physical ONT remains OPEN. R8.1 native USP v1.4 protobuf virtual-agent proof and R8.0 true signed JWT→disposable SQL→private Axum multi-tenant inventory were independently verified. See the latest appended milestone evidence.
 **Historical R7.1 state (superseded by later entries):** R7.1 original Rust ZTE C320 strict offline read-only evidence parser, owner-private non-network importer, hard-disabled firmware and large RED unfulfilled-PRD warning across all three private dashboard previews FEATURE PR #71 MERGED at code SHA d452d1be6943bb4b3685b2136ad30b587e6af1e9. Both independent feature-PR GitHub CI 36249894205 and post-feature-main CI 36250108104 completed SUCCESS in all four independent jobs (locked Rust/security/UI/OLT offline, disposable Ubuntu26 K3s and two isolated synthetic PostgreSQL recovery jobs, none deployed live). Actual clean unchanged Ubuntu 26.04.1 VPS canonical source, private GitHub and owner FileVault Mac main synchronized at feature SHA; actual VPS rustfmt and 145/145 locked OFFLINE whole-workspace Rust tests, 5/5 synthetic offline CLI permission/data tests, 5/5 source PRD red warning + disabled firmware checks and 7/7 existing R6.8 Python dashboard tests PASS. Existing R6.8 synthetic Node DOM proof rerun on Mac Node v22.22, actual authorized Mac private dashboard served LARGE red PRD alert via real HTTP 200/no-store/CSS high contrast while 3 business APIs remained HTTP401. FileVault Mac encrypted exact merged-feature-source Restic snapshot 63c7c461 independently isolated SHA256 restored plus full encrypted pack read PASS; selected historical root-readable config separately restored, NOT full VPS or real PostgreSQL PITR. Clean main production readiness 8/8 automatic gates PASS, ALL 7/7 independent external safety gates BLOCKED, production NO_GO; live VPS K3s/PostgreSQL/nftables inactive. ZTE C320 actual model/boards/running firmware, authenticated private device route and owner recovery/maintenance approval still unavailable; TC-OLT-01 physical NOT RUN, no firmware update or device changes. Separate physical blocker Issue #72 and high-risk firmware Issue #73 OPEN. Final docs-only checkpoint independent CI, exact updated source synchronization and backup to be logged immutably after docs merge to avoid recursive SHA-changing commits. Developer Mr. iPat.
 
 ## 1. Source of truth and provenance
@@ -2250,3 +2250,51 @@ PROTOBUF SOFTWARE LAB
 subset, not end-to-end
 USP conformance or
 enterprise product GO.
+
+
+## R8.2 in-progress verified LOCAL ACS SOAP slice — 2026-09-27
+
+Continuing real software while owner hardware is offline,
+the latest original Rust CWMP gateway now contains
+three EXTRA opt-in-localhost-only virtual ONT
+HTTP routes: actual SOAP Inform→InformResponse
+using existing original parser and serializer,
+a strict immutable SoftwareVersion
+GetParameterValues serializer, and a strict
+correlated value/fault reply parser returning
+safe counts only. No random actual CPE may
+pass the fixed fake-only tuple gate.
+Production-looking /cwmp remains unconditional
+HTTP503. No device session/enrollment,
+real TLS/MFA, tenant binding, firmware
+or actual C320/ONT access was activated.
+
+In the first independent temporary
+nonroot Ubuntu26 candidate worktree,
+original Rust cwmp-gateway tests
+PASSED 10/10, companion separate
+existing integration tests 2/2 PASS.
+An ACTUAL loopback Python→compiled
+Rust HTTP smoke caught an initial
+incorrect header casing assertion in
+the Python test script, corrected
+without weakening the backend.
+Earlier Rust 413 oversize unit test
+caught a real Axum body-limit layer
+ordering bug; fixed the middleware
+ordering to bind ALL new routes.
+After both corrections the real
+HTTP smoke PASSED: genuine
+SOAP InformResponse, actual strict
+GetParameterValues request and
+response, safe fault treatment,
+unsupported/write/correlation/
+DTD/oversize negative paths,
+fake Host/tenant/mTLS headers
+and permanent live /cwmp denial.
+Mac static acceptance contract
+4/4 PASS. GitHub integrated feature
+CI and canonical release verification
+must be logged AFTER execution.
+No physical test or production
+deployment is implied.
