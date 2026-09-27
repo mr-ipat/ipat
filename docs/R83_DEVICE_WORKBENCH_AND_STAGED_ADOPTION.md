@@ -252,3 +252,83 @@ platform, real online telemetry,
 actual customer MFA dashboard or
 approved live equipment/firmware
 compatibility.
+
+
+## Verified release and real owner browser access
+
+GitHub feature PR #94 merged actual
+R8.3 visible Rust/HTML/JavaScript
+Add/List/Status demo and independently
+signed tenant/POP-scoped PostgreSQL
+pending-registration code into main at
+`94c6b2f07bd63a4ae0578a5915e232b1bd1fa0b4`.
+Feature run `36305345728` and
+independent real post-code-merge main
+run `36306977093` BOTH succeeded
+in all four CI jobs, including genuine
+disposable PostgreSQL SQL/Rust
+two-tenant security tests and
+actual compiled Rust HTTP UI
+Add/List/Delete smoke on CI.
+
+The owner private Mac tunnel was
+restarted from this actual canonical
+code SHA. Actual Mac HTTP
+`http://127.0.0.1:48765/lab/device-workbench`
+and its JavaScript/CSS responded HTTP200.
+With synthetic `LAB-`/ `VIRTUAL-`
+metadata only, real localhost HTTP
+Add 201, List 200 showing exact
+PENDING_REVIEW/UNKNOWN/NOT_MEASURED,
+and Delete 200 PASSED. Missing
+private same-origin write request
+was rejected 403; all three
+production platform/tenant/NOC
+REST namespaces remained 401.
+The unprovisioned private real
+signed reader/registrar routes
+remained 404; no real IdP,
+PostgreSQL operator login, device,
+probe or firmware operation
+was activated. The original
+local preview was restarted again
+to clear manual demo fixtures,
+leaving zero fake candidates.
+The same clean merged source SHA
+was synchronized by SHA256-verified
+Git bundle to actual nonroot
+Ubuntu26 VPS and its full
+locked offline Rust workspace,
+rustfmt and R8.3 static tests
+PASSED. A separate duplicate
+standalone port-3000 smoke on
+the live VPS deliberately
+refused preexisting port-3000
+preview ownership. The actual
+equivalent Mac→private VPS HTTP
+test and independent disposable
+CI socket test both passed.
+
+Source-only Mac FileVault encrypted
+Restic snapshot `3e40cc27`
+was all-pack-verified 142/142,
+isolated SHA256-exact restored;
+selected historical PARTIAL
+root-readable restore also passed.
+**This is NOT independent
+whole-host, customer PostgreSQL
+or K3s datastore disaster
+recovery.**
+
+The visible Device Manager is
+immediately available to the
+owner on the authorized Mac.
+It is not a real user MFA session
+nor an approved hardware adoption
+switch. The signed stored
+candidate backend is tested and
+ready FOR INTEGRATION after
+actual IAM/approval and restricted
+tenant DB service account provisioning;
+do not route customer IPs or
+creds through the fake UI.
