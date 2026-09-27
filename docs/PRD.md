@@ -771,3 +771,22 @@ tenant/POP membership, every callback MUST reject login,
 and every real device API MUST remain denied. Passing
 cryptographic synthetic browser tests is NOT real human
 login or an approved physical adoption prerequisite.
+
+
+## R8.7 OIDC browser backend signed token binding — MUST subcriterion
+
+Before real operator login, after provider-certified
+confidential S256 code redemption, the original Rust
+service MUST independently validate pinned-RS256
+issued access+ID tokens against their distinct
+approved audiences, shared signed issuer/subject,
+R8.6 privately stored nonce and at_hash of the
+exact access JWT. It MUST refuse wrong signing key,
+typ confusion, stale auth_time and absent validated
+MFA, and MUST NOT derive tenant roles from OIDC
+claims. At this milestone implement the pure
+OFFLINE original verified pair function and independent
+genuine ephemeral-RSA negative tests, but keep
+real login/BFF session and hardware review
+disabled until actual IdP and enrolled human MFA
+plus separately authorized SQL membership exist.

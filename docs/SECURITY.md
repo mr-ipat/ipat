@@ -886,3 +886,23 @@ Independent approved actual TLS, signed nonce-checked
 ID token, confidential OAuth exchange, session
 rotation, CSRF defenses, secure __Host- cookie and
 MFA enrollment remain unimplemented external gates.
+
+
+## R8.7 OIDC ID-token-to-access-token mix-up threat barrier
+
+The offline original Rust BFF verifier rejects a
+signed ID token that is not explicitly for the
+approved browser client even if its issuer is
+correct, rejects an access token for the wrong
+IPAT service, and verifies signed identity
+agreement, nonce and SHA256 at_hash in constant
+time. Both tokens require valid independently
+pinned RS256 kid/signature and explicit bounded
+signed MFA; ID auth_time limited to five minutes.
+No untrusted jku/x5u, session minting or
+implicit tenant/POP claims. These checks must
+remain isolated until real human MFA provider
+semantics and confidential HTTPS code redemption
+have been separately verified. A synthetic signed
+test identity alone is NOT a real MFA event
+and cannot unlock Device Manager or equipment.

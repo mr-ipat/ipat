@@ -823,3 +823,22 @@ Then complete maker-checker UI and controlled
 read-only physical device identity checks.
 No status may claim real login/adoption
 based on this lab flow alone.
+
+
+## R8.7 original OIDC offline signed two-token bridge
+
+DONE subject to full feature/postmerge CI:
+original Rust offline separate verified ID JWT+
+access JWT pair with distinct audiences, nonce,
+at_hash, issuer/subject agreement, explicit
+signed MFA on both, bounded auth_time and strict
+negative real RSA synthetic fixture tests.
+MUST next: independently approved human IdP MFA
+metadata, confidential HTTPS backchannel token
+exchange, secure host-only BFF session with
+CSRF/logout and separately current restricted
+tenant/POP SQL role check, actual signed-in
+device review UI and narrow approval/audit.
+MUST after review: real vendor firmware-matched
+read-only device adapter with source integrity;
+no fabricated device condition.

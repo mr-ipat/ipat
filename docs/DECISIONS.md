@@ -332,3 +332,26 @@ may result from the synthetic test. Actual approved
 human IdP+MFA, confidential HTTPS BFF and secure
 tenant-scoped signed-in dashboard are distinct
 OPEN deployment/review milestones.
+
+
+## ADR-035 — APPROVED OFFLINE OIDC TWO-SIGNED-TOKEN BINDING; REAL BFF OPEN (R8.7)
+
+Prepare an original Rust strict, OFFLINE, actual RSA
+pinned-issuer verification of the browser ID token
+AND the independently audience-verified access token.
+Require exact configured client audience and any azp,
+matching signed issuer/subject, original server-private
+nonce, constant-time SHA256 at_hash of the exact
+independently signed access JWT, five-minute auth_time
+and bounded signed mfa method on BOTH tokens.
+Return opaque issuer/subject/min expiry ONLY;
+never grant tenant, POP, reviewer, session or
+hardware operation based on synthetic signed inputs.
+No anonymous or simulated token injection into
+actual browser callback is approved.
+Real independently proven IdP human MFA,
+confidential HTTPS PKCE code exchange,
+server-side Secure session and separate
+approved tenant/role/POP SQL membership
+remain binding OPEN MUST gates.
+See docs/R87_PINNED_OIDC_ID_TOKEN_NONCE_AT_HASH_OFFLINE.md.
