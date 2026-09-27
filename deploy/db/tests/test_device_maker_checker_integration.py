@@ -36,8 +36,10 @@ def decide(candidate,tenant=TA,reviewer=CHECKER,decision="approved",
     ).stdout.strip().splitlines()[-1]
 
 def queue(tenant=TA,reviewer=CHECKER):
-    return sql(f"SET ROLE ipat_device_review_execute; SELECT id::text||'|'||pop_id "
-               f"FROM {QUEUE}({q(ISS)},{q(reviewer)},'{tenant}'::uuid)").stdout.strip()
+    rows=sql(f"SET ROLE ipat_device_review_execute; SELECT id::text||'|'||pop_id "
+               f"FROM {QUEUE}({q(ISS)},{q(reviewer)},'{tenant}'::uuid)").stdout.strip().splitlines()
+    # psql emits a harmless SET command-completion line even for zero rows.
+    return "\n".join(row for row in rows if row.count('|')==1)
 
 def state(tenant,candidate):
     return sql(f"""SELECT adoption_state||'|'||connectivity||'|'||health
