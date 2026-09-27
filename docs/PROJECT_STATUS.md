@@ -1,7 +1,7 @@
 # IPAT — Project Status
 
 **As-of:** 2026-09-27 Asia/Jakarta
-**Current milestone:** R7.8 — private signed-JWT→restricted PostgreSQL→read-only menu Rust integration and disposable CI VERIFIED; live company MFA/OIDC enrollment, operational dashboards, public-domain routing and physical C320 TC-OLT-01 remain BLOCKED. Historical milestone evidence and immutable verification checkpoints remain retained below.
+**Current milestone:** R7.9 — guarded IP-based remote C320 read-only candidate and vendor-neutral private K3s topology verified in synthetic tests; ACTUAL C320 first read, second-provider cluster, MFA operator onboarding, independent offsite recovery and production rollout remain BLOCKED. Historical milestone evidence is retained below.
 **Historical R7.1 state (superseded by later entries):** R7.1 original Rust ZTE C320 strict offline read-only evidence parser, owner-private non-network importer, hard-disabled firmware and large RED unfulfilled-PRD warning across all three private dashboard previews FEATURE PR #71 MERGED at code SHA d452d1be6943bb4b3685b2136ad30b587e6af1e9. Both independent feature-PR GitHub CI 36249894205 and post-feature-main CI 36250108104 completed SUCCESS in all four independent jobs (locked Rust/security/UI/OLT offline, disposable Ubuntu26 K3s and two isolated synthetic PostgreSQL recovery jobs, none deployed live). Actual clean unchanged Ubuntu 26.04.1 VPS canonical source, private GitHub and owner FileVault Mac main synchronized at feature SHA; actual VPS rustfmt and 145/145 locked OFFLINE whole-workspace Rust tests, 5/5 synthetic offline CLI permission/data tests, 5/5 source PRD red warning + disabled firmware checks and 7/7 existing R6.8 Python dashboard tests PASS. Existing R6.8 synthetic Node DOM proof rerun on Mac Node v22.22, actual authorized Mac private dashboard served LARGE red PRD alert via real HTTP 200/no-store/CSS high contrast while 3 business APIs remained HTTP401. FileVault Mac encrypted exact merged-feature-source Restic snapshot 63c7c461 independently isolated SHA256 restored plus full encrypted pack read PASS; selected historical root-readable config separately restored, NOT full VPS or real PostgreSQL PITR. Clean main production readiness 8/8 automatic gates PASS, ALL 7/7 independent external safety gates BLOCKED, production NO_GO; live VPS K3s/PostgreSQL/nftables inactive. ZTE C320 actual model/boards/running firmware, authenticated private device route and owner recovery/maintenance approval still unavailable; TC-OLT-01 physical NOT RUN, no firmware update or device changes. Separate physical blocker Issue #72 and high-risk firmware Issue #73 OPEN. Final docs-only checkpoint independent CI, exact updated source synchronization and backup to be logged immutably after docs merge to avoid recursive SHA-changing commits. Developer Mr. iPat.
 
 ## 1. Source of truth and provenance
@@ -1838,3 +1838,94 @@ No firewall, DNS, public ingress,
 root K3s or firmware change.
 GitHub feature PR and CI evidence
 will be recorded ONLY after run.
+
+
+## R7.9 independently verified merged-code checkpoint — 2026-09-27
+
+**Actual PR and CI:** GitHub PR #87 original feature
+commit 370aa6863bb1f5d6f6de09435ea8e2a2cd580e3b
+CI run 36289356652 SUCCESS 4/4, independently
+including explicitly wired new R7.9 17 tests
+in the locked unit suite (8 guarded mock remote
+SSH, 8 multi-provider private K3s offline
+network-plan tests, 1 mock SSH output→REAL
+compiled Rust C320 offline importer integration).
+The separate disposable Ubuntu 26.04 job
+tested the provider-independent private-plan
+test suite then ran EXISTING checksum-pinned
+single-node actual K3s/etcd/CoreDNS smoke;
+THIS IS NOT a real cross-provider worker join.
+PostgreSQL synthetic RLS/restore and separate
+physical recovery jobs passed independently.
+Merged code main exact SHA
+6ce2e79686caddcaeafa275255b67b49a9befabe.
+Independent **post-feature-main** GitHub run
+36289553986 also SUCCESS 4/4 on that exact SHA.
+
+**Actual owner environment/recovery evidence:**
+Owner FileVault Mac encrypted SOURCE-only
+Restic snapshot 0e5eda33 at exact merged
+code SHA; all 130/130 encrypted packs
+read PASS, isolated Git source SHA256 restore
+PASS, selected HISTORICAL PARTIAL readable-root
+config SHA256 restored PASS. This is NOT
+offsite complete VPS/database/etcd disaster
+recovery. Canonical GitHub owner Mac and
+actual nonroot Ubuntu 26.04.1 VPS code
+were synchronized via SHA256-verified
+Git bundle and clean fast-forward to same
+exact code SHA; actual VPS reran full locked
+offline Rust workspace/fmt, compiled
+real C320 offline parser, then reran
+17/17 R7.9 synthetic tests PASS.
+The original VPS R79 K3s read-only
+preflight showed x86_64, KVM, 16 CPUs
+and cgroup v2. A further independent
+read-only `modinfo` check actually
+found kernel files for BOTH VXLAN and
+WireGuard on the VPS; neither module
+was loaded, no overlay route was
+created and no second provider tested.
+
+Original guarded private nonroot web
+preview was restarted from EXACT
+released code SHA via existing
+SSH localhost tunnel on authorized
+owner Mac; real local HTTP rollout
+phase still denies unverified domain,
+physical device/firmware and real
+authenticated business data. Three
+real Platform, Tenant and NOC
+HTTP business namespaces returned
+401 when Host: ipat.fadly.id,
+tenant and claimed platform role
+headers were forged. No new
+public HTTPS or SSH/DNS route was
+created or altered.
+
+**Outstanding:** neither C320 remote
+SSH nor SNMPv3 has contacted a
+real owner OLT; physical model/card/
+firmware tuples remain unknown;
+TC-OLT-01 physical NOT RUN and
+firmware HARD DISABLED. K3s
+portable static plan plus one
+disposable REAL Ubuntu26 single-node
+smoke is NOT proof of a LIVE
+second heterogeneous VPS cluster
+or a permission to install on
+the actual single reachable VPS.
+Independently verified private
+management route/host key and
+read-only principal needed for
+C320. Independent complete offsite
+restore, genuine external rescue
+and verified private VPN
+reachability needed BEFORE live
+K3s root installation. FR-001/
+002/003 real user end-to-end
+MFA/DB/API/RLS/jobs unfulfilled
+and production NO_GO. ADR-025
+approved product direction,
+ADR-026 technical private overlay
+proposal pending real measurements.
