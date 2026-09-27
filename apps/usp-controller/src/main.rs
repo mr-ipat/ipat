@@ -23,10 +23,7 @@ fn bind_address(k3s_lab: bool) -> &'static str {
 
 fn health_only() -> Router {
     Router::new()
-        .route(
-            "/healthz",
-            get(|| async { "usp-controller-transport-disabled" }),
-        )
+        .route("/healthz", get(|| async { "synthetic-usp-lab-only" }))
         .fallback(|| async { StatusCode::SERVICE_UNAVAILABLE })
 }
 fn app() -> Router {
