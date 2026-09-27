@@ -92,8 +92,11 @@ class VerifiedDeviceInventory(unittest.TestCase):
           revoked_at=statement_timestamp() WHERE tenant_id='{TA}'
           AND issuer='{ISS}' AND subject='{SUB}'""")
         self.assertEqual(allowed(),[])
+        # Fixture must satisfy DB constraint expires_at > created_at,
+        # while BOTH timestamps are safely in the past to test expiration.
         sql(f"""UPDATE ipat_platform.identity_memberships SET
-          revoked_at=NULL,expires_at=statement_timestamp()-interval '1 hour'
+          revoked_at=NULL,created_at=statement_timestamp()-interval '2 days',
+          expires_at=statement_timestamp()-interval '1 day'
           WHERE tenant_id='{TA}' AND issuer='{ISS}' AND subject='{SUB}'""")
         self.assertEqual(allowed(),[])
         sql(f"""UPDATE ipat_platform.identity_memberships SET
