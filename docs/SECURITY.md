@@ -759,3 +759,48 @@ and unconditional real `/cwmp` HTTP503
 prevent silent device enrollment.
 This IS NOT device-level mTLS proof
 or production session replay protection.
+
+
+## R8.3 device adoption threat-model refinement and trusted barriers
+
+Threats: fake online state; unauthorized ISP or
+POP data; forged Host/role/issuer; CSRF against
+a user-visible local demo; credential capture
+in a prototype registration form; unsafe
+production registration or private IP leakage;
+replayed registration of conflicting devices.
+Controls: fake-only LAB-/VIRTUAL-
+strict input, no IP/serial/password fields
+in the anonymous demo, same-host +
+same-origin + X-IPAT-Demo-Only writes,
+2 KiB bounded JSON, no real network
+calls, statuses always UNKNOWN and
+NOT_MEASURED. Persisted drafts require
+a genuine PINNED SIGNED RS256 access
+token and own separately DBA-approved
+current tenant-admin membership for
+metadata-only inserts, or own admin /
+NOC exact approved POP membership for
+restricted reads. Separate nonroot
+0600 owner-only config files and
+Unix socket-only dedicated reader/
+registrar service accounts; roles
+are EXECUTE-only with no direct
+tenant/device/subscriber table access.
+Functions have fixed search_path,
+forced RLS table/membership policies,
+active tenant/expiry/revocation
+checks and strict RFC1918-only
+optional management IP.
+Registration is repeat-idempotent
+ONLY when identical metadata;
+all new drafts default pending,
+unknown and unmeasured, with NO
+automatic online/approval transition.
+These are a lab proof boundary:
+the DB definer function relies on
+the caller's genuine signed JWT
+verification and DOES NOT itself
+prove MFA or trusted human
+enrollment. Live production and
+real device writes remain NO_GO.

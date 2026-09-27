@@ -785,3 +785,38 @@ performed in this proof. Real production
 `/cwmp` always rejects. Actual
 device admission and persistent
 state remain a separate MUST integration.
+
+
+## R8.3 Device Manager vertical UI and independent private candidate registry
+
+The existing original Rust loopback Control API
+now serves an actual interactive standalone
+Device Manager HTML/CSS/JS with Add/List/Filter/
+Delete and truthful per-device NOT_VERIFIED
+indicators. It uses ONLY in-process bounded
+fake LAB-/VIRTUAL- fixture registration under
+same-origin localhost anti-CSRF headers and
+2 KiB JSON body limits. This UI is expressly
+not an identity principal or production tenant
+interface and is absent from public K3s.
+The independent migration
+`0006_lab_device_candidates.sql` persists
+metadata-only immutable pending-review rows
+keyed by exact tenant/POP and a per-signed-
+principal request UUID. Dedicated NOLOGIN
+registry owner operates under named forced
+RLS policies; a separate writer role may
+only EXECUTE the sealed admin-gated insert
+function and the prior restricted identity
+reader may only EXECUTE the separate
+signed tenant-admin / exact POP NOC list.
+The new original Rust private handlers
+reverify pinned JWT identity, query SQL
+under their restricted separate Unix-
+socket roles and for list combine
+verified membership and actual draft
+rows in one materialized SQL snapshot
+plus backend authorization policy.
+No transport connection, health
+evidence, CPE adoption RPC or firmware
+operation is emitted by either path.

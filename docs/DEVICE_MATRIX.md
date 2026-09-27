@@ -308,3 +308,30 @@ NOT RUN. All physical device
 matrix status labels remain
 unchanged/untested until exact
 model/firmware/evidence is available.
+
+
+## R8.3 owner-visible staged device candidates — NOT interoperability evidence
+
+The new private synthetic Device Manager displays
+the prospective OLT/ONT/router vendor categories
+ZTE/C-DATA/VSOL/MikroTik before physical
+connectivity. Its LAB-/VIRTUAL- entries
+are deliberately NOT actual inventory:
+registered=synthetic only, connectivity=UNKNOWN,
+health=NOT_MEASURED, last_verified=null.
+A separate exact-tenant PostgreSQL draft
+schema now exists as code and must be
+tested on a disposable database; the real
+model/board/serial/firmware, approved
+management peer fingerprint and correct
+private routing are NOT known until the
+owner's device access is available.
+Real OLT ZTE C320 read-only management
+uses the separately gated R7.9 remote
+candidate and R7.1 offline evidence
+parser; real ONT CWMP and USP are
+the later independently authenticated
+hardware interoperability test tracks.
+No matrix row becomes 'supported'
+from entering a form or passing
+synthetic tests.

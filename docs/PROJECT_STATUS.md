@@ -2399,3 +2399,61 @@ K3s cluster. R8.2 is
 verified synthetic real
 SOAP software, not a
 production readiness GO.
+
+
+## R8.3 device-management corrective milestone — 2026-09-27 (initial code candidate)
+
+Owner correctly identified the lack of visible
+Add Device, Device List and Device Condition
+controls as a blocking product issue for
+tomorrow's hardware trial. Work is reprioritized:
+a genuine working private Device Manager
+user interface has been coded, linked
+from existing preview and main lab page,
+and a separate genuine PostgreSQL
+tenant-scoped pending metadata registry
+with independent signed Rust read/write
+handlers has been prepared. No actual
+physical device or credentials are
+contacted or stored.
+
+Local UI is explicitly fake-only LAB-/
+VIRTUAL-, bounded per-process volatile
+fake inventory (24 items) with actual
+Rust HTTP Add/List/Delete, POP/kind
+filter, fixed PENDING_REVIEW /
+UNKNOWN / NOT_MEASURED indicators and
+large RED PRD warning. Demo POST/
+DELETE requires same-origin Host
+and private custom header; public
+business endpoints remain denied.
+R8.3 new SQL 0006 is a review-only
+metadata table and sealed function
+pair: one restricted pending-only
+INSERT path for verified tenant_admin
+via independently provisioned reader/
+registrar identities, one list path
+for approved own admin / NOC exact
+POP. This SQL is NOT installed on
+the actual VPS or a customer DB.
+Actual trusted customer MFA, approved
+device enrollment and live read-only
+probe still remain external gates.
+
+Independent isolated nonroot Ubuntu26
+Rust worktree earlier compiled 21/21
+Control API tests, and with the new
+signed-database R8.3 test added,
+22/22 offline control API suite PASS
+(the disposable-PostgreSQL-only
+test body intentionally skips in
+ordinary offline run). Owner Mac
+R8.3 static dashboard/backend checks
+4/4 PASS. FULL genuine CI,
+actual PostgreSQL migration/tests
+and final live owner Mac web
+proof remain PENDING at this
+initial in-progress checkpoint.
+A later immutable milestone entry
+will record real CI/HTTP evidence
+only if independently executed.

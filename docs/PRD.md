@@ -685,3 +685,33 @@ TC-CWMP-01 result against the actual VSOL/ZTE ONT.
 Actual certified onboarding, persistent sessions,
 actual physical interoperability, broad RPC
 coverage and production release remain MUST.
+
+
+## R8.3 visible device registration and adoption preparation acceptance
+
+The owner requires visible Add Device, Device List
+and Device Status sections before first actual
+ZTE C320/C-DATA/VSOL/ZTE/MikroTik testing.
+MUST R8.3 deliver a real browser→Rust localhost
+lab UI and API allowing fake candidates to be
+added, listed, filtered and removed; every
+unverified candidate MUST show pending review,
+connectivity unknown and health not measured,
+NOT simulated-online data disguised as hardware.
+MUST provide a separately gated actual signed
+JWT→two independently privileged PostgreSQL
+candidate-create/read draft path with exact
+approved tenant-admin origin, own-tenant/POP
+read scope, idempotency, optional RFC1918-only
+management metadata and no credential/write
+RPC or firmware. MUST test both independent
+ISP tenants and a NOC role constrained to exact
+approved POP against a REAL disposable DB and
+REAL Rust HTTP, including forged tenant/Host,
+unauthorized role, revocation, IP and replay
+negative assertions. Public/real SaaS operations
+remain 401 and physical adoption is NOT
+declared ready without real MFA, high-risk
+approval, live verified peer binding,
+vendor firmware interoperability and
+independent offsite disaster recovery.

@@ -699,3 +699,41 @@ device enrollment, durable sessions
 and actual VSOL/ZTE firmware-matched
 interop; real USP MQTT MTP and
 tenant SaaS remain parallel MUST work.
+
+
+## R8.3 priority escalation: real visible adoption workflow before hardware
+
+MUST NOW: user-visible linked Device Manager
+add/list/filter/delete, truthful pending and
+unknown states, actual bounded private Rust
+HTTP demo, a distinct signed token+SQL
+sealed tenant-admin pending registry and
+two-company NOC POP-limited read, genuine
+ephemeral PostgreSQL actual mutation/read
+tests, real compiled Rust end-to-end
+HTTP/static browser tests and four CI
+jobs. This supersedes further isolated
+protocol enhancements while owner lacks
+a visible interface.
+MUST NEXT: true approved MFA user login,
+admin/tenant/NOC server-bound dynamic menus,
+the actual company dashboard binding to
+per-tenant persistent candidate rows,
+independently reviewed maker/checker
+adoption approval and append-only audit,
+private management endpoint ownership
+proof, bounded workers and evidence-based
+health from actual ZTE C320 and ONT/RouterOS
+protocol adapters (firmware specific).
+SHOULD NEXT: run a disposable second-provider
+private K3s node / asynchronous queue
+measurement only after independent
+host recovery/isolated network gates.
+MUST BEFORE PRODUCTION: independent
+real whole-host/PG/K3s recovery,
+customer secret handling, native USP
+MQTT MTP real agent identities,
+customer TLS/domain and complete
+interoperability/regression matrix.
+No simulation should masquerade
+as customer production readiness.

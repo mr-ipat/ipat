@@ -2,6 +2,7 @@
 //! R5.9 adds an explicitly opted-in, read-only LOCAL web preview.
 //! This is NOT an authenticated tenant dashboard or a production/public UI.
 
+mod device_workbench_lab;
 mod oidc_lab;
 mod tenant_membership_lab;
 
@@ -182,7 +183,8 @@ fn app_with_lab_identity_and_store(
             .route("/lab/rollout-phase", get(lab_rollout_phase))
             .route("/lab/dashboard-preview", get(lab_dashboard_preview))
             .route("/lab/dashboard-preview.css", get(lab_dashboard_css))
-            .route("/lab/dashboard-preview.js", get(lab_dashboard_js));
+            .route("/lab/dashboard-preview.js", get(lab_dashboard_js))
+            .merge(device_workbench_lab::router());
         if let Some(verifier) = verifier {
             private = private.merge(oidc_lab::router(verifier));
             if let Some(store) = store {
@@ -231,17 +233,32 @@ async fn main() {
     } else {
         None
     };
-    // Never serve restricted membership proof from the public K3s interface.
+    // R8.3 is a SEPARATE explicitly requested registrar identity,
+    // NEVER the old read-only PostgreSQL service account, and NEVER K3s.
+    let registry_requested = std::env::var("IPAT_R83_REGISTRY_WRITE").as_deref() == Ok("YES");
+    if registry_requested && (!scoped_requested || identity.is_none() || k3s_lab) {
+        panic!("registry drafts require opted-in private signed OIDC and scoped SQL");
+    }
+    let registry = if registry_requested {
+        Some(
+            tenant_membership_lab::registration_from_owner_environment(
+                identity.clone().expect("pinned issuer needed"),
+            )
+            .expect("invalid dedicated private registrar prerequisites"),
+        )
+    } else {
+        None
+    };
+    // Never serve restricted identity proof from the public K3s interface.
     let address = identity_lab_bind_address(k3s_lab, identity.is_some());
     let listener = tokio::net::TcpListener::bind(address)
         .await
         .expect("bind isolated identity/dashboard lab listener");
-    axum::serve(
-        listener,
-        app_with_lab_identity_and_store(lab_web_enabled, identity, store),
-    )
-    .await
-    .expect("serve API");
+    let mut app = app_with_lab_identity_and_store(lab_web_enabled, identity, store);
+    if let Some(registry) = registry {
+        app = app.merge(tenant_membership_lab::registry_router(registry));
+    }
+    axum::serve(listener, app).await.expect("serve API");
 }
 
 #[cfg(test)]

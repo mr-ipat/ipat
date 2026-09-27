@@ -103,6 +103,15 @@ jobs:
           cargo test --locked -p cwmp-gateway
           cargo build --locked -p cwmp-gateway
           IPAT_R82_SYNTHETIC_HTTP=YES bash deploy/scripts/lab/r82/virtual-cwmp-http-smoke.sh
+      - name: R8.3 actual interactive private Device Manager add list unknown health via Rust HTTP
+        run: |
+          python3 -m unittest discover deploy/scripts/lab/r83 -p test_r83_contract.py -v
+          node --check web/lab/device-workbench.js
+          python3 -m py_compile deploy/scripts/lab/r83/workbench_http_smoke.py
+          bash -n deploy/scripts/lab/r83/workbench-http-smoke.sh
+          cargo test --locked -p control-api
+          cargo build --locked -p control-api
+          IPAT_R83_DEMO_HTTP=YES bash deploy/scripts/lab/r83/workbench-http-smoke.sh
       - name: Verify non-executable sealed provisioning jobs (static)
         run: python3 -m unittest discover deploy/scripts/lab -p 'test_provisioning_synthetic_review.py' -v
       - name: Verify production infrastructure never auto-authorizes unsafe deployment
@@ -251,6 +260,9 @@ jobs:
       - name: R8.0 restricted live disposable PostgreSQL tenant POP inventory SQL policy tests
         run: |
           python3 -m unittest discover deploy/db/tests -p 'test_verified_device_inventory_integration.py' -v
+      - name: R8.3 real disposable PostgreSQL pending adoption and separate admin registration/POP read privilege tests
+        run: |
+          python3 -m unittest discover deploy/db/tests -p test_device_candidates_integration.py -v
       - name: R7.8 real signed JWT to isolated Postgres reader to private Axum menu (synthetic CI ONLY)
         run: |
           python3 deploy/db/tests/seed_private_http_identity_ci.py
@@ -260,6 +272,9 @@ jobs:
       - name: R8.0 genuine RS256 to actual restricted Postgres tenant POP inventory through real Axum (synthetic)
         run: |
           cargo test --locked -p control-api tenant_membership_lab::tests::r80_real_signed_jwt_to_postgres_tenant_pop_inventory -- --exact
+      - name: R8.3 actual short-lived RS256→separate real PG registrar plus read service to own two pending ISP records
+        run: |
+          cargo test --locked -p control-api tenant_membership_lab::tests::r83_real_signed_jwt_to_actual_postgres_two_tenant_pending_adoption -- --exact
 
 # Separate disposable CI runner and PostgreSQL server process.
   # This rehearses a physical base backup; it is NOT production PITR/offsite HA.

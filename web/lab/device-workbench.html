@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <meta name="referrer" content="no-referrer">
+  <title>IPAT | Device Manager · Adoption & Inventory</title>
+  <link rel="stylesheet" href="/lab/device-workbench.css">
+  <script src="/lab/device-workbench.js" defer></script>
+</head>
+<body>
+<a href="#main" class="skip">Ke konten</a>
+<div class="alert" role="alert"><strong>PERINGATAN PRD — BELUM SIAP ADOPSI PERANGKAT NYATA</strong>
+  Dashboard di halaman ini adalah laboratorium interaktif, bukan database ISP produksi. Tambah/hapus di sini hanya membuat data sintetis dalam memori server; restart menghapusnya. Status perangkat nyata, login MFA, adopsi OLT/ONT, SNMP/SSH/TR-069/USP serta firmware belum diaktifkan.
+</div>
+<div class="shell">
+  <aside class="sidebar" aria-label="Navigasi">
+    <a class="brand" href="/lab/dashboard-preview"><span class="brand-icon">IP<span>@</span></span>
+      <span><strong>iPat</strong><small>NETWORK OPERATIONS</small></span></a>
+    <div class="sidelabel">LAB DEVICE WORKSPACE</div>
+    <nav><a href="/lab/dashboard-preview">◈ &nbsp; Semua dashboard</a>
+      <a class="active" href="/lab/device-workbench" aria-current="page">▦ &nbsp; Device Manager</a>
+      <a href="#register">＋ &nbsp; Tambah kandidat</a>
+      <a href="#inventory">☷ &nbsp; Daftar perangkat</a>
+      <a href="#readiness">◈ &nbsp; Adopsi & status</a>
+    </nav>
+    <div class="sidebottom"><strong>LABORATORIUM PRIVAT</strong><p>Perangkat belum pernah terhubung. Jangan isi serial, alamat IP asli, username atau password di formulir demo.</p></div>
+    <p class="copyright">IPAT · Developed by Mr. iPat</p>
+  </aside>
+  <div class="main">
+    <header class="topbar"><span>IPAT / Inventory / <b>Device Manager</b></span>
+      <span class="env">● SSH PRIVATE · DEMO ONLY</span></header>
+    <main id="main">
+      <div class="heading"><span class="eyebrow">DEVICE OPERATIONS</span>
+        <h1>Kelola perangkat <em>sebelum adopsi.</em></h1>
+        <p>Daftarkan kandidat virtual, lihat inventaris dan status verifikasi. Jalur kandidat PostgreSQL terpisah telah disiapkan untuk proses persetujuan operator ketika identitas yang terpercaya tersedia.</p>
+      </div>
+      <div class="metric-row" aria-label="Ringkasan perangkat">
+        <article class="stat"><small>KANDIDAT DEMO</small><strong id="candidate-count">0</strong><span>Memori laboratorium</span></article>
+        <article class="stat"><small>PERANGKAT NYATA</small><strong>0</strong><span>Belum dihubungkan</span></article>
+        <article class="stat"><small>TERVERIFIKASI</small><strong>0</strong><span>Tanpa telemetri asli</span></article>
+        <article class="stat"><small>KESIAPAN ADOPSI</small><strong class="amber">Terbatas</strong><span>Menunggu MFA dan bukti vendor</span></article>
+      </div>
+      <div class="twocol">
+        <section id="register" class="panel" aria-labelledby="register-title">
+          <div class="section-top"><div><span class="eyebrow">01 / REGISTRATION</span><h2 id="register-title">Tambah kandidat perangkat</h2></div><span class="pill">DEMO</span></div>
+          <p>Isian ini hanya menguji alur formulir, validasi dan daftar. Nama wajib diawali <code>LAB-</code> dan model diawali <code>VIRTUAL-</code>.</p>
+          <form id="device-form" autocomplete="off">
+            <label for="name">Nama perangkat virtual *</label>
+            <input id="name" name="name" maxlength="80" pattern="LAB-[A-Za-z0-9 _.-]+" value="LAB-OLT-01" required>
+            <div class="form-grid">
+              <div><label for="kind">Jenis *</label><select id="kind" name="kind" required>
+                <option value="olt">OLT</option><option value="ont">ONT</option><option value="router">Router</option>
+              </select></div>
+              <div><label for="vendor">Vendor *</label><select id="vendor" name="vendor" required>
+                <option value="ZTE">ZTE</option><option value="C-DATA">C-DATA</option>
+                <option value="VSOL">VSOL</option><option value="MikroTik">MikroTik</option><option value="Other">Other</option>
+              </select></div>
+              <div><label for="model">Model virtual *</label><input id="model" maxlength="80" value="VIRTUAL-C320" pattern="VIRTUAL-[A-Za-z0-9 _.-]+" required></div>
+              <div><label for="pop">POP laboratorium *</label><select id="pop"><option value="lab-pop-a">LAB-POP-A</option><option value="lab-pop-b">LAB-POP-B</option></select></div>
+            </div>
+            <div class="form-notice"><strong>Tidak menghubungi jaringan.</strong> Alamat IP asli, kredensial, serial, upgrade firmware dan discovery dinonaktifkan sampai alur adopsi diaudit.</div>
+            <button class="primary" id="add" type="submit">＋ Tambah ke inventaris demo</button>
+            <p id="form-status" role="status" aria-live="polite">Belum ada perangkat yang dikirim.</p>
+          </form>
+        </section>
+        <section id="readiness" class="panel" aria-labelledby="readiness-title">
+          <div class="section-top"><div><span class="eyebrow">02 / STATUS</span><h2 id="readiness-title">Tahapan adopsi</h2></div><span class="pill amber-pill">PENDING</span></div>
+          <ol class="steps">
+            <li class="current"><b>1. Pendaftaran metadata</b><span>Form dan validasi demo aktif; migrasi kandidat PostgreSQL disiapkan terpisah.</span></li>
+            <li><b>2. Identitas & izin tenant</b><span>Login MFA, keanggotaan, POP dan review harus diverifikasi oleh backend.</span></li>
+            <li><b>3. Review & konfirmasi identitas perangkat</b><span>Jalur manajemen privat, fingerprint/sertifikat, model dan firmware wajib diverifikasi.</span></li>
+            <li><b>4. Uji baca-saja & telemetri</b><span>Status UNKNOWN sampai koneksi dan evidence benar-benar tersedia.</span></li>
+            <li><b>5. Adopsi aktif</b><span>Hanya setelah persetujuan, audit, isolasi tenant dan hasil tes interoperabilitas.</span></li>
+          </ol>
+          <div class="separation"><b>Adopsi nyata tetap terkunci</b><p>Penambahan data inventaris tidak menjalankan SSH, SNMP, TR-069, USP atau update firmware. Tidak ada hasil konektivitas yang dibuat-buat.</p></div>
+        </section>
+      </div>
+      <section class="panel inventory" id="inventory" aria-labelledby="inventory-title">
+        <div class="section-top"><div><span class="eyebrow">03 / INVENTORY</span><h2 id="inventory-title">Daftar kandidat & kondisi</h2></div><button id="refresh" type="button" class="secondary">↻ Muat ulang</button></div>
+        <div class="filters"><label for="pop-filter">Filter POP</label><select id="pop-filter"><option value="all">Semua POP demo</option><option value="lab-pop-a">LAB-POP-A</option><option value="lab-pop-b">LAB-POP-B</option></select>
+          <label for="kind-filter">Filter jenis</label><select id="kind-filter"><option value="all">Semua jenis</option><option value="olt">OLT</option><option value="ont">ONT</option><option value="router">Router</option></select></div>
+        <div class="table-scroll"><table><caption class="sr-only">Kandidat perangkat sintetis; bukan status perangkat nyata</caption>
+          <thead><tr><th>Perangkat</th><th>Jenis / Vendor</th><th>POP</th><th>Status adopsi</th><th>Koneksi</th><th>Kesehatan</th><th>Aksi</th></tr></thead>
+          <tbody id="rows"><tr><td colspan="7">Memuat inventaris demo...</td></tr></tbody>
+        </table></div>
+        <p id="list-status" role="status" aria-live="polite">Belum memuat daftar.</p>
+      </section>
+      <footer>IPAT · Device Manager <span>Mode sintetis, in-memory · perangkat nyata dan produksi NO_GO</span></footer>
+    </main>
+  </div>
+</div>
+</body></html>
