@@ -1,7 +1,7 @@
 # IPAT — Project Status
 
 **As-of:** 2026-09-27 Asia/Jakarta
-**Current milestone:** R7.9 — guarded IP-based remote C320 read-only candidate and vendor-neutral private K3s topology verified in synthetic tests; ACTUAL C320 first read, second-provider cluster, MFA operator onboarding, independent offsite recovery and production rollout remain BLOCKED. Historical milestone evidence is retained below.
+**Current milestone:** R8.0 — signed JWT→actual restricted disposable PostgreSQL→private Axum tenant/POP device INVENTORY software integrated and feature-CI 4/4 VERIFIED (see appended immutable run details); real MFA/customer dashboard, actual hardware, live multi-provider K3s and independent full-host recovery remain BLOCKED. Historical R7.9 and earlier evidence is retained below.
 **Historical R7.1 state (superseded by later entries):** R7.1 original Rust ZTE C320 strict offline read-only evidence parser, owner-private non-network importer, hard-disabled firmware and large RED unfulfilled-PRD warning across all three private dashboard previews FEATURE PR #71 MERGED at code SHA d452d1be6943bb4b3685b2136ad30b587e6af1e9. Both independent feature-PR GitHub CI 36249894205 and post-feature-main CI 36250108104 completed SUCCESS in all four independent jobs (locked Rust/security/UI/OLT offline, disposable Ubuntu26 K3s and two isolated synthetic PostgreSQL recovery jobs, none deployed live). Actual clean unchanged Ubuntu 26.04.1 VPS canonical source, private GitHub and owner FileVault Mac main synchronized at feature SHA; actual VPS rustfmt and 145/145 locked OFFLINE whole-workspace Rust tests, 5/5 synthetic offline CLI permission/data tests, 5/5 source PRD red warning + disabled firmware checks and 7/7 existing R6.8 Python dashboard tests PASS. Existing R6.8 synthetic Node DOM proof rerun on Mac Node v22.22, actual authorized Mac private dashboard served LARGE red PRD alert via real HTTP 200/no-store/CSS high contrast while 3 business APIs remained HTTP401. FileVault Mac encrypted exact merged-feature-source Restic snapshot 63c7c461 independently isolated SHA256 restored plus full encrypted pack read PASS; selected historical root-readable config separately restored, NOT full VPS or real PostgreSQL PITR. Clean main production readiness 8/8 automatic gates PASS, ALL 7/7 independent external safety gates BLOCKED, production NO_GO; live VPS K3s/PostgreSQL/nftables inactive. ZTE C320 actual model/boards/running firmware, authenticated private device route and owner recovery/maintenance approval still unavailable; TC-OLT-01 physical NOT RUN, no firmware update or device changes. Separate physical blocker Issue #72 and high-risk firmware Issue #73 OPEN. Final docs-only checkpoint independent CI, exact updated source synchronization and backup to be logged immutably after docs merge to avoid recursive SHA-changing commits. Developer Mr. iPat.
 
 ## 1. Source of truth and provenance
@@ -1970,3 +1970,82 @@ PENDING at preliminary status entry.
 Existing canonical main remains R7.9
 release until all CI jobs pass.
 Physical TC-OLT-01 NOT RUN.
+
+
+## R8.0 verified integrated VIRTUAL inventory — 2026-09-27
+
+Owner requested completion of as much software integration
+as possible while physical devices remain OFF until
+the next day. Chosen safety scope is a REAL signed
+JWT→restricted PostgreSQL→Axum device inventory
+vertical slice using the SAME synthetic operator
+with independently valid tenant+POP NOC
+membership in TWO different synthetic ISP tenants.
+
+**Exact real disposable integration evidence BEFORE merge:**
+feature commit `1ef12afd7232c04e49d732427fc1182fb1978bdd`
+GitHub Actions run `36291884873` PASS
+4/4 independent jobs. In particular the
+`postgres-rls-restore` job applied actual
+`0005_lab_verified_device_inventory.sql`
+after real 0001-0004 migrations and passed
+4/4 REAL PostgreSQL 16 negative/positive
+device function tests (exact two company
+membership, wrong role/POP/identity,
+revocation/expiration/suspension and
+denial of direct table read), then
+passed the preexisting genuine pinned
+RS256→PostgreSQL menu test AND the NEW
+`r80_real_signed_jwt_to_postgres_tenant_pop_inventory`
+REAL Rust Axum HTTP→signed token→separate
+PostgreSQL restricted login test with
+`1 passed, 0 failed` on the new test.
+ALL customer device fixtures were
+synthetic and only the CI ephemeral
+database held them. The same CI run
+passed locked Rust workspace/negative
+static contracts, separate disposable
+PostgreSQL physical restore, and
+actual Ubuntu26 single-node K3s
+ephemeral smoke; no real cross-cloud
+K3s worker was added.
+
+**Integration defects discovered AND corrected by tests:**
+earlier feature snapshots failed before release,
+first because the expired test fixture violated
+the schema's legitimate CHECK that expires_at
+must postdate created_at; the fixture now
+sets both dates consistently in the past.
+Next, a fragile HTTP assertion assumed only
+one device per tenant, but the SAME real
+disposable database also retained earlier
+synthetic provisioning/outbox test router
+records; corrected assertions validate
+bounded set size, allowed exact POP and
+presence of the known tenant's own
+device rather than assuming a fresh
+empty database. Final feature SHA CI
+above independently passed everything,
+not a claimed unexecuted fix.
+
+**Software limits after passing:** real
+`/v1/platform/*`, `/v1/tenant/*` and
+`/v1/operations/*` still deny HTTP401.
+The new `GET /lab/auth/devices` is
+restricted to NONROOT optional private
+OIDC+PostgreSQL dual opt-in and a
+dedicated reviewed reader role;
+it is NOT active in the default
+private Mac preview because no real
+owner-approved OIDC MFA realm,
+membership/login or production DB
+has been provisioned. NO real ZTE
+OLT, ONT, RouterOS, subscriber
+data, firmware or user-facing
+customer dashboard has been
+activated or verified. This is a
+real integrated software pilot
+with synthetic external identities
+and data only. Actual hardware
+interop and production release
+MUST remain separately gated.

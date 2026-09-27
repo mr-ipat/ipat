@@ -139,3 +139,40 @@ dashboard retrieves production data, and no physical OLT,
 ONT, RouterOS or heterogeneous live cluster acceptance
 has passed. R8.0 is an actual **pre-device synthetic**
 integration slice, not enterprise production completion.
+
+
+## Verified synthetic end-to-end release candidate
+
+Original feature code `1ef12afd7232c04e49d732427fc1182fb1978bdd`
+passed GitHub run `36291884873` all FOUR independent
+jobs. The disposable PostgreSQL job's logs
+showed 4/4 actual SQL integration tests
+AND the actual `r80_real_signed_jwt_to_postgres_tenant_pop_inventory`
+signed RS256→restricted reader→actual Rust
+Axum HTTP test `1 passed, 0 failed`.
+The same synthetic database deliberately
+contained prior provisioning/outbox router
+fixtures, so the correct API assertions
+validate EVERY returned row's exact
+authorized POP and presence of the
+known independent device belonging
+to EACH of the two ISPs, not an
+artificial exactly-one-device
+assumption. A separate earlier
+bad expiry fixture violating the
+database's CHECK was corrected before
+this verified final feature SHA.
+The actual temporary CI test
+password, synthetic JWT and random
+fixture devices are not deployed on
+the real user's production VPS.
+
+This is a meaningful hardware-free
+backend vertical slice, but **not**
+actual human MFA, complete UI
+business authentication, a live
+device session or company onboarding.
+Full source and independent
+post-merge backup/source-sync
+evidence are recorded separately
+only AFTER the actual final merge.
