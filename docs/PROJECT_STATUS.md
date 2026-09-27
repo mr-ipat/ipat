@@ -1,7 +1,7 @@
 # IPAT — Project Status
 
 **As-of:** 2026-09-27 Asia/Jakarta
-**Current milestone:** R8.5 software CANDIDATE — original independent real IdP pinned signed-MFA preflight Rust binary with bounded private FD/no-secret-output and actual independently generated RSA integration tests. Both original R8.4 code-main and final docs-main separately passed 4/4 independent CI; authentic human IdP and browser BFF remain OPEN. R8.5 own GitHub 4/4 CI and release synchronization remain PENDING until executed.
+**Current milestone:** R8.5 VERIFIED SOFTWARE — original independent, strictly private Rust signed-MFA OIDC real-IdP preflight; genuine ephemeral independently signed RSA process tests and exact post-code-merge independent CI 4/4 PASS. Prior R8.4 independent metadata maker-checker also verified. ACTUAL human MFA enrollment, OIDC authorization-code browser BFF, authenticated persistent tenant dashboard, real physical device admission/telemetry and production full recovery remain OPEN. No real provider access was claimed.
 **Historical R7.1 state (superseded by later entries):** R7.1 original Rust ZTE C320 strict offline read-only evidence parser, owner-private non-network importer, hard-disabled firmware and large RED unfulfilled-PRD warning across all three private dashboard previews FEATURE PR #71 MERGED at code SHA d452d1be6943bb4b3685b2136ad30b587e6af1e9. Both independent feature-PR GitHub CI 36249894205 and post-feature-main CI 36250108104 completed SUCCESS in all four independent jobs (locked Rust/security/UI/OLT offline, disposable Ubuntu26 K3s and two isolated synthetic PostgreSQL recovery jobs, none deployed live). Actual clean unchanged Ubuntu 26.04.1 VPS canonical source, private GitHub and owner FileVault Mac main synchronized at feature SHA; actual VPS rustfmt and 145/145 locked OFFLINE whole-workspace Rust tests, 5/5 synthetic offline CLI permission/data tests, 5/5 source PRD red warning + disabled firmware checks and 7/7 existing R6.8 Python dashboard tests PASS. Existing R6.8 synthetic Node DOM proof rerun on Mac Node v22.22, actual authorized Mac private dashboard served LARGE red PRD alert via real HTTP 200/no-store/CSS high contrast while 3 business APIs remained HTTP401. FileVault Mac encrypted exact merged-feature-source Restic snapshot 63c7c461 independently isolated SHA256 restored plus full encrypted pack read PASS; selected historical root-readable config separately restored, NOT full VPS or real PostgreSQL PITR. Clean main production readiness 8/8 automatic gates PASS, ALL 7/7 independent external safety gates BLOCKED, production NO_GO; live VPS K3s/PostgreSQL/nftables inactive. ZTE C320 actual model/boards/running firmware, authenticated private device route and owner recovery/maintenance approval still unavailable; TC-OLT-01 physical NOT RUN, no firmware update or device changes. Separate physical blocker Issue #72 and high-risk firmware Issue #73 OPEN. Final docs-only checkpoint independent CI, exact updated source synchronization and backup to be logged immutably after docs merge to avoid recursive SHA-changing commits. Developer Mr. iPat.
 
 ## 1. Source of truth and provenance
@@ -2758,3 +2758,86 @@ R8.4 production reviewer
 and signed endpoints remain
 OFF on the owner's default
 private preview.
+
+
+## R8.5 independently verified original pinned OIDC real-provider preflight — 2026-09-27
+
+**Exact code release:** PR #98 merged the original
+nonroot Rust `oidc-mfa-preflight` utility,
+strict owner-owned 0700 parent/0600 no-symlink
+pinned PEM, exact original pinned issuer/audience/kid
+and RS256 ephemeral access JWT validation,
+bounded secure non-TTY stdin, signed `amr:mfa`
+check and safe output explicitly denying
+real-human MFA proof and all production rights.
+Fresh independent RSA-2048 key generation and
+ACTUAL Rust subprocess signed positive/no-MFA/
+wrong-kid/attacker-RSA/unsafe-key/symlink/
+oversize and default-denied tests PASSED.
+R8.5 static security tests 4/4 PASSED.
+
+Feature HEAD
+`b36f51e236cbe7027c76eeb07d8ce5ee8b34f94e`
+GitHub run `36312705685` passed ALL
+FOUR independent CI jobs; exact merged
+main code SHA
+`addf812177f709fdef61af4bbc8de53b006831bd`
+was independently tested AFTER MERGE
+in GitHub run `36312938159`,
+also **4/4 SUCCESS**. The suite
+preserved genuine real disposable
+PostgreSQL16 signed synthetic JWT
+maker-checker cross-company negative
+tests and actual recovery exercises,
+original CWMP SOAP/USP protobuf
+virtual proofs, and real
+disposable single-node Ubuntu26 K3s.
+
+**Actual owner execution:** GitHub
+private, owner FileVault Mac and
+authorized clean nonroot Ubuntu26
+VPS canonical source matched exact
+merged code SHA after independent
+SHA256-verified Git bundle clean
+fast-forward. On actual nonroot
+Ubuntu26 canonical source, rustfmt,
+full locked OFFLINE Rust workspace,
+new signed-RSA external CLI tests
+and 4/4 source safety tests passed;
+`oidc-mfa-preflight --requirements`
+printed only external operator
+prerequisites, no subject/token.
+Owner Mac FileVault encrypted
+SOURCE ONLY Restic snapshot
+`7ddfcc9f` was verified
+150/150 packs full-read plus
+isolated SHA256-exact source
+restore, and separately selected
+historical PARTIAL readable root
+config restored. This is NOT
+independent whole-host/customer
+PostgreSQL/K3s datastore disaster
+recovery.
+
+**PRD NOT READY:** No actual
+customer human OIDC issuer/MFA
+account, private token or browser
+session was supplied or created.
+No default device-review routes
+or customer login were activated,
+no physical OLT/ONT/RouterOS
+was connected, no live health
+evidence was fabricated, firmware
+remains disabled. The next MUST
+is independently provisioned
+real operator IdP/MFA
+plus confidential Authorization
+Code+S256 PKCE server-side BFF,
+real signed-in tenant dashboard
+against the existing separately
+restricted PostgreSQL registry,
+actual reviewer workbench and
+approved private hardware read-only
+admission. The fact that a signed
+synthetic JWT passed R8.5 is
+NOT proof actual human MFA.

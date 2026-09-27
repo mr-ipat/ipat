@@ -148,3 +148,58 @@ append-only auditable per-device tasks.
 Firmware remains a separate
 high-risk maintenance workflow after
 independent recovery proof.
+
+
+## Independently verified genuine R8.5 code and limited source recovery
+
+Merged feature PR #98 genuine
+original Rust signed real-provider
+OIDC preflight source
+`addf812177f709fdef61af4bbc8de53b006831bd`.
+Feature GitHub `36312705685`
+and independently separate
+post-code-main `36312938159`
+BOTH **4/4 CI SUCCESS**:
+real external original Rust
+CLI process, fresh independent
+RSA-2048 synthetic signed JWTs,
+exact pinned MFA-positive and
+negative fake-kid, independent
+forged RSA, insecure owner PEM,
+symlink, oversize and opt-in
+refusal. Previous real
+disposable PostgreSQL two-
+company maker-checker, physical
+restore, and disposable Ubuntu26
+single-node K3s regression
+jobs also PASS.
+
+Owner private GitHub, Mac
+and actual clean nonroot
+Ubuntu26 VPS synchronized
+the same exact code SHA
+via checked SHA256 Git bundle
+fast-forward. Actual VPS
+full offline locked workspace
+tests, rustfmt, new 4/4
+static checks and compiled
+CLI `--requirements` PASS.
+Owner FileVault Mac encrypted
+source-only Restic
+`7ddfcc9f` read ALL
+150/150 packs with
+isolated SHA256-exact
+source restore; historical
+selected PARTIAL root
+readable-config restore PASS.
+No whole-system offsite,
+customer PostgreSQL PITR
+or K3s datastore DR proof.
+No real enrolled human IdP,
+MFA challenge, token, browser
+login or physical device
+was used in these tests:
+real-human provisioning
+and conformant provider
+AMR semantics remain
+mandatory next gates.
