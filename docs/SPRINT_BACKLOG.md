@@ -547,3 +547,27 @@ AC-01/02. Do not call a database function directly with
 user-controlled JWT claims/host or enable role membership as a
 temporary bypass. Parallel: actual independently safe read-only
 ZTE C320 inventory prerequisites.
+
+
+## R7.8 integrated private identity-path result and next real gate
+
+MUST lab delivery: real Rust route joins pinned signed JWT,
+disposable PostgreSQL restricted lookup and scoped read-only
+menu computation without activating business endpoints or
+trusting Host/tenant/role claims. CI proves real generated
+RS256 JWT+actual Axum+actual isolated PostgreSQL role
+with positive/negative cross-tenant, cross-role/POP and
+bad token tests. The exact CI result MUST be recorded
+after execution, not inferred from code.
+
+MUST NEXT: operator-trusted identity provider with MFA,
+audited actual human membership enrollment/revocation,
+production-reviewed restricted PostgreSQL user/migrations
+after independent whole-host recovery, server-controlled
+menu for all three real dashboards and authorization
+on real API/DB/jobs. Physical ZTE C320 independent-console
+actual board/firmware read remains separate blocker.
+SHOULD: formal versioned key rotation and CSRF/logout
+when public tenant domains are approved. LATER domain
+branding ipat.fadly.id/ipat.id with ownership/TLS
+and management SSH route separation.

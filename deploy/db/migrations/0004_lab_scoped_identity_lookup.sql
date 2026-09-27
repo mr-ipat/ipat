@@ -23,11 +23,11 @@ CREATE POLICY identity_lookup_pop_select ON
 -- A SQL function cannot itself prove IdP MFA/approved reviewer identity.
 CREATE FUNCTION ipat_platform.lookup_active_membership(
     p_issuer text, p_subject text, p_tenant uuid, p_role text, p_pop text
-) RETURNS TABLE (approved_by text, expires_at timestamptz)
+) RETURNS TABLE (approved_by text, expires_at timestamptz, tenant_slug text)
 LANGUAGE sql STABLE SECURITY DEFINER
 SET search_path = pg_catalog, ipat_platform
 AS $ipat_sql$
-    SELECT m.approved_by, m.expires_at
+    SELECT m.approved_by, m.expires_at, t.tenant_slug
     FROM ipat_platform.identity_memberships AS m
     JOIN ipat_platform.tenants AS t
       ON t.id = m.tenant_id AND t.state = 'active'

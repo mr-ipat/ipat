@@ -118,6 +118,10 @@ jobs:
           IPAT_R69_RUN_SYNTHETIC_HTTP=YES bash deploy/scripts/lab/r69/oidc-private-http-smoke.sh
       - name: R7.7 isolated identity lookup contract (NO production role or public entrypoint)
         run: python3 -m unittest discover deploy/db/tests -p 'test_scoped_identity_lookup_contract.py' -v
+      - name: R7.8 private OIDC->Postgres->menu cannot open public/business endpoints
+        run: |
+          python3 -m unittest discover deploy/db/tests -p 'test_private_menu_contract.py' -v
+          python3 -m py_compile deploy/db/tests/seed_private_http_identity_ci.py
       - name: Verify formatting
         run: cargo fmt --all -- --check
       - name: Run locked unit tests
@@ -216,6 +220,12 @@ jobs:
       - name: R7.7 restricted nonlogin identity-reader SQL negative tests (disposable DB only)
         run: |
           python3 -m unittest discover deploy/db/tests -p 'test_scoped_identity_lookup_integration.py' -v
+      - name: R7.8 real signed JWT to isolated Postgres reader to private Axum menu (synthetic CI ONLY)
+        run: |
+          python3 deploy/db/tests/seed_private_http_identity_ci.py
+          rustup toolchain install 1.98.1 --profile minimal --component rustfmt
+          rustup default 1.98.1
+          cargo test --locked -p control-api tenant_membership_lab::tests::r78_end_to_end_real_signed_jwt_real_restricted_sql_real_axum_router -- --exact
 
 # Separate disposable CI runner and PostgreSQL server process.
   # This rehearses a physical base backup; it is NOT production PITR/offsite HA.

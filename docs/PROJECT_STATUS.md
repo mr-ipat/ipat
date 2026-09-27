@@ -1,7 +1,7 @@
 # IPAT — Project Status
 
 **As-of:** 2026-09-27 Asia/Jakarta
-**Milestone:** R7.4 — explicit dashboard PRD audit per workspace, safe offline C320 isolated-lab prerequisite packet; runtime dashboards and physical TC-OLT-01 remain BLOCKED.
+**Current milestone:** R7.8 — opt-in PRIVATE signed-JWT→restricted PostgreSQL→read-only menu Rust vertical slice, pending independent disposable PostgreSQL CI at initial entry; real IdP/MFA, operational company dashboards and physical C320 TC-OLT-01 remain BLOCKED. Historical R7.4 evidence and all later release checkpoints remain retained below.
 **Historical R7.1 state (superseded by later entries):** R7.1 original Rust ZTE C320 strict offline read-only evidence parser, owner-private non-network importer, hard-disabled firmware and large RED unfulfilled-PRD warning across all three private dashboard previews FEATURE PR #71 MERGED at code SHA d452d1be6943bb4b3685b2136ad30b587e6af1e9. Both independent feature-PR GitHub CI 36249894205 and post-feature-main CI 36250108104 completed SUCCESS in all four independent jobs (locked Rust/security/UI/OLT offline, disposable Ubuntu26 K3s and two isolated synthetic PostgreSQL recovery jobs, none deployed live). Actual clean unchanged Ubuntu 26.04.1 VPS canonical source, private GitHub and owner FileVault Mac main synchronized at feature SHA; actual VPS rustfmt and 145/145 locked OFFLINE whole-workspace Rust tests, 5/5 synthetic offline CLI permission/data tests, 5/5 source PRD red warning + disabled firmware checks and 7/7 existing R6.8 Python dashboard tests PASS. Existing R6.8 synthetic Node DOM proof rerun on Mac Node v22.22, actual authorized Mac private dashboard served LARGE red PRD alert via real HTTP 200/no-store/CSS high contrast while 3 business APIs remained HTTP401. FileVault Mac encrypted exact merged-feature-source Restic snapshot 63c7c461 independently isolated SHA256 restored plus full encrypted pack read PASS; selected historical root-readable config separately restored, NOT full VPS or real PostgreSQL PITR. Clean main production readiness 8/8 automatic gates PASS, ALL 7/7 independent external safety gates BLOCKED, production NO_GO; live VPS K3s/PostgreSQL/nftables inactive. ZTE C320 actual model/boards/running firmware, authenticated private device route and owner recovery/maintenance approval still unavailable; TC-OLT-01 physical NOT RUN, no firmware update or device changes. Separate physical blocker Issue #72 and high-risk firmware Issue #73 OPEN. Final docs-only checkpoint independent CI, exact updated source synchronization and backup to be logged immutably after docs merge to avoid recursive SHA-changing commits. Developer Mr. iPat.
 
 ## 1. Source of truth and provenance
@@ -1645,3 +1645,49 @@ contract tests and Python syntax with success.
 No real database was migrated, no actual
 identity user authenticated, and no real
 device has been read.
+
+
+## R7.8 in-progress private identity→PostgreSQL→menu integration — 2026-09-27
+
+User requested continue and asked for concrete next operator actions.
+Required owner inputs remain: independently trusted read-only
+ZTE C320 local console board/firmware/route/backup metadata;
+tested VPS out-of-band recovery and off-site encrypted
+restore; legitimate MFA-enabled lab IdP operator identity.
+No passwords, serials, private keys or production routes
+are solicited for chat/Git. DNS ipat.fadly.id already
+observed pointing, but it still doubles as the trusted
+lab SSH hostname; NO DNS, TLS, firewall or public UI
+changes are approved before recovery and authentication.
+
+This next slice creates an ACTUAL optional read-only
+Rust Axum endpoint that verifies a genuine RS256 token,
+looks up exact verified issuer+subject and untrusted
+requested tenant UUID/role/POP through the existing
+restricted SQL function and applies the previous
+fail-closed Rust server-side menu policy. Returned
+tenant slug is DB-owned, not extracted from Host.
+A second explicit env flag, owner-only private
+0600 DB config, fixed dedicated SQL role, absolute
+Unix socket and independent private nonroot
+127.0.0.1:3001 bind are required. No customer data,
+real MFA/session or business API is activated.
+
+New source: apps/control-api/src/tenant_membership_lab.rs;
+apps/control-api/src/main.rs, Cargo.toml, Cargo.lock;
+deploy/db/migrations/0004_lab_scoped_identity_lookup.sql
+adds DB-owned tenant_slug projection; disposable
+CI seeded minimal reader fixture; new static safety
+tests and explicit signed JWT+real PostgreSQL+real
+HTTP handler test. Initial source was formatted
+and compiled in an independent nonroot Ubuntu
+VPS worktree (NOT the running main service):
+16/16 Rust control-api tests PASS (the real SQL
+test requires separate CI ephemeral PG env);
+Mac 4/4 R7.8 offline safety checks PASS.
+Independent real PostgreSQL CI not yet concluded
+at first status entry. Default private preview
+and actual business HTTP401 are preserved;
+physical C320 TC-OLT-01 still NOT RUN,
+firmware still HARD DISABLED, public access
+and real VPS PostgreSQL/K3s still NO_GO.

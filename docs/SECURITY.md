@@ -614,3 +614,24 @@ protect dedicated connector credentials and enforce session
 revocation; this slice does NONE of those real app tasks.
 Existing public-domain/SSH recovery and physical OLT gates remain
 blocked; no actual user/business endpoint is enabled.
+
+
+## R7.8 opt-in private signed-JWT-to-PostgreSQL threat boundary
+
+The new private lab requires separately enabled nonroot OIDC and
+restricted DB flags; production K3s cannot mount its route.
+A verified token yields only issuer+subject; requested UUID,
+fixed role and POP are untrusted and independently exact-matched
+in the RLS-protected narrow PostgreSQL function per request.
+Runtime DB config requires a dedicated role, owner 0700 folder
+and O_NOFOLLOW 0600 one-link secret file, with a single ABSOLUTE
+Unix-socket target, never a plaintext TCP listener.
+No role/custom domain can come from Host/forwarded headers or
+JWT extra claims. Even a successful candidate returns NO real
+subscriber/device data, MFAVerified=false and business_access=false;
+all real business APIs remain HTTP401. The synthetic disposable
+CI reader must NEVER be copied to real database/server and
+approver-label alone does not prove authentic approval/MFA.
+Production secrets manager, trusted connection lifecycle,
+session revocation, JWKS pin rotation, MFA and whole-VPS backup
+are still mandatory independent security gates.

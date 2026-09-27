@@ -643,3 +643,23 @@ into membership alone; R7.6 pure menu policy accepts only a
 future independently trusted database result. Never trust Host
 or JWT tenant/role extra claims. All real business HTTP
 namespaces continue unconditional HTTP401. ADR-022 PROPOSED.
+
+
+## R7.8 first PRIVATE joined identity/backend/SQL vertical slice
+
+Private Axum GET /lab/auth/sections (separate loopback :3001, explicit
+OIDC+DB dual opt-in) verifies owner-pinned RS256 issuer+subject;
+it invokes the R7.7 restricted PostgreSQL exact
+issuer+subject+tenant UUID+role+POP read-only function over one
+ABSOLUTE Unix socket using a dedicated role configured only via a
+protected 0600 owner file. The DB function now also returns the
+trusted tenant slug alongside expiration and opaque approver label;
+the existing Rust menu policy recomputes allowed read-only sections
+and rechecks token expiry. Forged Host, JWT extra role or tenant
+claims and client authorization headers never grant rights.
+The owner default preview remains independent :3000.
+No live production IdP, account, Postgres, actual tenant records
+or authenticated real business API is enabled. Dedicated disposable
+CI creates an isolated scoped login actor and exercises real
+RS256 token→actual Axum→actual PostgreSQL→menu positives and
+negatives, not a fake membership fixture.
