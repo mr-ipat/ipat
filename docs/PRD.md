@@ -632,3 +632,34 @@ Software simulated acceptance can be
 completed prior to external device tests;
 simulator success does not certify actual
 equipment or production readiness.
+
+
+## R8.1 native USP protobuf pre-device software acceptance
+
+Native TR-369/USP requirement progresses
+from opaque domain-only synthetic correlation
+to REAL BBF v1.4 protobuf Record/Get
+serialization and strict GetResp
+structural parsing. A separately manually
+encoded independent binary golden fixture
+MUST match the Rust `prost` offline
+Get byte for byte, and valid independent
+GetResp MUST parse through the actual
+Rust process on real Ubuntu26 loopback.
+Negative duplicate protobuf oneof,
+unknown session, unsupported message
+type, malformed/oversize, forged claimed
+agent, wrong simulated tenant/verified
+mock peer, and replay MUST NOT grant
+a session or device write. The explicitly
+opted-in private parser MUST never echo
+raw parameter values or endpoint IDs and
+must not be mounted at all on K3s
+public lab binds. Only real tested
+TLS/MQTT endpoint and approved
+enrollment may later be connected
+to the restricted virtual domain.
+TC-USP-01 actual authenticated agent
+interop remains **NOT RUN**, even
+if the entire R8.1 software slice
+passes CI.

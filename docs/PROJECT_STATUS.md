@@ -1,7 +1,7 @@
 # IPAT — Project Status
 
 **As-of:** 2026-09-27 Asia/Jakarta
-**Current milestone:** R8.0 — signed JWT→actual restricted disposable PostgreSQL→private Axum tenant/POP device INVENTORY software integrated and feature-CI 4/4 VERIFIED (see appended immutable run details); real MFA/customer dashboard, actual hardware, live multi-provider K3s and independent full-host recovery remain BLOCKED. Historical R7.9 and earlier evidence is retained below.
+**Current milestone:** R8.1 — original genuine BBF USP 1.4 protobuf Get/GetResp subset and private Rust Axum virtual-agent structural HTTP integrated on actual nonroot Ubuntu26; trustworthy MQTT MTP, authenticated physical agents, real CWMP service and full product/DR remain OPEN. Prior R8.0 signed JWT→real disposable PostgreSQL→private Axum tenant/POP inventory passed full CI. Detailed immutable evidence is appended below.
 **Historical R7.1 state (superseded by later entries):** R7.1 original Rust ZTE C320 strict offline read-only evidence parser, owner-private non-network importer, hard-disabled firmware and large RED unfulfilled-PRD warning across all three private dashboard previews FEATURE PR #71 MERGED at code SHA d452d1be6943bb4b3685b2136ad30b587e6af1e9. Both independent feature-PR GitHub CI 36249894205 and post-feature-main CI 36250108104 completed SUCCESS in all four independent jobs (locked Rust/security/UI/OLT offline, disposable Ubuntu26 K3s and two isolated synthetic PostgreSQL recovery jobs, none deployed live). Actual clean unchanged Ubuntu 26.04.1 VPS canonical source, private GitHub and owner FileVault Mac main synchronized at feature SHA; actual VPS rustfmt and 145/145 locked OFFLINE whole-workspace Rust tests, 5/5 synthetic offline CLI permission/data tests, 5/5 source PRD red warning + disabled firmware checks and 7/7 existing R6.8 Python dashboard tests PASS. Existing R6.8 synthetic Node DOM proof rerun on Mac Node v22.22, actual authorized Mac private dashboard served LARGE red PRD alert via real HTTP 200/no-store/CSS high contrast while 3 business APIs remained HTTP401. FileVault Mac encrypted exact merged-feature-source Restic snapshot 63c7c461 independently isolated SHA256 restored plus full encrypted pack read PASS; selected historical root-readable config separately restored, NOT full VPS or real PostgreSQL PITR. Clean main production readiness 8/8 automatic gates PASS, ALL 7/7 independent external safety gates BLOCKED, production NO_GO; live VPS K3s/PostgreSQL/nftables inactive. ZTE C320 actual model/boards/running firmware, authenticated private device route and owner recovery/maintenance approval still unavailable; TC-OLT-01 physical NOT RUN, no firmware update or device changes. Separate physical blocker Issue #72 and high-risk firmware Issue #73 OPEN. Final docs-only checkpoint independent CI, exact updated source synchronization and backup to be logged immutably after docs merge to avoid recursive SHA-changing commits. Developer Mr. iPat.
 
 ## 1. Source of truth and provenance
@@ -2049,3 +2049,62 @@ with synthetic external identities
 and data only. Actual hardware
 interop and production release
 MUST remain separately gated.
+
+
+## R8.1 native USP protobuf BEFORE physical agent availability — 2026-09-27
+
+Owner requested continued substantive system development
+without waiting for physical devices. New original
+Rust genuine BBF v1.4 protobuf subset adds
+`crates/usp-core/src/wire14.rs`, pinned
+`prost 0.14.3`, independent hand-coded
+Python binary fixture generator,
+`crates/usp-core/tests/usp14_wire.rs`,
+and a test-only real protobuf Get/response
+through existing tenant-bound mock
+Controller with negative wrong
+tenant, wrong mock identity, replay.
+`apps/usp-controller/src/main.rs` now
+offers only opt-in private loopback
+`POST /lab/inspect-usp14`: real
+prost GetResp inspection with safe
+counts and FALSE agent/tenant/session
+authentication indicators; malformed
+binary/oneof/oversized bodies rejected.
+K3s mode mounts ONLY health, never
+the unauthenticated parser; all
+real service/agent operations remain
+closed. No MQTT, TLS Agent identity,
+real enrollment, queue, physical
+ONT or CWMP session activated.
+
+Independent source/schema provenance:
+BBF v1.4 record raw SHA256
+d32810c332c6ad5b7df3953ad0c8bb9928755c486efca4f57be78effef440435;
+msg raw SHA256
+96f18d5f6912c625126c1f1f917b2fc21f4fd6e3474607b9496e8e3dcdcfd3a8.
+Actual separate nonroot Ubuntu26
+ephemeral Git worktree full locked
+offline Rust workspace tests and
+format pass; real protobuf
+7/7 integration tests PASS,
+controller 6/6 tests PASS,
+genuine binary cross-tenant
+virtual domain test PASS;
+actual loopback live Rust USP
+binary `127.0.0.1:3100`
+HTTP positive/negative/oversized/
+spoofed-header tests PASS and
+exclusive listener verified.
+Owner Mac independent fixture and
+private process contract static
+4/4 PASS, no real network
+device or privileged host change.
+New feature CI not yet recorded
+at preliminary docs timestamp:
+only append its VERIFIED results
+after exact SHA run completes.
+ADR-029 records approved
+virtual slice only. TC-USP-01
+real agent NOT RUN, complete
+USP native MTP still OPEN.

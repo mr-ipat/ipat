@@ -725,3 +725,39 @@ are explicitly configured. This is actual
 software vertical integration with a REAL
 ephemeral database in CI, not real hardware
 telemetry, public SaaS or verified human MFA.
+
+
+## R8.1 genuine USP v1.4 protobuf subset trust boundaries
+
+The original Rust `usp-core::wire14`
+defines a bounded no-session binary
+encoding/decoding subset with genuine
+prost messages mapped to BBF v1.4
+record/message field tags. A separate
+pre-decode field scanner rejects unknown
+record variants and duplicate singular
+or oneof fields before prost can
+silently normalize malformed traffic.
+The offline `encode_offline_get`
+cannot send any network message.
+The structural GetResp inspector
+returns only claimed IDs, correlation
+ID and safe counts to the caller;
+these claimed fields remain UNTRUSTED
+until a FUTURE TLS/MQTT adapter independently
+authenticates device SPKI, tenant
+enrollment, broker topic and controller
+ID. Only that adapter may connect
+to restricted `VerifiedAgent`.
+R8.1's independently encoded real
+binary GetResp fixture is linked
+to an existing synthetic
+`SyntheticController` mock peer
+in test scope; wrong peer, cross-tenant
+and replay are denied. No MTP, queue
+or production device session is
+executed. Optional `usp-controller`
+`/lab/inspect-usp14` private
+loopback only and K3s health-only
+branch enforce separation between
+parsing and real service admission.

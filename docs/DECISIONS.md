@@ -183,3 +183,36 @@ service identity, review of schema-owner threat
 boundaries, eventual pagination and security
 assessment. No approval to migrate an actual
 customer DB or expose real company APIs.
+
+
+## ADR-029 — APPROVED VIRTUAL USP WIRE SLICE / FULL MTP STILL PROPOSED (R8.1)
+
+While the real devices are unavailable, implement a
+native original Rust read-only USP v1.4 **Protocol
+Buffers subset** based on Broadband Forum's
+published `usp-record-1-4.proto` and
+`usp-msg-1-4.proto`, using a pinned `prost`
+dependency and separately hand-encoded
+synthetic binary golden fixtures. The subset
+handles offline no-session Get serialization
+and strictly bounded structural GetResp
+inspection. Its external claimed from/to
+endpoint IDs MUST NOT become trusted tenant
+identity; cryptographic VerifiedAgent
+constructors remain restricted to independently
+authenticated protocol adapters. Duplicate
+or unrecognized record/message/oneof
+fields are rejected, not interpreted
+as unsupported commands; no automatic
+write, session, transport or enrollment.
+A local-only opted-in Axum parser endpoint
+may report safe counts with explicit
+false auth/tenant/session flags, but cannot
+accept actual managed-agent messages.
+In K3s mode even that parser is ABSENT.
+TLS MQTT MTP with independently bound
+client/cert/broker ACLs and durable
+tenant-scoped enrollment remains OPEN;
+the v1.4 subset is NOT certification
+or a silent claim of latest spec coverage.
+See docs/R81_NATIVE_USP14_PROTOBUF_PRIVATE_VIRTUAL_AGENT.md.

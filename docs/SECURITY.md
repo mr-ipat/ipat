@@ -701,3 +701,38 @@ but production still requires session
 revocation and trusted IdP claims policies.
 R8.0 remains READ ONLY and lab-loopback-only,
 not a production RBAC acceptance test.
+
+
+## R8.1 structural protobuf is NOT cryptographic device identity
+
+Threat: untrusted USP `from_id`, `to_id`,
+header message ID or even a valid
+GetResp protobuf could impersonate
+a registered physical agent. R8.1
+unconditionally treats all of them
+as claims, never security principal.
+A single remote binary fixture
+may be parsed only in an explicitly
+opted-in private nonroot loopback
+testing process and returns zero
+identifiers/parameter values in HTTP.
+Faux HTTP X-Agent-Id and tenant headers
+are ignored. Explicit protobuf wire
+pre-scan forbids duplicate scalar/
+oneof and unsupported fields,
+unexpected Msg body, session
+records, reported signatures/TLS
+and unknown extensions. Rust enforces
+bounded body/nested counts.
+K3s-bound mode mounts only
+non-operational health; untrusted
+real `/v1/usp` remains HTTP503.
+Token/certificate verification,
+real MQTT broker topic tenant ACL,
+TLS binding, durable replay across
+workers, real message encryption/
+segmentation, approved controller
+session and physical agent capability
+verification are NOT IMPLEMENTED
+and MUST precede any real USP
+operational endpoint or upgrade.

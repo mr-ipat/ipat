@@ -86,6 +86,15 @@ jobs:
         run: python3 -m unittest discover deploy/scripts/lab -p 'test_cwmp_admission_review.py' -v
       - name: Verify synthetic USP Controller sealed trust and loopback only (static)
         run: python3 -m unittest discover deploy/scripts/lab -p 'test_usp_synthetic_review.py' -v
+      - name: R8.1 real BBF USP 1.4 native protobuf wire GET/GET_RESP strict offline plus real private Axum HTTP
+        run: |
+          python3 deploy/scripts/lab/r81/generate_golden_usp.py
+          python3 -m unittest discover deploy/scripts/lab/r81 -p 'test_*.py' -v
+          bash -n deploy/scripts/lab/r81/usp14-private-http-smoke.sh
+          cargo test --locked -p usp-core --test usp14_wire
+          cargo test --locked -p usp-controller
+          cargo build --locked -p usp-controller
+          IPAT_R81_SYNTHETIC_HTTP=YES bash deploy/scripts/lab/r81/usp14-private-http-smoke.sh
       - name: Verify non-executable sealed provisioning jobs (static)
         run: python3 -m unittest discover deploy/scripts/lab -p 'test_provisioning_synthetic_review.py' -v
       - name: Verify production infrastructure never auto-authorizes unsafe deployment

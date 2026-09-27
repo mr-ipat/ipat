@@ -289,3 +289,22 @@ on this separate operator-authorized READ-only
 R7.9 path. Firmware upgrade still requires
 separate maintenance/recovery proof and explicit
 maker-checker, never implicit connectivity.
+
+
+## R8.1 native USP virtual protobuf evidence ≠ physical agent compatibility
+
+Native original Rust serializer/parser
+now processes actual BBF v1.4 no-session
+Get/GetResp protobuf binary in an isolated
+nonroot virtual test, with a separate
+mock trust-bound synthetic Controller.
+This validates NO specific VSOL, ZTE
+or other ONT's USP Agent support,
+broker binding, model, firmware,
+data model or interoperability.
+TC-USP-01 (authenticated actual
+agent over real MTP) remains
+NOT RUN. All physical device
+matrix status labels remain
+unchanged/untested until exact
+model/firmware/evidence is available.

@@ -7,6 +7,8 @@
 //! VerifiedAgent and TrustedOperator have NO public constructors; future
 //! adapters must verify actual cryptographic identities before creating them.
 
+pub mod wire14;
+
 use std::collections::{HashMap, HashSet};
 use tenant_core::TenantId;
 
@@ -593,5 +595,109 @@ mod tests {
             AgentEnrollment::new(tenant("kangnet"), "agent-x", [0; 32]),
             Err(Error::InvalidEnrollment)
         ));
+    }
+}
+
+#[cfg(test)]
+mod r81_offline_virtual_agent {
+    use super::*;
+    use crate::wire14::{encode_offline_get, inspect_no_session_get_response, WireError};
+    const CORRELATED: &[u8] = include_bytes!("../tests/fixtures/usp14_get_response_correlated.bin");
+
+    #[test]
+    fn actual_protobuf_wire_to_virtual_controller_domain_denies_cross_tenant_and_replay() {
+        // Test-only mock verification: NOT cryptographic mTLS, MQTT or
+        // proof that an untrusted protobuf from_id really owns a certificate.
+        let mut controller = SyntheticController::default();
+        let a = TenantId::parse("tenant-alpha").unwrap();
+        let b = TenantId::parse("tenant-beta").unwrap();
+        controller
+            .enroll(AgentEnrollment::new(a.clone(), "usp::sim-agent-a", [0xa1; 32]).unwrap())
+            .unwrap();
+        controller
+            .enroll(AgentEnrollment::new(b.clone(), "usp::sim-agent-b", [0xb2; 32]).unwrap())
+            .unwrap();
+
+        let operator_a = TrustedOperator { tenant: a.clone() };
+        assert_eq!(
+            controller
+                .plan_read(&operator_a, "usp::sim-agent-b", "Device.DeviceInfo.")
+                .err(),
+            Some(Error::WrongTenant)
+        );
+        let plan = controller
+            .plan_read(&operator_a, "usp::sim-agent-a", "Device.DeviceInfo.")
+            .unwrap();
+        assert_eq!(plan.request_id, "r1");
+        let outbound = encode_offline_get(
+            "usp::offline-controller",
+            &plan.endpoint_id,
+            &plan.request_id,
+            &[&plan.parameter_path],
+        )
+        .unwrap();
+        assert!(!outbound.is_empty());
+        assert_eq!(
+            inspect_no_session_get_response(&outbound).err(),
+            Some(WireError::UnsupportedMessage)
+        );
+
+        // Correlated GetResp is a separately hand-encoded, real USP 1.4
+        // protobuf fixture, not a fake JSON or opaque arbitrary byte reply.
+        let decoded = inspect_no_session_get_response(CORRELATED).unwrap();
+        assert_eq!(decoded.message_id, plan.request_id);
+        assert_eq!(decoded.claimed_from, "usp::sim-agent-a");
+        assert_eq!(decoded.claimed_to, "usp::offline-controller");
+        assert_eq!(decoded.parameter_values, 1);
+        let frame = SyntheticReply {
+            claimed_endpoint_id: &decoded.claimed_from,
+            message_id: &decoded.message_id,
+            in_reply_to: &plan.request_id,
+            payload: CORRELATED,
+        };
+        let wrong_peer = VerifiedAgent {
+            client_spki_sha256: [0xc3; 32],
+        };
+        let verified_mock = VerifiedAgent {
+            client_spki_sha256: [0xa1; 32],
+        };
+        assert_eq!(
+            controller.accept_reply(&wrong_peer, &a, frame).err(),
+            Some(Error::WrongPeer)
+        );
+        assert_eq!(controller.pending_count(), 1);
+        let frame = SyntheticReply {
+            claimed_endpoint_id: &decoded.claimed_from,
+            message_id: &decoded.message_id,
+            in_reply_to: &plan.request_id,
+            payload: CORRELATED,
+        };
+        assert_eq!(
+            controller.accept_reply(&verified_mock, &b, frame).err(),
+            Some(Error::WrongTenant)
+        );
+        let frame = SyntheticReply {
+            claimed_endpoint_id: &decoded.claimed_from,
+            message_id: &decoded.message_id,
+            in_reply_to: &plan.request_id,
+            payload: CORRELATED,
+        };
+        let accepted = controller.accept_reply(&verified_mock, &a, frame).unwrap();
+        assert!(accepted.correlated);
+        assert_eq!(controller.pending_count(), 0);
+        let second = controller
+            .plan_read(&operator_a, "usp::sim-agent-a", "Device.DeviceInfo.")
+            .unwrap();
+        let old = SyntheticReply {
+            claimed_endpoint_id: &decoded.claimed_from,
+            message_id: &decoded.message_id,
+            in_reply_to: &second.request_id,
+            payload: CORRELATED,
+        };
+        assert_eq!(
+            controller.accept_reply(&verified_mock, &a, old).err(),
+            Some(Error::Replay)
+        );
+        assert_eq!(controller.pending_count(), 1);
     }
 }
