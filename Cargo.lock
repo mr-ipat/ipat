@@ -249,6 +249,7 @@ dependencies = [
  "libc",
  "serde",
  "serde_json",
+ "subtle",
  "tempfile",
  "tenant-core",
  "tokio",
@@ -636,10 +637,13 @@ dependencies = [
 name = "identity-core"
 version = "0.1.0"
 dependencies = [
+ "base64",
+ "getrandom 0.3.4",
  "jsonwebtoken",
  "libc",
  "serde",
  "serde_json",
+ "sha2",
  "tempfile",
 ]
 

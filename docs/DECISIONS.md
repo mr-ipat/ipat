@@ -311,3 +311,24 @@ Keycloak/OIDC browser BFF provider/deployment choice
 remains PROPOSED until actual independently approved,
 fully protected production operator enrollment.
 See docs/R85_INDEPENDENT_REAL_IDP_SIGNED_MFA_ADMISSION_PREFLIGHT.md.
+
+
+## ADR-034 — APPROVED LAB-ONLY RUST S256 BROWSER INIT; COMPLETE BFF OPEN (R8.6)
+
+The original private browser Authorization Code PKCE
+initiation may be implemented and independently
+tested while actual IdP/human MFA is unavailable.
+The first reviewed provider shape is the
+Keycloak-candidate exact pinned issuer-associated
+HTTPS authorization endpoint, NOT a claim of
+provider-neutral discovery. Use OS entropy, one-time
+state, independent nonce, RFC7636 S256, bounded
+pending proof, fixed Mac-loopback callback and
+HttpOnly same-site correlation. Even valid returned
+state+code may only be discarded and return HTTP503;
+no customer session, role, token exchange, reviewer
+rights, device access or live user MFA assertion
+may result from the synthetic test. Actual approved
+human IdP+MFA, confidential HTTPS BFF and secure
+tenant-scoped signed-in dashboard are distinct
+OPEN deployment/review milestones.

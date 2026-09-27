@@ -90,12 +90,15 @@ fn invoke(pem: &Path, token: &str, enabled: bool) -> Output {
         .stderr(Stdio::piped())
         .spawn()
         .unwrap();
-    child
-        .stdin
-        .take()
-        .unwrap()
-        .write_all(token.as_bytes())
-        .unwrap();
+    // Intentionally default-denied child may exit BEFORE stdin is written.
+    // BrokenPipe is the expected scheduler-dependent early-denial outcome,
+    // not a reason to fail the regression suite on faster CI runners.
+    let result = child.stdin.take().unwrap().write_all(token.as_bytes());
+    if enabled {
+        result.unwrap();
+    } else if let Err(ref e) = result {
+        assert_eq!(e.kind(), std::io::ErrorKind::BrokenPipe);
+    }
     child.wait_with_output().unwrap()
 }
 #[test]

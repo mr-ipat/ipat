@@ -797,3 +797,29 @@ then actual tenant/POP device
 registry/reviewer workbench.
 Do NOT turn signed-claim checks
 into unverified production endpoints.
+
+
+## R8.6 browser login enabling priority ahead of real device admission
+
+MUST completed source candidate: original Rust PKCE
+OS-random 256-bit state/nonce/verifier, S256, exact
+owner-controlled Keycloak-candidate authorization
+endpoint, fixed strictly local registered redirect,
+bounded state TTL, one-use callback, signed
+OIDC prerequisite and fail-closed HTTP503 with no
+fake session. MUST tests: RFC7636 test vector,
+random uniqueness, malicious Host/cookie/query,
+wrong/replayed/expired state, actual compiled
+Rust/Python HTTP 303/503, CI regression
+for existing signed reviewer/two-tenant SQL.
+MUST next external + software: independently
+approved real operator MFA enrollment, TLS
+confidential server-side OAuth callback
+code redemption and nonce-checked ID token,
+secure host-only session rotation, actual
+DB membership→role+POP verified
+dashboard rendering and server authorization.
+Then complete maker-checker UI and controlled
+read-only physical device identity checks.
+No status may claim real login/adoption
+based on this lab flow alone.

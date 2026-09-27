@@ -1,6 +1,7 @@
 //! R6.9: strict verification of an independently pinned OIDC JWT access token.
 //! Authentication is NOT tenant/role authorization. This crate cannot mint
 //! DashboardSubject or mark a membership approved.
+pub mod browser_pkce;
 use jsonwebtoken::{decode, decode_header, Algorithm, DecodingKey, Validation};
 use serde::Deserialize;
 use std::time::{SystemTime, UNIX_EPOCH};
