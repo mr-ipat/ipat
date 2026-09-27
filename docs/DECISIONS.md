@@ -157,3 +157,29 @@ independent requirements. Provider-independent
 OFFLINE plan code is not production installation
 approval; ADR-017 live network/rollback and
 external recovery gates remain OPEN.
+
+
+## ADR-028 — PROPOSED PRIVATE LAB ONLY: pinned JWT to sealed tenant/POP inventory (R8.0)
+
+Approved implementation scope for VIRTUAL pre-device integration:
+connect the already pinned signed-JWT verifier to a second,
+narrow FORCE-RLS-protected PostgreSQL SECURITY DEFINER
+read-only inventory function, and join its results with an
+active exact membership from the SAME DB statement
+snapshot in actual private Rust Axum. Limit the first
+inventory endpoint to exact POP-scoped NOC membership:
+tenant_admin broad POP access requires separate reviewed
+backend semantics, not a guessed default. No service
+table SELECT, direct browser SQL, shared runtime-role
+grant, user-controlled SET ROLE, auto-generated
+platform privileges or real hardware writes. A
+NOLOGIN function owner gets SELECT on the FORCED
+RLS devices table through its own named SELECT
+policy, and only an EXECUTE-only separately
+provisioned query identity may invoke it.
+Production use still needs trusted actual human
+OIDC/MFA approval provenance, restricted real
+service identity, review of schema-owner threat
+boundaries, eventual pagination and security
+assessment. No approval to migrate an actual
+customer DB or expose real company APIs.

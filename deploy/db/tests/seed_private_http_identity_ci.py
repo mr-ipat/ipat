@@ -22,11 +22,14 @@ def main():
        ('{TA}','{ISSUER}','{SUB}','noc_engineer','CI-APPROVED-A',
           statement_timestamp() + interval '1 day'),
        ('{TB}','{ISSUER}','{SUB}','helpdesk','CI-APPROVED-B',
+          statement_timestamp() + interval '1 day'),
+       ('{TB}','{ISSUER}','{SUB}','noc_engineer','CI-APPROVED-B-NOC',
           statement_timestamp() + interval '1 day')""")
     sql(f"""INSERT INTO ipat_platform.identity_pop_grants
        (tenant_id,issuer,subject,role,pop_id) VALUES
        ('{TA}','{ISSUER}','{SUB}','noc_engineer','pop-a'),
-       ('{TB}','{ISSUER}','{SUB}','helpdesk','pop-b')""")
+       ('{TB}','{ISSUER}','{SUB}','helpdesk','pop-b'),
+       ('{TB}','{ISSUER}','{SUB}','noc_engineer','pop-b')""")
     for table in ("identity_memberships","identity_pop_grants","platform_principals"):
         for privilege in ("SELECT","INSERT","UPDATE","DELETE","TRUNCATE"):
             assert sql(f"SELECT has_table_privilege('ipat_lab_identity_reader','ipat_platform.{table}','{privilege}')::int").stdout.strip()=="0"
