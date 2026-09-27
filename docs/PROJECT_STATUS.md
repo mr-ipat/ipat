@@ -1,7 +1,7 @@
 # IPAT — Project Status
 
 **As-of:** 2026-09-27 Asia/Jakarta
-**Current milestone:** R8.6 IN PROGRESS — original gated private Rust browser S256 PKCE authorization-start+strict replay-safe callback proof; even correct callback deliberately rejects HTTP503 pending real HTTPS confidential token redemption and human MFA. R8.5 pinned signed MFA preflight and R8.4 separate actual disposable SQL maker-checker remain software-verified. Actual real signed-in tenant dashboard, physical device admission/telemetry and full production DR remain OPEN; see latest appended evidence.
+**Current milestone:** R8.7 IN PROGRESS — original Rust OFFLINE cryptographically verified OIDC ID+access token binding now separately validates client/API audiences, same signed identity, PKCE nonce, constant-time at_hash, signed MFA on both, and freshness; initial actual independent RSA negative tests and real nonroot Ubuntu26 locked full workspace PASS. R8.6 private browser callback deliberately returns HTTP503 until an independently approved real human IdP MFA and confidential HTTPS code exchange exist. No authenticated real tenant dashboard, real equipment telemetry or full production DR; latest appended evidence applies.
 **Historical R7.1 state (superseded by later entries):** R7.1 original Rust ZTE C320 strict offline read-only evidence parser, owner-private non-network importer, hard-disabled firmware and large RED unfulfilled-PRD warning across all three private dashboard previews FEATURE PR #71 MERGED at code SHA d452d1be6943bb4b3685b2136ad30b587e6af1e9. Both independent feature-PR GitHub CI 36249894205 and post-feature-main CI 36250108104 completed SUCCESS in all four independent jobs (locked Rust/security/UI/OLT offline, disposable Ubuntu26 K3s and two isolated synthetic PostgreSQL recovery jobs, none deployed live). Actual clean unchanged Ubuntu 26.04.1 VPS canonical source, private GitHub and owner FileVault Mac main synchronized at feature SHA; actual VPS rustfmt and 145/145 locked OFFLINE whole-workspace Rust tests, 5/5 synthetic offline CLI permission/data tests, 5/5 source PRD red warning + disabled firmware checks and 7/7 existing R6.8 Python dashboard tests PASS. Existing R6.8 synthetic Node DOM proof rerun on Mac Node v22.22, actual authorized Mac private dashboard served LARGE red PRD alert via real HTTP 200/no-store/CSS high contrast while 3 business APIs remained HTTP401. FileVault Mac encrypted exact merged-feature-source Restic snapshot 63c7c461 independently isolated SHA256 restored plus full encrypted pack read PASS; selected historical root-readable config separately restored, NOT full VPS or real PostgreSQL PITR. Clean main production readiness 8/8 automatic gates PASS, ALL 7/7 independent external safety gates BLOCKED, production NO_GO; live VPS K3s/PostgreSQL/nftables inactive. ZTE C320 actual model/boards/running firmware, authenticated private device route and owner recovery/maintenance approval still unavailable; TC-OLT-01 physical NOT RUN, no firmware update or device changes. Separate physical blocker Issue #72 and high-risk firmware Issue #73 OPEN. Final docs-only checkpoint independent CI, exact updated source synchronization and backup to be logged immutably after docs merge to avoid recursive SHA-changing commits. Developer Mr. iPat.
 
 ## 1. Source of truth and provenance
@@ -2879,3 +2879,38 @@ The genuine broader CI and final exact source
 backup/release evidence will be appended
 only after it is independently executed.
 Physical equipment and live full system stay CLOSED.
+
+
+## R8.7 in-progress verified isolated signed ID+access binding — 2026-09-27
+
+After merging R8.6 browser PKCE security proof,
+real operator MFA issuer and confidential HTTPS
+code endpoint remain unprovisioned, so actual
+callback continues intentionally discarding
+returned authorization code and HTTP 503.
+To make concrete software progress without
+inventing a fake operator login, a new pure
+original Rust OFFLINE `oidc_id_token`
+verifier was implemented on a separate
+feature branch. It independently checks
+two actually signed RSA ID and access JWTs
+for exact distinct browser/API audiences,
+same issuer+subject, original nonce,
+SHA256 at_hash, signed MFA on both,
+bounded fresh auth_time and key/typ/lifetime.
+It returns no role, tenant, device
+or web session capability.
+
+On the actual authorized nonroot Ubuntu26
+VPS an isolated disposable worktree
+compiled and executed all 5 original real
+ephemeral openssl-RSA signed positive/
+negative token-pair tests PASS; owner
+Mac 4/4 separate static guard tests PASS.
+This is a software-only acceptance checkpoint
+before independent full feature CI and
+postmerge code-main verification.
+No live IdP token, actual customer session,
+real signed-in Device Manager, OLT/ONT,
+network firewall or device firmware
+was modified or connected.

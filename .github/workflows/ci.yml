@@ -131,6 +131,10 @@ jobs:
           cargo test --locked -p control-api
           cargo build --locked -p control-api
           IPAT_R86_BROWSER_TEST=YES bash deploy/scripts/lab/r86/browser-http-smoke.sh
+      - name: R8.7 offline separate OIDC ID-token nonce at_hash signed access token binding (NO SESSION)
+        run: |
+          python3 -m unittest discover deploy/scripts/lab/r87 -p test_r87_contract.py -v
+          cargo test --locked -p identity-core --test oidc_id_token
       - name: Verify non-executable sealed provisioning jobs (static)
         run: python3 -m unittest discover deploy/scripts/lab -p 'test_provisioning_synthetic_review.py' -v
       - name: Verify production infrastructure never auto-authorizes unsafe deployment

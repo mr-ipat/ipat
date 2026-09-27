@@ -886,3 +886,20 @@ provenance, tenant principal or business API access.
 Production requires independently vetted metadata,
 secure confidential BFF over real TLS, DB backed
 server sessions and true approved role+POP membership.
+
+
+## R8.7 original offline OIDC verified token-pair stage (no login)
+
+The planned operator authentication sequence is
+server-owned PKCE state/nonce (R8.6) → externally
+trusted confidential HTTPS code exchange (OPEN)
+→ independent pinned RSA access JWT API audience
+plus ID JWT browser-client audience verification
+(R8.7) → constant-time original nonce and at_hash
+cross-binding → real-human-MFA and exact current
+PostgreSQL tenant/POP membership recheck (OPEN)
+→ Secure HttpOnly host-only short-lived BFF session
+(OPEN). R8.7 builds ONLY the second offline
+pair-verification domain. It is intentionally NOT
+mounted at a browser endpoint and does NOT alter
+existing local fake-device UI or real API denials.
