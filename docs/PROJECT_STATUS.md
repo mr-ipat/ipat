@@ -1325,3 +1325,65 @@ reported before treating source as merged.
   entitlements, API/RLS/cookie/domain negative tests and audit.
   No VPS firewall/K3s/real PostgreSQL deployment in this milestone;
   external seven production safety gates are not bypassed.
+
+
+## R7.4 final code-release lab evidence — 2026-09-27 Asia/Jakarta
+
+- PR #78 is MERGED on GitHub private main at exact code SHA
+  `24bca90e45001aea87440c84b458df025771b8f6`.
+  Its reviewed feature run `36281657014` and independent post-feature
+  main run `36281835353` both completed SUCCESS in all four jobs:
+  Rust workspace/static UI/offline packet, disposable Ubuntu26 K3s,
+  synthetic PostgreSQL RLS/restore and synthetic independent PG recovery.
+  All runners are disposable, not actual HA/K3s production deployment.
+- Owner FileVault Mac created encrypted **SOURCE ONLY** restic snapshot
+  `fc51c909` at exact code SHA; restic full pack read 112/112,
+  isolated restored archive SHA256 and historical partial readable-config
+  restore SHA256 PASS. This remains same-Mac lab backup,
+  NOT complete offsite VPS backup, PG PITR or K3s disaster recovery.
+- Exact SHA-preserving Git bundle transferred from owner Mac to
+  nonprivileged actual Ubuntu 26.04.1 VPS source
+  `/home/openai/workspaces/ipat` with independent SHA256, bundle
+  verification, clean fast-forward. No remote root action,
+  firewall rules, K3s, PostgreSQL or production services changed.
+- Actual VPS nonprivileged `cargo fmt --all -- --check` PASS;
+  `cargo test --workspace --locked --offline -q` PASS for the whole
+  current Rust workspace; R7.4 Python offline validator 8/8 and
+  existing R6.8 private dashboard Python 7/7 PASS there.
+  Mac independently reran Node DOM synthetic role-switch tests
+  and static R7.1 red PRD guard tests.
+- Controlled R5.9 stop/start restarted ONLY tracked nonroot private
+  control-api, with Mac localhost SSH tunnel (not public service).
+  End-to-end R5.9 tunnel and VPS loopback checks PASS.
+  Actual Mac private HTTP GET for preview HTML/JS/CSS returned 200,
+  `Cache-Control: no-store`, includes large red PRD warning,
+  per-dashboard GAP_LEDGER with C320 FR-016/TC-OLT-01, and red CSS.
+  Actual forgery attempts against platform/tenant/operations business
+  API paths all returned HTTP401. This is NOT OIDC/RBAC end-to-end.
+- New Mac owner-private `~/.local/share/ipat/device-intake`
+  and `~/.local/share/ipat/c320-private-packet` directories are
+  mode0700. Example intake metadata is intentionally incomplete,
+  private plan.json mode0600 has every declaration FALSE,
+  stage.json does not exist. Actual R74 --check-packet correctly
+  DENIED: no invented device facts or approval. No credentials stored.
+- First Git push with the host's stale macOS credential helper was
+  rejected for workflow scope, despite current authorized gh login
+  advertising workflow scope. Explicit Git credential-helper override
+  used the verified current gh credential and succeeded, without
+  adding tokens to Git, command flags or chat.
+- PRD decision: preserve v0.1. Only the simulated preview's
+  **visibility of explicit gaps** has improved; all three dashboards
+  remain missing runtime trusted identity/tenant entitlements/data.
+  User declares DEV-01 a nonproduction lab unit; this assertion is
+  NOT independently verified physical evidence. TC-OLT-01 still
+  NOT RUN, no remote OLT connection, no vendor release validation
+  or firmware upgrade. Real device pilot and all seven production
+  external safety gates remain blocked separately.
+- Next MUST: owner privately records actual physical C320 boards,
+  firmware, trusted isolated path and least-privilege read-only user,
+  independent recovery and reviewer; run one separately authorized
+  physical read, review sanitized evidence, update DEVICE_MATRIX
+  for the exact tuple. Dashboard MUST follows verified OIDC/MFA,
+  authoritative tenant/POP membership, server-driven menus and
+  integrated backend/DB negatives; never turn on UI access merely
+  because the browser switches workspace.
