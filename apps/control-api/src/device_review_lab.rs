@@ -388,6 +388,11 @@ mod pg_integration {
             .verify_access_token(&no_mfa)
             .unwrap()
             .signed_mfa_claim());
+        // HTTP expects the signed JWT in the single exact Bearer scheme.
+        // Direct verifier assertions above deliberately use the raw token.
+        let checker = format!("Bearer {checker}");
+        let no_mfa = format!("Bearer {no_mfa}");
+        let self_review = format!("Bearer {self_review}");
         let reviewer = Config::from_str(
             "host=127.0.0.1 port=5432 user=ipat_lab_device_reviewer \
             password=local_ci_synthetic_only dbname=ipat_synthetic",
