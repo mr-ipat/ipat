@@ -1628,3 +1628,20 @@ RLS/POP per request, backend/menu/queue denial and
 physical C320 evidence. Any CI, backup and deployment
 results for R7.7 must be added AFTER independent
 execution, not inferred from scripts.
+
+
+**R7.7 independent feature-CI evidence:** feature commit
+7e131bd52fe714537a21742aa699d13971caad9e
+passed all FOUR GitHub Actions jobs in run 36285594713:
+locked Rust workspace / offline R7.7 5 static
+safety contract tests, disposable PostgreSQL
+RLS + logical restore, R7.0 synthetic memberships
+followed by R7.7 7 exact identity-lookup
+integration tests, independently isolated
+PostgreSQL physical restore and disposable
+Ubuntu 26 K3s smoke. This is CI SYNTHETIC ONLY.
+The owner Mac separately ran the 5 static
+contract tests and Python syntax with success.
+No real database was migrated, no actual
+identity user authenticated, and no real
+device has been read.
