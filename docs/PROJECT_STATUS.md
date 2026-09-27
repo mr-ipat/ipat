@@ -1427,3 +1427,57 @@ restore must be verified separately and not inferred here.
 No C320 device connection or firmware change;
 TC-OLT-01 remains NOT RUN. Existing VPS firewalls/K3s/
 PostgreSQL production safety gates unchanged.
+
+
+## R7.5 independently verified feature/code release — 2026-09-27
+
+- Owner-approved **sequencing** (ADR-020) preserves FR-001/002/003
+  true tenant/POP isolation as mandatory while postponing only
+  FR-004/AC-09 domain ownership, TLS/cookie/hostname isolation
+  until M2 after private integrated lab; ADR-014 design OPEN.
+- Feature PR #80 was merged at exact canonical CODE SHA
+  `1c46df653557cb7ecc940abe3c3eedb674fe4bf8`
+  following all-four-job successful GitHub PR CI `36283055368`.
+  This includes independent locked Rust/security/private HTTP
+  checks, disposable Ubuntu26 K3s, and both separate
+  disposable synthetic PostgreSQL checks.
+- Same owner FileVault Mac encrypted SOURCE-only Restic
+  snapshot `9c38f61c` at the exact reviewed code SHA
+  verified 116/116 pack read, isolated exact SHA256 source
+  restore and historical selected partial readable-config
+  restore. This does NOT close independent offsite DR,
+  full VPS/PG/K3s or public deployment recovery gates.
+- SHA256-verified Git bundle delivered code SHA to the existing
+  nonprivileged actual Ubuntu 26.04.1 VPS checkout via
+  independently known SSH host, clean fast-forward.
+  Real VPS `cargo fmt --all -- --check` and complete
+  `cargo test --workspace --locked --offline` PASS;
+  preexisting synthetic R6.8 Python 7/7 and R7.4
+  offline packet 8/8 PASS. No root installation or
+  live PostgreSQL/K3s/firewall changes.
+- Controlled R5.9 strict stop/start updated ONLY the
+  nonroot private loopback dashboard preview, retaining
+  localhost SSH Mac tunnel and exact source Git hash.
+  Actual Mac HTTP GET rollout-phase was JSON validated:
+  custom domains/public hostnames/real customer login,
+  physical connections, firmware and E2E isolation
+  all DISABLED/UNVERIFIED, while tenant isolation mandatory TRUE.
+  Manifest was no-store, POST/PUT/DELETE each HTTP405,
+  private UI rendered the MUST-not-defer isolation banner,
+  and forged Platform/Tenant/Operations API requests
+  all returned HTTP401.
+- This release changed scheduling/visibility and
+  a private static release-state contract ONLY.
+  It did NOT implement OIDC/MFA, real tenant membership,
+  live ACS/USP sessions, customer-domain routing or
+  authenticated C320 network reads. Owner lab packet still
+  all false; actual physical C320 TC-OLT-01 NOT RUN.
+  All seven production external safety gates remain open.
+- Independent POST-MERGE MAIN CI run `36283225844` at exact
+  merged code SHA `1c46df653557cb7ecc940abe3c3eedb674fe4bf8`
+  independently completed SUCCESS in all four jobs, including
+  real disposable Ubuntu26 K3s smoke, locked Rust/security/UI,
+  synthetic PG RLS/restore and separate synthetic PG physical
+  recovery. None activated real VPS K3s, PostgreSQL or firewall.
+  Final docs-only merge, exact docs main SHA backup and final
+  docs-main CI must be verified separately after this checkpoint.
