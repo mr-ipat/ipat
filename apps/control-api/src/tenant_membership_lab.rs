@@ -1050,30 +1050,39 @@ mod tests {
             let body: Value = serde_json::from_slice(&out).unwrap();
             assert_eq!(body["source"], "restricted-postgresql");
             assert_eq!(body["tenant_slug"], slug);
-            assert_eq!(body["count"], 1);
-            assert_eq!(body["devices"][0]["id"], required);
-            assert_eq!(body["devices"][0]["adoption_state"], "pending_review");
-            assert_eq!(body["devices"][0]["connectivity"], "unknown");
-            assert_eq!(body["devices"][0]["health"], "not_measured");
-            assert!(body["devices"][0]["last_verified_at"].is_null());
+            // Earlier genuine disposable SQL tests leave OTHER, legitimate
+            // draft rows belonging to the same approved ISP. Tenant admins
+            // must see their whole tenant, not a synthetic exactly-one row.
+            let items = body["devices"].as_array().unwrap();
+            assert!(!items.is_empty() && items.len() <= 100);
+            assert_eq!(body["count"].as_u64().unwrap() as usize, items.len());
+            assert!(items.iter().any(|d| d["id"] == required));
+            assert!(items.iter().all(|d| d["adoption_state"] == "pending_review"
+                && d["connectivity"] == "unknown"
+                && d["health"] == "not_measured"
+                && d["last_verified_at"].is_null()));
             assert!(!String::from_utf8_lossy(&out).contains(foreign));
             assert!(!String::from_utf8_lossy(&out).contains("synthetic-operator"));
         }
-        for (path, id) in [
+        for (path, id, assigned_pop) in [
             (
                 format!("/lab/auth/device-candidates?tenant_id={a}&role=noc_engineer&pop_id=pop-a"),
                 id_a.as_str(),
+                "pop-a",
             ),
             (
                 format!("/lab/auth/device-candidates?tenant_id={b}&role=noc_engineer&pop_id=pop-b"),
                 id_b,
+                "pop-b",
             ),
         ] {
             let r = invoke(app.clone(), &path, "GET", Some(&bearer), None).await;
             assert_eq!(r.status(), StatusCode::OK);
             let b: Value =
                 serde_json::from_slice(&to_bytes(r.into_body(), 8192).await.unwrap()).unwrap();
-            assert_eq!(b["devices"][0]["id"], id);
+            let items = b["devices"].as_array().unwrap();
+            assert!(items.iter().any(|d| d["id"] == id));
+            assert!(items.iter().all(|d| d["pop_id"] == assigned_pop));
         }
         for path in [
             format!("/lab/auth/device-candidates?tenant_id={b}&role=noc_engineer&pop_id=pop-a"),
