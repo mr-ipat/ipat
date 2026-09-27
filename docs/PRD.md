@@ -604,3 +604,31 @@ providers. No user request changes the external
 recovery/restore gates before live host install.
 R7.9 delivers a strict OFFLINE topology planner,
 not actual cross-provider measured scaling.
+
+
+## R8.0 virtual pre-device acceptance step (not hardware interoperability)
+
+Owner explicitly approves continuing software development
+while the laboratory devices are offline. The next
+integrated virtual-lab MUST prove a cryptographically
+verified short-lived synthetic JWT for one lab operator
+with valid NOC memberships in TWO synthetic ISPs:
+each explicit tenant+POP returns ONLY that ISP's
+devices from an ACTUAL disposable PostgreSQL database
+through REAL Rust Axum and restricted SQL security.
+Cross-tenant/POP/role, expired/revoked, unsigned,
+forged Host and unapproved platform impersonation
+must fail closed; no real data HTTP API or firmware
+action is enabled. R8.0 implements sealed private
+`/lab/auth/devices` read-only bounded inventory.
+Before real customer delivery, a real MFA IdP,
+trusted approver workflow, independently scoped
+production data/API/queue, complete dashboard
+rendering, physical C320 firmware/CLI and
+ONT/RouterOS interoperability, multi-node
+K3s measurements and offsite whole-host
+database/etcd recovery remain MUST items.
+Software simulated acceptance can be
+completed prior to external device tests;
+simulator success does not certify actual
+equipment or production readiness.

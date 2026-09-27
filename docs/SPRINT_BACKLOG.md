@@ -602,3 +602,33 @@ the private tunnel, node join/drain,
 and offsite whole-host recovery.
 No real root installation on the original
 VPS while rescue/restore gates fail.
+
+
+## R8.0 accelerated offline-before-devices system integration
+
+MUST now: actual Rust `/lab/auth/devices` joins
+signed pinned JWT, existing tenant/POP membership,
+new sealed FORCE-RLS device query and verified
+read-only Rust policy. Synthetic test operator
+has legitimate memberships for two distinct
+ISP UUIDs, but cannot mix their devices or
+POP scopes. Add actual disposable PostgreSQL
+function/role/tenant negative tests plus signed
+HTTP end-to-end CI and on-VPS locked
+Rust workspace tests. Ensure feature defaults
+OFF and real business data APIs remain 401.
+
+MUST after: operator-approved actual MFA OIDC
+and real scoped PostgreSQL login, completely
+isolated full business REST and UI data
+bindings, actual ACS/USP simulators with
+versioned firmware-specific protocol fixtures,
+real router/OLT integrations only once available.
+Independent actual offsite whole-host restore
+is a hard prerequisite before production
+K3s and public TLS routing. SHOULD prepare
+virtual diagnostic/provisioning cross-protocol
+scenarios and second hetero node network tests.
+LATER real firmware upgrade with separate
+maker-checker and independently proven
+device recovery.

@@ -187,9 +187,131 @@ async fn sections(
         })),
     )
 }
+// R8.0: actual restricted PostgreSQL device inventory, NOT a real company API.
+// Explicitly POP-scoped NOC only; no guessed administrator all-POP escalation.
+async fn devices(
+    State(store): State<Arc<Store>>,
+    headers: HeaderMap,
+    Query(query): Query<ScopeRequest>,
+) -> (StatusCode, HeaderMap, Json<Value>) {
+    let Some(subject) = verified_bearer(&store.verifier, &headers) else {
+        return reject(StatusCode::UNAUTHORIZED);
+    };
+    // The requested role is only a selector, never a JWT/header entitlement:
+    // the sealed DB function separately verifies signed issuer/subject,
+    // tenant/role/POP membership, tenant state, expiry and revocation.
+    if query.role != "noc_engineer" {
+        return reject(StatusCode::FORBIDDEN);
+    }
+    let Ok(tenant_uuid) = Uuid::parse_str(&query.tenant_id) else {
+        return reject(StatusCode::BAD_REQUEST);
+    };
+    if tenant_uuid.hyphenated().to_string() != query.tenant_id {
+        return reject(StatusCode::BAD_REQUEST);
+    }
+    let Some(pop) = query.pop_id.as_deref().filter(|p| valid_pop(p)) else {
+        return reject(StatusCode::FORBIDDEN);
+    };
+    let Ok((client, connection)) = store.db.connect(NoTls).await else {
+        return reject(StatusCode::SERVICE_UNAVAILABLE);
+    };
+    let conn_task = tokio::spawn(async move {
+        let _ = connection.await;
+    });
+    // Both membership and data rows are read from the SAME PostgreSQL
+    // statement/snapshot; no untrusted SET ROLE or tenant GUC.
+    // Only these two narrow SECURITY DEFINER functions are executable by
+    // this account; it has zero direct SELECT on devices or subscribers.
+    let rows = client
+        .query(
+            "WITH permit AS MATERIALIZED (
+           SELECT approved_by,EXTRACT(EPOCH FROM expires_at)::bigint AS expires,
+                  tenant_slug
+           FROM ipat_platform.lookup_active_membership($1,$2,$3::uuid,$4,$5)
+         )
+         SELECT permit.approved_by,permit.expires,permit.tenant_slug,
+                d.id::text,d.pop_id,d.device_kind,d.vendor,d.exact_model,d.firmware
+         FROM permit
+         LEFT JOIN LATERAL ipat_platform.list_authorized_lab_devices(
+             $1,$2,$3::uuid,$4,$5
+         ) AS d ON true
+         ORDER BY d.id",
+            &[
+                &subject.issuer(),
+                &subject.subject(),
+                &tenant_uuid,
+                &query.role,
+                &Some(pop),
+            ],
+        )
+        .await;
+    drop(client);
+    conn_task.abort();
+    let Ok(rows) = rows else {
+        return reject(StatusCode::SERVICE_UNAVAILABLE);
+    };
+    let Some(first) = rows.first() else {
+        return reject(StatusCode::FORBIDDEN);
+    };
+    let approved_by: String = first.get(0);
+    let expires: i64 = first.get(1);
+    let slug: String = first.get(2);
+    let (Ok(tenant), Ok(expires_at)) = (TenantId::parse(&slug), u64::try_from(expires)) else {
+        return reject(StatusCode::SERVICE_UNAVAILABLE);
+    };
+    let record = CandidateMembershipRow {
+        issuer: subject.issuer(),
+        subject: subject.subject(),
+        tenant: &tenant,
+        role: DashboardRole::NocEngineer,
+        approved_by: &approved_by,
+        authorized_pops: &[pop],
+        expires_at,
+        revoked: false,
+    };
+    let Some(clock) = now() else {
+        return reject(StatusCode::SERVICE_UNAVAILABLE);
+    };
+    if !visible_for_verified_candidate(&subject, &tenant, Some(pop), &record, clock)
+        .contains(&DashboardSection::OperationsInventory)
+    {
+        return reject(StatusCode::FORBIDDEN);
+    }
+    let mut items = Vec::new();
+    for row in rows {
+        let Some(id): Option<String> = row.get(3) else {
+            continue; // approved but ZERO devices in this exact POP
+        };
+        let row_pop: String = row.get(4);
+        if row_pop != pop {
+            return reject(StatusCode::SERVICE_UNAVAILABLE);
+        }
+        let kind: String = row.get(5);
+        let vendor: String = row.get(6);
+        let model: Option<String> = row.get(7);
+        let firmware: Option<String> = row.get(8);
+        items.push(json!({
+            "id":id,"pop_id":row_pop,"device_kind":kind,
+            "vendor":vendor,"exact_model":model,"firmware":firmware
+        }));
+    }
+    let count = items.len();
+    (
+        StatusCode::OK,
+        no_store(),
+        Json(json!({
+            "lab_only":true,"source":"restricted-postgresql",
+            "mfa_verified":false,"real_business_access_enabled":false,
+            "tenant_slug":tenant.as_str(),"pop_id":pop,
+            "limit":100,"count":count,"devices":items
+        })),
+    )
+}
+
 pub(super) fn router(store: Arc<Store>) -> Router {
     Router::new()
         .route("/lab/auth/sections", get(sections))
+        .route("/lab/auth/devices", get(devices))
         .with_state(store)
 }
 fn read_owner_file(path: &Path) -> Result<String, &'static str> {
@@ -388,6 +510,120 @@ mod tests {
             assert!(!valid_private_db_config(&cfg),"unsafe database transport/user/options accepted");
         }
     }
+    #[tokio::test]
+    async fn r80_real_signed_jwt_to_postgres_tenant_pop_inventory() {
+        // This test is deliberately SKIPPED outside CI's disposable PG.
+        if std::env::var("IPAT_PG_EPHEMERAL_TEST").as_deref() != Ok("1") {
+            return;
+        }
+        assert_eq!(std::env::var("PGHOST").unwrap(), "127.0.0.1");
+        assert_eq!(std::env::var("PGDATABASE").unwrap(), "ipat_synthetic");
+        assert_eq!(
+            std::env::var("IPAT_PG_SYNTHETIC_PASSWORD").unwrap(),
+            "local_ci_synthetic_only"
+        );
+        let (verifier, bearer, _synthetic_key) = synthetic_token();
+        let db = Config::from_str(
+            "host=127.0.0.1 port=5432 user=ipat_lab_identity_reader \
+             password=local_ci_synthetic_only dbname=ipat_synthetic",
+        )
+        .unwrap();
+        let store = Arc::new(Store {
+            verifier: verifier.clone(),
+            db,
+        });
+        let router = crate::app_with_lab_identity_and_store(true, Some(verifier), Some(store));
+        let a = "11111111-1111-4111-8111-111111111111";
+        let b = "22222222-2222-4222-8222-222222222222";
+        let good = format!("/lab/auth/devices?tenant_id={a}&role=noc_engineer&pop_id=pop-a");
+        let result = call(router.clone(), &good, Some(&bearer), "GET").await;
+        assert_eq!(result.status(), StatusCode::OK);
+        assert_eq!(result.headers()[header::CACHE_CONTROL], "no-store");
+        let bytes = to_bytes(result.into_body(), 8192).await.unwrap();
+        let body: Value = serde_json::from_slice(&bytes).unwrap();
+        assert_eq!(body["lab_only"], true);
+        assert_eq!(body["real_business_access_enabled"], false);
+        assert_eq!(body["mfa_verified"], false);
+        assert_eq!(body["source"], "restricted-postgresql");
+        assert_eq!(body["tenant_slug"], "tenant-alpha");
+        assert_eq!(body["pop_id"], "pop-a");
+        assert_eq!(body["count"], 1);
+        assert_eq!(
+            body["devices"][0]["id"],
+            "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
+        );
+        assert_eq!(body["devices"][0]["vendor"], "synthetic");
+        let raw = String::from_utf8(bytes.to_vec()).unwrap();
+        assert!(!raw.contains("bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb"));
+        assert!(!raw.contains("eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee"));
+        assert!(!raw.contains("CI-APPROVED"));
+        assert!(!raw.contains("synthetic-operator"));
+        // SAME signed subject genuinely approved for the other synthetic
+        // tenant can see only that tenant's distinct POP and device.
+        let other = format!("/lab/auth/devices?tenant_id={b}&role=noc_engineer&pop_id=pop-b");
+        let response = call(router.clone(), &other, Some(&bearer), "GET").await;
+        assert_eq!(response.status(), StatusCode::OK);
+        let data = to_bytes(response.into_body(), 8192).await.unwrap();
+        let other_body: Value = serde_json::from_slice(&data).unwrap();
+        assert_eq!(other_body["tenant_slug"], "tenant-beta");
+        assert_eq!(other_body["count"], 1);
+        assert_eq!(
+            other_body["devices"][0]["id"],
+            "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb"
+        );
+        assert!(!String::from_utf8_lossy(&data).contains("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"));
+        for bad in [
+            format!("/lab/auth/devices?tenant_id={a}&role=noc_engineer&pop_id=pop-b"),
+            format!("/lab/auth/devices?tenant_id={a}&role=noc_engineer&pop_id=other-pop"),
+            format!("/lab/auth/devices?tenant_id={b}&role=noc_engineer&pop_id=pop-a"),
+            format!("/lab/auth/devices?tenant_id={b}&role=helpdesk&pop_id=pop-b"),
+            format!("/lab/auth/devices?tenant_id={a}&role=platform_owner&pop_id=pop-a"),
+            format!("/lab/auth/devices?tenant_id={a}&role=tenant_admin"),
+        ] {
+            assert_eq!(
+                call(router.clone(), &bad, Some(&bearer), "GET")
+                    .await
+                    .status(),
+                StatusCode::FORBIDDEN,
+                "{bad}"
+            );
+        }
+        assert_eq!(
+            call(router.clone(), &good, None, "GET").await.status(),
+            StatusCode::UNAUTHORIZED
+        );
+        assert_eq!(
+            call(router.clone(), &good, Some("Bearer fake"), "GET")
+                .await
+                .status(),
+            StatusCode::UNAUTHORIZED
+        );
+        assert_eq!(
+            call(router.clone(), &good, Some(&bearer), "POST")
+                .await
+                .status(),
+            StatusCode::METHOD_NOT_ALLOWED
+        );
+        for route in [
+            "/v1/platform/tenants",
+            "/v1/tenant/devices",
+            "/v1/operations/devices",
+        ] {
+            assert_eq!(
+                call(router.clone(), route, Some(&bearer), "GET")
+                    .await
+                    .status(),
+                StatusCode::UNAUTHORIZED
+            );
+        }
+        assert_eq!(
+            call(crate::app_with_lab(true), &good, Some(&bearer), "GET")
+                .await
+                .status(),
+            StatusCode::NOT_FOUND
+        );
+    }
+
     #[tokio::test]
     async fn r78_end_to_end_real_signed_jwt_real_restricted_sql_real_axum_router() {
         // No local Postgres, no implicit run against live VPS. CI explicitly

@@ -695,3 +695,33 @@ primary/standby + offhost PITR are future
 HA design gates. Rust protocol/worker safety
 continues to require bounded idempotent jobs,
 tenant/POP authorization, no device auto-write.
+
+
+## R8.0 real SQL-backed virtual inventory inside private identity bridge
+
+A second read-only private `/lab/auth/devices` handler
+extends R7.8's actual Rust Axum, pinned RS256 token
+verifier, private nonroot listener and dedicated
+EXECUTE-only identity PostgreSQL role. A new
+`0005_lab_verified_device_inventory.sql` sealed
+SECURITY DEFINER function returns bounded device
+inventory only when the exact signed issuer+subject,
+requested tenant UUID, NOC read-only role and
+exact approved POP grant exist, the tenant is active,
+the membership is currently approved, unexpired
+and unrevoked and device tenant/POP both match.
+The named function-owner policy exists alongside
+the existing application RLS policies;
+`ipat_app_runtime` and the query service account
+gain NO new direct table read privilege.
+One materialized SQL-statement snapshot retrieves
+membership and scoped devices; the Rust
+`OperationsInventory` policy rechecks authorization
+before any result. All default/public business
+routes remain 401, while the new virtual-lab
+resource remains absent unless the existing
+two independent private OIDC+DB opt-in switches
+are explicitly configured. This is actual
+software vertical integration with a REAL
+ephemeral database in CI, not real hardware
+telemetry, public SaaS or verified human MFA.

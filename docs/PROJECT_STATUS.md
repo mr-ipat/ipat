@@ -1929,3 +1929,44 @@ and production NO_GO. ADR-025
 approved product direction,
 ADR-026 technical private overlay
 proposal pending real measurements.
+
+
+## R8.0 software-first milestone — 2026-09-27 (before physical devices online)
+
+Owner requests proceeding with software completion and
+virtual integration while the actual OLT/ONT/
+MikroTik devices are unavailable until tomorrow.
+Continuing real working modules NOW is approved;
+no premature claim of real hardware compatibility,
+customer readiness or enterprise deployment.
+
+New code under review: actual Rust private
+`/lab/auth/devices` route in
+`apps/control-api/src/tenant_membership_lab.rs`;
+`deploy/db/migrations/0005_lab_verified_device_inventory.sql`
+sealed tenant/POP/role/revocation/expiry
+function; disposable PostgreSQL negative SQL
+tests; real signed JWT→restricted Postgres→
+real Axum inventory HTTP integration test
+for TWO valid ISP membership grants with
+same synthetic signed principal.
+Only NOC exact POP permitted for initial
+inventory, 100 maximum read-only devices.
+This remains loopback opt-in-only and does
+not activate platform/tenant/NOC business
+HTTP endpoints, real IdP/MFA, database
+on real VPS, C320 or firmware.
+
+Initial owner Mac 4/4 static contract checks
+PASS; actual independent nonroot Ubuntu26
+separate worktree full offline locked Rust
+workspace compile/tests and formatting
+PASS for new route (18 control API
+tests compiled and ran; ephemeral
+PostgreSQL-only test body requires CI
+environment). Actual live disposable
+Postgres migration/integration CI is
+PENDING at preliminary status entry.
+Existing canonical main remains R7.9
+release until all CI jobs pass.
+Physical TC-OLT-01 NOT RUN.

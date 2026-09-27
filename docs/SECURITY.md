@@ -668,3 +668,36 @@ ingress, network overlap and fake privacy
 claims behind a public route/NAT. Independent
 out-of-band rescue and offsite complete restore
 remain actual prerequisites before live K3s.
+
+
+## R8.0 private JWT→actual bounded device inventory threat boundary
+
+The new private lab inventory handler refuses missing
+or invalid pinned-signed JWT (401), unsupported
+role/wrong tenant/POP (403), and DB unavailable (503),
+with no bearer, issuer, approver or unscoped data
+in its response or logs. Host and extra JWT claims
+cannot select a tenant/role or bypass sealed SQL.
+A dedicated NOLOGIN function owner receives
+targeted FORCE-RLS SELECT on the device table
+only; its function rechecks SAME-tenant AND
+same-POP conditions against active membership,
+explicit POP grant, unrevoked and unexpired status.
+A separate NOLOGIN EXECUTE-only query role
+receives no additional table SELECT.
+An independently provisioned restricted login
+is created ONLY on disposable CI Postgres.
+The caller still has to prove its own pinned
+JWT and independently trusted MFA+enrollment
+before actual users; knowing arbitrary
+issuer+subject would make unrestricted
+direct function access a membership oracle
+if future operators granted query role to
+untrusted actors. NEVER expose it directly.
+A single SQL statement/snapshot and
+post-query Rust capability check reduce
+TOCTOU risk for this virtual lab,
+but production still requires session
+revocation and trusted IdP claims policies.
+R8.0 remains READ ONLY and lab-loopback-only,
+not a production RBAC acceptance test.
