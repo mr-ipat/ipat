@@ -1,7 +1,7 @@
 # IPAT — Project Status
 
 **As-of:** 2026-09-27 Asia/Jakarta
-**Current milestone:** R8.7 IN PROGRESS — original Rust OFFLINE cryptographically verified OIDC ID+access token binding now separately validates client/API audiences, same signed identity, PKCE nonce, constant-time at_hash, signed MFA on both, and freshness; initial actual independent RSA negative tests and real nonroot Ubuntu26 locked full workspace PASS. R8.6 private browser callback deliberately returns HTTP503 until an independently approved real human IdP MFA and confidential HTTPS code exchange exist. No authenticated real tenant dashboard, real equipment telemetry or full production DR; latest appended evidence applies.
+**Current milestone:** R8.7 VERIFIED offline signed OIDC ID+access token binding; original Rust code PR #102 merged and both feature plus independently post-code-main GitHub four CI jobs SUCCESS, full locked nonroot Ubuntu26 proof, encrypted source-only backup verified. R8.6 browser still deliberately rejects callback HTTP503 until approved real human IdP/MFA, confidential HTTPS exchange, secure session and separately approved PostgreSQL tenant/POP membership. Actual signed-in customer Device Manager, real physical device adoption and whole-system DR remain OPEN; see newest appended immutable evidence.
 **Historical R7.1 state (superseded by later entries):** R7.1 original Rust ZTE C320 strict offline read-only evidence parser, owner-private non-network importer, hard-disabled firmware and large RED unfulfilled-PRD warning across all three private dashboard previews FEATURE PR #71 MERGED at code SHA d452d1be6943bb4b3685b2136ad30b587e6af1e9. Both independent feature-PR GitHub CI 36249894205 and post-feature-main CI 36250108104 completed SUCCESS in all four independent jobs (locked Rust/security/UI/OLT offline, disposable Ubuntu26 K3s and two isolated synthetic PostgreSQL recovery jobs, none deployed live). Actual clean unchanged Ubuntu 26.04.1 VPS canonical source, private GitHub and owner FileVault Mac main synchronized at feature SHA; actual VPS rustfmt and 145/145 locked OFFLINE whole-workspace Rust tests, 5/5 synthetic offline CLI permission/data tests, 5/5 source PRD red warning + disabled firmware checks and 7/7 existing R6.8 Python dashboard tests PASS. Existing R6.8 synthetic Node DOM proof rerun on Mac Node v22.22, actual authorized Mac private dashboard served LARGE red PRD alert via real HTTP 200/no-store/CSS high contrast while 3 business APIs remained HTTP401. FileVault Mac encrypted exact merged-feature-source Restic snapshot 63c7c461 independently isolated SHA256 restored plus full encrypted pack read PASS; selected historical root-readable config separately restored, NOT full VPS or real PostgreSQL PITR. Clean main production readiness 8/8 automatic gates PASS, ALL 7/7 independent external safety gates BLOCKED, production NO_GO; live VPS K3s/PostgreSQL/nftables inactive. ZTE C320 actual model/boards/running firmware, authenticated private device route and owner recovery/maintenance approval still unavailable; TC-OLT-01 physical NOT RUN, no firmware update or device changes. Separate physical blocker Issue #72 and high-risk firmware Issue #73 OPEN. Final docs-only checkpoint independent CI, exact updated source synchronization and backup to be logged immutably after docs merge to avoid recursive SHA-changing commits. Developer Mr. iPat.
 
 ## 1. Source of truth and provenance
@@ -2914,3 +2914,98 @@ No live IdP token, actual customer session,
 real signed-in Device Manager, OLT/ONT,
 network firewall or device firmware
 was modified or connected.
+
+
+## R8.7 verified independent full CI and actual nonroot Ubuntu26 release — 2026-09-27
+
+Feature PR #102 added the original strict
+OFFLINE cryptographic OIDC ID JWT and
+independently pinned access JWT cross-token
+binding. The feature HEAD
+`be3df17377ef57076de7931655be8a6d94e26923`
+had independent GitHub Actions run
+`36317730147` SUCCESS 4/4:
+unit-tests (genuine real ephemeral
+RSA-signed ID+access fixture tests),
+real ephemeral PostgreSQL16
+tenant/POP/maker-checker, separate
+ephemeral PostgreSQL physical restore,
+and real disposable Ubuntu26
+single-node checksum-pinned K3s.
+It merged on canonical main as EXACT
+code SHA
+`c45e09bc772ef0eab36c458e87d1123692cd9a59`.
+A separately triggered independent
+POST-CODE-MERGE main CI run
+`36318026887` also passed
+SUCCESS ALL FOUR JOBS at this exact
+source SHA.
+
+On the actual authorized nonroot
+Ubuntu26 VPS, a separate isolated
+disposable worktree first passed
+5/5 genuinely signed RSA token-pair
+positive/negative Rust fixtures,
+4/4 R8.7 source contract tests,
+cargo fmt and full locked offline
+Rust workspace. Then exact merged
+code main was SHA256-bundle-verified
+fast-forward synchronized to the
+real nonroot VPS; real canonical
+VPS full locked offline workspace
+and fmt and four source contracts
+again passed, and both the VPS
+and owner Mac had clean matching
+GitHub main source SHA.
+No actual IdP or customer data
+was needed, fetched or sent.
+
+Owner Mac FileVault encrypted
+SOURCE-ONLY Restic snapshot
+`2461545a` of exact code main was
+successfully restored SHA256-exact
+in isolated restore and the complete
+encrypted repository was read
+156/156 packs error-free.
+Historical selected PARTIAL
+root-readable config was also
+restored SHA256 exact. These
+are NOT independently proven
+complete offsite host, actual
+customer PostgreSQL or K3s
+datastore recoveries.
+
+The current owner-private Mac
+Device Manager lab still provides
+only separately guarded fake-only
+volatile Add/List/UNKNOWN status
+and real business namespaces
+remain denied; the original R8.6
+login callback deliberately
+destroys even a matching
+synthetic code and returns 503.
+R8.7 ONLY constructs an
+OFFLINE verified pair primitive,
+does NOT wire an external
+confidential token endpoint,
+mint a login cookie or claim
+real human MFA.
+
+**OPEN PRD MUST:** owner-approved
+independently proven actual
+human OIDC MFA/issuer, secure
+confidential HTTPS code redemption
+with original PKCE verifier and
+private nonce, actual browser
+BFF Secure HttpOnly session and
+tenant/POP SQL membership,
+signed-in per-tenant
+reviewer/operations dashboard,
+real vendor firmware-matched
+private read-only OLT/ONT
+admission and honest evidence
+freshness, live HA K3s/DB and
+separately tested offsite
+whole-host DR. No actual OLT/
+ONT/RouterOS connected or
+firmware action authorized.
