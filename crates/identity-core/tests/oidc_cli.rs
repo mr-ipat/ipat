@@ -94,9 +94,11 @@ fn invoke(pem: &Path, token: &str, enabled: bool) -> Output {
     // BrokenPipe is the expected scheduler-dependent early-denial outcome,
     // not a reason to fail the regression suite on faster CI runners.
     let result = child.stdin.take().unwrap().write_all(token.as_bytes());
-    if enabled {
-        result.unwrap();
-    } else if let Err(ref e) = result {
+    // Any NEGATIVE prerequisite (disabled, unsafe key, symlink, etc.)
+    // may close stdin before the parent finishes writing on fast CI.
+    // Only BrokenPipe is tolerated; EACH caller still checks the child
+    // exit code, so valid positive checks MUST finish successfully.
+    if let Err(e) = result {
         assert_eq!(e.kind(), std::io::ErrorKind::BrokenPipe);
     }
     child.wait_with_output().unwrap()
