@@ -1,7 +1,7 @@
 # IPAT — Project Status
 
 **As-of:** 2026-09-27 Asia/Jakarta
-**Current milestone:** R8.2 — original CWMP 1.0 genuine localhost SOAP virtual-ONT InformResponse / fixed read-only GetParameterValues real Rust HTTP VERIFIED; both original feature and independent post-feature-main 4/4 CI PASSED. Native USP 1.4 protobuf virtual-agent R8.1 and signed multi-tenant SQL API R8.0 remain separately verified. Production ACS, real device interoperability, authenticated user dashboards, USP MTP and independent disaster recovery remain OPEN. See appended immutable evidence.
+**Current milestone:** R8.3 — visible genuine interactive private Device Manager fake-only add/list/unknown-status/delete verified via actual owner Mac→nonroot VPS HTTP, plus separately gated REAL signed two-tenant pending-adoption PostgreSQL read/write code verified in disposable integration CI (feature and independent main each 4/4 PASS); actual customer MFA/real physical adoption and production recovery remain OPEN. See latest appended proof.
 **Historical R7.1 state (superseded by later entries):** R7.1 original Rust ZTE C320 strict offline read-only evidence parser, owner-private non-network importer, hard-disabled firmware and large RED unfulfilled-PRD warning across all three private dashboard previews FEATURE PR #71 MERGED at code SHA d452d1be6943bb4b3685b2136ad30b587e6af1e9. Both independent feature-PR GitHub CI 36249894205 and post-feature-main CI 36250108104 completed SUCCESS in all four independent jobs (locked Rust/security/UI/OLT offline, disposable Ubuntu26 K3s and two isolated synthetic PostgreSQL recovery jobs, none deployed live). Actual clean unchanged Ubuntu 26.04.1 VPS canonical source, private GitHub and owner FileVault Mac main synchronized at feature SHA; actual VPS rustfmt and 145/145 locked OFFLINE whole-workspace Rust tests, 5/5 synthetic offline CLI permission/data tests, 5/5 source PRD red warning + disabled firmware checks and 7/7 existing R6.8 Python dashboard tests PASS. Existing R6.8 synthetic Node DOM proof rerun on Mac Node v22.22, actual authorized Mac private dashboard served LARGE red PRD alert via real HTTP 200/no-store/CSS high contrast while 3 business APIs remained HTTP401. FileVault Mac encrypted exact merged-feature-source Restic snapshot 63c7c461 independently isolated SHA256 restored plus full encrypted pack read PASS; selected historical root-readable config separately restored, NOT full VPS or real PostgreSQL PITR. Clean main production readiness 8/8 automatic gates PASS, ALL 7/7 independent external safety gates BLOCKED, production NO_GO; live VPS K3s/PostgreSQL/nftables inactive. ZTE C320 actual model/boards/running firmware, authenticated private device route and owner recovery/maintenance approval still unavailable; TC-OLT-01 physical NOT RUN, no firmware update or device changes. Separate physical blocker Issue #72 and high-risk firmware Issue #73 OPEN. Final docs-only checkpoint independent CI, exact updated source synchronization and backup to be logged immutably after docs merge to avoid recursive SHA-changing commits. Developer Mr. iPat.
 
 ## 1. Source of truth and provenance
@@ -2457,3 +2457,96 @@ initial in-progress checkpoint.
 A later immutable milestone entry
 will record real CI/HTTP evidence
 only if independently executed.
+
+
+## R8.3 verified real Device Manager release checkpoint — 2026-09-27
+
+The owner correctly identified visible Add Device, List Devices
+and honest Device Condition as missing operational prerequisites.
+Feature PR #94 was MERGED at exact canonical main code
+`94c6b2f07bd63a4ae0578a5915e232b1bd1fa0b4`.
+The final feature HEAD
+`5e3d97ec4f1bb2f63618a46dfa25485ad3543284`
+GitHub CI run `36305345728` passed all FOUR jobs; separate
+independent AFTER-MERGE code-main GitHub CI
+`36306977093` passed all FOUR jobs again at the exact
+main SHA, including real PostgreSQL disposable signed
+JWT→separate EXECUTE-only registrar + member reader
+two-company positive/negative integration,
+actual compiled Rust localhost HTTP Add/List/Delete,
+original native USP protobuf/CWMP virtual SOAP,
+independent disposable real PostgreSQL physical recovery
+and disposable Ubuntu26 K3s one-node smoke.
+
+**Actual Mac browser-local proof:** the existing
+owner private localhost SSH tunnel and ORIGINAL
+nonroot Rust preview were guardedly restarted from the
+merged exact code SHA. The real Mac `http://127.0.0.1:48765`
+served new interactive HTML/JS/CSS Device Manager with HTTP200,
+real POST Add returned 201, real GET List returned its new
+virtual OLT with exact `PENDING_REVIEW/UNKNOWN/NOT_MEASURED`,
+and real DELETE returned 200. Missing demo-origin
+CSRF was rejected HTTP403 with correctly typed JSON.
+All three actual platform/tenant/NOC business
+API namespaces rejected requests HTTP401.
+The real signed-identity proposed registry
+was NOT provisioned on the actual VPS
+and its routes remained HTTP404. Both
+rollout flags for physical connection and firmware
+were verified FALSE. The preview was
+guardedly restarted again afterward to clear
+all temporary demo records: 0 fake records,
+0 physical devices. No physical management
+traffic was generated.
+
+**Exact source and recovery:** private GitHub,
+owner FileVault Mac and actual authorized
+nonroot Ubuntu26 VPS matched this main SHA,
+synchronized to the VPS with independently
+SHA256-verified Git bundle and clean
+fast-forward; actual VPS full locked
+offline Rust workspace tests and
+rustfmt PASS, R8.3 4/4 static
+acceptance PASS. An attempted second
+standalone R8.3 socket smoke directly
+on the already-running actual VPS was
+correctly REFUSED because the existing
+real preview owns port 3000; the
+equivalent actual live Mac→VPS SSH
+HTTP demo proof above passed,
+and independent disposable GitHub CI
+executed the standalone smoke successfully.
+Never disrupt or silently replace
+another existing preview listener.
+
+FileVault owner Mac encrypted source-only
+Restic snapshot `3e40cc27` of exact merged
+code main full-read **142/142** packs
+and SHA256-isolated source restore PASS.
+Historical PARTIAL readable root-config
+restore PASS, but offsite FULL host,
+real PostgreSQL customer data/PITR
+and real K3s cluster datastore
+restore are STILL UNVERIFIED.
+
+**PRD REMAINING:** the immediately visible
+Device Manager is a working private demo
+with volatile fake-only data and truthful
+no-telemetry states, NOT an authenticated
+real ISP operator dashboard.
+The separate audited exact signed
+JWT/tenant/POP PostgreSQL draft APIs
+and schema are real code/real disposable
+CI-tested but NOT enabled with real
+company MFA on actual VPS.
+Production login and membership
+enrollment, approval and audit UI,
+device credential vault, true SSH/
+SNMP/TR-069/USP adapters with exact
+model+firmware recognition, live
+evidence-to-health freshness,
+end-to-end durable jobs, physical
+OLT/ONT/MikroTik tests and whole
+system disaster recovery remain MUST
+before claiming usable real
+physical adoption or full PRD.
