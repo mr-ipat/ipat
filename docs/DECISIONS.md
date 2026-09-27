@@ -109,3 +109,51 @@ rotation/revocation handling, transactional RLS data access,
 trusted production identity broker and commercial custom domains
 remain UNSOLVED. No production approval or automatic live DB
 migration is authorized; do not confuse this with full FR-002.
+
+
+## ADR-025 — APPROVED DIRECTION / ACTUAL TRANSPORT PROPOSED (R7.9)
+
+Owner clarifies that the initial DEV-01 ZTE C320 does NOT require
+a direct physical Layer-1 connection or on-site serial-console
+session to manage/read it; it must be accessible by a supported
+remote management protocol over a private network path. Candidate
+order: vendor-documented SSH CLI for bounded read-only
+chassis/card/running-version capture; SNMPv3 telemetry as
+separate candidate once real firmware, MIB and configuration
+are independently verified. Existing original ACS TR-069
+remains for CPE/ONT; do not assume an OLT-side TR-069 API
+or generic REST on this specific firmware. R7.4 strict
+physical console packet remains a conservative OPTIONAL
+legacy route; new R7.9 remote-read packet is an ALTERNATIVE,
+requiring owner authorization, true private route,
+independently pinned SSH host identity, verified
+read-only account, read-exec command support and encrypted
+private capture, but not a physical cable. Actual
+vendor/firmware interop and all writes remain unapproved.
+A tested independent recovery route, valid vendor
+firmware image, rollback and maker-checker approval
+ARE mandatory BEFORE any disruptive firmware changes.
+See docs/C320_REMOTE_AND_K3S_PROVIDER_NEUTRAL_R79.md.
+
+## ADR-026 — APPROVED PROVIDER-INDEPENDENCE / PROPOSED NETWORK DETAIL
+
+Owner requires portable heterogeneous K3s across VPS
+providers without requiring their external firewall
+APIs or IPAT integration with third-party firewalls.
+Pilot design candidate: one low-latency single server
+(control plane) and heterogeneous x86_64/arm64 workers
+across provider boundaries over an independently managed
+encrypted private WireGuard tunnel `wg-ipat`. K3s
+Flannel VXLAN is tunneled INSIDE WireGuard (never
+raw public UDP 8472), 6443 reached only by trusted
+private tunnel peers. The host firewall MAY be absent
+only where effective ingress isolation is independently
+verified, not as a replacement for network security.
+A multi-provider three-member etcd cluster is NOT
+automatically accepted: protect HA server quorum
+with low-latency same-site private networking.
+PostgreSQL HA and whole-host offsite DR remain
+independent requirements. Provider-independent
+OFFLINE plan code is not production installation
+approval; ADR-017 live network/rollback and
+external recovery gates remain OPEN.

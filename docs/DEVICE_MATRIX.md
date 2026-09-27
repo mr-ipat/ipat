@@ -9,7 +9,7 @@
 
 | ID | Class | Vendor / family | Exact model | HW rev | OS/firmware | Interfaces to inventory | Features to test | Status | Physical evidence |
 |---|---|---|---|---|---|---|---|---|---|
-| DEV-01 | OLT | ZTE C320 | C320 (additional board/line-card details **TBD**) | TBD | TBD | SNMP / vendor-supported channel: verify | OLT inventory, PON/ONU read-only, alarm signal; no untested writes | `untested` | None supplied |
+| DEV-01 | OLT | ZTE C320 | C320 (additional board/line-card details **TBD**) | TBD | TBD | Remote SSH CLI fixed two-read candidate; SNMPv3 telemetry candidate; verify BOTH on exact observed firmware | OLT inventory, PON/ONU read-only, alarm signal; no untested writes | `untested` | None supplied |
 | DEV-02 | OLT | C-DATA | **TBD exact model** | TBD | TBD | Verify SNMP/CLI/API physically | Discovery/read-only, PON/ONU/optical signal | `untested` | None supplied |
 | DEV-03 | ONT | VSOL | **TBD exact model** | TBD | TBD | Verify CWMP TR-069 and data model; USP optional only if actual agent exists | Inform, authentication, 1 known safe parameter RPC | `untested` | None supplied |
 | DEV-04 | ONT | ZTE | **TBD exact model** | TBD | TBD | Verify CWMP TR-069 and data model; USP optional only if actual agent exists | Inform, authentication, 1 known safe parameter RPC | `untested` | None supplied |
@@ -268,3 +268,24 @@ A real device session still requires the exact actual controller/PON/uplink
 cards/build, verified management-channel trust, dedicated read-only account
 and private recovery/backup. TC-OLT-01 remains NOT RUN, DEV-01 UNTESTED;
 firmware writes remain DISABLED. See C320_ISOLATED_LAB_R74.md.
+
+
+## R7.9 DEV-01 remote management ALTERNATIVE, NOT a physical L1 requirement
+
+Product owner chooses actual IP-reachable management for
+DEV-01 instead of a direct serial cable from IPAT.
+Historical C320 documentation supports family-level
+SSH CLI and SNMPv3 features, **not** guaranteed on
+owner's unknown firmware. New opt-in remotely callable
+two-command SSH candidate and synthetic mock
+SSH→real compiled Rust parser contract are implemented.
+No real device route, independent current hostpin,
+read-only account or exact board/firmware evidence
+has been observed. DEV-01 status stays `untested`,
+TC-OLT-01 stays `NOT RUN`. The previous R7.4
+extra-strict on-site-console checklist is ONE
+conservative alternative, not a precondition
+on this separate operator-authorized READ-only
+R7.9 path. Firmware upgrade still requires
+separate maintenance/recovery proof and explicit
+maker-checker, never implicit connectivity.

@@ -635,3 +635,36 @@ approver-label alone does not prove authentic approval/MFA.
 Production secrets manager, trusted connection lifecycle,
 session revocation, JWKS pin rotation, MFA and whole-VPS backup
 are still mandatory independent security gates.
+
+
+## R7.9 no-physical-cable and no-provider-firewall threat clarification
+
+A remote SSH read-only C320 session is allowable
+without a local serial/L1 connection only where
+operator-authorized separate read-only credentials,
+independently checked SSH host identity, PRIVATE
+management VPN/route and encrypted private
+capture are proved. The script rejects public
+OLT IPs, ambient ssh config, ssh-agent/password,
+host-key acquisition from the same untrusted
+connection, proxy commands/forwarding and all
+other CLI commands. Its local boolean assertions
+alone are NOT an independent audit. Actual device
+firmware's SSH key and noninteractive exec
+capability remains UNVERIFIED. Firmware/provisioning
+writes continue to require separate recovery,
+version-specific tests and maker-checker approval.
+
+A VPS that has no optional host firewall MAY
+participate ONLY when private listener binding
+and authorized encrypted VPN/isolated network
+ingress are independently enforced and probed.
+The external provider security-group API is
+NOT an application dependency. Avoid raw
+public UDP 8472 VXLAN, open Kubernetes
+6443/10250, leaked K3s tokens, accidental
+cross-provider etcd, unmanaged dual-stack
+ingress, network overlap and fake privacy
+claims behind a public route/NAT. Independent
+out-of-band rescue and offsite complete restore
+remain actual prerequisites before live K3s.

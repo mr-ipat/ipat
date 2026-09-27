@@ -575,3 +575,32 @@ API/RLS/queue scoping and complete negative E2E tests pass.
 FR-004/AC-09 remain M2 commercial domain verification per
 the owner-approved ADR-020; customer DNS pointing alone does
 not enable a domain or a platform role.
+
+
+## R7.9 approved remote OLT / provider-independent K3s clarification
+
+The owner explicitly prefers IP-reachable remote
+ZTE C320 management over local physical L1/console
+for initial **READ-ONLY** access. FR OLT inventory
+MUST provide supported remote management channels
+(vendor-documented SSH CLI, SNMPv3 when independently
+verified on exact firmware) and NEVER assume
+a vendor-independent OLT-side TR-069 API.
+Exact DEV-01 firmware/board/CLI/MIB remains
+UNTESTED until the real connection occurs.
+R7.9 guarded remote SSH candidate adds real
+two-command transport code; synthetic tests
+alone do not close physical DEV-01 TC-OLT-01.
+
+K3s MUST permit separate VPS providers/heterogeneous
+worker hardware without a cloud-vendor firewall
+integration dependency. OPTIONAL host firewall
+is permitted but a totally unprotected internet-facing
+K3s control/CNI plane is not accepted. Supported
+pilot topology candidate is single private node
+or one same-site server plus independently
+authenticated private-VPN workers in different
+providers. No user request changes the external
+recovery/restore gates before live host install.
+R7.9 delivers a strict OFFLINE topology planner,
+not actual cross-provider measured scaling.
