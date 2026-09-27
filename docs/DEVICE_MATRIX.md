@@ -253,3 +253,18 @@ TC-OLT-01 remains `NOT RUN`, ZTE C320 physical support `untested` and
 firmware upgrades disabled. Do not promote an offline parser format test
 to physical evidence. Hardware, build, private owner-approved access and
 recovery are mandatory for the first actual field capture.
+
+
+## R7.4 DEV-01 dedicated nonproduction lab readiness (2026-09-27)
+
+Equipment owner declares DEV-01 and other test devices reserved for
+testing, NOT connected to live distribution. This is unverified operator
+intent, not observed network isolation or device discovery.
+A strict PRIVATE and OFFLINE packet validator
+(deploy/scripts/lab/r74/lab-readiness.py) checks owner-declared preflight
+metadata for DEV-01 with zero network/firmware capability; a passing
+declaration is HUMAN_REVIEW_REQUIRED, never physical acceptance.
+A real device session still requires the exact actual controller/PON/uplink
+cards/build, verified management-channel trust, dedicated read-only account
+and private recovery/backup. TC-OLT-01 remains NOT RUN, DEV-01 UNTESTED;
+firmware writes remain DISABLED. See C320_ISOLATED_LAB_R74.md.

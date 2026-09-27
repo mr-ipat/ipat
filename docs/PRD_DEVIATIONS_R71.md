@@ -115,3 +115,18 @@ K3s, PostgreSQL dan firmware unit fisik pada milestone ini.
 Owner Mac and VPS Git checkouts matched GitHub main at feature SHA. Existing private preview was safely restarted only through the owner Mac SSH tunnel; REAL HTTP GET 200/no-store for HTML, CSS and JS proved the prominently sized BRIGHT RED PRD warning is visible on all three role-selectable previews; all platform, tenant and operations APIs continued to deny unauthenticated GET HTTP401. FileVault encrypted source backup Restic snapshot 63c7c461 was isolated SHA256 restored and all packs read; selected historical root-readable configuration independently restored, NOT entire VPS or production database PITR. Live VPS K3s/PostgreSQL/nftables remain inactive. Clean-main readiness 8/8 automatic PASS but 7/7 independent external safety gates BLOCKED, commercial NO_GO.
 
 Missing physical test inputs and owner approvals remain unchanged. A real authorized C320 first-read is tracked in [Issue #72](https://github.com/mr-ipat/ipat/issues/72); proposed firmware upgrade with its own high-risk approval/backup/rollback is tracked in [Issue #73](https://github.com/mr-ipat/ipat/issues/73). Success of parsing synthetic text and manual flags never changes the OLT status from UNTESTED to VALIDATED, and neither issue means firmware execution was scheduled.
+
+
+## R7.4 — Audit dashboard PRD dan klaim laboratorium
+
+**PERINGATAN BESAR MERAH: PLATFORM ADMIN, TENANT ADMIN DAN NOC
+MASIH PRATINJAU, BUKAN DASHBOARD SESUAI PRD SECARA END-TO-END.**
+Masing-masing kini menampilkan gap FR terpisah pada kotak merah
+di bawah release gates, bukan hanya satu peringatan global.
+Semua implementasi role demo tetap lokal/browser tanpa login.
+C320 khusus pengujian menurut operator, namun TC-OLT-01
+tetap tidak berjalan. Packet readiness offline tidak bisa
+mengubah status fisik, membuka koneksi atau mengizinkan firmware.
+PRD tetap dipertahankan; gap aktual terperinci pada
+[DASHBOARD_PRD_AUDIT_R74.md](DASHBOARD_PRD_AUDIT_R74.md) serta
+[C320_ISOLATED_LAB_R74.md](C320_ISOLATED_LAB_R74.md).

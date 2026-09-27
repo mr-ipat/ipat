@@ -131,6 +131,11 @@ jobs:
           python3 -m py_compile deploy/scripts/lab/r72/c320-firmware-check.py
           python3 -m unittest discover deploy/scripts/lab/r72 -p test_c320_firmware_hash.py -v
           python3 deploy/scripts/lab/r72/c320-firmware-check.py --requirements
+      - name: R7.4 offline isolated-C320 readiness and private packet security
+        run: |
+          python3 -m py_compile deploy/scripts/lab/r74/lab-readiness.py
+          python3 -m unittest discover deploy/scripts/lab/r74 -p test_lab_readiness.py -v
+          python3 deploy/scripts/lab/r74/lab-readiness.py --requirements
       - name: R6.6 native CWMP read-only state and actual private HTTP denial smoke
         run: |
           bash -n deploy/scripts/lab/r66/cwmp-loopback-http-smoke.sh
