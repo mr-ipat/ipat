@@ -30,6 +30,7 @@ pub struct VerifiedSubject {
     issuer: String,
     subject: String,
     expires_at: u64,
+    signed_mfa_claim: bool,
 }
 impl VerifiedSubject {
     /// Authenticated by the pinned signature verifier, never an HTTP Host
@@ -43,6 +44,11 @@ impl VerifiedSubject {
     pub fn expires_at(&self) -> u64 {
         self.expires_at
     }
+    /// Only an exact, signed `amr: ["mfa"]` from the configured pinned issuer.
+    /// This is NOT proof that a real human MFA/IdP was provisioned by IPAT.
+    pub fn signed_mfa_claim(&self) -> bool {
+        self.signed_mfa_claim
+    }
 }
 #[derive(Deserialize)]
 struct AccessClaims {
@@ -52,6 +58,8 @@ struct AccessClaims {
     exp: u64,
     iat: u64,
     nbf: u64,
+    #[serde(default)]
+    amr: Option<Vec<String>>,
     // Additional OIDC claims such as roles, groups and tenant IDs are ignored.
     // Never treat their presence or contents as membership evidence.
 }
@@ -140,6 +148,11 @@ impl PinnedIssuer {
             issuer: self.issuer.clone(),
             subject: claims.sub,
             expires_at: claims.exp,
+            signed_mfa_claim: claims.amr.as_ref().is_some_and(|methods| {
+                methods.len() <= 8
+                    && methods.iter().all(|s| s.len() <= 32)
+                    && methods.iter().any(|method| method == "mfa")
+            }),
         })
     }
 }

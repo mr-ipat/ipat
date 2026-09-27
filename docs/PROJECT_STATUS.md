@@ -1,7 +1,7 @@
 # IPAT — Project Status
 
 **As-of:** 2026-09-27 Asia/Jakarta
-**Current milestone:** R8.3 — visible genuine interactive private Device Manager fake-only add/list/unknown-status/delete verified via actual owner Mac→nonroot VPS HTTP, plus separately gated REAL signed two-tenant pending-adoption PostgreSQL read/write code verified in disposable integration CI (feature and independent main each 4/4 PASS); actual customer MFA/real physical adoption and production recovery remain OPEN. See latest appended proof.
+**Current milestone:** R8.4 IN PROGRESS — independent security_admin maker-checker metadata-only approval, append-only PostgreSQL audit, signed short-lived JWT exact MFA claim and separately gated nonroot reviewer Rust endpoints; full real disposable PostgreSQL+signed Rust CI is required before claiming this milestone verified. R8.3 private Device Manager remains available; actual operator IdP/MFA, authenticated browser dashboard and real physical device adoption remain OPEN.
 **Historical R7.1 state (superseded by later entries):** R7.1 original Rust ZTE C320 strict offline read-only evidence parser, owner-private non-network importer, hard-disabled firmware and large RED unfulfilled-PRD warning across all three private dashboard previews FEATURE PR #71 MERGED at code SHA d452d1be6943bb4b3685b2136ad30b587e6af1e9. Both independent feature-PR GitHub CI 36249894205 and post-feature-main CI 36250108104 completed SUCCESS in all four independent jobs (locked Rust/security/UI/OLT offline, disposable Ubuntu26 K3s and two isolated synthetic PostgreSQL recovery jobs, none deployed live). Actual clean unchanged Ubuntu 26.04.1 VPS canonical source, private GitHub and owner FileVault Mac main synchronized at feature SHA; actual VPS rustfmt and 145/145 locked OFFLINE whole-workspace Rust tests, 5/5 synthetic offline CLI permission/data tests, 5/5 source PRD red warning + disabled firmware checks and 7/7 existing R6.8 Python dashboard tests PASS. Existing R6.8 synthetic Node DOM proof rerun on Mac Node v22.22, actual authorized Mac private dashboard served LARGE red PRD alert via real HTTP 200/no-store/CSS high contrast while 3 business APIs remained HTTP401. FileVault Mac encrypted exact merged-feature-source Restic snapshot 63c7c461 independently isolated SHA256 restored plus full encrypted pack read PASS; selected historical root-readable config separately restored, NOT full VPS or real PostgreSQL PITR. Clean main production readiness 8/8 automatic gates PASS, ALL 7/7 independent external safety gates BLOCKED, production NO_GO; live VPS K3s/PostgreSQL/nftables inactive. ZTE C320 actual model/boards/running firmware, authenticated private device route and owner recovery/maintenance approval still unavailable; TC-OLT-01 physical NOT RUN, no firmware update or device changes. Separate physical blocker Issue #72 and high-risk firmware Issue #73 OPEN. Final docs-only checkpoint independent CI, exact updated source synchronization and backup to be logged immutably after docs merge to avoid recursive SHA-changing commits. Developer Mr. iPat.
 
 ## 1. Source of truth and provenance
@@ -2550,3 +2550,67 @@ OLT/ONT/MikroTik tests and whole
 system disaster recovery remain MUST
 before claiming usable real
 physical adoption or full PRD.
+
+
+## R8.4 code candidate — independent security-admin maker-checker, 2026-09-27
+
+**Scope:** The already-verified R8.3 private
+interactive fake-only Device Manager and
+the independent REAL signed tenant/POP
+PostgreSQL draft backend are not equivalent
+to an actual human login or physically
+authenticated adoption. The product owner
+prioritizes safe real enrollment, first
+preparing a separate reviewer authorization
+boundary before any live OLT/ONT action.
+The R8.4 source now contains a strict
+pinned RS256 access-token exact signed
+`amr:mfa` signal (NOT real human
+MFA provisioning), independent
+`security_admin` membership, NOLOGIN
+PostgreSQL reviewer roles, own-tenant
+queue excluding the proposing person,
+single verdict under true PostgreSQL
+row lock, immutable append-only review
+record, idempotent retry and no change
+to UNKNOWN/NOT_MEASURED device state.
+An explicit extra opt-in localhost
+Rust reviewer adapter needs a separately
+owned 0600 Unix-socket DB identity and
+independently verifies the JWT and
+current DB membership on every request.
+
+**Initial software evidence only:**
+An isolated nonroot Ubuntu26 Rust
+worktree compiled and passed 24/24
+`control-api` unit tests with the
+new reviewer module included
+(disposable PG-only body intentionally
+does not execute without ephemeral
+CI PostgreSQL). The new R8.4 5/5
+static checks PASS on the actual
+owner Mac. Genuine disposable
+PostgreSQL migration/strict privilege
+tests and signed Rust Axum→real
+reviewer-DB integration plus all
+four independent CI jobs remain
+PENDING until actually run.
+Actual VPS production DB, hardware,
+firmware, running K3s and owner
+live web user identity have NOT been
+touched by this new candidate.
+
+**MUST STILL COMPLETE:** actual MFA
+IdP enrollment and sign-in browser
+BFF and audited tenant role/POP
+onboarding; true production
+restricted reader/registrar/reviewer
+identities; independent whole-host
+and customer PostgreSQL recovery;
+physical OLT/ONT model/firmware
+read-only verification, ACS/USP
+real device sessions and safe
+tenant/POP evidence health. Metadata
+approval alone cannot adopt
+equipment or authorize any
+firmware update.

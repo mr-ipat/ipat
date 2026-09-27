@@ -265,3 +265,28 @@ online/health transitions and validated vendor
 protocol integration remain binding OPEN MUST
 gates; approval of this design does NOT
 approve live user enrollment or DB migration.
+
+
+## ADR-032 — APPROVED METADATA MAKER-CHECKER LAB / PRODUCTION AUTH STILL OPEN (R8.4)
+
+Implement a distinct sealed `security_admin` reviewer
+role/SQL executor for candidates proposed by
+`tenant_admin`, but only for **metadata review**.
+Database enforces separate signed issuer+subject,
+active tenant/current unrevoked privileges,
+atomic single-verdict row lock, append-only audit,
+bounded rationale and idempotency; neither approval
+nor self-declared device identity authorizes
+physical device enrollment, health claims or
+any firmware operation. Gate Rust reviewer
+endpoints with an independently validated
+signed exact `amr:mfa` flag from configured
+pinned issuer, an additional private opt-in,
+nonroot, localhost, and a dedicated
+Unix-socket reviewer service identity.
+Actual Keycloak/approved IdP `amr` semantic
+contract and real user enrollment, real
+signed-in browser BFF, secure operator login
+and production recovery are STILL PROPOSED/
+OPEN; synthetic CI MFA claims cannot satisfy
+actual human MFA controls.

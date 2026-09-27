@@ -2,6 +2,7 @@
 //! R5.9 adds an explicitly opted-in, read-only LOCAL web preview.
 //! This is NOT an authenticated tenant dashboard or a production/public UI.
 
+mod device_review_lab;
 mod device_workbench_lab;
 mod oidc_lab;
 mod tenant_membership_lab;
@@ -239,6 +240,22 @@ async fn main() {
     if registry_requested && (!scoped_requested || identity.is_none() || k3s_lab) {
         panic!("registry drafts require opted-in private signed OIDC and scoped SQL");
     }
+    // R8.4 separate security_admin maker-checker metadata reviewer.
+    // No real-human MFA enrollment, physical adoption or public gateway.
+    let review_requested = std::env::var("IPAT_R84_SIMULATED_REVIEW").as_deref() == Ok("YES");
+    if review_requested && (!scoped_requested || identity.is_none() || k3s_lab) {
+        panic!("simulated review requires private signed identity and SQL");
+    }
+    let review = if review_requested {
+        Some(
+            device_review_lab::from_owner_environment(
+                identity.clone().expect("pinned reviewer issuer required"),
+            )
+            .expect("reviewer needs independently restricted private PostgreSQL identity"),
+        )
+    } else {
+        None
+    };
     let registry = if registry_requested {
         Some(
             tenant_membership_lab::registration_from_owner_environment(
@@ -257,6 +274,9 @@ async fn main() {
     let mut app = app_with_lab_identity_and_store(lab_web_enabled, identity, store);
     if let Some(registry) = registry {
         app = app.merge(tenant_membership_lab::registry_router(registry));
+    }
+    if let Some(reviewer) = review {
+        app = app.merge(device_review_lab::router(reviewer));
     }
     axum::serve(listener, app).await.expect("serve API");
 }

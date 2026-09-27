@@ -737,3 +737,36 @@ customer TLS/domain and complete
 interoperability/regression matrix.
 No simulation should masquerade
 as customer production readiness.
+
+
+## R8.4 next priority — independent reviewer for staged hardware intake
+
+MUST software: extend genuine signed identity
+with exact bounded `amr:mfa`; sealed independent
+PostgreSQL reviewer security_admin role, same
+tenant exact membership, explicit distinct
+issuer+subject from requester, bounded reason,
+row-locked single-decision metadata change and
+append-only audit. Only separate reviewer
+login may EXECUTE the review/queue functions.
+MUST tests: actual disposable PostgreSQL 16
+positive/negative maker-checker, role isolation,
+revocation, idempotency, cross-tenant denial;
+Rust actual signed JWT+MFA using distinct
+fake humans and real restricted PG; both
+private and public endpoints fail closed
+without prerequisites. This does NOT assert
+actual human MFA.
+MUST following: real approved human MFA IdP,
+secure browser session/BFF and real
+authenticated company dashboard joined
+to the existing PostgreSQL candidate
+registry; then independent verified
+vendor/model/firmware read-only evidence.
+SHOULD: dynamic review menu only for
+actual signed-in security admins, NOC
+telemetry freshness and audit evidence
+for read-only collectors.
+LATER: firmware execution after
+independent recovery, production cluster,
+whole-host/database offsite DR.

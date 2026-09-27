@@ -820,3 +820,24 @@ plus backend authorization policy.
 No transport connection, health
 evidence, CPE adoption RPC or firmware
 operation is emitted by either path.
+
+
+## R8.4 independent reviewer and metadata review boundary
+
+The signed-metadata registration engine is separated
+from a third independently opted-in **review-only**
+Rust Axum endpoint. A separately restricted
+PostgreSQL reviewer login can EXECUTE only
+`lookup_lab_device_reviewer`,
+`list_lab_device_review_queue`, and
+`review_lab_device_candidate`, owned by
+a NOLOGIN bounded definer with FORCE RLS on
+each accessed review/candidate/membership table.
+No role-switching request headers or broad app runtime
+table grants; separate no-MFA JWT is rejected at
+the Rust edge and real user IdP/MFA remains
+an unfulfilled external prerequisite. Atomic
+lock→state transition→append-only review
+guarantees only one metadata verdict; physical
+adoption/telemetry is a later independently
+authorized state machine, not these DB rows.

@@ -804,3 +804,35 @@ verification and DOES NOT itself
 prove MFA or trusted human
 enrollment. Live production and
 real device writes remain NO_GO.
+
+
+## R8.4 reviewer threat model and MFA assertion limit
+
+Threat: a device requester with tenant_admin
+(or even ALSO security_admin) must not
+self-approve metadata; enforce exact issuer+subject
+mismatch inside the trusted PostgreSQL function.
+Threat: JWT `role`, `tenant_id`, `amr`
+from an unsigned/unpinned token or proxy
+Host/header never grants review. The verifier
+accepts `signed_mfa_claim` ONLY from an
+RS256 JWT meeting pinned issuer/audience/key
+and short lifetime, with exact bounded
+`amr: ["mfa"]` semantics. This is NOT evidence
+a real user's upstream MFA has been configured
+or actually used; production deployment remains
+blocked until audited actual IdP proof.
+Threat: revoked reviewer, wrong tenant, duplicate
+or racing review, changed idempotency,
+tampered reason, and untrusted output are
+denied through SQL role separation, FORCE
+RLS, row lock, atomic append-only audit,
+bounded validation and safe HTTP output.
+No firmware/physical adapter may consume
+metadata review approval as permission
+for high-risk operations. Reviewer routes
+are absent by default, on public K3s and
+without separately restricted nonroot
+Unix-socket DB identity. Independent
+whole-host/PG recovery remains a
+production blocker.
