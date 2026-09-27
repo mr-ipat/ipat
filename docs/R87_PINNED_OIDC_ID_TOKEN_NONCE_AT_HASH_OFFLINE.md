@@ -78,6 +78,26 @@ and lab-only virtual device tests.
 These are verified software tests,
 not actual IdP provider conformance.
 
+## Important standards compatibility cut-line
+
+OpenID Connect Core 1.0 Section 3.1.3.8 explicitly treats
+`at_hash` as OPTIONAL when the ID Token and access token
+both come back over an approved confidential HTTPS
+Authorization Code Token Endpoint. This R8.7 offline
+verifier is intentionally a STRICTER, at_hash-REQUIRED
+reviewed **lab profile**, NOT a claim that a real Keycloak
+issuer will always emit `at_hash` under code flow.
+Before integrating a real issuer, independently test its
+actual signed code-flow ID Token. If `at_hash` is absent,
+the next architecturally reviewed implementation must
+bind both tokens to the authenticated confidential TLS
+token endpoint and verify nonce/issuer/client/subject/MFA
+without silently weakening the existing strict entrypoint.
+Do NOT bypass validation by injecting or fabricating a
+hash and do not enable physical device access based on
+an unverified provider. Official normative source:
+https://openid.net/specs/openid-connect-core-1_0-18.html#CodeFlowTokenValidation
+
 ## Explicit remaining PRD MUST work
 
 1. An independently consented, real HTTPS
