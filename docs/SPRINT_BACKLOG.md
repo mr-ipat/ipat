@@ -531,3 +531,19 @@ LATER after working lab: owner-approved public custom domain
 ipat.fadly.id for Fadly company and future IPAT corporate ipat.id
 ONLY after DNS/TLS ownership and independent SSH management recovery
 gate. Do not modify existing SSH host, DNS, root firewall or K3s.
+
+
+## R7.7 identity-read path: synthetic milestone, next P0 blocker
+
+Delivered candidate: disposable Postgres 0004 narrow exact identity
+lookup owned by NOLOGIN non-BYPASSRLS function role, dedicated NOLOGIN
+executor role, no privileges to live app runtime. CI runs negative
+wrong issuer/sub/tenant/role/POP, revoked/expired/suspended and
+privilege/RLS checks; no DNS or real infrastructure operations.
+P0 NEXT: operator-approved audited real membership provisioning,
+MFA IdP and trusted Rust server adapter, server-controlled menu,
+business API and transaction-local tenant/POP RLS complete negative
+AC-01/02. Do not call a database function directly with
+user-controlled JWT claims/host or enable role membership as a
+temporary bypass. Parallel: actual independently safe read-only
+ZTE C320 inventory prerequisites.

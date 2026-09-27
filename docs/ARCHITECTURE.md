@@ -628,3 +628,18 @@ a pure candidate-row-to-visible-menu reference function with deny on
 issuer/sub/tenant/expiry/revocation mismatch and existing POP policy.
 NO real membership DB adapter or business API invokes it, nor does
 this implement domain mapping. See DOMAIN_INTENT_FADLY_R76.md.
+
+
+## R7.7 isolated membership-query reference (not integrated runtime)
+
+A disposable migration defines a dedicated non-login PostgreSQL
+function-owner and separately a non-login query role. It exposes
+only an exact active membership decision for pinned issuer+subject,
+tenant UUID, fixed read-only role and authorized POP. Existing
+ipat_app_runtime cannot invoke it or read platform identity tables;
+no real identity reader service account exists. Backend
+verify_access_token still cannot transform a valid signed JWT
+into membership alone; R7.6 pure menu policy accepts only a
+future independently trusted database result. Never trust Host
+or JWT tenant/role extra claims. All real business HTTP
+namespaces continue unconditional HTTP401. ADR-022 PROPOSED.

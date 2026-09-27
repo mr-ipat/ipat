@@ -116,6 +116,8 @@ jobs:
           bash -n deploy/scripts/lab/r69/oidc-private-http-smoke.sh
           cargo build --locked -p control-api
           IPAT_R69_RUN_SYNTHETIC_HTTP=YES bash deploy/scripts/lab/r69/oidc-private-http-smoke.sh
+      - name: R7.7 isolated identity lookup contract (NO production role or public entrypoint)
+        run: python3 -m unittest discover deploy/db/tests -p 'test_scoped_identity_lookup_contract.py' -v
       - name: Verify formatting
         run: cargo fmt --all -- --check
       - name: Run locked unit tests
@@ -211,6 +213,9 @@ jobs:
       - name: Verify R7.0 unexposed approved tenant membership and POP candidate schema
         run: |
           python3 -m unittest discover deploy/db/tests -p 'test_identity_memberships_integration.py' -v
+      - name: R7.7 restricted nonlogin identity-reader SQL negative tests (disposable DB only)
+        run: |
+          python3 -m unittest discover deploy/db/tests -p 'test_scoped_identity_lookup_integration.py' -v
 
 # Separate disposable CI runner and PostgreSQL server process.
   # This rehearses a physical base backup; it is NOT production PITR/offsite HA.

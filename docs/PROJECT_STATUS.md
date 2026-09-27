@@ -1601,3 +1601,30 @@ PostgreSQL RLS logical restore, synthetic separate
 PostgreSQL physical recovery, and disposable Ubuntu26
 K3s smoke. These CI jobs do NOT prove a real OLT,
 full production database/K3s HA or production login.
+
+
+## R7.7 initial scope — 2026-09-27
+
+Owner states ipat.fadly.id already points to the VPS; a
+read-only recursive DNS lookup from owner Mac
+observed A 202.162.204.121 and no AAAA answer in that
+sample. This is NOT proof of domain ownership, certificate
+issuance, safe public customer web service or real tenant
+assignment. ipat.fadly.id continues to be current authorized
+SSH management hostname, unchanged. Independent current
+GitHub docs-main CI run 36285111075 completed all 4/4 SUCCESS
+at preceding exact main SHA 1cd2733. R7.7 is a forward
+feature branch, not completion of the overall PRD.
+
+Scope: disposable ONLY PostgreSQL migration 0004 for exact
+issuer+subject+tenant UUID+fixed read-only role+POP active
+membership lookup through nonlogin function-owner and
+nonlogin executor; no GRANT to app runtime and no
+production endpoint. Includes 7 ephemeral SQL integration
+tests and 5 offline static safeguards; security scope
+ADR-022 PROPOSED. Next: actual real-user OIDC/MFA,
+approved/audited persistent DB lookup adapter, tenant
+RLS/POP per request, backend/menu/queue denial and
+physical C320 evidence. Any CI, backup and deployment
+results for R7.7 must be added AFTER independent
+execution, not inferred from scripts.
