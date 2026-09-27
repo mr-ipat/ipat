@@ -148,3 +148,59 @@ interoperability and firmware/provisioning
 are NOT validated. This is a demonstrable
 original Rust and HTTP virtual SOAP
 software slice, not a release GO.
+
+
+## Independently verified feature-code checkpoint
+
+PR #92 source commit
+`3911c846f3b0e28ae5d62ff466a95a3d2bbb7680`
+passed GitHub run `36301589491`
+with all four independent
+CI jobs SUCCESS. Merged
+main code SHA
+`d8e75c8a8f2e12dad15797135960e5de9bb30067`
+passed independent separate
+post-merge main CI
+`36301824513` **4/4 SUCCESS**.
+The real compiled Rust
+CWMP SOAP HTTP smoke
+and previous real USP
+protobuf, real ephemeral
+PostgreSQL multi-tenant
+signed JWT service, and
+disposable K3s/recovery
+tests ran in that suite.
+
+Owner Mac encrypted
+source-only Restic
+`a44374c5` was fully
+read (138/138 packs),
+exact source SHA256
+isolated restored,
+and a separately
+selected historical
+PARTIAL root-readable
+archive restored.
+Actual canonical nonroot
+Ubuntu26 checkout,
+Mac and GitHub matched
+the exact code SHA by
+SHA256-verified fast-
+forward Git bundle.
+Real VPS full locked
+workspace/fmt and true
+Python HTTP→Rust SOAP
+smoke PASSED from final
+canonical source.
+Owner Mac protected
+loopback preview restarted,
+unprovisioned user auth/
+inventory routes stayed
+404, while forged Host/
+tenant/role/business GET
+in three namespaces
+all returned HTTP401.
+These facts do NOT
+validate any actual
+VSOL/ZTE firmware or
+physical ACS session.
