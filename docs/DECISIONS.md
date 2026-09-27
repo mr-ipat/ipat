@@ -61,3 +61,18 @@ Selection requires actual chassis/board/firmware, official
 matching vendor upgrade/rollback release notes and signed
 product/security/ISP owner authorization. No candidate
 can be labeled implemented or validated by synthetic flags.
+
+
+## ADR-021 (APPROVED INTENT, TECHNICAL DESIGN OPEN): Fadly customer-host naming — 2026-09-27
+
+Owner clarifies ipat.fadly.id is intended as Fadly company tenant's
+future CUSTOM domain and ipat.id as IPAT's future commercial platform
+brand; both remain ownership/DNS/TLS UNVERIFIED by IPAT. The current
+ipat.fadly.id address is ALREADY used as a vetted SSH target for the
+laboratory VPS. Do not silently use that address as an active tenant
+selector, repoint it, expose HTTPS, or change the management pathway.
+An approved recovery-tested management separation is a prerequisite
+before a future domain-routing change. Stable tenant identity comes
+from trusted membership records, not IP/FQDN/JWT extra claims.
+ADR-020 domain-verification scheduling is unchanged; ADR-014
+technical approach and ingress/cookie design remain OPEN.

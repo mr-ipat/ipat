@@ -612,3 +612,19 @@ Before any real customer-facing hostname is opened, implement
 ADR-014 domain verification, distinct host-only cookies, callback
 and CSRF allowlists, takeover and cross-domain negative tests.
 The previous verified-domain architecture remains the end state.
+
+
+## R7.6 intended domains vs stable tenant IDs
+
+Owner illustration: ipat.fadly.id is intended Fadly COMPANY custom
+domain; ipat.id is intended future IPAT commercial platform domain.
+The present ipat.fadly.id management SSH hostname must be separated
+or coexistence separately approved before any public tenant UI change;
+neither domain has independently verified ownership in this milestone.
+Tenant-ID, authenticated subject+issuer and operator-approved tenant/POP
+membership remain independent of Host. New Rust identity-core carries
+the pinned verified issuer with VerifiedSubject; authz-core adds
+a pure candidate-row-to-visible-menu reference function with deny on
+issuer/sub/tenant/expiry/revocation mismatch and existing POP policy.
+NO real membership DB adapter or business API invokes it, nor does
+this implement domain mapping. See DOMAIN_INTENT_FADLY_R76.md.

@@ -1481,3 +1481,47 @@ PostgreSQL production safety gates unchanged.
   recovery. None activated real VPS K3s, PostgreSQL or firewall.
   Final docs-only merge, exact docs main SHA backup and final
   docs-main CI must be verified separately after this checkpoint.
+
+
+## R7.6 — owner Fadly custom domain intent and verified identity/menu candidate
+
+**2026-09-27. Developer Mr. iPat.** Owner specifies intended
+Fadly tenant custom domain ipat.fadly.id; intended IPAT
+commercial platform domain ipat.id. DNS/TLS/business ownership
+not independently verified; ipat.fadly.id is also the CURRENT
+authorized management SSH hostname for lab VPS. The SSH
+path was not touched or repointed, and there is no new
+public HTTPS/customer routing. ADR-021 records owner naming
+intent and the management-host collision; ADR-014 remains
+OPEN, ADR-020 domain work remains deferred.
+
+This milestone advances S1-02 identity-bound menu reference
+BEFORE optional domain routing: verified pinned token issuer
+is preserved in identity-core VerifiedSubject; authz-core
+pure candidate-row bridge compares cryptographically
+verified issuer+subject, intended exact tenant, single
+candidate role/POP, record/token expiry, revocation and
+nonempty synthetic approver before returning only existing
+read-only DashboardSection policy. Genuine synthetic
+generated RSA JWT integration tests cover positive
+Fadly lab POP and cross-issuer/subject/tenant/POP,
+revocation/expiry/forged platform and bulk write negative.
+CandidateMembershipRow is NOT trusted DB provenance or
+login: there is still no real MFA, restricted persistent
+DB membership adapter, API entitlement enforcement or
+operational customer dashboard. No domain membership
+inferred from host or JWT claims. No migration/new device
+actuator. Existing business HTTP401 policy unchanged.
+
+Changed source: crates/identity-core/src/lib.rs and
+tests/oidc_signature.rs, crates/authz-core/Cargo.toml,
+src/lib.rs, src/verified_menu.rs and tests/verified_menu.rs;
+CI explicit two signed-token tests; docs in
+DOMAIN_INTENT_FADLY_R76.md, PRD, ARCHITECTURE,
+SECURITY, DECISIONS, SPRINT_BACKLOG and dashboard
+audit. At initial status entry tests not yet verified;
+record actual local/independent CI after execution.
+Next MUST audited membership DB read binding and
+real IdP/MFA lab test; separate C320 physical
+operator prerequisites not fulfilled, TC-OLT-01 NOT RUN.
+Production stays NO_GO and no VPS/K3s/firewall writes.
