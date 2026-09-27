@@ -95,6 +95,14 @@ jobs:
           cargo test --locked -p usp-controller
           cargo build --locked -p usp-controller
           IPAT_R81_SYNTHETIC_HTTP=YES bash deploy/scripts/lab/r81/usp14-private-http-smoke.sh
+      - name: R8.2 original CWMP 1.0 actual SOAP virtual ONT HTTP Inform and fixed read-only RPC (strict localhost)
+        run: |
+          python3 -m unittest discover deploy/scripts/lab/r82 -p test_r82_contract.py -v
+          python3 -m py_compile deploy/scripts/lab/r82/virtual_cwmp_http_smoke.py
+          bash -n deploy/scripts/lab/r82/virtual-cwmp-http-smoke.sh
+          cargo test --locked -p cwmp-gateway
+          cargo build --locked -p cwmp-gateway
+          IPAT_R82_SYNTHETIC_HTTP=YES bash deploy/scripts/lab/r82/virtual-cwmp-http-smoke.sh
       - name: Verify non-executable sealed provisioning jobs (static)
         run: python3 -m unittest discover deploy/scripts/lab -p 'test_provisioning_synthetic_review.py' -v
       - name: Verify production infrastructure never auto-authorizes unsafe deployment

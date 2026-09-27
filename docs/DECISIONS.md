@@ -216,3 +216,24 @@ tenant-scoped enrollment remains OPEN;
 the v1.4 subset is NOT certification
 or a silent claim of latest spec coverage.
 See docs/R81_NATIVE_USP14_PROTOBUF_PRIVATE_VIRTUAL_AGENT.md.
+
+
+## ADR-030 — APPROVED PRE-DEVICE RUST ACS VIRTUAL SOAP / NO PUBLIC ADMISSION (R8.2)
+
+The owner approves continuing software-first ACS development
+while actual test ONTs/OLTs are still offline. Implement
+three actual LOCALHOST HTTP SOAP proof routes in the
+ORIGINAL Rust CWMP gateway, using the existing strict
+Inform parser+serializer and one strict read-only
+GetParameterValues/GetParameterValuesResponse RPC.
+Admit ONLY an immutable fake CPE identity/event and
+one fixed non-secret parameter. Never assume HTTP Host
+or claim headers authenticate a real device. Separate
+opt-in environment flags plus loopback and absence
+under K3s mode are mandatory. The live `/cwmp`
+endpoint remains HTTP503 pending real peer admission,
+durable session/replay, trusted device→tenant binding,
+interoperability and security review. This virtual
+two-call demonstration is NOT a persisted/authenticated
+CWMP session or certified TR-069 compatibility.
+Actual production implementation remains OPEN.

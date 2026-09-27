@@ -761,3 +761,27 @@ executed. Optional `usp-controller`
 loopback only and K3s health-only
 branch enforce separation between
 parsing and real service admission.
+
+
+## R8.2 virtual SOAP adapter joining the original Rust CWMP parser and serializer
+
+The ORIGINAL Rust Axum CWMP gateway has an independent
+hardware-free STRICT LOCAL virtual ONT path behind an
+extra opt-in. Its `/lab/virtual-ont/inform` accepts
+one immutable fake ONT tuple/event+correlation and
+uses the real CWMP InformResponse serializer.
+The companion GET emits one original
+GetParameterValues SoftwareVersion SOAP document,
+and the companion POST validates one
+strictly correlated GetParameterValuesResponse
+or CWMP Fault; HTTP response contains only
+safe counts/status, no returned parameter value.
+All handlers use the same globally applied
+64 KiB request bound. No enrollment,
+tenant mapping, durable sessions, queue writes,
+real authentication, TLS termination,
+K3s public bind or firmware task are
+performed in this proof. Real production
+`/cwmp` always rejects. Actual
+device admission and persistent
+state remain a separate MUST integration.

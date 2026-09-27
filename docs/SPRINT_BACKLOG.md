@@ -672,3 +672,30 @@ interop and approved
 disruptive firmware campaign
 only after independent DR
 and maker-checker gates.
+
+
+## R8.2 accelerated original CWMP physical-device-free integrated slice
+
+MUST source: actual original Rust Axum
+local SOAP CWMP InformResponse proof, one
+static read-only GetParameterValues request,
+strict correlated parameter/fault response
+without raw value exposure, immutable
+fake-only identity gate, 64 KiB global
+HTTP body limit, separate opt-in and
+permanent production `/cwmp` denial.
+MUST tests: genuine compiled Rust
+unit and actual Python urllib→HTTP
+roundtrip for positives and forged
+identity/headers, wrong SOAP method,
+unapproved parameter, DTD and oversized
+negative paths on nonroot Ubuntu26.
+SHOULD next: authorized stateful
+virtual device multi-request test
+with durable correlation simulator.
+MUST later before real ONT: trustworthy
+HTTPS peer and real immutable tenant/
+device enrollment, durable sessions
+and actual VSOL/ZTE firmware-matched
+interop; real USP MQTT MTP and
+tenant SaaS remain parallel MUST work.
