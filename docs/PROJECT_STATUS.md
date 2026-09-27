@@ -1525,3 +1525,79 @@ Next MUST audited membership DB read binding and
 real IdP/MFA lab test; separate C320 physical
 operator prerequisites not fulfilled, TC-OLT-01 NOT RUN.
 Production stays NO_GO and no VPS/K3s/firewall writes.
+
+
+## R7.6 final verified code release — 2026-09-27
+
+**Identity-first Fadly tenant intent:** Product owner plans
+ipat.fadly.id as eventual Fadly company custom domain and
+ipat.id as future commercial IPAT platform domain. Neither
+DNS ownership nor tenant-domain mapping was independently
+verified or deployed. ipat.fadly.id currently remains the
+operator's EXISTING lab VPS SSH target; no DNS, external
+firewall, VPS management routing or public HTTPS changed.
+
+**Immutable code PR #82 evidence:** first source CI run
+36284416805 failed because authz-core added a Rust
+identity-core test dependency without updating Cargo.lock.
+This was fixed by generating Cargo.lock with *offline*
+Cargo in an isolated unprivileged VPS Git worktree,
+real generated synthetic RS256-signed token integration
+6/6 identity-core and 4/4 issuer-bound authz menu
+tests PASS there. Corrected feature commit e9d7479
+independent GitHub CI run 36284492902 completed
+SUCCESS in all FOUR jobs. PR #82 squash merged to
+canonical main code SHA
+881607e1a8a1a7bf8a9b93bd012d2a18801eb916.
+
+**Source backup, SSH and independent real VPS proofs:**
+Owner FileVault Mac source-only Restic snapshot 2eb84705
+at exact code SHA; 120/120 entire encrypted packs full
+read PASS and separate isolated restored Git archive
+SHA256 and selected historical partial readable-root
+config SHA256 PASS. This is NOT independent offsite VPS
+whole-host/real PostgreSQL/K3s disaster recovery.
+
+Exact code SHA moved via local Git bundle and SHA256
+over preexisting identity-pinned key-only SSH to actual
+nonprivileged Ubuntu 26.04.1 VPS main checkout,
+clean fast-forward PASS. VPS cargo fmt --all -- --check
+and full cargo test --workspace --locked --offline -q
+PASS; existing private packet R7.4 Python 8/8 PASS.
+Actual owner Mac used the existing R5.9 guarded
+stop/start to restart only tracked nonroot private
+dashboard and localhost tunnel, verified exact current
+main source and strict loopback. Real HTTP requests
+with forged Host: ipat.fadly.id, X-Tenant-Id: fadly
+and X-Verified-Role: platform_owner all got HTTP401
+from Platform, Tenant and NOC business endpoints.
+This is a DENIAL check, not an authenticated
+Fadly company integration or public-domain test.
+
+The candidate identity-core issuer + authz-core
+membership row bridge is OFFLINE/TEST-only; it has
+NO approved trusted DB actor, persistent authenticated
+tenant/POP lookup, real IdP/MFA login, authenticated
+business route, actual customer records or firmware
+actuator. DEV-01 actual physical C320 exact cards/
+running firmware and independent rescue evidence
+remain unavailable; TC-OLT-01 NOT RUN.
+No real OLT connection or write, live VPS K3s,
+PostgreSQL, host firewall/provider firewall or
+public-domain routing happened. Production NO_GO,
+all external recovery/security gates remain blocked.
+Next MUST: independently trusted provider/DB membership,
+MFA and end-to-end UI/API/RLS/jobs two-tenant controls,
+and separately authorized physical C320 read-only pilot.
+
+**Independent exact-feature-main CI:** GitHub Actions run
+36284679208 on canonical code commit
+881607e1a8a1a7bf8a9b93bd012d2a18801eb916
+completed SUCCESS in all FOUR jobs independently of
+corrected feature PR CI 36284492902. Results were
+locked Rust workspace / explicit signed JWT/tenant
+negative tests and source safety reviews, synthetic
+PostgreSQL RLS logical restore, synthetic separate
+PostgreSQL physical recovery, and disposable Ubuntu26
+K3s smoke. These CI jobs do NOT prove a real OLT,
+full production database/K3s HA or production login.
