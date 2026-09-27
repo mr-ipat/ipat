@@ -1,7 +1,7 @@
 # IPAT — Project Status
 
 **As-of:** 2026-09-27 Asia/Jakarta
-**Current milestone:** R8.2 — original CWMP 1.0 synthetic virtual ONT now executes real localhost SOAP InformResponse and strict read-only GetParameterValues HTTP; CI feature is PENDING and real authenticated ACS/physical ONT remains OPEN. R8.1 native USP v1.4 protobuf virtual-agent proof and R8.0 true signed JWT→disposable SQL→private Axum multi-tenant inventory were independently verified. See the latest appended milestone evidence.
+**Current milestone:** R8.2 — original CWMP 1.0 genuine localhost SOAP virtual-ONT InformResponse / fixed read-only GetParameterValues real Rust HTTP VERIFIED; both original feature and independent post-feature-main 4/4 CI PASSED. Native USP 1.4 protobuf virtual-agent R8.1 and signed multi-tenant SQL API R8.0 remain separately verified. Production ACS, real device interoperability, authenticated user dashboards, USP MTP and independent disaster recovery remain OPEN. See appended immutable evidence.
 **Historical R7.1 state (superseded by later entries):** R7.1 original Rust ZTE C320 strict offline read-only evidence parser, owner-private non-network importer, hard-disabled firmware and large RED unfulfilled-PRD warning across all three private dashboard previews FEATURE PR #71 MERGED at code SHA d452d1be6943bb4b3685b2136ad30b587e6af1e9. Both independent feature-PR GitHub CI 36249894205 and post-feature-main CI 36250108104 completed SUCCESS in all four independent jobs (locked Rust/security/UI/OLT offline, disposable Ubuntu26 K3s and two isolated synthetic PostgreSQL recovery jobs, none deployed live). Actual clean unchanged Ubuntu 26.04.1 VPS canonical source, private GitHub and owner FileVault Mac main synchronized at feature SHA; actual VPS rustfmt and 145/145 locked OFFLINE whole-workspace Rust tests, 5/5 synthetic offline CLI permission/data tests, 5/5 source PRD red warning + disabled firmware checks and 7/7 existing R6.8 Python dashboard tests PASS. Existing R6.8 synthetic Node DOM proof rerun on Mac Node v22.22, actual authorized Mac private dashboard served LARGE red PRD alert via real HTTP 200/no-store/CSS high contrast while 3 business APIs remained HTTP401. FileVault Mac encrypted exact merged-feature-source Restic snapshot 63c7c461 independently isolated SHA256 restored plus full encrypted pack read PASS; selected historical root-readable config separately restored, NOT full VPS or real PostgreSQL PITR. Clean main production readiness 8/8 automatic gates PASS, ALL 7/7 independent external safety gates BLOCKED, production NO_GO; live VPS K3s/PostgreSQL/nftables inactive. ZTE C320 actual model/boards/running firmware, authenticated private device route and owner recovery/maintenance approval still unavailable; TC-OLT-01 physical NOT RUN, no firmware update or device changes. Separate physical blocker Issue #72 and high-risk firmware Issue #73 OPEN. Final docs-only checkpoint independent CI, exact updated source synchronization and backup to be logged immutably after docs merge to avoid recursive SHA-changing commits. Developer Mr. iPat.
 
 ## 1. Source of truth and provenance
@@ -2298,3 +2298,104 @@ CI and canonical release verification
 must be logged AFTER execution.
 No physical test or production
 deployment is implied.
+
+
+## R8.2 verified original Rust ACS SOAP actual HTTP + source release checkpoint — 2026-09-27
+
+**Immutable source and CI:** PR #92 featured original
+Rust CWMP 1.0 actual virtual ONT HTTP
+`Inform`→`InformResponse`, static read-only
+`GetParameterValues` serialization and
+strict correlated response/fault parsing.
+The feature commit `3911c846f3b0e28ae5d62ff466a95a3d2bbb7680`
+CI `36301589491` completed SUCCESS **4/4**.
+The merge committed main exact
+`d8e75c8a8f2e12dad15797135960e5de9bb30067`,
+and separate actual post-code-main CI
+`36301824513` also completed SUCCESS **4/4**,
+independently including real compiled Rust
+local SOAP HTTP tests, preexisting
+native genuine BBF USP 1.4 protobuf
+virtual-agent tests, signed synthetic
+JWT→isolated real PostgreSQL/RLS
+two-company inventory tests, real
+disposable Ubuntu26 single-node K3s
+smoke and separate disposable
+Postgres backup/restore jobs.
+
+**Exact real owner environment:** the
+FileVault owner Mac encrypted
+SOURCE-only Restic snapshot
+`a44374c5` of merged code main
+was fully verified with **138/138**
+encrypted pack reads and isolated
+SHA256-exact canonical source
+restore. A separately selected
+historical PARTIAL readable root
+configuration also restored
+SHA256-exact, NOT an offsite
+whole VPS, production PostgreSQL
+or K3s datastore DR drill.
+GitHub, owner Mac and actual
+nonroot Ubuntu 26.04.1 VPS
+were synchronized to identical
+exact code SHA via checked Git
+main and SHA256-verified
+Git bundle clean fast-forward.
+
+On the actual nonroot VPS
+canonical SHA, full locked
+offline Rust workspace unit
+tests and rustfmt passed, new
+R8.2 source contract 4/4
+passed, and actual Rust
+CWMP gateway was compiled,
+served on exclusive
+`127.0.0.1:3300`, passed
+independent Python genuine
+HTTP/SOAP positive/fault/
+negative/oversize tests,
+and was stopped by guarded
+smoke cleanup. No real
+device identity or external
+packet was involved.
+The owner Mac original
+trusted localhost tunnel
+private dashboard was
+guardedly restarted at the
+same main source SHA.
+Actual Mac HTTP verified
+the absent unprovisioned
+MFA+database membership
+routes remain 404 and
+all three real Platform/
+Tenant/NOC business
+namespaces reject forged
+Host/tenant/role/bearer
+with HTTP401. Firmware
+and actual device actions
+remain disabled.
+
+**OPEN PRD / external gates:**
+The C320/ONT/MikroTik
+are not yet live-tested,
+CWMP real `/cwmp`
+unconditionally HTTP503,
+no actual trusted HTTPS
+device enrollment or
+durable CWMP session,
+native USP real MQTT
+MTP and agent certificate
+enrollment not tested,
+actual customer MFA/
+admin/tenant operations
+and real public SaaS
+dashboard not provisioned,
+independent complete offsite
+VPS/PG/K3s recovery not
+verified, and no live
+heterogeneous cross-provider
+K3s cluster. R8.2 is
+verified synthetic real
+SOAP software, not a
+production readiness GO.
