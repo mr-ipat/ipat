@@ -547,12 +547,18 @@ mod tests {
         assert_eq!(body["source"], "restricted-postgresql");
         assert_eq!(body["tenant_slug"], "tenant-alpha");
         assert_eq!(body["pop_id"], "pop-a");
-        assert_eq!(body["count"], 1);
-        assert_eq!(
-            body["devices"][0]["id"],
-            "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
-        );
-        assert_eq!(body["devices"][0]["vendor"], "synthetic");
+        // The SAME disposable PostgreSQL instance previously ran the
+        // provisioning/outbox suite, so it legitimately contains extra
+        // synthetic routers in each POP. Never assume one device per tenant.
+        let a_devices = body["devices"].as_array().unwrap();
+        assert!(!a_devices.is_empty());
+        assert!(a_devices.len() <= 100);
+        assert_eq!(body["count"].as_u64().unwrap() as usize, a_devices.len());
+        assert!(a_devices.iter().all(|device| device["pop_id"] == "pop-a"));
+        assert!(a_devices.iter().any(|device| {
+            device["id"] == "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
+                && device["vendor"] == "synthetic"
+        }));
         let raw = String::from_utf8(bytes.to_vec()).unwrap();
         assert!(!raw.contains("bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb"));
         assert!(!raw.contains("eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee"));
@@ -566,11 +572,17 @@ mod tests {
         let data = to_bytes(response.into_body(), 8192).await.unwrap();
         let other_body: Value = serde_json::from_slice(&data).unwrap();
         assert_eq!(other_body["tenant_slug"], "tenant-beta");
-        assert_eq!(other_body["count"], 1);
+        let b_devices = other_body["devices"].as_array().unwrap();
+        assert!(!b_devices.is_empty());
+        assert!(b_devices.len() <= 100);
         assert_eq!(
-            other_body["devices"][0]["id"],
-            "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb"
+            other_body["count"].as_u64().unwrap() as usize,
+            b_devices.len()
         );
+        assert!(b_devices.iter().all(|device| device["pop_id"] == "pop-b"));
+        assert!(b_devices
+            .iter()
+            .any(|device| { device["id"] == "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb" }));
         assert!(!String::from_utf8_lossy(&data).contains("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"));
         for bad in [
             format!("/lab/auth/devices?tenant_id={a}&role=noc_engineer&pop_id=pop-b"),
