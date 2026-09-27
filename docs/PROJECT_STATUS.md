@@ -1,7 +1,7 @@
 # IPAT — Project Status
 
 **As-of:** 2026-09-27 Asia/Jakarta
-**Current milestone:** R7.8 — opt-in PRIVATE signed-JWT→restricted PostgreSQL→read-only menu Rust vertical slice, pending independent disposable PostgreSQL CI at initial entry; real IdP/MFA, operational company dashboards and physical C320 TC-OLT-01 remain BLOCKED. Historical R7.4 evidence and all later release checkpoints remain retained below.
+**Current milestone:** R7.8 — private signed-JWT→restricted PostgreSQL→read-only menu Rust integration and disposable CI VERIFIED; live company MFA/OIDC enrollment, operational dashboards, public-domain routing and physical C320 TC-OLT-01 remain BLOCKED. Historical milestone evidence and immutable verification checkpoints remain retained below.
 **Historical R7.1 state (superseded by later entries):** R7.1 original Rust ZTE C320 strict offline read-only evidence parser, owner-private non-network importer, hard-disabled firmware and large RED unfulfilled-PRD warning across all three private dashboard previews FEATURE PR #71 MERGED at code SHA d452d1be6943bb4b3685b2136ad30b587e6af1e9. Both independent feature-PR GitHub CI 36249894205 and post-feature-main CI 36250108104 completed SUCCESS in all four independent jobs (locked Rust/security/UI/OLT offline, disposable Ubuntu26 K3s and two isolated synthetic PostgreSQL recovery jobs, none deployed live). Actual clean unchanged Ubuntu 26.04.1 VPS canonical source, private GitHub and owner FileVault Mac main synchronized at feature SHA; actual VPS rustfmt and 145/145 locked OFFLINE whole-workspace Rust tests, 5/5 synthetic offline CLI permission/data tests, 5/5 source PRD red warning + disabled firmware checks and 7/7 existing R6.8 Python dashboard tests PASS. Existing R6.8 synthetic Node DOM proof rerun on Mac Node v22.22, actual authorized Mac private dashboard served LARGE red PRD alert via real HTTP 200/no-store/CSS high contrast while 3 business APIs remained HTTP401. FileVault Mac encrypted exact merged-feature-source Restic snapshot 63c7c461 independently isolated SHA256 restored plus full encrypted pack read PASS; selected historical root-readable config separately restored, NOT full VPS or real PostgreSQL PITR. Clean main production readiness 8/8 automatic gates PASS, ALL 7/7 independent external safety gates BLOCKED, production NO_GO; live VPS K3s/PostgreSQL/nftables inactive. ZTE C320 actual model/boards/running firmware, authenticated private device route and owner recovery/maintenance approval still unavailable; TC-OLT-01 physical NOT RUN, no firmware update or device changes. Separate physical blocker Issue #72 and high-risk firmware Issue #73 OPEN. Final docs-only checkpoint independent CI, exact updated source synchronization and backup to be logged immutably after docs merge to avoid recursive SHA-changing commits. Developer Mr. iPat.
 
 ## 1. Source of truth and provenance
@@ -1691,3 +1691,86 @@ and actual business HTTP401 are preserved;
 physical C320 TC-OLT-01 still NOT RUN,
 firmware still HARD DISABLED, public access
 and real VPS PostgreSQL/K3s still NO_GO.
+
+
+## R7.8 independently verified final code milestone — 2026-09-27
+
+**Source and immutable CI evidence.** Source PR #85 feature commit
+b8b92b8f73f6e81dc8e8091da73c6f7dc99921b3
+passed GitHub run 36287648718 SUCCESS 4/4. Crucially,
+its disposable PostgreSQL integration job independently
+ran the exact test
+tenant_membership_lab::tests::r78_end_to_end_real_signed_jwt_real_restricted_sql_real_axum_router,
+with explicit log `test result: ok. 1 passed; 0 failed`.
+This was a REAL Rust Axum HTTP handler, genuine ephemeral
+RS256-signed JWT and separate low-privilege PostgreSQL
+test account on a throwaway PostgreSQL 16 instance,
+not a mocked DB integration. Its companies and
+reviewer records were nevertheless SYNTHETIC CI fixtures,
+with no real human MFA, subscriber, ONT or OLT data.
+Feature was merged via PR #85 squash into canonical main
+15cd78de46bc08f1563a3eeee229bbcf7e05b3ab.
+Separate POST-CODE-MAIN CI run 36287880873 at this
+exact code main SHA completed SUCCESS 4/4:
+locked workspace/auth/security and private HTTP,
+disposable Ubuntu26 K3s, ephemeral PostgreSQL RLS
+logical restore and independent disposable PostgreSQL
+physical restore. These do NOT establish production
+PostgreSQL HA or off-host whole-server recovery.
+
+**Independent actual nonroot Ubuntu26 and private Mac HTTP.**
+Owner FileVault Mac backup source-only encrypted Restic
+snapshot 588edeb3 of the exact merged code main:
+full read of 126/126 encrypted packs PASS;
+isolated source archive SHA256 restore PASS and
+historical selected PARTIAL readable-root config
+SHA256 restore PASS. This is NOT independent
+off-site real VPS whole-host/PG/K3s disaster recovery.
+A local SHA256-verified Git bundle was safely
+fast-forwarded from clean owner GitHub main/Mac to
+clean actual NONROOT Ubuntu26.04.1 VPS main checkout
+at the exact source SHA. VPS independently ran
+cargo fmt --all -- --check and full
+cargo test --workspace --locked --offline PASS,
+4/4 new R7.8 private HTTP static guards,
+5/5 R7.7 SQL static guards, and 8/8 offline
+R7.4 C320 readiness tests PASS.
+
+Existing reviewed nonroot R5.9 private preview was
+stopped/rebuilt/restarted from exact final code SHA,
+over the preexisting trusted SSH localhost tunnel;
+actual Mac HTTP GET /lab/rollout-phase confirmed
+strict custom domains off, mandatory tenant isolation,
+no real authenticated business data or firmware.
+Private /lab/auth/sections remains HTTP404 on
+the DEFAULT live preview because no actual reviewed
+OIDC+PostgreSQL service configuration or account
+is installed. Actual forged Host: ipat.fadly.id,
+tenant and platform role all still received
+HTTP401 across Platform, Tenant and Operations
+business APIs. The R7.8 HTTP route is implemented
+and PROVEN ONLY in disposable opt-in CI, NOT
+an active real customer login on the VPS.
+
+**Still blocked by external prerequisites:**
+Operator-sanitized C320 exact boards/firmware,
+private physical management identity, read-only
+approved account, independent console and
+verified local device backup; TC-OLT-01 NOT RUN.
+Independent VPS out-of-band rescue console and
+off-host full encrypted recovery/restore not
+yet proven, so no live K3s, public HTTPS, host
+or provider firewall changes. No actual Keycloak
+issuer/users/MFA and independently approved
+human tenant/POP membership; FR-001/002/003
+end-to-end actual customer acceptance PARTIAL.
+Future custom domain ipat.fadly.id DNS pointing
+alone does NOT prove TLS/domain binding; it
+is also current operator SSH hostname. Future
+ipat.id commercial platform domain remains
+intended and unverified. Firmware update remains
+hard-disabled. Production readiness NO_GO.
+Next MUST: audited real human IdP+membership
+read integration, genuinely restricted server
+menus/APIs/RLS/jobs, then separately approved
+first physical read of C320 in isolated lab.

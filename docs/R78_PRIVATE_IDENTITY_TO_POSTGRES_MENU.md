@@ -113,3 +113,35 @@ is currently also used for SSH management. Its future customer
 custom-domain TLS/ownership and management separation are
 still deferred per ADR-020/021, with NO backend tenant
 selection from DNS/Host before verified commercial rollout.
+
+
+## Actual immutable code validation
+
+Feature PR #85 `b8b92b8` passed CI run
+`36287648718` with all four jobs SUCCESS; GitHub
+PostgreSQL integration logs explicitly show the
+real token+Axum+dedicated role+PostgreSQL test
+executed `1 passed, 0 failed` (not skipped).
+PR #85 squash-merged main code SHA is
+`15cd78de46bc08f1563a3eeee229bbcf7e05b3ab`;
+independent post-code-main run `36287880873`
+passed all four jobs. The authorized nonroot
+Ubuntu 26.04.1 lab ran full locked offline Rust
+workspace, four R7.8 static and five R7.7 static
+tests; existing R7.4 offline C320 readiness
+eight tests passed. Owner Mac source-only Restic
+snapshot `588edeb3` verified all 126 encrypted
+packs and isolated exact source SHA256 restore
+plus historical PARTIAL selected config archive.
+This is not whole-host/real DB DR.
+
+The reviewed private `127.0.0.1:48765` dashboard
+was rebuilt on the actual VPS but does NOT enable
+the optional restricted membership route: its
+default HTTP response remains 404, with actual
+Platform/Tenant/NOC business endpoints denying
+forged tenant/domain/role requests HTTP401.
+Use this milestone only as a VERIFIED integrated
+DISPOSABLE identity test and software foundation,
+not proof that IPAT is ready to accept customer
+data or perform physical firmware operations.
