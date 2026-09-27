@@ -33,6 +33,7 @@ IPAT (`IP@`) is a planned commercial multi-tenant ISP network operations platfor
 - [R8.2 original Rust CWMP 1.0 real SOAP HTTP fixed virtual ONT (lab only)](docs/R82_CWMP_REAL_SOAP_VIRTUAL_ONT_PRIVATE_LAB.md)
 - [R8.3 visible Device Manager with interactive Add/List/Status and separately gated PostgreSQL pending-adoption registry](docs/R83_DEVICE_WORKBENCH_AND_STAGED_ADOPTION.md)
 - [R8.4 staged signed MFA claim and PostgreSQL independent maker-checker metadata review (LAB only)](docs/R84_SIGNED_MFA_MAKER_CHECKER_DEVICE_REVIEW_LAB.md)
+- [R8.5 original Rust independent real IdP pinned signed MFA claim preflight (NO live login)](docs/R85_INDEPENDENT_REAL_IDP_SIGNED_MFA_ADMISSION_PREFLIGHT.md)
 - [Technical architecture](docs/ARCHITECTURE.md)
 - [Physical device and firmware test matrix](docs/DEVICE_MATRIX.md)
 - [Security, tenant isolation and threat model](docs/SECURITY.md)

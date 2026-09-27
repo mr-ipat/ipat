@@ -836,3 +836,31 @@ without separately restricted nonroot
 Unix-socket DB identity. Independent
 whole-host/PG recovery remains a
 production blocker.
+
+
+## R8.5 actual human identity vs signed amr threat boundary
+
+An ACTUAL HUMAN with provisioned independent MFA
+and approved IdP enrollment has NOT yet
+authenticated to the owner's production IPAT.
+An attacker might supply an independently
+self-signed `amr:mfa` token, a different
+kid/audience/issuer, fake high-privilege
+role/tenant claims, a symlinked or group-readable
+RSA public key, a forged Host or stale/overlong
+token. Original Rust standalone nonroot
+`oidc-mfa-preflight` verifies EXACT pinned
+RS256 issuer/kid/audience/exp/iat/nbf,
+<=15-minute lifespan and bounded signed
+`amr:mfa`, with private safe public key
+provenance required. Reject interactive TTY
+bearer input, >8KiB bearer, root runtime,
+unrequested opt-in, insecure owner PEM mode
+and symlinks/hardlinks; no claim/token/subject/
+role or tenant is printed or authorized.
+Even a PASS is NOT real independent operator
+MFA enrollment, authorization, login or
+permission to contact equipment.
+Approve and verify real human
+MFA via the IdP before enabling
+any actual customer device or admin APIs.

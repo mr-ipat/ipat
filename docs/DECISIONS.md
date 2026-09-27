@@ -290,3 +290,24 @@ signed-in browser BFF, secure operator login
 and production recovery are STILL PROPOSED/
 OPEN; synthetic CI MFA claims cannot satisfy
 actual human MFA controls.
+
+
+## ADR-033 — APPROVED INDEPENDENT PINNED REAL-IDP PREFLIGHT; REAL IAM STAYS GATED (R8.5)
+
+Before real customer company sign-in or any physical device
+adoption, independently establish an actual operator-controlled
+OIDC HTTPS issuer, pinned signing-key provenance and verified
+human second-factor semantics. Add an original standalone
+unprivileged bounded Rust process that only checks a
+short-lived pinned RS256 access JWT's exact `amr:mfa`
+and refuses operator-revealing output. Do not trust tenant,
+roles, POP or human MFA enrollment solely from a token;
+only existing separately approved actual DB membership
+can grant a role, and actual IdP 2FA configuration and
+challenge remain independent external human gates.
+The readiness CLI cannot mount HTTP, create sessions,
+adopt devices, authorize firmware or enable K3s.
+Keycloak/OIDC browser BFF provider/deployment choice
+remains PROPOSED until actual independently approved,
+fully protected production operator enrollment.
+See docs/R85_INDEPENDENT_REAL_IDP_SIGNED_MFA_ADMISSION_PREFLIGHT.md.

@@ -770,3 +770,30 @@ for read-only collectors.
 LATER: firmware execution after
 independent recovery, production cluster,
 whole-host/database offsite DR.
+
+
+## R8.5 independent real IdP signing and MFA claim readiness
+
+MUST: bounded original Rust nonroot real
+pinned issuer+key+audience+short JWT
+signed `amr:mfa` preflight taking
+short-lived actual bearer from private
+protected FD, never granting role or
+asserting real human MFA enrollment.
+CI MUST generate independent fresh
+ephemeral RSA keys and actual process
+stdin tests covering missing opt-in,
+wrong kid, key or MFA, insecure
+PEM modes/symlinks and token leakage,
+while preserving all R8.3/R8.4
+two-tenant security tests.
+MUST NEXT: independently approved
+and enrolled actual human IdP with
+documented Keycloak-compatible exact
+AMR mapper, true browser MFA
+challenge test and server-side
+OIDC Code+PKCE secure browser BFF;
+then actual tenant/POP device
+registry/reviewer workbench.
+Do NOT turn signed-claim checks
+into unverified production endpoints.

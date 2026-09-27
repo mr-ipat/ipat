@@ -1,7 +1,7 @@
 # IPAT — Project Status
 
 **As-of:** 2026-09-27 Asia/Jakarta
-**Current milestone:** R8.4 VERIFIED — original signed synthetic MFA claim, independent security_admin maker-checker metadata-only approval, real append-only PostgreSQL audit and separately gated reviewer Rust endpoints: exact post-merge code-main independent CI 4/4 PASS, real nonroot Ubuntu26 workspace PASS. Existing R8.3 private Device Manager works. Actual human MFA IdP, authenticated tenant browser login, reviewer UI and physical OLT/ONT/RouterOS adoption remain OPEN (NOT production-ready).
+**Current milestone:** R8.5 software CANDIDATE — original independent real IdP pinned signed-MFA preflight Rust binary with bounded private FD/no-secret-output and actual independently generated RSA integration tests. Both original R8.4 code-main and final docs-main separately passed 4/4 independent CI; authentic human IdP and browser BFF remain OPEN. R8.5 own GitHub 4/4 CI and release synchronization remain PENDING until executed.
 **Historical R7.1 state (superseded by later entries):** R7.1 original Rust ZTE C320 strict offline read-only evidence parser, owner-private non-network importer, hard-disabled firmware and large RED unfulfilled-PRD warning across all three private dashboard previews FEATURE PR #71 MERGED at code SHA d452d1be6943bb4b3685b2136ad30b587e6af1e9. Both independent feature-PR GitHub CI 36249894205 and post-feature-main CI 36250108104 completed SUCCESS in all four independent jobs (locked Rust/security/UI/OLT offline, disposable Ubuntu26 K3s and two isolated synthetic PostgreSQL recovery jobs, none deployed live). Actual clean unchanged Ubuntu 26.04.1 VPS canonical source, private GitHub and owner FileVault Mac main synchronized at feature SHA; actual VPS rustfmt and 145/145 locked OFFLINE whole-workspace Rust tests, 5/5 synthetic offline CLI permission/data tests, 5/5 source PRD red warning + disabled firmware checks and 7/7 existing R6.8 Python dashboard tests PASS. Existing R6.8 synthetic Node DOM proof rerun on Mac Node v22.22, actual authorized Mac private dashboard served LARGE red PRD alert via real HTTP 200/no-store/CSS high contrast while 3 business APIs remained HTTP401. FileVault Mac encrypted exact merged-feature-source Restic snapshot 63c7c461 independently isolated SHA256 restored plus full encrypted pack read PASS; selected historical root-readable config separately restored, NOT full VPS or real PostgreSQL PITR. Clean main production readiness 8/8 automatic gates PASS, ALL 7/7 independent external safety gates BLOCKED, production NO_GO; live VPS K3s/PostgreSQL/nftables inactive. ZTE C320 actual model/boards/running firmware, authenticated private device route and owner recovery/maintenance approval still unavailable; TC-OLT-01 physical NOT RUN, no firmware update or device changes. Separate physical blocker Issue #72 and high-risk firmware Issue #73 OPEN. Final docs-only checkpoint independent CI, exact updated source synchronization and backup to be logged immutably after docs merge to avoid recursive SHA-changing commits. Developer Mr. iPat.
 
 ## 1. Source of truth and provenance
@@ -2684,3 +2684,77 @@ actual MFA IdP plus authenticated BFF/browser
 session and per-tenant restricted real DB
 connection/role mapping, then trusted read-only
 device identity and evidence.
+
+
+## R8.5 initial original real OIDC signed-MFA trust preflight candidate — 2026-09-27
+
+The owner wants actual safe operator identity and
+persistent tenant/POP Device Manager BEFORE
+contacting physical OLT or ONT. After R8.4
+independent reviewer, add original Rust
+standalone nonroot operator preflight to
+check independently sourced HTTPS OIDC issuer,
+exact pinned RS256 key/audience/kid and
+a real issuer's short-lived signed
+`amr:mfa` bearer through private
+bounded stdin FD; reject
+terminal-echoed token, missing
+explicit opt-in, symlink/loose
+public-key PEM files and
+unrecognized token. Passing is
+ONLY a cryptographic signed
+claim, NOT actual human MFA
+enrollment, signed-in browser,
+tenant access or physical adoption.
+
+Actual new original source:
+`crates/identity-core/src/bin/oidc-mfa-preflight.rs`,
+`crates/identity-core/tests/oidc_cli.rs`,
+`deploy/scripts/lab/r85/test_r85_contract.py`
+and matching locked crate metadata
+plus CI, ADR, security, PRD and
+runbook updates.
+
+**Initial independent nonroot Ubuntu26
+candidate proof**: fresh disposable
+synthetic 2048-bit RSA generation
+and original compiled Rust
+subprocess+bounded stdin signed
+real JWT test 4/4 PASS.
+Existing exact locked original
+identity tests 6/6 PASS.
+Mac R8.5 4/4 independent
+static safety tests PASS.
+Full GitHub R8.5 feature/main
+CI and exact final source
+sync/backup still PENDING.
+No real operator IdP account
+or actual production service
+has been provisioned.
+
+**R8.4 final release evidence:**
+PR #96 original code-main
+`c032d3759103d6b3d28b21df83bd923e85ce60ae`
+independent CI `36311222833`
+4/4 SUCCESS; docs proof PR #97
+final docs-main
+`c97e46c663e5a942a8c6fe1332c56944b276f426`
+independent CI `36312134432`
+also 4/4 SUCCESS. Owner Mac
+encrypted source-only Restic
+snapshot `74d16ddf` verified
+full read 148/148 packs and
+isolated exact-source SHA256
+restore, plus selected historical
+PARTIAL root-readable config
+restore, NOT real whole-host
+customer PostgreSQL/K3s DR.
+GitHub, owner Mac and actual
+clean nonroot Ubuntu26 VPS
+synchronized final R8.4 docs
+main exact SHA via SHA256-
+verified Git bundle fast-forward.
+R8.4 production reviewer
+and signed endpoints remain
+OFF on the owner's default
+private preview.
