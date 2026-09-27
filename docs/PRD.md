@@ -523,3 +523,19 @@ synthetic tenant negative tests remain baseline S1, independent of DNS.
 An unverified domain cannot be used to serve tenant data. No new approved
 public deployment, firmware operation or physical compatibility claim.
 See LAB_FIRST_DOMAIN_LATER_R75.md and DECISIONS.md ADR-020.
+
+
+## R7.6 owner-provided product/domain illustration
+
+Product owner identifies ipat.fadly.id as the INTENDED later Fadly
+customer custom domain and ipat.id as the INTENDED later commercial
+platform identity (ADR-021). Neither is independently verified for
+DNS ownership, TLS or public tenant onboarding. ipat.fadly.id is
+currently also the known lab VPS SSH hostname: do not change its
+routing until trusted alternative management/rollback exists.
+FR-004 and AC-09 remain commercial-domain requirements scheduled
+after functioning private system per ADR-020. FR-001/002/003
+tenant-data and authorization isolation remains mandatory NOW,
+regardless of custom-domain timing or DNS assumptions.
+The R7.6 synthetic issuer+subject-to-candidate-row Rust policy
+bridge is NOT a real authenticated company dashboard.

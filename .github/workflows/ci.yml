@@ -120,6 +120,10 @@ jobs:
         run: cargo fmt --all -- --check
       - name: Run locked unit tests
         run: cargo test --workspace --locked
+      - name: R7.6 genuine synthetic RS256 pinned issuer to candidate tenant menu negative tests
+        run: |
+          cargo test --locked -p identity-core --test oidc_signature
+          cargo test --locked -p authz-core --test verified_menu
       - name: Verify R7.1 ZTE C320 read-only parsing and prominent PRD risk banner
         run: |
           python3 -m unittest discover deploy/scripts/lab/r71 -p test_r71_contract.py -v

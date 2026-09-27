@@ -580,3 +580,19 @@ synthetic role tests do NOT prove production isolation. Early physical
 C320 reads remain isolated operator-managed lab activity, NOT
 authenticated tenant device enrollment, and require independent
 host verification, read-only permission and backup.
+
+
+## R7.6 explicit management-host and issuer confusion threat
+
+ipat.fadly.id is currently a known management SSH destination but
+the owner also intends it as a Fadly tenant CUSTOM domain later.
+NEVER imply host DNS controls verified tenant membership, or repoint
+the existing management SSH alias while external recovery gates
+remain blocked. A hypothetical shared host serving SSH and HTTPS
+is not approved public security architecture. A forged Host,
+X-Forwarded-Host or extra OIDC tenant/role/domain claim must not
+change actor tenant or POP; token issuer+subject must match exact
+approved server-side membership source. The new pure R7.6 policy
+function is only a candidate-row reference; there is NO approved
+DB provenance adapter, real MFA, commercial cookie design or
+actual real-user authorization endpoint yet. No prod exposure.

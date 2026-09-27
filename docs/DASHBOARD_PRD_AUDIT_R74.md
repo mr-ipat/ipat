@@ -39,3 +39,16 @@ not a completed feature or blocker to private simulator/read-only lab.
 FR-001/002/003 authorized data/POP isolation and credible customer
 login/backend/menu are NOT deferred. The three dashboards remain
 synthetic previews and retain red PRD gaps.
+
+
+## R7.6 exact Fadly hostname intent (unverified)
+
+The owner-provided company illustration is future Fadly custom
+domain ipat.fadly.id (also CURRENT VPS SSH management target), with
+ipat.id reserved as intended future platform branding. Neither is
+an active tenant dashboard. Existing single operator SSH-loopback
+preview remains synthetic with all three business namespaces HTTP401.
+Issuer+subject-to-candidate-row Rust policy tests are a foundation
+only: still NO actual OIDC/MFA/company membership or server-side
+menu/data-plane integration. Custom domains remain deferred; data
+isolation MUST NOT be deferred. See DOMAIN_INTENT_FADLY_R76.md.

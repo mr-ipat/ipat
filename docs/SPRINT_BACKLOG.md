@@ -512,3 +512,22 @@ subdomains/custom domains, per-domain certificates, trusted Host routing,
 cookies, CSRF and OIDC callback isolation (ADR-014 still OPEN).
 This is an approved scheduling decision, NOT removal of a requirement.
 Do not enable a shared PUBLIC tenant endpoint as a temporary shortcut.
+
+
+## R7.6 next integrated private-lab dependency (ADR-021)
+
+MUST: distinct stable Fadly tenant ID and operator-approved issuer+
+subject+role+POP lookup before any real tenant dashboard; verify
+signed token issuer as well as subject and reject all unapproved,
+revoked, expired, cross-tenant, cross-issuer and cross-POP candidates.
+Synthetic Rust function is reference policy ONLY. Next MUST is a
+separately authenticated, audited DB-bound restricted membership
+adapter and private login MFA test, followed by server-filtered menus
+and backend/DB/job denial, before exposing actual customer data.
+
+MUST separately for physical lab: exact DEV-01 chassis/cards/build,
+independent trusted read-only access and backup; TC-OLT-01 NOT RUN.
+LATER after working lab: owner-approved public custom domain
+ipat.fadly.id for Fadly company and future IPAT corporate ipat.id
+ONLY after DNS/TLS ownership and independent SSH management recovery
+gate. Do not modify existing SSH host, DNS, root firewall or K3s.

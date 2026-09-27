@@ -76,6 +76,7 @@ fn real_signed_token_is_accepted_but_untrusted_role_and_tenant_claims_are_ignore
     let k = keys();
     let token = sign(&claims(), &k.private, KID);
     let who = verifier(&k.public).verify_access_token(&token).unwrap();
+    assert_eq!(who.issuer(), ISSUER);
     assert_eq!(who.subject(), "operator-123");
     assert!(who.expires_at() > now());
     // VerifiedSubject has NO membership, role or tenant accessor;

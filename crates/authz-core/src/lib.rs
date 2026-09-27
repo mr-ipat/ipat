@@ -1,6 +1,7 @@
 //! Pure authorization policy. Authentication / trusted identity are NOT implemented.
 
 pub mod dashboard;
+pub mod verified_menu;
 
 use tenant_core::TenantId;
 

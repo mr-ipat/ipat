@@ -27,10 +27,16 @@ pub struct PinnedIssuer {
 }
 /// A verified JWT subject; intentionally no tenant, roles, POP or Debug output.
 pub struct VerifiedSubject {
+    issuer: String,
     subject: String,
     expires_at: u64,
 }
 impl VerifiedSubject {
+    /// Authenticated by the pinned signature verifier, never an HTTP Host
+    /// header, untrusted request claim, or proposed tenant-domain mapping.
+    pub fn issuer(&self) -> &str {
+        &self.issuer
+    }
     pub fn subject(&self) -> &str {
         &self.subject
     }
@@ -131,6 +137,7 @@ impl PinnedIssuer {
             return Err(IdentityError::TokenLifetimeExceeded);
         }
         Ok(VerifiedSubject {
+            issuer: self.issuer.clone(),
             subject: claims.sub,
             expires_at: claims.exp,
         })
