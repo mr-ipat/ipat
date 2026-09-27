@@ -903,3 +903,33 @@ PostgreSQL tenant/POP membership recheck (OPEN)
 pair-verification domain. It is intentionally NOT
 mounted at a browser endpoint and does NOT alter
 existing local fake-device UI or real API denials.
+
+
+## R8.8 guarded browser session architecture
+
+R8.7 cryptographically pinned signed
+OIDC ID+access verification (nonce,
+at_hash, exp, exact audited MFA profile)
+is now followed by an ORIGINAL Rust
+bounded identity-only opaque session
+vault. This component stores hashes
+rather than actual secrets/JWTs and
+never stores tenant/POP/role.
+An UNMOUNTED private Control API bridge
+runs independently approved restricted
+PostgreSQL lookup_active_membership
+in a parameterized query BEFORE issue
+and ON EVERY subsequent scoped request.
+Its caller must also independently
+verify approved HTTPS Host+Origin
+and mutation CSRF. No actual BFF
+login, external OAuth token exchange,
+real browser cookie, customer API
+or shared K3s session service exists.
+The next production design MUST
+include HTTPS trusted ingress,
+reviewed real IdP and real human MFA,
+server-side confidential code-token
+exchange, shared durable revocable
+session persistence and live
+PostgreSQL entitlements.

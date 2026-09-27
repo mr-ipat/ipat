@@ -2,6 +2,7 @@
 //! R5.9 adds an explicitly opted-in, read-only LOCAL web preview.
 //! This is NOT an authenticated tenant dashboard or a production/public UI.
 
+mod browser_session_lab;
 mod device_review_lab;
 mod device_workbench_lab;
 mod oidc_browser_lab;

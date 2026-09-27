@@ -906,3 +906,37 @@ semantics and confidential HTTPS code redemption
 have been separately verified. A synthetic signed
 test identity alone is NOT a real MFA event
 and cannot unlock Device Manager or equipment.
+
+
+## R8.8 opaque browser session threat model, actual enforced subset
+
+Threats: forged signed MFA, token substitution,
+misbound nonce/access token, stolen browser cookie,
+CSRF, cross-company/POP replay, stale membership
+and stale session after token expiry.
+New separate original Rust code requires
+R8.7 pinned genuine signed pair BEFORE
+a synthetic session can be requested,
+issues 256-bit OS-random cookie and
+independent CSRF, stores only digests,
+constant-time compares CSRF, validates
+bounded real JWT expiry, enforces five-
+minute idle plus capacity, supports
+revocation and fail-closed rotations.
+UNMOUNTED actual Rust/Pg bridge requires
+a separate genuine sealed SQL tenant/POP
+lookup on issue AND every synthetic
+read/write; untrusted JWT role/tenant
+cannot bypass SQL. Actual disposable
+PostgreSQL two-ISP regression and
+ephemeral genuine RSA token-pair tests
+are CI admission gates.
+REMAINING: independently validated
+live IdP confidential HTTPS exchange,
+real human MFA and correct provider
+claims, actual TLS/Secure-cookie delivery
+and strict origin verification at
+real router, durable HA/revocable
+server sessions, audit and real
+device enrollment. No live app
+route was changed to permit access.
