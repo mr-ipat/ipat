@@ -21,6 +21,8 @@ IPAT (`IP@`) is a planned commercial multi-tenant ISP network operations platfor
 - [R6.1 owner-reported MikroTik RB951Ui-2HnD and strictly gated first read-only REST test](docs/MIKROTIK_CUSTOMER_R61.md)
 - [R6.2 original Rust RouterOS read-only normalization and offline private evidence validation](docs/ROUTEROS_RUST_R62.md)
 - [R6.3 SSH host-key mismatch safety gate and independent customer router identity verification](docs/MIKROTIK_SSH_HOST_TRUST_R63.md)
+- [R7.4 audited PRD gaps for Platform/Tenant/NOC dashboards](docs/DASHBOARD_PRD_AUDIT_R74.md)
+- [R7.4 isolated C320 laboratory first-read safety runbook](docs/C320_ISOLATED_LAB_R74.md)
 - [Technical architecture](docs/ARCHITECTURE.md)
 - [Physical device and firmware test matrix](docs/DEVICE_MATRIX.md)
 - [Security, tenant isolation and threat model](docs/SECURITY.md)
@@ -51,11 +53,11 @@ IPAT (`IP@`) is a planned commercial multi-tenant ISP network operations platfor
 - Evidence-aware network diagnostics across distribution, OLT/PON/ONT, router/PPPoE and subscriber layers.
 - Physical compatibility is always per exact model, firmware, interface and proven feature.
 
-## Initial Rust workspace (source scaffold only)
+## Current laboratory boundaries (not a production release)
 
-`crates/tenant-core` stores syntactic tenant IDs; `crates/authz-core` demonstrates pure policy checks and synthetic negative unit tests. `apps/control-api` exposes only loopback health and a fail-closed placeholder data path. No verified OIDC adapter, tenant database, CWMP/USP runtime or real device control has shipped.
+`crates/tenant-core` and `crates/authz-core` have synthetic tenant/policy tests. `apps/control-api` serves a loopback-only three-workspace **synthetic** dashboard with per-workspace red PRD gaps, while real business API paths still return HTTP401. The OIDC signature laboratory and unexposed candidate PostgreSQL membership schema are NOT an approved real login or server-side tenant/POP entitlement runtime.
 
-`crates/cwmp-protocol` adds **offline-only** bounded CWMP 1.0 Inform parsing and a pure response serializer, with synthetic tests. `apps/cwmp-gateway` still has no authenticated transport/session listener. `apps/usp-controller` has only an optional loopback health route; native USP trust and correlation remain synthetic. `crates/diagnostic-core` and `crates/provisioning-core` are non-networked synthetic test modules, with no live router commands, OIDC-backed privileges or persistent job store. Device interoperability remains untested.
+`crates/cwmp-protocol` has bounded original Rust CWMP parser/RPC simulator tests. `apps/cwmp-gateway` has authentic TLS 1.3/mTLS cryptographic **loopback laboratory** tests, but its /cwmp route remains HTTP503 rather than an enrolled tenant-bound physical ACS. The native USP Controller boundary and normalized domain, diagnostics and provisioning remain simulator-level, without verified USP MTP or actual OLT/ONT interoperability. The C320 adapter accepts strict private **offline** synthetic evidence only; the R7.4 local readiness helper can never authorize connection or firmware writes.
 
 On a prepared development host: `cargo fmt --all -- --check && cargo test --workspace --locked`; run local demo with `cargo run -p control-api`. See `docs/PROJECT_STATUS.md` for **actual** test results; never infer success solely from source presence.
 
