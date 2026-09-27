@@ -157,3 +157,42 @@ PRD TIDAK LENGKAP: reviewer code and synthetic
 signed MFA tests are NOT a live customer IAM,
 authenticated real dashboard or physical adoption.
 </span>
+
+
+## Verified independent release checkpoint (not production authentication)
+
+PR #96 merged actual original Rust/SQL source at
+`c032d3759103d6b3d28b21df83bd923e85ce60ae`.
+The independent AFTER-MERGE GitHub Actions
+run `36311222833` was verified **4/4 SUCCESS**.
+This includes disposable actual PostgreSQL 16
+signed short-lived synthetic distinct-human
+reviewer/maker access, restricted registrar
+and reviewer SQL privileges, atomic review,
+append-only audit and true two-tenant
+negative isolation, plus existing original
+CWMP SOAP and native USP protobuf virtual
+proofs, isolated PostgreSQL recovery and
+single disposable Ubuntu26 K3s tests.
+
+GitHub private, owner Mac and authorized nonroot
+Ubuntu26 canonical VPS were verified matching
+that exact SHA after SHA256-checked Git bundle.
+The actual VPS full locked offline Rust
+workspace, format check and R8.4 5/5
+static security contracts PASSED.
+Owner encrypted FileVault source-only Restic
+snapshot `2a2a43d7` passed full-pack
+146/146 and exact isolated SHA256
+source restore. Partial historical root
+readable selected archive restored, not
+real full-system/production PostgreSQL
+or K3s datastore DR. Real owner Mac→VPS
+private dashboard still loaded real HTML/JS/CSS
+HTTP200, while unprovisioned actual JWT
+registry/reviewer routes stayed HTTP404 and
+all real company platform/tenant/operations
+API routes stayed HTTP401. These are
+intentional fail-closed prerequisites,
+not an assertion of a usable human
+MFA UI or physical device adoption.
