@@ -29,6 +29,7 @@ IPAT (`IP@`) is a planned commercial multi-tenant ISP network operations platfor
 - [R7.8 joined private signed OIDC→restricted PostgreSQL→scoped server menu (synthetic CI proof)](docs/R78_PRIVATE_IDENTITY_TO_POSTGRES_MENU.md)
 - [R7.9 remote-only C320 read candidate and VPS-provider-neutral private K3s planning](docs/C320_REMOTE_AND_K3S_PROVIDER_NEUTRAL_R79.md)
 - [R8.0 synthetic pre-device signed-JWT to real restricted PostgreSQL NOC tenant/POP inventory](docs/R80_PREDEVICE_AUTHENTICATED_INVENTORY.md)
+- [R8.1 original USP v1.4 genuine protobuf private read-only virtual agent](docs/R81_NATIVE_USP14_PROTOBUF_PRIVATE_VIRTUAL_AGENT.md)
 - [Technical architecture](docs/ARCHITECTURE.md)
 - [Physical device and firmware test matrix](docs/DEVICE_MATRIX.md)
 - [Security, tenant isolation and threat model](docs/SECURITY.md)

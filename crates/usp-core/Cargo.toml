@@ -8,3 +8,4 @@ publish = false
 
 [dependencies]
 tenant-core = { path = "../tenant-core" }
+prost = "=0.14.3"

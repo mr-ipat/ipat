@@ -632,3 +632,43 @@ scenarios and second hetero node network tests.
 LATER real firmware upgrade with separate
 maker-checker and independently proven
 device recovery.
+
+
+## R8.1 virtual native USP binary slice and next guarded gates
+
+MUST software now: genuine BBF v1.4
+read-only no-session Get and
+GetResp prost field mapping,
+independently hand-encoded actual
+binary golden fixtures, duplicate
+oneof/unknown field/oversize
+fail-closed parser, and actual
+loopback private Rust Axum binary
+POST inspection with no identity
+claims or values returned.
+Wire-to-synthetic-controller domain
+must deny cross-tenant mock peer,
+wrong peer and replay. Validate
+the same locked workspace on
+actual Ubuntu26 VPS and CI,
+preserving existing CWMP/SQL/K3s.
+MUST next before real USP agent:
+trusted device enrollment,
+separate MQTT MTP and persistent
+replay/queue, controller TLS
+identity and certificate chain,
+supported firmware/data model
+and TR-369 conformance tests.
+SHOULD next add original ACS
+trusted simulated device
+mTLS Inform→InformResponse
+end-to-end (without real ONT),
+then incrementally authorized
+dashboard data integration
+and virtual diagnostics.
+LATER public customer listener,
+actual ONT/OLT/router
+interop and approved
+disruptive firmware campaign
+only after independent DR
+and maker-checker gates.
