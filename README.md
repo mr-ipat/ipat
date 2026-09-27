@@ -25,6 +25,7 @@ IPAT (`IP@`) is a planned commercial multi-tenant ISP network operations platfor
 - [R7.4 isolated C320 laboratory first-read safety runbook](docs/C320_ISOLATED_LAB_R74.md)
 - [R7.5 approved rollout order: private integrated lab first, verified customer domains later](docs/LAB_FIRST_DOMAIN_LATER_R75.md)
 - [R7.6 Fadly intended custom domain, SSH hostname collision and issuer-bound menu lab](docs/DOMAIN_INTENT_FADLY_R76.md)
+- [R7.7 restricted disposable PostgreSQL identity lookup with negative RLS/privilege tests](docs/R77_SCOPED_IDENTITY_LOOKUP.md)
 - [Technical architecture](docs/ARCHITECTURE.md)
 - [Physical device and firmware test matrix](docs/DEVICE_MATRIX.md)
 - [Security, tenant isolation and threat model](docs/SECURITY.md)

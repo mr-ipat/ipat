@@ -76,3 +76,20 @@ before a future domain-routing change. Stable tenant identity comes
 from trusted membership records, not IP/FQDN/JWT extra claims.
 ADR-020 domain-verification scheduling is unchanged; ADR-014
 technical approach and ingress/cookie design remain OPEN.
+
+
+## ADR-022 — PROPOSED / SYNTHETIC-LAB ONLY: read-only identity query role (R7.7)
+
+Candidate initial trusted-membership adapter design: PostgreSQL
+security-definer exact issuer+subject+tenant+role+POP lookup owned by
+a narrow NOLOGIN role with two targeted RLS SELECT policies, locked
+function search_path, separate NOLOGIN query-only role, and no GRANT
+to current ipat_app_runtime. User/token/Host cannot mint membership.
+Selected ONLY for disposable lab tests as a security reference:
+NOT a production authorization design approval or real IdP binding.
+The function's approved_by column is not proof of authenticated review.
+Before ADR-022 can be approved: independent threat model review,
+audit/MFA grant workflow, fixed application identity broker,
+credential/storage isolation and cross-tenant real API RLS tests,
+recovery/rollback and negative privilege escalation tests.
+FR-001/002/003 remain mandatory despite ADR-020 domain deferral.

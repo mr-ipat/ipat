@@ -596,3 +596,21 @@ approved server-side membership source. The new pure R7.6 policy
 function is only a candidate-row reference; there is NO approved
 DB provenance adapter, real MFA, commercial cookie design or
 actual real-user authorization endpoint yet. No prod exposure.
+
+
+## R7.7 restricted identity-query threat closure (partial, synthetic)
+
+Disposable SQL requires NOLOGIN/NOBYPASSRLS function owner and
+NOLOGIN query-only role; default PUBLIC function EXECUTE is revoked
+within one transaction and no production app role is granted access.
+Two SELECT-only identity-table RLS policies apply only to the
+non-login function owner. Exact issuer/subject/tenant/role/POP,
+revocation, expiry and suspended-tenant checks deny cross-tenant
+lookups in ephemeral DB. Function uses a fixed pg_catalog-first
+search_path, schema-qualified static SQL and exposes only approver
+label and expiry. A future reviewer must threat-model SECURITY
+DEFINER, authenticate approvals, supply verified IdP subject/MFA,
+protect dedicated connector credentials and enforce session
+revocation; this slice does NONE of those real app tasks.
+Existing public-domain/SSH recovery and physical OLT gates remain
+blocked; no actual user/business endpoint is enabled.

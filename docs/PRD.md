@@ -539,3 +539,20 @@ tenant-data and authorization isolation remains mandatory NOW,
 regardless of custom-domain timing or DNS assumptions.
 The R7.6 synthetic issuer+subject-to-candidate-row Rust policy
 bridge is NOT a real authenticated company dashboard.
+
+
+## R7.7 database membership isolation candidate (no scope change)
+
+Read-only DNS now resolves ipat.fadly.id A to the observed
+laboratory server public IPv4; owner says they pointed the domain.
+Neither this A record nor prospective custom-domain branding
+proves ownership, TLS routing, or authenticated tenant isolation.
+ADR-020 postpones only commercial FR-004 customer-domain
+verification; FR-001/002/003 remain S1 mandatory.
+R7.7 introduces an independently tested *synthetic-only*
+restricted PostgreSQL identity lookup candidate with exact
+issuer+subject+tenant+role+POP matching and deny-by-default
+privilege tests. It does NOT implement real OIDC/MFA membership
+provisioning, integrated menu/API/worker/RLS isolation or
+commercial-domain AC-09. No existing acceptance case is
+claimed complete by these narrower synthetic tests.
