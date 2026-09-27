@@ -237,3 +237,31 @@ interoperability and security review. This virtual
 two-call demonstration is NOT a persisted/authenticated
 CWMP session or certified TR-069 compatibility.
 Actual production implementation remains OPEN.
+
+
+## ADR-031 — APPROVED PRE-DEVICE DEVICE WORKSPACE AND DUAL PRIVATE DRAFT REGISTRY (R8.3)
+
+The owner's visible complaint is binding: IPAT MUST provide
+device registration, inventory lists and truthful condition
+visibility BEFORE any physical OLT/ONT adoption exercise.
+We implement a local interactive strictly SYNTHETIC
+demo linked from all existing private dashboard previews,
+and a distinct separately approved original Rust
+pinned-RS256→PostgreSQL tenant-admin pending-draft backend.
+They MUST NOT silently share the demo's identity,
+authorization, temporary storage, data or privileges.
+A separate NOLOGIN write function with immutable
+pending_review, connectivity unknown and health
+not_measured, plus isolated EXECUTE-only
+registrar/reader accounts and row-level tenant/POP
+membership checks prevent falsely online devices.
+A duplicate request UUID with changed metadata MUST
+fail. No firmware, real network scan, automatic
+approval, customer public API, stored secret,
+anonymous real-device import or tenant-wide NOC
+permission is approved. Real MFA, auditable
+maker-checker approval, evidence-backed
+online/health transitions and validated vendor
+protocol integration remain binding OPEN MUST
+gates; approval of this design does NOT
+approve live user enrollment or DB migration.

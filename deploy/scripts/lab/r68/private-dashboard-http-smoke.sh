@@ -18,7 +18,12 @@ python3 - <<'PY'
 import socket
 sock=socket.socket()
 try:
+    # An earlier REAL R8.3 localhost HTTP test may leave outbound TCP sockets
+    # in TIME_WAIT after its own Rust child exited. SO_REUSEADDR is safe here
+    # only with listen(): an ACTUAL active listener still raises EADDRINUSE.
+    sock.setsockopt(socket.SOL_SOCKET,socket.SO_REUSEADDR,1)
     sock.bind(("127.0.0.1",3000))
+    sock.listen(1)
 finally:
     sock.close()
 PY

@@ -308,10 +308,265 @@ async fn devices(
     )
 }
 
+// R8.3: signed reader → sealed PostgreSQL candidate list.
+// This is the future tenant/POP draft inventory boundary, not a live probe.
+async fn list_candidates(
+    State(store): State<Arc<Store>>,
+    headers: HeaderMap,
+    Query(query): Query<ScopeRequest>,
+) -> (StatusCode, HeaderMap, Json<Value>) {
+    let Some(subject) = verified_bearer(&store.verifier, &headers) else {
+        return reject(StatusCode::UNAUTHORIZED);
+    };
+    let Some(role) = role_from_exact(&query.role) else {
+        return reject(StatusCode::FORBIDDEN);
+    };
+    if !matches!(
+        role,
+        DashboardRole::TenantAdmin | DashboardRole::NocEngineer
+    ) {
+        return reject(StatusCode::FORBIDDEN);
+    }
+    let pop = query.pop_id.as_deref();
+    if (role == DashboardRole::TenantAdmin && pop.is_some())
+        || (role == DashboardRole::NocEngineer && !pop.is_some_and(valid_pop))
+    {
+        return reject(StatusCode::FORBIDDEN);
+    }
+    let Ok(tenant_id) = Uuid::parse_str(&query.tenant_id) else {
+        return reject(StatusCode::BAD_REQUEST);
+    };
+    if tenant_id.to_string() != query.tenant_id {
+        return reject(StatusCode::BAD_REQUEST);
+    }
+    let Ok((client, connection)) = store.db.connect(NoTls).await else {
+        return reject(StatusCode::SERVICE_UNAVAILABLE);
+    };
+    let task = tokio::spawn(async move {
+        let _ = connection.await;
+    });
+    // Active membership and tenant-scoped rows come from ONE SQL snapshot.
+    let result = client
+        .query(
+            "WITH permit AS MATERIALIZED (
+          SELECT approved_by,EXTRACT(EPOCH FROM expires_at)::bigint AS expiry,
+                 tenant_slug
+          FROM ipat_platform.lookup_active_membership($1,$2,$3::uuid,$4,$5)
+        )
+        SELECT permit.approved_by,permit.expiry,permit.tenant_slug,
+               d.id::text,d.pop_id,d.display_name,d.device_kind,d.vendor,
+               d.exact_model,d.management_ipv4,d.adoption_state,
+               d.connectivity,d.health,d.last_verified_at::text,
+               d.requested_at::text
+        FROM permit LEFT JOIN LATERAL
+          ipat_platform.list_lab_device_candidates($1,$2,$3::uuid,$4,$5) d
+        ON true ORDER BY d.requested_at DESC,d.id",
+            &[
+                &subject.issuer(),
+                &subject.subject(),
+                &tenant_id,
+                &query.role,
+                &pop,
+            ],
+        )
+        .await;
+    drop(client);
+    task.abort();
+    let Ok(rows) = result else {
+        return reject(StatusCode::SERVICE_UNAVAILABLE);
+    };
+    let Some(first) = rows.first() else {
+        return reject(StatusCode::FORBIDDEN);
+    };
+    let approved_by: String = first.get(0);
+    let expires: i64 = first.get(1);
+    let slug: String = first.get(2);
+    let (Ok(tenant), Ok(expires_at)) = (TenantId::parse(&slug), u64::try_from(expires)) else {
+        return reject(StatusCode::SERVICE_UNAVAILABLE);
+    };
+    let granted = pop.into_iter().collect::<Vec<_>>();
+    let candidate = CandidateMembershipRow {
+        issuer: subject.issuer(),
+        subject: subject.subject(),
+        tenant: &tenant,
+        role,
+        approved_by: &approved_by,
+        authorized_pops: &granted,
+        expires_at,
+        revoked: false,
+    };
+    let Some(clock) = now() else {
+        return reject(StatusCode::SERVICE_UNAVAILABLE);
+    };
+    let caps = visible_for_verified_candidate(&subject, &tenant, pop, &candidate, clock);
+    let permitted = if role == DashboardRole::TenantAdmin {
+        caps.contains(&DashboardSection::TenantMembers)
+    } else {
+        caps.contains(&DashboardSection::OperationsInventory)
+    };
+    if !permitted {
+        return reject(StatusCode::FORBIDDEN);
+    }
+    let mut items = Vec::new();
+    for row in rows {
+        let Some(id): Option<String> = row.get(3) else {
+            continue;
+        };
+        let item_pop: String = row.get(4);
+        if role == DashboardRole::NocEngineer && Some(item_pop.as_str()) != pop {
+            return reject(StatusCode::SERVICE_UNAVAILABLE);
+        }
+        let name: String = row.get(5);
+        let kind: String = row.get(6);
+        let vendor: String = row.get(7);
+        let model: Option<String> = row.get(8);
+        let ip: Option<String> = row.get(9);
+        let state: String = row.get(10);
+        let connectivity: String = row.get(11);
+        let health: String = row.get(12);
+        let last_verified: Option<String> = row.get(13);
+        let requested: String = row.get(14);
+        items.push(json!({"id":id,"pop_id":item_pop,
+             "display_name":name,"device_kind":kind,"vendor":vendor,
+             "exact_model":model,"management_ipv4":ip,
+             "adoption_state":state,"connectivity":connectivity,
+             "health":health,"last_verified_at":last_verified,
+             "requested_at":requested}));
+    }
+    (
+        StatusCode::OK,
+        no_store(),
+        Json(json!({
+            "lab_only":true,"source":"restricted-postgresql",
+            "mfa_verified":false,"real_business_access_enabled":false,
+            "live_probe_performed":false,"tenant_slug":tenant.as_str(),
+            "count":items.len(),"limit":100,"devices":items
+        })),
+    )
+}
+pub(super) struct RegistrationStore {
+    verifier: Arc<PinnedIssuer>,
+    db: Config,
+}
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct ProposeCandidate {
+    tenant_id: String,
+    request_id: String,
+    pop_id: String,
+    display_name: String,
+    device_kind: String,
+    vendor: String,
+    exact_model: Option<String>,
+    management_ipv4: Option<String>,
+}
+fn proposal_text(v: &str, max: usize) -> bool {
+    !v.is_empty()
+        && v.len() <= max
+        && v.is_ascii()
+        && v.bytes()
+            .all(|b| b.is_ascii_alphanumeric() || matches!(b, b' ' | b'-' | b'_' | b'.'))
+}
+fn safe_ip(raw: &str) -> bool {
+    let Ok(ip) = raw.parse::<std::net::Ipv4Addr>() else {
+        return false;
+    };
+    let o = ip.octets();
+    o[0] == 10 || (o[0] == 172 && (16..=31).contains(&o[1])) || (o[0] == 192 && o[1] == 168)
+}
+async fn propose_candidate(
+    State(writer): State<Arc<RegistrationStore>>,
+    headers: HeaderMap,
+    Json(input): Json<ProposeCandidate>,
+) -> (StatusCode, HeaderMap, Json<Value>) {
+    let Some(subject) = verified_bearer(&writer.verifier, &headers) else {
+        return reject(StatusCode::UNAUTHORIZED);
+    };
+    let (Ok(tenant), Ok(request)) = (
+        Uuid::parse_str(&input.tenant_id),
+        Uuid::parse_str(&input.request_id),
+    ) else {
+        return reject(StatusCode::BAD_REQUEST);
+    };
+    if tenant.to_string() != input.tenant_id
+        || request.to_string() != input.request_id
+        || !valid_pop(&input.pop_id)
+        || !proposal_text(&input.display_name, 80)
+        || !["olt", "ont", "router"].contains(&input.device_kind.as_str())
+        || !["ZTE", "C-DATA", "VSOL", "MikroTik", "Other"].contains(&input.vendor.as_str())
+        || input
+            .exact_model
+            .as_deref()
+            .is_some_and(|m| !proposal_text(m, 100))
+        || input
+            .management_ipv4
+            .as_deref()
+            .is_some_and(|ip| !safe_ip(ip))
+    {
+        return reject(StatusCode::BAD_REQUEST);
+    }
+    let Ok((client, connection)) = writer.db.connect(NoTls).await else {
+        return reject(StatusCode::SERVICE_UNAVAILABLE);
+    };
+    let task = tokio::spawn(async move {
+        let _ = connection.await;
+    });
+    // Dedicated registrar EXECUTE-only role. PostgreSQL rechecks exact
+    // issuer/subject/active tenant/approved ADMIN on EVERY proposal.
+    // This function INSERTS ONLY pending drafts; it cannot connect to CPE.
+    let response = client
+        .query_opt(
+            "SELECT ipat_platform.propose_lab_device_candidate(
+          $1,$2,$3::uuid,$4::uuid,$5,$6,$7,$8,$9,$10)",
+            &[
+                &subject.issuer(),
+                &subject.subject(),
+                &tenant,
+                &request,
+                &input.pop_id,
+                &input.display_name,
+                &input.device_kind,
+                &input.vendor,
+                &input.exact_model,
+                &input.management_ipv4,
+            ],
+        )
+        .await;
+    drop(client);
+    task.abort();
+    let Ok(Some(row)) = response else {
+        return reject(StatusCode::SERVICE_UNAVAILABLE);
+    };
+    let id: Option<Uuid> = row.get(0);
+    let Some(id) = id else {
+        return reject(StatusCode::FORBIDDEN);
+    };
+    (
+        StatusCode::CREATED,
+        no_store(),
+        Json(json!({
+            "lab_only":true,"mfa_verified":false,"registered_metadata_only":true,
+            "id":id.to_string(),"adoption_state":"pending_review",
+            "connectivity":"unknown","health":"not_measured",
+            "last_verified_at":null,"device_contacted":false
+        })),
+    )
+}
+pub(super) fn registry_router(store: Arc<RegistrationStore>) -> Router {
+    Router::new()
+        .route(
+            "/lab/auth/device-candidates/propose",
+            axum::routing::post(propose_candidate),
+        )
+        .layer(axum::extract::DefaultBodyLimit::max(2048))
+        .with_state(store)
+}
+
 pub(super) fn router(store: Arc<Store>) -> Router {
     Router::new()
         .route("/lab/auth/sections", get(sections))
         .route("/lab/auth/devices", get(devices))
+        .route("/lab/auth/device-candidates", get(list_candidates))
         .with_state(store)
 }
 fn read_owner_file(path: &Path) -> Result<String, &'static str> {
@@ -391,6 +646,37 @@ pub(super) fn from_owner_environment(
         verifier,
         db: config,
     }))
+}
+
+const EXPECTED_REGISTRY_WRITER: &str = "ipat_lab_device_registrar";
+fn valid_registry_db_config(c: &Config) -> bool {
+    c.get_user() == Some(EXPECTED_REGISTRY_WRITER)
+        && c.get_dbname().is_some()
+        && c.get_hosts().len() == 1
+        && c.get_hostaddrs().is_empty()
+        && c.get_options().is_none()
+        && matches!(c.get_hosts()[0],Host::Unix(ref p) if p.is_absolute())
+}
+pub(super) fn registration_from_owner_environment(
+    verifier: Arc<PinnedIssuer>,
+) -> Result<Arc<RegistrationStore>, &'static str> {
+    if unsafe { libc::geteuid() } == 0
+        || std::env::var("IPAT_LAB_OIDC_VERIFY").as_deref() != Ok("YES")
+        || std::env::var("IPAT_LAB_SCOPED_MEMBERSHIP").as_deref() != Ok("YES")
+        || std::env::var("IPAT_R83_REGISTRY_WRITE").as_deref() != Ok("YES")
+    {
+        return Err("requires independent nonroot dual-opt-in registry write");
+    }
+    let file = PathBuf::from(
+        std::env::var("IPAT_R83_REGISTRY_CONNINFO_FILE")
+            .map_err(|_| "missing owner private registry config")?,
+    );
+    let secret = read_owner_file(&file)?;
+    let db = Config::from_str(secret.trim()).map_err(|_| "invalid owner registry config")?;
+    if !valid_registry_db_config(&db) {
+        return Err("registry writer must use independent dedicated Unix-socket identity");
+    }
+    Ok(Arc::new(RegistrationStore { verifier, db }))
 }
 
 #[cfg(test)]
@@ -630,6 +916,248 @@ mod tests {
         }
         assert_eq!(
             call(crate::app_with_lab(true), &good, Some(&bearer), "GET")
+                .await
+                .status(),
+            StatusCode::NOT_FOUND
+        );
+    }
+
+    #[tokio::test]
+    async fn r83_real_signed_jwt_to_actual_postgres_two_tenant_pending_adoption() {
+        // Completely disposable CI-only, no production CPE/IdP/PG connection.
+        if std::env::var("IPAT_PG_EPHEMERAL_TEST").as_deref() != Ok("1") {
+            return;
+        }
+        assert_eq!(std::env::var("PGHOST").unwrap(), "127.0.0.1");
+        assert_eq!(std::env::var("PGDATABASE").unwrap(), "ipat_synthetic");
+        assert_eq!(
+            std::env::var("IPAT_PG_SYNTHETIC_PASSWORD").unwrap(),
+            "local_ci_synthetic_only"
+        );
+        let (verifier, bearer, _private_key) = synthetic_token();
+        let reader=Config::from_str(
+            "host=127.0.0.1 port=5432 user=ipat_lab_identity_reader              password=local_ci_synthetic_only dbname=ipat_synthetic"
+        ).unwrap();
+        let writer=Config::from_str(
+            "host=127.0.0.1 port=5432 user=ipat_lab_device_registrar              password=local_ci_synthetic_only dbname=ipat_synthetic"
+        ).unwrap();
+        let app = crate::app_with_lab_identity_and_store(
+            true,
+            Some(verifier.clone()),
+            Some(Arc::new(Store {
+                verifier: verifier.clone(),
+                db: reader,
+            })),
+        )
+        .merge(registry_router(Arc::new(RegistrationStore {
+            verifier,
+            db: writer,
+        })));
+        let a = "11111111-1111-4111-8111-111111111111";
+        let b = "22222222-2222-4222-8222-222222222222";
+        async fn invoke(
+            app: Router,
+            path: &str,
+            method: &str,
+            auth: Option<&str>,
+            body: Option<Value>,
+        ) -> axum::response::Response {
+            let mut req = Request::builder()
+                .uri(path)
+                .method(method)
+                .header("Host", "ipat.fadly.id")
+                .header("X-Tenant-Id", "other-ISP")
+                .header("X-Verified-Role", "platform_owner");
+            if let Some(a) = auth {
+                req = req.header(header::AUTHORIZATION, a);
+            }
+            if body.is_some() {
+                req = req.header(header::CONTENT_TYPE, "application/json");
+            }
+            app.oneshot(
+                req.body(Body::from(body.map_or_else(String::new, |v| v.to_string())))
+                    .unwrap(),
+            )
+            .await
+            .unwrap()
+        }
+        let mk = |tenant: &str, request: &str, pop: &str, vendor: &str, kind: &str, ip: &str| {
+            json!({"tenant_id":tenant,"request_id":request,"pop_id":pop,
+              "display_name":"LAB-DEVICE-REGISTRATION","device_kind":kind,
+              "vendor":vendor,"exact_model":"VIRTUAL-ONT",
+              "management_ipv4":ip})
+        };
+        let request_a = "d0000000-0000-4000-8000-000000000001";
+        let request_b = "d0000000-0000-4000-8000-000000000002";
+        let data_a = mk(a, request_a, "pop-a", "ZTE", "olt", "10.26.2.10");
+        let data_b = mk(b, request_b, "pop-b", "VSOL", "ont", "172.20.1.11");
+        let url = "/lab/auth/device-candidates/propose";
+        let response = invoke(
+            app.clone(),
+            url,
+            "POST",
+            Some(&bearer),
+            Some(data_a.clone()),
+        )
+        .await;
+        assert_eq!(response.status(), StatusCode::CREATED);
+        assert_eq!(response.headers()[header::CACHE_CONTROL], "no-store");
+        let bytes = to_bytes(response.into_body(), 8192).await.unwrap();
+        let result: Value = serde_json::from_slice(&bytes).unwrap();
+        let id_a = result["id"].as_str().unwrap().to_string();
+        assert!(Uuid::parse_str(&id_a).is_ok());
+        assert_eq!(result["adoption_state"], "pending_review");
+        assert_eq!(result["connectivity"], "unknown");
+        assert_eq!(result["health"], "not_measured");
+        assert_eq!(result["device_contacted"], false);
+        assert_eq!(result["mfa_verified"], false);
+        assert!(!String::from_utf8_lossy(&bytes).contains("10.26.2.10"));
+        let second = invoke(app.clone(), url, "POST", Some(&bearer), Some(data_b)).await;
+        assert_eq!(second.status(), StatusCode::CREATED);
+        let id_b: Value =
+            serde_json::from_slice(&to_bytes(second.into_body(), 8192).await.unwrap()).unwrap();
+        let id_b = id_b["id"].as_str().unwrap();
+        assert_ne!(id_a, id_b);
+        let replay = invoke(
+            app.clone(),
+            url,
+            "POST",
+            Some(&bearer),
+            Some(data_a.clone()),
+        )
+        .await;
+        assert_eq!(replay.status(), StatusCode::CREATED);
+        let identical: Value =
+            serde_json::from_slice(&to_bytes(replay.into_body(), 8192).await.unwrap()).unwrap();
+        assert_eq!(identical["id"], id_a);
+        let mut mutated = data_a.clone();
+        mutated["display_name"] = json!("LAB-MUTATED-DIFFERENT");
+        assert_eq!(
+            invoke(app.clone(), url, "POST", Some(&bearer), Some(mutated))
+                .await
+                .status(),
+            StatusCode::FORBIDDEN
+        );
+        let list_a = format!("/lab/auth/device-candidates?tenant_id={a}&role=tenant_admin");
+        let list_b = format!("/lab/auth/device-candidates?tenant_id={b}&role=tenant_admin");
+        for (path, required, foreign, slug) in [
+            (&list_a, id_a.as_str(), id_b, "tenant-alpha"),
+            (&list_b, id_b, id_a.as_str(), "tenant-beta"),
+        ] {
+            let r = invoke(app.clone(), path, "GET", Some(&bearer), None).await;
+            assert_eq!(r.status(), StatusCode::OK, "{path}");
+            let out = to_bytes(r.into_body(), 8192).await.unwrap();
+            let body: Value = serde_json::from_slice(&out).unwrap();
+            assert_eq!(body["source"], "restricted-postgresql");
+            assert_eq!(body["tenant_slug"], slug);
+            // Earlier genuine disposable SQL tests leave OTHER, legitimate
+            // draft rows belonging to the same approved ISP. Tenant admins
+            // must see their whole tenant, not a synthetic exactly-one row.
+            let items = body["devices"].as_array().unwrap();
+            assert!(!items.is_empty() && items.len() <= 100);
+            assert_eq!(body["count"].as_u64().unwrap() as usize, items.len());
+            assert!(items.iter().any(|d| d["id"] == required));
+            assert!(items.iter().all(|d| d["adoption_state"] == "pending_review"
+                && d["connectivity"] == "unknown"
+                && d["health"] == "not_measured"
+                && d["last_verified_at"].is_null()));
+            assert!(!String::from_utf8_lossy(&out).contains(foreign));
+            assert!(!String::from_utf8_lossy(&out).contains("synthetic-operator"));
+        }
+        for (path, id, assigned_pop) in [
+            (
+                format!("/lab/auth/device-candidates?tenant_id={a}&role=noc_engineer&pop_id=pop-a"),
+                id_a.as_str(),
+                "pop-a",
+            ),
+            (
+                format!("/lab/auth/device-candidates?tenant_id={b}&role=noc_engineer&pop_id=pop-b"),
+                id_b,
+                "pop-b",
+            ),
+        ] {
+            let r = invoke(app.clone(), &path, "GET", Some(&bearer), None).await;
+            assert_eq!(r.status(), StatusCode::OK);
+            let b: Value =
+                serde_json::from_slice(&to_bytes(r.into_body(), 8192).await.unwrap()).unwrap();
+            let items = b["devices"].as_array().unwrap();
+            assert!(items.iter().any(|d| d["id"] == id));
+            assert!(items.iter().all(|d| d["pop_id"] == assigned_pop));
+        }
+        for path in [
+            format!("/lab/auth/device-candidates?tenant_id={b}&role=noc_engineer&pop_id=pop-a"),
+            format!("/lab/auth/device-candidates?tenant_id={a}&role=noc_engineer&pop_id=pop-b"),
+            format!("/lab/auth/device-candidates?tenant_id={a}&role=platform_owner"),
+            format!("/lab/auth/device-candidates?tenant_id={a}&role=tenant_admin&pop_id=pop-a"),
+        ] {
+            assert_eq!(
+                invoke(app.clone(), &path, "GET", Some(&bearer), None)
+                    .await
+                    .status(),
+                StatusCode::FORBIDDEN
+            );
+        }
+        assert_eq!(
+            invoke(app.clone(), &list_a, "GET", None, None)
+                .await
+                .status(),
+            StatusCode::UNAUTHORIZED
+        );
+        assert_eq!(
+            invoke(app.clone(), url, "POST", None, Some(data_a.clone()))
+                .await
+                .status(),
+            StatusCode::UNAUTHORIZED
+        );
+        assert_eq!(
+            invoke(
+                app.clone(),
+                url,
+                "POST",
+                Some("Bearer invalid"),
+                Some(data_a.clone())
+            )
+            .await
+            .status(),
+            StatusCode::UNAUTHORIZED
+        );
+        let mut external = data_a.clone();
+        external["management_ipv4"] = json!("8.8.8.8");
+        assert_eq!(
+            invoke(app.clone(), url, "POST", Some(&bearer), Some(external))
+                .await
+                .status(),
+            StatusCode::BAD_REQUEST
+        );
+        let mut creds = data_a.clone();
+        creds["password"] = json!("DO-NOT-ACCEPT-CREDENTIAL");
+        assert_eq!(
+            invoke(app.clone(), url, "POST", Some(&bearer), Some(creds))
+                .await
+                .status(),
+            StatusCode::UNPROCESSABLE_ENTITY
+        );
+        for real_route in [
+            "/v1/platform/overview",
+            "/v1/tenant/devices",
+            "/v1/operations/overview",
+        ] {
+            assert_eq!(
+                invoke(app.clone(), real_route, "GET", Some(&bearer), None)
+                    .await
+                    .status(),
+                StatusCode::UNAUTHORIZED
+            );
+        }
+        let disabled = crate::app_with_lab(true);
+        assert_eq!(
+            invoke(disabled.clone(), &list_a, "GET", Some(&bearer), None)
+                .await
+                .status(),
+            StatusCode::NOT_FOUND
+        );
+        assert_eq!(
+            invoke(disabled, url, "POST", Some(&bearer), Some(data_a))
                 .await
                 .status(),
             StatusCode::NOT_FOUND
