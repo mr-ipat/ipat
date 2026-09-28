@@ -111,3 +111,18 @@ and noninteractive SSH `exec` support remain unverified; never add
 `enable`, a privileged password or arbitrary interactive prompts
 to bypass failure. Confirm the smallest safe read-only role and
 exact command support through approved console/inventory first.
+
+## Current first-connection physical diagnostic blocker
+
+The newest bounded credential-free noauth SSH handshake comparison
+on owner Mac and owner VPS both reached SSH2 algorithm selection but
+TIMED OUT before receiving a host key or authentication methods. Do
+not classify this as an invalid test account or automatically retry
+with passwords. Via trusted maintenance console, first inspect
+actual SSH service availability, CPU/alarm baseline, enabled legacy
+KEX/host-key algorithm support and the isolated management ACL/MTU
+path. Compare the real local console host RSA public key with the
+historically observed network key OUT OF BAND. No blind `telnet`,
+`StrictHostKeyChecking=no`, global weak SSH client settings or OLT
+SSH daemon restart should be used on active distribution merely to
+bypass this diagnostic.

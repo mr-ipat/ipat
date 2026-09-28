@@ -507,3 +507,16 @@ Exact command layout, privilege mode, noninteractive SSH execution and
 firmware on this physical chassis are UNKNOWN until the independent
 one-command restricted test. Active alarms, ONT listing/optics and
 all writes remain untested or blocked as classified in R9.19.
+
+## R9.19 newest independent network handshake comparison
+
+Actual authorized owner Mac AND worker VPS each observed the private
+SSH target TCP transport and SSH2 KEXINIT/selected KEX, but both
+preauthentication sessions timed out before the SSH server host-key
+exchange, NEWKEYS and listed authentication methods. No password was
+sent and no real `show card` command executed. Device identity,
+firmware/CLI adapter functionality, SSH authenticated login and
+actual health remain UNVERIFIED. This is not a failed ZTE account
+password test. Avoid forced firmware/cryptographic changes or blind
+retries on production distribution. Require trusted device-side
+console/network investigation first.

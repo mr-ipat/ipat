@@ -4427,3 +4427,24 @@ identity or actual privilege/firmware was obtained. Next real
 adoption prerequisite is independent trusted OLT host RSA proof,
 verified restricted per-device account and protected POP baseline;
 without these, running factory-admin credentials on live OLT is unsafe.
+
+## R9.19 new actual C320 SSH handshake blocker (2026-09-28)
+
+After the PRIVATE R9.19 dashboard and CI mirror tests, one bounded
+credential-free `ssh -vv` handshake was performed independently on
+both the authorized owner VPS and Mac to the previously authorized
+private candidate SSH port. BOTH observed TCP ESTABLISHED, remote
+protocol version, received SSH2 KEXINIT and selected KEX, but neither
+received a server host key or SSH NEWKEYS within the bounded 9-second
+window; neither listed server authentication methods. No account
+password, private client key, live OLT command, telnet or configuration
+change was submitted. This is an actual SSH handshaking blocker BEFORE
+authentication and must NOT be described as failed user credentials,
+firmware compatibility or a login attempt. Current causes are
+UNVERIFIED (possibly OLT SSH daemon/legacy KEX negotiation, overload
+or management path packet handling); do not auto-repeat attempts or
+make blind crypto downgrades on live distribution. Owner-side trusted
+console/inventory inspection of SSH service, actual host RSA key,
+firmware support, last-hop ACL and baseline is now the next physical
+acceptance gate. Stored OOB C320 host-key proof file count was zero
+on authorized nonroot VPS. DEV-01 adoption/real CLI remain NOT RUN.
