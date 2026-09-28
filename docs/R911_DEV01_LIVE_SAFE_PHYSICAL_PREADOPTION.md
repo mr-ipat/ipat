@@ -45,3 +45,33 @@ customer management-plane change was performed.
 
 One can never absolutely guarantee zero performance effect when
 connecting to a live OLT; these gates minimize, observe and bound it.
+
+## Reproduction, noninvasive scope
+
+Run offline/no-device tests from a clean checkout:
+
+```sh
+python3 -m unittest discover deploy/scripts/lab/r90 -p test_r90_preflight.py -v
+node --check web/lab/device-workbench.js
+cargo fmt --all -- --check
+cargo test --locked -p control-api
+```
+
+ONLY with renewed exact owner approval and on the Mac/site worker
+already proven to have an appropriate PRIVATE route, a nonroot
+operator may execute ONE bounded SSH no-credential fingerprint
+observation (never run as a scheduler):
+
+```sh
+IPAT_R911_APPROVE_ONE_NOAUTH_PRIVATE_SSH_PROBE=YES \
+  python3 deploy/scripts/lab/r911/private_ssh_identity_probe.py \
+    --probe --private-ipv4 YOUR_TRUSTED_PRIVATE_IPV4 --port YOUR_APPROVED_PORT
+```
+
+This requires no keys or OLT credentials and never indicates verified
+identity; the default outcome is untrusted SSH key or unavailable
+transport. It must not be used for repeated polling of a live OLT.
+No physical authentication step is enabled until independently
+verified source trust plus isolated last hop and read-only account.
+Private Axum evidence is mounted only in explicit non-K3s lab mode;
+a separate regression ensures it is not mounted by normal public API.

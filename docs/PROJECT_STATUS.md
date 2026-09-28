@@ -3765,3 +3765,11 @@ Rust HTTP test/whole workspace should pass pinned CI before merge.
 Physical C320 adoption remains BLOCKED by independent key proof,
 local isolation, restricted read account, approved baseline and
 actual private VPS worker path. No absolute zero-impact guarantee.
+
+R9.11 added an explicit Rust public-API regression test that rejects
+the physical-evidence route outside private non-K3s lab mode.
+R9.11 source also documents offline repro plus an optional bounded
+nonroot one-shot NO-AUTH private SSH probe; it is NOT a polling worker.
+This final code must clear independent CI before merging. The owner
+has not yet independently verified the observed RSA fingerprint,
+so physical login remains prohibited in the live-distribution gate.

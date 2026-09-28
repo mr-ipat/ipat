@@ -379,6 +379,23 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn r911_physical_evidence_is_never_mounted_in_public_or_k3s_mode() {
+        let path = "/lab/device-physical-evidence";
+        assert_eq!(get_path(app(), path).await.status(), StatusCode::NOT_FOUND);
+        assert!(!lab_web_enabled(true, true));
+        let response = get_path(app_with_lab(true), path).await;
+        assert_eq!(response.status(), StatusCode::OK);
+        assert_eq!(response.headers()[header::CACHE_CONTROL], "no-store");
+        let body = axum::body::to_bytes(response.into_body(), 8192)
+            .await
+            .unwrap();
+        let data: serde_json::Value = serde_json::from_slice(&body).unwrap();
+        assert_eq!(data["device_adopted"], false);
+        assert_eq!(data["out_of_band_host_key_verified"], false);
+        assert_eq!(data["olt_commands_executed"], 0);
+    }
+
+    #[tokio::test]
     async fn planned_device_targets_are_private_preview_only_and_not_enrollment() {
         let response = get_path(app_with_lab(true), "/lab/device-targets").await;
         assert_eq!(response.status(), StatusCode::OK);
