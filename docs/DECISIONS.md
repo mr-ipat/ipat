@@ -526,3 +526,10 @@ unmodified. Canary test MUST verify actual loopback bind and negative
 real-business API responses and terminate cleanly. This is not
 a substitute for live MFA Tenant Admin, approved device management,
 independently pinned legacy SSH host identity or private VPN rollout.
+
+ADR-043 implementation note 2026-09-28: the temporary smoke runner
+was complemented by an actual reviewed nonroot systemd user unit on
+the owner VPS, restricted and verified to 127.0.0.1:3002 while :3000
+kept serving. Existing host Linger=no remains unchanged; this
+unit is an on-login private LAB preview, not persistent enterprise
+availability or permission to operate real OLT/ONT hardware.

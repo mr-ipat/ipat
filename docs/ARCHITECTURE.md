@@ -1050,3 +1050,12 @@ registry, review or public K3s mode. It selects hardcoded loopback
 127.0.0.1:3002 instead of disturbing the existing :3000 demo or
 :3001 independent identity proof. No public port/firewall changes.
 Lab physical SSH record is historical static noauth evidence only.
+
+## R9.11 reviewed user-session unit on actual owner VPS
+
+Actual nonroot canary uses `deploy/scripts/lab/r911/ipat-r911-preview.service`
+installed as a user unit with explicit lab-only environment, locked
+loopback :3002, strict systemd home/system read-only settings and
+CPU/memory ceilings. Existing :3000 lab was left serving and unchanged.
+Unit autostart is linked to user's systemd session; linger remains
+OFF, so no permanent HA/service-level availability claim is made.

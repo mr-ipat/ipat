@@ -115,3 +115,42 @@ customer data, site gateway or OLT operation was modified.
 The new panel was smoke tested on actual VPS as a TEMPORARY canary,
 NOT left running as an always-available service or rolled out to
 production/tenant users. Existing :3000 main LAB remains unchanged.
+
+## Reviewed nonroot on-login private preview service (ACTUAL VPS)
+
+Reproducible owner-only user unit:
+`deploy/scripts/lab/r911/ipat-r911-preview.service`. After SHA256
+comparison with staging file and `systemd-analyze verify`, the owner
+nonroot Ubuntu VPS installed this unit in its own user manager
+`~/.config/systemd/user`, started and enabled it. No global
+systemd services, root keys, host SSH configuration, provider security
+group, firewall, K3s or site gateway changed. Actual service verifies
+`NoNewPrivileges=yes`, `ProtectHome=read-only`,
+`ProtectSystem=strict`, MemoryMax=256MiB and CPUQuota=20%, bound ONLY
+to 127.0.0.1:3002. Existing real :3000 health remains HTTP200.
+No genuine Tenant Admin or real-device API was enabled.
+
+An independent fresh SSH session confirmed new HTTP GET evidence
+200/no-store, dashboard 200, unsupported POST 405, signed-business
+API negative tests 401, and 127.0.0.1-only listener. A temporary Mac
+SSH local port forward also fetched the actual new dashboard and
+confirmed device_adopted=false, then its test tunnel was closed.
+Open a user-controlled Mac Terminal tunnel (keep Terminal active):
+
+```sh
+ssh -N -L 3302:127.0.0.1:3002 ipat-lab
+# Then use browser on Mac: http://127.0.0.1:3302/lab/device-workbench
+```
+
+Owner-side health and safe reversible nonroot rollback if needed:
+
+```sh
+ssh ipat-lab 'systemctl --user status ipat-r911-preview.service'
+ssh ipat-lab 'systemctl --user disable --now ipat-r911-preview.service'
+```
+
+CAUTION: `loginctl show-user openai -p Linger` reported `Linger=no`.
+The enabled unit autostarts with the user's systemd session; no
+claim of guaranteed availability when ALL user sessions have ended.
+Changing linger would alter host policy and was NOT done. This is a
+private lab preview, not high-availability production tenant service.

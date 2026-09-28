@@ -105,3 +105,18 @@ class CanarySafetyContract(unittest.TestCase):
         for disallowed in ('sudo ', 'iptables ', 'nft ', 'ufw ', 'telnet ',
                            'ssh ', 'firewall-cmd', "sock.bind(('0.0.0.0', 3002))"):
             self.assertNotIn(disallowed,source)
+
+class PersistentPrivateUnitContract(unittest.TestCase):
+    def test_user_service_is_private_and_does_not_enable_real_auth_or_devices(self):
+        unit=Path(__file__).with_name('ipat-r911-preview.service').read_text()
+        for marker in ('IPAT_LAB_WEB=1','IPAT_R911_PRIVATE_CANARY=YES',
+                       'IPAT_RUN_K3S_LAB=0','IPAT_LAB_OIDC_VERIFY=NO',
+                       'IPAT_LAB_SCOPED_MEMBERSHIP=NO',
+                       'IPAT_R83_REGISTRY_WRITE=NO','IPAT_R84_SIMULATED_REVIEW=NO',
+                       'ExecStart=/home/openai/.cache/ipat/r911-canary/target/debug/control-api',
+                       'NoNewPrivileges=yes','MemoryMax=256M'):
+            self.assertIn(marker,unit)
+        for disallowed in ('User=root','ExecStartPre','sudo ',
+                           'IPAT_RUN_K3S_LAB=1','IPAT_LAB_OIDC_VERIFY=YES',
+                           '0.0.0.0:3002','iptables','nft '):
+            self.assertNotIn(disallowed,unit)

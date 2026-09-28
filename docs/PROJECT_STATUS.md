@@ -3801,3 +3801,27 @@ STOPPED at end and no persistent public service installed.
 Added versioned Python smoke script and static safety contract;
 local combined R9.0+R9.11 tests 13/13 PASS.
 This is LAB preview validation, NOT verified actual OLT adoption.
+
+## R9.11 current owner VPS on-login private preview operational evidence
+
+After successful temporary nonroot canary smoke and previously verified
+4/4 CI on exact app code SHA `621ad09`, staged reviewed source-only
+user service SHA256:
+`7dffe3e79e492a830cd69ba9d90fa2fe0b878455c860e7de29d69185f4c`.
+Installed at `~/.config/systemd/user/ipat-r911-preview.service`.
+Installed/running/enabled under `openai` WITHOUT `sudo`; existing
+127.0.0.1:3000 remained bound and HTTP200 throughout. New
+127.0.0.1:3002 responds HTTP200 on device-workbench and physical
+evidence GET with no-store; unsupported POST HTTP405 and fake real
+business API GET HTTP401. A separate actual Mac SSH local-forward to
+VPS :3002 successfully fetched both and confirmed adoption false.
+Verified systemd runtime: ActiveState=active, SubState=running,
+NoNewPrivileges=yes, ProtectSystem=strict, ProtectHome=read-only,
+MemoryMax=268435456 bytes and CPU quota 200ms per second.
+`Linger=no`: service is enabled to start with user session, not
+promised HA after all sessions end; root-level linger intentionally
+unchanged. Safe nonroot rollback:
+`systemctl --user disable --now ipat-r911-preview.service`.
+No change to old :3000.
+This preview DOES NOT accept real VPN keys, OLT logins, provisioning
+or customer tenant data; physical DEV-01 remains NOT ADOPTED.

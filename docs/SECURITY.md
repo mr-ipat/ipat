@@ -1112,3 +1112,12 @@ settings; it may NEVER be treated as Tenant Admin authentication.
 The normal production/public API does not mount its physical
 historical evidence route and remains deny-by-default. Do not bind
 an alternate public hostname or create provider firewall changes.
+
+## R9.11 canary runtime observed security controls
+
+On actual owner VPS, user service showed NoNewPrivileges=yes,
+ProtectHome=read-only, ProtectSystem=strict, MemoryMax=256MiB,
+CPUQuota=20%, and only 127.0.0.1:3002 listener. No root or firewall
+changes. Genuine business endpoints returned HTTP401; historical
+physical evidence GET HTTP200 is PRIVATE LAB ONLY and POST 405.
+Factory C320 credentials were NEVER used by this dashboard or VPS.
