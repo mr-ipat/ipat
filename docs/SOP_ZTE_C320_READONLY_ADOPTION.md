@@ -126,3 +126,19 @@ historically observed network key OUT OF BAND. No blind `telnet`,
 `StrictHostKeyChecking=no`, global weak SSH client settings or OLT
 SSH daemon restart should be used on active distribution merely to
 bypass this diagnostic.
+
+## Preauthentication SSH KEX timeout: targeted `show ssh` console check
+
+Historical ZXA10 C320 vendor CLI guidance includes read-only
+`show ssh` for the actual server enable flag, SSH version and host
+key initialization status. The manual's *example* includes a not
+initialized server key; this is NOT proof of DEV-01's settings.
+Because both owner Mac and VPS KEX sessions timed out before obtaining
+a server host key, review actual `show ssh` through a TRUSTED site
+console (only if the exact firmware and current CLI role support it)
+BEFORE attempting another password login or changing weak algorithms.
+Use `deploy/scripts/lab/r921/inspect_show_ssh.py` locally on only the
+owner-private bounded capture. See `docs/R921_C320_SSH_PREAUTH_SITE_DIAGNOSTIC.md`.
+Do NOT initialize keys, alter management ACL/SSH protocol, or reboot
+the live subscriber-serving OLT without an independently reviewed
+maintenance window and reliable local recovery.

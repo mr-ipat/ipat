@@ -4482,3 +4482,52 @@ entry. Original private project Git history and operator sites were
 NOT published. No actual new live device attempt or SSH password was
 sent; independent physical console provenance and KEX server response
 remain BLOCKING the first genuine C320 read.
+
+## R9.21 post-KEX trusted-console status triage
+
+Added `deploy/scripts/lab/r921/inspect_show_ssh.py` with strict
+owner-only offline parsing of historical ZTE `show ssh` fields and
+explicit triage for host server key NOT INITIALIZED (a historical
+vendor EXAMPLE ONLY), disabled SSH, unsafe SSHv1 or initialized key
+still needing independent KEX/host identity evidence. It neither
+connects nor runs a command on actual DEV-01. Four synthetic unit
+cases PASS; combined Mac static suite 54/54 PASS. Site source/actual
+SSH state and independent host RSA still UNKNOWN. If on-site evidence
+shows the server key uninitialized, propose a separately reviewed
+maintenance remediation, not automatic key regeneration on live OLT.
+
+GitHub public synthetic R9.20 workflow `36441157716` completed 2/2
+SUCCESS after R9.20 sanitized source sync; private production CI and
+real C320 login/adoption remain separate and NOT COMPLETED.
+
+R9.21 exact source SHA `89ef532fe33666cf88a2f504c8967467d2e41f95`
+was transferred with SHA256-verified Git bundle into INDEPENDENT
+actual nonroot owner VPS checkout; owner VPS synthetic R9.0+R9.21
+54/54 and standalone 4/4 `show ssh` parser tests PASSED. No physical
+OLT console transcript or password was obtained. Current owner Mac
+serial-device enumeration yielded no identifiable USB/serial ZTE
+console adapter; a nonobvious generic serial device was not used
+without independent owner physical mapping. The parser reports
+historical vendor sample states as diagnostics only.
+
+Public sanitized source mirror `mr-ipat/ipat-open-ci` latest source
+commit `6edae084acd44c493fb59d17130f885799fcbc01` was independently
+scrubbed (9 addresses and 2 observed fingerprints replaced), Mac
+synthetic guard passed and 54 local safety tests PASS. Latest PUBLIC
+hosted Actions run must finish separately before claiming hosted CI
+pass for this exact snapshot; previous R9.20 public hosted run
+`36441157716` was confirmed SUCCESS 2/2.
+
+R9.21 latest PUBLIC synthetic GitHub Actions run `36441854423` against
+public source SHA `6edae084acd44c493fb59d17130f885799fcbc01`
+completed independently with SUCCESS 2/2 (`synthetic-static` and
+locked Rust `rust-locked` jobs). This does NOT establish actual OLT
+identity or enable real hardware operations; private source branch
+PR #122 remains DRAFT, stacked on #121/#120/#119/#118/#117.
+The authorized VPS existing private R9.19 C320 capability dashboard
+still returned HTTP200 on :3002; untouched original :3000 HTTP200.
+There is no authenticated real DEV-01 CLI output, host key or site
+console transcript in IPAT. One safe actual `show ssh` inspection by
+a trusted physical-console operator remains the first unresolved
+real-world diagnostic; do NOT assume the historical example's
+server key state matches physical equipment.

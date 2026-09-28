@@ -529,3 +529,13 @@ SSH server host key and NEWKEYS. No independently sourced actual
 physical DEV-01 RSA public host key is yet available. R9.20 offline
 pin creation has SYNTHETIC test coverage only; no real OLT CLI
 read, chassis/firmware identification or adoption has occurred.
+
+## R9.21 targeted C320 SSH server-state diagnostic
+
+C320 model/firmware are still OWNER-REPORTED, not authenticated.
+2013-era ZTE C320 CLI documentation depicts `show ssh` status output
+including `SSH init server key`; that example is not the configuration
+of physical DEV-01. Both real authorized network paths still have
+only PREAUTH KEX evidence, never an actual `show ssh` capture.
+R9.21 parser classification is SYNTHETIC ONLY pending a real trusted
+console transcript. No actual hardware compatibility promotion.
