@@ -1,7 +1,7 @@
 # IPAT — Project Status
 
 **As-of:** 2026-09-28 Asia/Jakarta
-**Current milestone:** R9.2 CANDIDATE — immutable, permanent, NONEXECUTABLE read-only probe intents following real R9.1 four-gate readiness (R9.1 main independently CI 4/4); R9.2 feature's disposable SQL/signed session CI verification PENDING. Actual authenticated physical OLT read, real customer IdP+MFA and full production DR remain OPEN.
+**Current milestone:** R9.2 VERIFIED SOFTWARE — real durable IMMUTABLE NONEXECUTABLE first-read intents with signed opaque CSRF session and latest four-gate PostgreSQL checks; R9.2 feature CI 36379223832 and independent post-code-main CI 36379530246 each 4/4 SUCCESS. Final code SHA 9e02ded020d697b8c5b82bc6ad3e3357c2eda2bb synced clean GitHub/owner Mac/nonroot Ubuntu26 VPS. Actual physical OLT/ONT probe, live customer MFA/BFF and full production DR remain MUST/OPEN. Detailed final evidence appended.
 **Historical R7.1 state (superseded by later entries):** R7.1 original Rust ZTE C320 strict offline read-only evidence parser, owner-private non-network importer, hard-disabled firmware and large RED unfulfilled-PRD warning across all three private dashboard previews FEATURE PR #71 MERGED at code SHA d452d1be6943bb4b3685b2136ad30b587e6af1e9. Both independent feature-PR GitHub CI 36249894205 and post-feature-main CI 36250108104 completed SUCCESS in all four independent jobs (locked Rust/security/UI/OLT offline, disposable Ubuntu26 K3s and two isolated synthetic PostgreSQL recovery jobs, none deployed live). Actual clean unchanged Ubuntu 26.04.1 VPS canonical source, private GitHub and owner FileVault Mac main synchronized at feature SHA; actual VPS rustfmt and 145/145 locked OFFLINE whole-workspace Rust tests, 5/5 synthetic offline CLI permission/data tests, 5/5 source PRD red warning + disabled firmware checks and 7/7 existing R6.8 Python dashboard tests PASS. Existing R6.8 synthetic Node DOM proof rerun on Mac Node v22.22, actual authorized Mac private dashboard served LARGE red PRD alert via real HTTP 200/no-store/CSS high contrast while 3 business APIs remained HTTP401. FileVault Mac encrypted exact merged-feature-source Restic snapshot 63c7c461 independently isolated SHA256 restored plus full encrypted pack read PASS; selected historical root-readable config separately restored, NOT full VPS or real PostgreSQL PITR. Clean main production readiness 8/8 automatic gates PASS, ALL 7/7 independent external safety gates BLOCKED, production NO_GO; live VPS K3s/PostgreSQL/nftables inactive. ZTE C320 actual model/boards/running firmware, authenticated private device route and owner recovery/maintenance approval still unavailable; TC-OLT-01 physical NOT RUN, no firmware update or device changes. Separate physical blocker Issue #72 and high-risk firmware Issue #73 OPEN. Final docs-only checkpoint independent CI, exact updated source synchronization and backup to be logged immutably after docs merge to avoid recursive SHA-changing commits. Developer Mr. iPat.
 
 ## 1. Source of truth and provenance
@@ -3472,3 +3472,79 @@ no claim of successful physical device
 adoption is made. See the detailed
 R9.2 runbook, ADR-040 and newest CI
 checkpoint at milestone close.
+
+## R9.2 independently verified immutable nonexecutable read-intent release — 2026-09-28
+
+**Real software acceptance:** feature PR #110 commit
+`b9e3edd264bb7336b68fe071603ea5c7af69f9cc`
+passed mandatory GitHub run `36379223832`
+ALL **4/4 SUCCESS**, including real disposable
+PostgreSQL 16 0009 migration/role isolation/
+two-company maker-checker readiness/intent/audit
+checks and the real RSA signed ID+access-bound
+opaque identity session with exact CSRF, fresh
+separate restricted SQL role and a successful
+actual PostgreSQL immutable request+safe list.
+Independent AFTER CODE MAIN merge CI
+`36379530246` passed ALL **4/4 SUCCESS**
+at exact canonical code main SHA
+`9e02ded020d697b8c5b82bc6ad3e3357c2eda2bb`.
+All existing real disposable 1-node Ubuntu26
+K3s, PostgreSQL physical/logical restore,
+CWMP original SOAP/USP actual protobuf
+software tests were retained and passed;
+NO test contacted owner's real OLT.
+
+Private GitHub, owner's clean FileVault Mac
+and actual authorized clean NONROOT
+Ubuntu 26.04 VPS were independently
+synchronized to this exact code SHA by
+SHA256-verified Git bundle and clean
+fast-forward. Actual nonroot canonical VPS
+full locked OFFLINE Rust workspace/fmt,
+R9.1 static 5/5 and new R9.2 static
+4/4 PASS. The existing actual nonroot
+VPS Rust dashboard preview was guardedly
+restarted and owner Mac's actual private
+SSH tunnel reestablished using exact SHA.
+Real owner Mac HTTP returned HTTP200
+for current /lab and /lab/device-workbench,
+physical device count remained ZERO;
+forged Host/tenant/role/bearer were refused
+HTTP401 by all three business
+namespaces; unprovisioned true signed
+SQL private routes remained HTTP404.
+No intent mutation or live IdP
+route was publicly or privately mounted.
+
+FileVault owner Mac encrypted
+SOURCE-only Restic snapshot
+`f7aa9126` passed full 168/168
+pack reads, isolated exact
+SHA256 source restoration,
+and separately selected historical
+PARTIAL root-readable restore.
+This is NOT complete offsite
+VPS/actual customer PostgreSQL
+or actual K3s datastore DR.
+
+**RED MUST REMAIN UNIMPLEMENTED:** customer
+confidential true IdP authorization-code
+redemption, production human MFA and
+multinode HTTPS session, physical
+device-specific verified secure
+private management, exact real C320
+identity/model/firmware, independently
+approved restricted real device
+read-only account, actual
+hardware interop/health, separately
+audited per-device durable worker
+execution with atomic fresh gate
+checks, and whole-host+PG+K3s
+offsite restore. R9.0 owner Mac
+observed untrusted public Telnet IAC
+but actual VPS timeout; NEVER
+send even test passwords on this
+public plaintext Telnet path.
+R9.2 is an audited stored INTENT
+only, NOT physical authorization.
