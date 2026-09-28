@@ -669,3 +669,15 @@ source provenance, independent reviewer, bounded production access,
 nonprivileged account, POP isolation and baseline remain independent
 hard gates. Never retry legacy SSH with password or disable pinning
 to work around a preauthentication KEX stall.
+
+## ADR-053 — Read existing SSH daemon state via trusted chassis console
+
+The actual dual-path C320 SSH sessions timed out between KEX selection
+and receipt of a host key, before credentials. A historical vendor
+manual describes `show ssh` including server-key initialization.
+A single site operator-approved trusted-console STATUS read is the
+next diagnosis, not automatic legacy cipher downgrade, public Telnet,
+key regeneration, repetitive password attempts or a forced VPN.
+IPAT's R9.21 helper analyzes a PRIVATE offline status transcript,
+marks real chassis trust FALSE and never authorizes OLT configuration.
+If the actual firmware differs, require exact vendor documentation.

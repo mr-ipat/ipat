@@ -4482,3 +4482,20 @@ entry. Original private project Git history and operator sites were
 NOT published. No actual new live device attempt or SSH password was
 sent; independent physical console provenance and KEX server response
 remain BLOCKING the first genuine C320 read.
+
+## R9.21 post-KEX trusted-console status triage
+
+Added `deploy/scripts/lab/r921/inspect_show_ssh.py` with strict
+owner-only offline parsing of historical ZTE `show ssh` fields and
+explicit triage for host server key NOT INITIALIZED (a historical
+vendor EXAMPLE ONLY), disabled SSH, unsafe SSHv1 or initialized key
+still needing independent KEX/host identity evidence. It neither
+connects nor runs a command on actual DEV-01. Four synthetic unit
+cases PASS; combined Mac static suite 54/54 PASS. Site source/actual
+SSH state and independent host RSA still UNKNOWN. If on-site evidence
+shows the server key uninitialized, propose a separately reviewed
+maintenance remediation, not automatic key regeneration on live OLT.
+
+GitHub public synthetic R9.20 workflow `36441157716` completed 2/2
+SUCCESS after R9.20 sanitized source sync; private production CI and
+real C320 login/adoption remain separate and NOT COMPLETED.
