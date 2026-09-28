@@ -4318,3 +4318,17 @@ physical OLT or execute any OLT commands. Rust compiler/integration
 and actual owner-VPS isolated test are required before claiming this
 feature completed. Real C320 restricted SSH access, independently
 trusted host key and baseline continue to block physical adoption.
+
+R9.18 ACTUAL owner-VPS independent offline build/test: 3 new strict
+normalizer tests + 7 existing C320 fixture tests = 10/10 PASS;
+locked OFFLINE build binary SHA256
+`e426c637db7860f803bb01e617fe59eb0650b147b8a1d6ca3aba8d47aacfd266`.
+Controlled minimal lock update added only `serde_json` and `sha2`
+to the existing olt-core package edge. Initial Rust SHA-256 hex
+format attempt failed compile and was corrected before these actual
+passing tests. Actual owner-only synthetic two-card plus two-version
+CLI exercised normalized 0600 JSON output; a duplicate output and
+a world-readable input were both rejected in genuine binary tests.
+Temporary synthetic captures were discarded, not sent to customers
+or stored in Git. No real OLT credentials, SSH login, model/firmware,
+ONT/PPPoE, or provisioning action were observed or changed.

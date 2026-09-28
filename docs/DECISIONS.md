@@ -638,3 +638,19 @@ updates OAuth `workflow` scope or installs checked-in staged YAML via
 GitHub UI. Public GitHub-hosted STANDARD runner minutes may be free;
 this never makes production deployment or physical device tests free
 of separate review. Preserve original private source and live evidence.
+
+## ADR-050 — Owner-only offline C320 capture parser before operational adoption
+
+The first genuine C320 action pipeline retains only two strictly
+allowlisted read-only commands (`show card`, then optionally
+`show version-running`) AFTER independently pinned SSH host identity,
+restriction of the device account, reviewed POP last-hop and live
+impact baseline. The new olt-core offline CLI only parses PRIVATE
+owner-supplied evidence after such a read: it NEVER opens a network
+socket or executes OLT commands, rejects unsafe input/output
+permissions and overwrites, stores only bounded normalized owner-only
+JSON and hashes, and NEVER marks actual physical device adopted.
+More read-only commands (alarm/ONU optical power/ONT inventory) require
+exact firmware-specific vendor support and independent device tests.
+Any write operation remains maker/checker-controlled and production
+role-gated; test default/admin login does not certify least privilege.

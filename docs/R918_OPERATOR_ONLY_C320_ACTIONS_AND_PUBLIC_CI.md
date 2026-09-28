@@ -57,3 +57,40 @@ using an owner-authorized GitHub UI action OR grant workflow scope.
 Until then, public CI is **NOT RUNNING** despite working public
 repository. Never expose owner OLT network maps or real captures to
 public clone, logs, Issues, Actions artifacts or repo secrets.
+
+## Actual independent nonroot VPS offline test evidence
+
+A separately verified nonroot owner-VPS source bundle of R9.18 was
+checked out in `/home/openai/.cache/ipat/r918-release/src`, with
+its own isolated Rust target cache, no changes to active :3000/:3002
+service units, SSH config, C320, POP gateway, ONTs or PPPoE.
+An initial `--locked` attempt correctly detected that a new Rust
+workspace dependency edge needed a Cargo.lock update. A controlled
+OFFLINE dependency resolution from the existing lock added ONLY
+`serde_json` and `sha2` to olt-core's existing lock entry. The first
+compiler run found an incompatible sha2 v0.11 LowerHex formatting
+assumption; revised code explicitly formats SHA-256 bytes as hex.
+
+After fixing and formatting, ACTUAL locked offline `cargo test
+--locked --offline -p olt-core` passed 10/10 strict unit/fixture
+cases (3 new normalizer tests + 7 pre-existing vendor fixture tests),
+and the new `olt-evidence` binary was actually built. A PRIVATE
+nonroot temporary owner 0700 test directory contained entirely
+SYNTHETIC sample card/version captures with 0600 permissions.
+The binary emitted a strict normalized 0600 JSON file with exactly
+two sample cards, matching firmware board/slot identity, SHA-256
+transcript digests and ALL actual hardware/adoption/network booleans
+FALSE. An existing output file was provably NOT overwritten. A
+world-readable (0644) sample input was provably rejected, producing
+no output. The synthetic fixture was deleted after the tests.
+Compiled binary SHA256
+`e426c637db7860f803bb01e617fe59eb0650b147b8a1d6ca3aba8d47aacfd266`.
+This does NOT prove compatibility with exact DEV-01 firmware or a
+single genuine OLT login; actual capture remains NOT RUN.
+
+Public CI mirror push used new clean Git history but current OAuth
+cannot modify `.github/workflows`. The sanctioned workflow has been
+staged in `ci/github-actions.yml` and must be installed by repo owner
+with authorized GitHub UI action or refreshed `workflow` OAuth scope.
+Public repository source contains no real device credentials or
+actual site addressing by construction; its checks are synthetic.
