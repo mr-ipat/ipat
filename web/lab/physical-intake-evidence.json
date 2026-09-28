@@ -41,5 +41,12 @@
   "direct_private_vps_ssh_credentials_sent": false,
   "direct_private_vps_ssh_olt_commands_executed": 0,
   "direct_private_vps_ssh_host_identity_verified": false,
-  "direct_private_vps_ssh_last_hop_isolation_verified": false
+  "direct_private_vps_ssh_last_hop_isolation_verified": false,
+  "direct_private_vps_tls443_noauth_checked": true,
+  "direct_private_vps_tls443_checked_on": "2026-09-28",
+  "direct_private_vps_tls443_tcp_reachable": false,
+  "direct_private_vps_tls443_identity_verified": false,
+  "direct_private_vps_tls443_api_supported": false,
+  "direct_private_vps_tls443_credentials_sent": false,
+  "direct_private_vps_tls443_http_requests_sent": 0
 }

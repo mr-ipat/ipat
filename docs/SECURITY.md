@@ -1226,3 +1226,17 @@ with independently tested encrypted backups and scoped secret release.
 Actual UDP port 51820 had NO listener at latest local inspection.
 The DEV-only panel cannot provision real WireGuard or claim a safe
 last hop from an address matching RFC1918 text alone.
+
+## R9.17 no compulsory VPN; direct protocol requires proof
+
+A direct private/public management address MUST NOT be treated as
+trusted from routability or RFC1918 alone. Validate actual adapter,
+firmware, independent host key/TLS certificate or SNMPv3 authPriv
+identity, restricted source and dedicated read-only account, live
+baseline and audited signed MFA before active worker dispatch. Never
+fallback to unverified HTTPS, `-k`, plaintext public Telnet or
+factory/default privileged credentials. Optional WireGuard/IPsec
+remains a separate reviewed network control, never a condition for
+EVERY device connection. One actual owner-VPS TLS443 noauth preflight
+failed TCP connection without credentials or HTTP requests; existing
+private SSH banner remains UNTRUSTED device-identity evidence.

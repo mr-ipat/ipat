@@ -86,37 +86,48 @@
         <p id="wg-review-status" class="form-notice" role="status" aria-live="polite">Belum diperiksa. Perubahan jaringan dan adopsi tetap terkunci.</p>
         <div id="wg-review-gates" aria-label="Persyaratan yang belum terpenuhi"></div>
       </section>
-      <section class="panel" id="site-a-hub-panel" aria-labelledby="site-a-hub-title">
-        <div class="section-top"><div><span class="eyebrow">R9.15 / SITE A CENTRAL HUB</span><h2 id="site-a-hub-title">Rancangan Site A → Site B (tanpa push)</h2></div><span class="pill amber-pill">SIMULASI, BELUM AKTIF</span></div>
-        <p>IPAT adalah Site A, pusat perencanaan koneksi. Router Site B dikonfigurasi operatornya sendiri menggunakan data yang sudah disetujui. IP privat boleh digunakan bila jalur dua arah benar-benar sudah diverifikasi; Site B di luar network memakai endpoint Site A yang dapat dijangkau secara publik. Tidak ada router yang menerima push dari panel ini.</p>
+      <section class="panel" id="direct-protocol-panel" aria-labelledby="direct-protocol-title">
+        <div class="section-top"><div><span class="eyebrow">R9.17 / PROTOKOL MANAJEMEN</span><h2 id="direct-protocol-title">Prioritas koneksi langsung ke perangkat</h2></div><span class="pill amber-pill">PEMILIHAN LAB</span></div>
+        <p>WireGuard/IPsec bukan prasyarat. Pilih protokol berdasarkan layanan asli dan firmware perangkat, gunakan alamat manajemen yang telah terhubung, lalu verifikasi identitas perangkat dan hak akses sebelum autentikasi. API-SSL MikroTik tidak otomatis tersedia pada ZTE C320.</p>
         <div class="form-grid">
-          <div><label for="hub-method">Metode</label><select id="hub-method"><option value="direct_private">Langsung pada network privat yang sudah tersambung</option><option value="wireguard">WireGuard: Site A listener, Site B initiator</option><option value="ipsec">IPsec: rancangan saja</option></select></div>
-          <div><label for="hub-address-scope">Alamat endpoint Site A (contoh)</label><select id="hub-address-scope"><option value="private">Alamat privat</option><option value="public">Alamat publik</option></select></div>
-          <div><label for="site-b-path">Hubungan jaringan (contoh)</label><select id="site-b-path"><option value="unverified">Belum diverifikasi</option><option value="verified_private">Jalur privat dua arah telah diverifikasi (simulasi)</option><option value="external">Site B berada di jaringan luar</option></select></div>
-          <div><label for="site-b-gateway">Jenis gateway Site B</label><select id="site-b-gateway"><option value="routeros7">MikroTik RouterOS 7</option><option value="linux">Linux</option></select></div>
+          <div><label for="direct-device-type">Jenis perangkat</label><select id="direct-device-type"><option value="zte_c320">OLT ZTE C320 (dilaporkan)</option><option value="cdata_olt">OLT C-DATA (firmware belum teruji)</option><option value="mikrotik_routeros7">Router MikroTik RouterOS 7</option><option value="ont_tr069">ONT dengan TR-069 teruji</option><option value="ont_usp">ONT dengan TR-369/USP teruji</option></select></div>
+          <div><label for="direct-protocol">Protokol yang hendak diperiksa</label><select id="direct-protocol"><option value="ssh_pinned">SSH dengan host key tepercaya</option><option value="snmpv3_authpriv">SNMPv3 authPriv</option></select></div>
+          <div><label for="direct-network">Jaringan Manajemen yang tersedia</label><select id="direct-network"><option value="observed_private">Alamat privat; transport sudah teramati, isolasi belum diverifikasi</option><option value="unverified">Jalur belum diverifikasi</option></select></div>
         </div>
-        <button type="button" id="check-site-a-plan" class="secondary">Periksa topologi Site A</button>
+        <button type="button" id="direct-protocol-review" class="secondary">Periksa kesiapan koneksi langsung</button>
+        <p id="direct-protocol-status" role="status" aria-live="polite" class="form-notice">Tidak mengirim kredensial atau menjalankan perintah ke perangkat.</p>
+      </section>
+      <section class="panel" id="site-a-hub-panel" aria-labelledby="site-a-hub-title">
+        <div class="section-top"><div><span class="eyebrow">R9.15 / PUSAT MANAJEMEN JARINGAN</span><h2 id="site-a-hub-title">Rancangan Server Pusat IPAT → Gateway Lokasi (tanpa push)</h2></div><span class="pill amber-pill">SIMULASI, BELUM AKTIF</span></div>
+        <p>Server Pusat IPAT memprioritaskan koneksi langsung yang aman melalui jaringan yang sudah tersedia. Gateway Lokasi dikonfigurasi administrator setempat; panel tidak melakukan push. Alamat privat digunakan pada jalur privat yang telah diverifikasi. Untuk lokasi luar, pilih endpoint publik pusat yang terbukti dapat dijangkau bila tunnel opsional memang diperlukan.</p>
+        <div class="form-grid">
+          <div><label for="hub-method">Metode</label><select id="hub-method"><option value="direct_private">Langsung pada network privat yang sudah tersambung</option><option value="wireguard">WireGuard opsional: server pusat menerima, gateway lokasi menghubungi</option><option value="ipsec">IPsec: rancangan saja</option></select></div>
+          <div><label for="hub-address-scope">Alamat server pusat (contoh)</label><select id="hub-address-scope"><option value="private">Alamat privat</option><option value="public">Alamat publik</option></select></div>
+          <div><label for="site-b-path">Hubungan jaringan (contoh)</label><select id="site-b-path"><option value="unverified">Belum diverifikasi</option><option value="verified_private">Jalur privat dua arah telah diverifikasi (simulasi)</option><option value="external">Gateway lokasi berada di jaringan luar</option></select></div>
+          <div><label for="site-b-gateway">Jenis gateway lokasi</label><select id="site-b-gateway"><option value="routeros7">MikroTik RouterOS 7</option><option value="linux">Linux</option></select></div>
+        </div>
+        <button type="button" id="check-site-a-plan" class="secondary">Periksa topologi jaringan manajemen</button>
         <p role="status" aria-live="polite" id="site-a-plan-result" class="form-notice">Belum diperiksa. Formulir simulasi tidak menerima IP aktual, kredensial, atau kunci.</p>
         <div class="divider"></div>
-        <h3>R9.16 — Site A dev key & pencocokan manual Site B</h3>
-        <p><strong>LAB PENGEMBANGAN SAJA, BUKAN KONFIGURASI PRODUKSI.</strong> Public key yang ditampilkan berasal dari berkas owner-only pada server Site A, jika tersedia. Private key Site A tidak pernah dikirim ke browser. Private key Site B hanya dibuat dan disimpan di Router B sendiri. Hasilnya tiga perintah RouterOS berstatus <code>disabled=yes</code> untuk peninjauan, bukan skrip yang sudah disetujui untuk dijalankan.</p>
-        <div id="site-a-key-status" class="form-notice" role="status" aria-live="polite">Memeriksa public key pengembangan Site A…</div>
-        <div class="form-grid"><div><label>Public key Site A (DEV, publik)</label><code id="site-a-public-key" class="key-display">BELUM TERSEDIA</code></div></div>
+        <h3>R9.16 — Kunci DEV server pusat & pasangan manual gateway lokasi</h3>
+        <p><strong>LAB PENGEMBANGAN SAJA, BUKAN KONFIGURASI PRODUKSI.</strong> Public key berasal dari berkas terbatas pada server pusat, bila tersedia. Private key server pusat tidak pernah dikirim ke browser. Private key gateway lokasi dibuat dan disimpan oleh operator gateway sendiri. Hasilnya tiga perintah RouterOS berstatus <code>disabled=yes</code> untuk peninjauan, bukan skrip yang sudah disetujui untuk dijalankan.</p>
+        <div id="site-a-key-status" class="form-notice" role="status" aria-live="polite">Memeriksa public key pengembangan server pusat…</div>
+        <div class="form-grid"><div><label>Public key server pusat (DEV, publik)</label><code id="site-a-public-key" class="key-display">BELUM TERSEDIA</code></div></div>
         <form id="manual-site-b-form" autocomplete="off">
-          <label for="manual-site-b-key">Public key Site B (BUKAN private key)</label>
-          <input id="manual-site-b-key" type="text" maxlength="44" placeholder="44 karakter public key dari Router B" autocomplete="off" required />
+          <label for="manual-site-b-key">Public key gateway lokasi (BUKAN private key)</label>
+          <input id="manual-site-b-key" type="text" maxlength="44" placeholder="44 karakter public key gateway lokasi" autocomplete="off" required />
           <div class="form-grid">
-            <div><label for="manual-hub-ip">Endpoint Site A (contoh saja)</label><input id="manual-hub-ip" maxlength="15" value="198.51.100.9" required /></div>
-            <div><label for="manual-external">Jalur Site B</label><select id="manual-external"><option value="yes">Eksternal, endpoint publik</option><option value="no">Privat, endpoint privat terverifikasi</option></select></div>
-            <div><label for="manual-a-ip">Host tunnel A /30 (contoh)</label><input id="manual-a-ip" maxlength="15" value="10.253.77.1" required /></div>
-            <div><label for="manual-b-ip">Host tunnel B /30 (contoh)</label><input id="manual-b-ip" maxlength="15" value="10.253.77.2" required /></div>
+            <div><label for="manual-hub-ip">Endpoint server pusat (contoh saja)</label><input id="manual-hub-ip" maxlength="15" value="198.51.100.9" required /></div>
+            <div><label for="manual-external">Jalur gateway lokasi</label><select id="manual-external"><option value="yes">Eksternal, endpoint publik</option><option value="no">Privat, endpoint privat terverifikasi</option></select></div>
+            <div><label for="manual-a-ip">Host tunnel pusat /30 (contoh)</label><input id="manual-a-ip" maxlength="15" value="10.253.77.1" required /></div>
+            <div><label for="manual-b-ip">Host tunnel lokasi /30 (contoh)</label><input id="manual-b-ip" maxlength="15" value="10.253.77.2" required /></div>
             <div><label for="manual-olt-ip">Host manajemen OLT /32 (contoh)</label><input id="manual-olt-ip" maxlength="15" value="192.168.77.10" required /></div>
             <div><label for="manual-udp-port">Port UDP untuk direncanakan</label><input id="manual-udp-port" type="number" min="1024" max="65535" value="51820" required /></div>
           </div>
-          <button type="submit" id="manual-pairing-button" class="secondary" disabled>Buat review Router B nonaktif</button>
+          <button type="submit" id="manual-pairing-button" class="secondary" disabled>Buat draf gateway lokasi (nonaktif)</button>
         </form>
         <p id="manual-pairing-status" class="form-notice" role="status" aria-live="polite">Penggunaan contoh tidak membuktikan jangkauan endpoint, isolasi segmen, backup atau persetujuan.</p>
-        <pre id="manual-pairing-output" class="key-display" aria-label="Perintah Router B disabled untuk review" style="white-space:pre-wrap;overflow-wrap:anywhere"></pre>
+        <pre id="manual-pairing-output" class="key-display" aria-label="Perintah gateway lokasi nonaktif untuk review" style="white-space:pre-wrap;overflow-wrap:anywhere"></pre>
       </section>
       <div class="twocol">
         <section id="register" class="panel" aria-labelledby="register-title">

@@ -4218,3 +4218,25 @@ Latest branch includes a corrected longer HTTP smoke and strengthened
 reset-failed rollback in versioned script; both were executed on the
 actual owner VPS. Current PR remains DRAFT due account CI blocker
 and because this feature remains DEV-only, not commercial/operational.
+
+## R9.17 owner correction: direct-first + no compulsory WireGuard
+
+Branch `feat/r917-direct-protocol-priority` layers onto R9.16 draft,
+which remains blocked from merging by GitHub Actions account
+payment/spending-limit failure. R9.17 renames private LAB UI
+operator-facing Site A/B language to Indonesian Server Pusat IPAT /
+Gateway Lokasi / Jaringan Manajemen, preserving old internal IDs.
+Adds model/firmware-specific direct-first candidate selector Rust
+lab POST and frontend, pure offline protocol policy (C320 SSH/SNMPv3
+candidates, MikroTik API-SSL/REST HTTPS and ONT ACS/USP candidates),
+stricter no-auth TCP443 preflight, and 6 Python unit cases linked
+into original locked R9.0 static/CI suite. An actual ONE-SHOT strict
+TLS TCP443 attempt from the owner VPS to previously approved private
+C320 address returned `tcp_reachable=false`, no credentials, no HTTP
+application request and zero OLT commands; :3002 loopback remained
+HTTP200 before/after. Earlier direct private SSH banner was actually
+seen but independently trusted chassis RSA fingerprint NOT provided.
+HTTPS API on actual C320 is NOT VERIFIED. No physical C320 adoption
+was made, and no tunnel/OLT/ONT/router/PPPoE config was touched.
+R9.17 latest Rust build, actual :3002 private rollout and final CI
+must be separately verified before claiming dashboard deployment.

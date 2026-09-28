@@ -262,6 +262,12 @@ async function showPhysicalEvidence() {
       || evidence.direct_private_vps_ssh_olt_commands_executed!==0
       || evidence.direct_private_vps_ssh_host_identity_verified!==false
       || evidence.direct_private_vps_ssh_last_hop_isolation_verified!==false
+      || evidence.direct_private_vps_tls443_noauth_checked!==true
+      || evidence.direct_private_vps_tls443_tcp_reachable!==false
+      || evidence.direct_private_vps_tls443_identity_verified!==false
+      || evidence.direct_private_vps_tls443_api_supported!==false
+      || evidence.direct_private_vps_tls443_credentials_sent!==false
+      || evidence.direct_private_vps_tls443_http_requests_sent!==0
       || evidence.worker_route_observation!=="DEFAULT_ROUTE_ONLY"
       || evidence.temporary_owner_mac_vps_ssh_relay_observed!==true
       || evidence.temporary_owner_mac_vps_ssh_relay_closed!==true
@@ -278,9 +284,10 @@ async function showPhysicalEvidence() {
     statusNode.textContent="DEV-01 · SSH privat pernah dijangkau tanpa autentikasi ("+
       evidence.observed_on+") · fingerprint TERAMATI, BELUM DIPERCAYA · " +
       "VPS juga menjangkau SSH OLT langsung melalui IP privat tanpa login · " +
+      "uji HTTPS 443 satu kali tidak berhasil menjangkau layanan TCP; API HTTPS TIDAK TERBUKTI · " +
       "jalur akhir dan fingerprint BELUM dipercaya · " +
       "relay sementara Mac/VPS diuji tanpa login dan sudah ditutup · " +
-      "rute VPS saat ini masih default, belum ada tunnel manajemen terverifikasi · " +
+      "rute ke IP privat via gateway default tetap dapat mencapai SSH, namun isolasi manajemen belum terbukti · " +
       "status perangkat UNKNOWN / NOT_MEASURED.";
     const items=document.createDocumentFragment();
     for(const [,title] of gated) {
@@ -362,8 +369,8 @@ async function checkSiteAPlan() {
             "PUBLIC_HUB_WG_SITE_B_INITIATES","IPSEC_NOT_YET_IMPLEMENTED",
             "VERIFIED_PRIVATE_ROUTE_REQUIRED","HUB_ENDPOINT_REACHABILITY_UNVERIFIED"]
             .includes(result.topology_candidate)) throw new Error("safety mismatch");
-    output.textContent="SITE A / IPAT: "+result.topology_candidate.replaceAll("_"," ")+
-      ". SITE B mengatur gateway sendiri. Belum ada konfigurasi atau koneksi dibuat.";
+    output.textContent="SERVER PUSAT IPAT: "+result.topology_candidate.replaceAll("_"," ")+
+      ". Gateway lokasi diatur oleh operator setempat. Belum ada konfigurasi atau koneksi dibuat.";
   } catch {
     output.textContent="Perencanaan ditolak/tidak dapat diverifikasi; semua tindakan terkunci.";
   } finally {button.disabled=false;}
@@ -392,11 +399,11 @@ async function loadSiteADevPublicKey(){
       || value.device_adopted!==false || value.genuine_tenant_mfa_verified!==false)
       throw new Error("server key status overclaims production authority");
     keyNode.textContent=value.site_a_public_key;
-    statusNode.textContent="Public key DEV Site A dimuat. Tidak ada listener, peer atau router yang diubah.";
+    statusNode.textContent="Public key DEV server pusat dimuat. Tidak ada listener, peer atau router yang diubah.";
     siteADevPublicAvailable=true;
     button.disabled=false;
   }catch{
-    statusNode.textContent="Kunci Site A tidak tersedia/terverifikasi pada backend lab; review terkunci.";
+    statusNode.textContent="Kunci server pusat tidak tersedia/terverifikasi pada backend lab; review terkunci.";
   }
 }
 async function submitSiteBManualReview(event){
@@ -406,7 +413,7 @@ async function submitSiteBManualReview(event){
   const output=node("manual-pairing-output");
   output.textContent="";
   if(!siteADevPublicAvailable){
-    statusNode.textContent="Ditolak: public key Site A belum dapat dibuktikan backend.";
+    statusNode.textContent="Ditolak: public key server pusat belum dapat dibuktikan backend.";
     return;
   }
   button.disabled=true;
@@ -443,8 +450,8 @@ async function submitSiteBManualReview(event){
          || !cmd.startsWith("/") || !cmd.includes("disabled=yes")
          || cmd.includes("private-key") || cmd.includes("0.0.0.0/0")))
       throw new Error("unsafe or inconsistent server pairing result");
-    output.textContent="# LAB ONLY — JANGAN TERAPKAN KE ROUTER AKTIF\n"+commands.join("\n");
-    statusNode.textContent="Draf nonaktif dibuat dari public key A dan B. Belum ada pairing, listener, atau tindakan jaringan. Perlu persetujuan dan pemeriksaan topologi sebenarnya.";
+    output.textContent="# LAB ONLY — JANGAN TERAPKAN KE GATEWAY PRODUKSI\n"+commands.join("\n");
+    statusNode.textContent="Draf nonaktif dibuat dari public key pusat dan lokasi. Belum ada pairing, listener, atau tindakan jaringan. Perlu persetujuan dan pemeriksaan topologi sebenarnya.";
   }catch{
     output.textContent="";
     statusNode.textContent="Draf ditolak/gagal. Tidak ada konfigurasi diterapkan.";
@@ -452,3 +459,76 @@ async function submitSiteBManualReview(event){
 }
 node("manual-site-b-form").addEventListener("submit",event=>{void submitSiteBManualReview(event);});
 void loadSiteADevPublicKey();
+// R9.17 operator-facing direct-first selection. The lab accepts only
+// device/protocol enums. It never receives IPs, keys, credentials or jobs.
+const managementProtocolCandidates={
+  zte_c320:[['ssh_pinned','SSH — kunci host diverifikasi'],
+            ['snmpv3_authpriv','SNMPv3 authPriv — jika benar-benar tersedia']],
+  cdata_olt:[['ssh_pinned','SSH — sesuai firmware'],
+             ['snmpv3_authpriv','SNMPv3 authPriv'],
+             ['https_vendor_verified','HTTPS vendor — hanya setelah uji firmware']],
+  mikrotik_routeros7:[['routeros_api_ssl','API-SSL / TLS dengan sertifikat valid'],
+                      ['routeros_rest_https','REST melalui HTTPS'],
+                      ['ssh_pinned','SSH dengan host key tepercaya'],
+                      ['snmpv3_authpriv','SNMPv3 authPriv']],
+  ont_tr069:[['cwmp_https','ACS CWMP / TR-069 melalui HTTPS'],
+            ['usp_authenticated','USP bila agent teruji']],
+  ont_usp:[['usp_authenticated','USP / TR-369 terautentikasi'],
+           ['cwmp_https','CWMP jika didukung']]
+};
+function refreshDirectProtocolChoices(){
+  const profile=node('direct-device-type').value;
+  const options=managementProtocolCandidates[profile]||[];
+  const selector=node('direct-protocol');
+  selector.replaceChildren();
+  for(const [value,label] of options){
+    const option=document.createElement('option');
+    option.value=value;option.textContent=label;
+    selector.append(option);
+  }
+  node('direct-protocol-status').textContent='Metode langsung diprioritaskan. Pilihan protokol ini bukan bukti layanan perangkat sudah tersedia.';
+}
+async function reviewDirectProtocol(){
+  const button=node('direct-protocol-review');
+  const output=node('direct-protocol-status');
+  button.disabled=true;
+  try{
+    const profile=node('direct-device-type').value;
+    const protocol=node('direct-protocol').value;
+    const observed=node('direct-network').value;
+    const allowed=managementProtocolCandidates[profile]||[];
+    if(!allowed.some(([name])=>name===protocol))throw new Error('unsupported capability');
+    const response=await mutate('POST','/lab/demo/direct-protocol-review',{
+      device_profile:profile,candidate_protocol:protocol,network_evidence:observed
+    });
+    if(!response.ok)throw new Error('server denied');
+    const plan=await response.json();
+    if(plan.mode!=='DIRECT_MANAGEMENT_PROTOCOL_REVIEW_ONLY'
+       || plan.device_profile!==profile||plan.candidate_protocol!==protocol
+       || plan.preferred_path!=='DIRECT_OVER_EXISTING_NETWORK'
+       || plan.wireguard_required!==false
+       || plan.authentication_attempted!==false
+       || plan.actual_protocol_compatibility_verified!==false
+       || plan.exact_device_identity_verified!==false
+       || plan.management_segment_isolation_verified!==false
+       || plan.restricted_account_verified!==false
+       || plan.owner_baseline_approved!==false
+       || plan.device_adopted!==false || plan.network_actions!==0
+       || plan.credentials_accepted!==false || plan.real_tenant_mfa_verified!==false
+       || !Array.isArray(plan.available_candidate_protocols)
+       || !plan.available_candidate_protocols.includes(protocol)
+       || typeof plan.next_gate!=='string')
+      throw new Error('unsafe server review');
+    const historical=plan.network_transport_observed_historically===true
+      ?'SSH privat pernah teramati; identitas fisik dan keamanan jalur BELUM terbukti. '
+      :'Konektivitas nyata metode ini BELUM diverifikasi. ';
+    output.textContent='PRIORITAS: koneksi langsung ('+protocol+'). '+historical+
+      'Persyaratan berikutnya: '+plan.next_gate.replaceAll('_',' ')+
+      '. VPN TIDAK WAJIB. Tidak ada autentikasi atau perubahan perangkat.';
+  }catch{
+    output.textContent='Pemeriksaan protokol ditolak. Perangkat tetap belum diadopsi; tidak ada perintah dikirim.';
+  }finally{button.disabled=false;}
+}
+node('direct-device-type').addEventListener('change',refreshDirectProtocolChoices);
+node('direct-protocol-review').addEventListener('click',()=>{void reviewDirectProtocol();});
+refreshDirectProtocolChoices();

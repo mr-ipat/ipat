@@ -136,6 +136,11 @@ def load_tests(loader, suite, pattern):
     module=importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     suite.addTests(loader.loadTestsFromModule(module))
+    path=Path(__file__).resolve().parents[1]/'r917'/'test_direct_protocol.py'
+    spec=importlib.util.spec_from_file_location('r917_direct_protocol_tests',path)
+    mod=importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    suite.addTests(loader.loadTestsFromModule(mod))
     return suite
 
 if __name__=="__main__":

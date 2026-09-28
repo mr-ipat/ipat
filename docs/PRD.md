@@ -1035,3 +1035,18 @@ lab MAY display Site A public key and render nonexecuting, disabled
 B peer review using B PUBLIC key only. DEV-only local files do not
 satisfy production vault backup, real MFA, signed approval, stable
 listener or physical device adoption acceptance.
+
+## R9.17 — Koreksi protokol adopsi direct-first (MUST)
+
+Pilihan koneksi OLT/ONT/router adalah **per adapter/firmware** dan
+memprioritaskan HTTPS tervalidasi, RouterOS API-SSL, SSH host-key
+tepercaya, SNMPv3 authPriv dan ACS/USP sesuai kemampuan perangkat
+sebenarnya. Bila rute jaringan yang sudah tersedia bisa digunakan
+dengan keamanan yang dibuktikan, **WireGuard atau tunnel lain TIDAK
+WAJIB**. Menu operasional menggunakan istilah *Server Pusat IPAT*,
+*Gateway Lokasi*, *Jaringan Manajemen*, *Protokol Perangkat*,
+*Kandidat Perangkat*. Internal contoh `site_a/site_b` bukan label
+produksi. API-SSL MikroTik tidak boleh dianggap API-SSL umum ZTE.
+Satu uji port atau sukses TCP tidak memenuhi adopsi fisik; penerimaan
+mensyaratkan independen key/certificate+isolasi+akun terbatas,
+observasi read-only sesungguhnya dan baseline customer.
