@@ -654,3 +654,7 @@ More read-only commands (alarm/ONU optical power/ONT inventory) require
 exact firmware-specific vendor support and independent device tests.
 Any write operation remains maker/checker-controlled and production
 role-gated; test default/admin login does not certify least privilege.
+
+## ADR-051 C320 individual action catalog is evidence-based
+
+Do not equate an offline parser test or historic SSH banner with real OLT interoperability. All live actions stay disabled until actual identity, scoped restricted login, firmware and tenant controls are independently proven. High-impact actions additionally need separately approved maintenance and rollback. Keep private LAB readiness metadata separate from a future real tenant-authorized worker.

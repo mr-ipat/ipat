@@ -493,3 +493,30 @@ Port443 negative result is source/time-specific, not proof of all
 HTTPS service ports. Physical identity=UNVERIFIED, site last hop=
 UNVERIFIED, actual read-only login=NOT RUN, adoption=FALSE,
 health=NOT MEASURED.
+
+## R9.19 C320 action availability evidence
+
+Owner-reported physical DEV-01 ZTE C320 is a known candidate, not an
+adopted or verified device. Reconfirmed private SSH banner transport
+on owner VPS, but no physical firmware/model/read-only login output.
+Offline parser `show card` and `show version-running` validated only
+with SYNTHETIC fixtures. Proprietary historical ZXA10 C300/C320
+command references describe both CLI commands but require a suitable
+operator CLI mode (not necessarily initial low-privilege user prompt).
+Exact command layout, privilege mode, noninteractive SSH execution and
+firmware on this physical chassis are UNKNOWN until the independent
+one-command restricted test. Active alarms, ONT listing/optics and
+all writes remain untested or blocked as classified in R9.19.
+
+## R9.19 newest independent network handshake comparison
+
+Actual authorized owner Mac AND worker VPS each observed the private
+SSH target TCP transport and SSH2 KEXINIT/selected KEX, but both
+preauthentication sessions timed out before the SSH server host-key
+exchange, NEWKEYS and listed authentication methods. No password was
+sent and no real `show card` command executed. Device identity,
+firmware/CLI adapter functionality, SSH authenticated login and
+actual health remain UNVERIFIED. This is not a failed ZTE account
+password test. Avoid forced firmware/cryptographic changes or blind
+retries on production distribution. Require trusted device-side
+console/network investigation first.

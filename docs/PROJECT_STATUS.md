@@ -4373,3 +4373,78 @@ NOT equivalent to hosted Actions, disposable production PostgreSQL
 recovery, actual hardware interoperability or source-restricted
 branch CI. R9.18 real device adoption=FALSE and no real OLT
 commands were executed.
+
+## R9.19 C320 readiness catalog under implementation
+
+Branch `feat/r919-c320-real-action-readiness` adds a Rust private LAB GET with 8 C320 capability classifications and unconditional HTTP403 POST handlers. Card/version parser was tested offline in R9.18 but exact DEV-01 firmware/real restricted login remain unknown. Browser displays only disabled catalog metadata; no real worker, device authentication or network action is enabled. Initial Mac safety static checks 47/47 passed; actual R9.19 Rust compile/deploy still pending. No physical OLT read/adoption has occurred.
+
+R9.19 actual independent owner-VPS proof COMPLETE for PRIVATE LAB
+catalog ONLY: latest compiled application source SHA `13bed31`
+passed pinned Rust format check, targeted C320 unit/router tests and
+full locked offline `control-api` Rust suite; binary SHA256
+`7478f575a8bb2bb9f984ba15a8dd6cd18b68beb3db78d6a7aeaef2e906a8c9a4`.
+Separate nonroot actual VPS only upgraded protected loopback
+`127.0.0.1:3002` using guarded script SHA256
+`7511ba0c9efbacb17a2d8ab16ebe27a10c957a5bc760943961202c6cd3ab446a`;
+actual HTTP smoke SHA256
+`2c5e477ca4f1b75e6d9f495e08bfeebe105e91c08865d28a26f7864eaca9b488`
+PASSED. Eight C320 capabilities now visible in private Device
+Manager as disabled, all POST dispatch requests rejected 403, direct
+private SSH prioritized, old :3000 remains HTTP200. Prior user unit
+backed up for exact nonroot rollback in r919-release. No real C320
+credentials, chassis/firmware capture or network configuration
+commands were executed. Production C320 adoption remains BLOCKED.
+
+R9.19 actual owner Mac temporary SSH loopback forward confirmed NEW
+owner-VPS running dashboard has all eight explicit locked C320
+features; a real HTTP POST for read-only card action got HTTP403,
+`network_actions=0`; temporary tunnel closed. Nonroot VPS private
+proof filenames check located ZERO stored independent C320 console
+public host-key proof. No real physical read occurred.
+
+R9.19 exact owner-VPS protected source SHA `13bed31` successfully ran
+2 targeted C320 Rust unit/router tests and FULL pinned locked offline
+`control-api` test suite 43/43 PASS; fmt PASS; offline build PASS.
+Private nonroot :3002 actual HTTP smoke and independent operator Mac
+forward both passed. Public CI synthetic mirror refresh was locally
+sanitized and exercised (47+25+13 Python tests, JS syntax), pending
+safe push of the final code snapshot. No true C320 read/adoption.
+
+R9.19 public synthetic source mirror for protected final code/doc SHA
+`6c9273644d38144ae6d341e1ca690c1c8ee76eea` was published at
+`mr-ipat/ipat-open-ci` commit
+`5340d3c06367604f50562ae29a232cf6859b03c7` after scrubbing 9
+distinct source-address fixtures and 2 old observed fingerprints,
+omitting original Git history and operational milestone documents.
+Public mirror local synthetic guard, Mac Python suites 47+25+13,
+and JavaScript syntax PASS. GitHub-hosted public workflow still needs
+OWNER `workflow` scope / authorized web installation of staged
+`ci/github-actions.yml`; no hosted CI result is claimed.
+Protected implementation PR #120 is a DRAFT stacked on #119/#118/#117;
+actual R9.19 runtime remains the separately built SHA `13bed31`
+private :3002 service, old :3000 preserved. No physical hardware
+identity or actual privilege/firmware was obtained. Next real
+adoption prerequisite is independent trusted OLT host RSA proof,
+verified restricted per-device account and protected POP baseline;
+without these, running factory-admin credentials on live OLT is unsafe.
+
+## R9.19 new actual C320 SSH handshake blocker (2026-09-28)
+
+After the PRIVATE R9.19 dashboard and CI mirror tests, one bounded
+credential-free `ssh -vv` handshake was performed independently on
+both the authorized owner VPS and Mac to the previously authorized
+private candidate SSH port. BOTH observed TCP ESTABLISHED, remote
+protocol version, received SSH2 KEXINIT and selected KEX, but neither
+received a server host key or SSH NEWKEYS within the bounded 9-second
+window; neither listed server authentication methods. No account
+password, private client key, live OLT command, telnet or configuration
+change was submitted. This is an actual SSH handshaking blocker BEFORE
+authentication and must NOT be described as failed user credentials,
+firmware compatibility or a login attempt. Current causes are
+UNVERIFIED (possibly OLT SSH daemon/legacy KEX negotiation, overload
+or management path packet handling); do not auto-repeat attempts or
+make blind crypto downgrades on live distribution. Owner-side trusted
+console/inventory inspection of SSH service, actual host RSA key,
+firmware support, last-hop ACL and baseline is now the next physical
+acceptance gate. Stored OOB C320 host-key proof file count was zero
+on authorized nonroot VPS. DEV-01 adoption/real CLI remain NOT RUN.
