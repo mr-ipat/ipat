@@ -889,3 +889,16 @@ trusted Host/Origin, CSRF and fresh SQL membership.
 No customer/public listener, worker, queue consumer,
 real credentials, Telnet login or physical health
 claim is enabled by this milestone.
+
+## R9.3 proposed secure physical C320 site-access gate
+
+MUST NOT treat owner-provided publicly NATed Telnet TCP/321 as an
+authenticated, encrypted or worker-reachable management route. Before
+any login or actual physical read: verify owner-authorized secure site
+transport and isolated last hop, independent host/device identity,
+restricted read-only account, exact tenant/POP and NOC reviewer,
+restricted actual nonroot worker reachability and fresh R9.1 gate
+revalidation. Keep R9.2 stored intents permanently nonexecutable.
+Record SITE-01 through SITE-06 evidence in
+`docs/R93_C320_SECURE_SITE_ACCESS_GATE.md`. Firmware mutation remains
+a separate prohibited high-risk workflow pending explicit authorization.

@@ -353,3 +353,12 @@ NOT evidence_type=physical_device_interop.
 DEV-01 exact device and protocol compatibility remain UNTESTED;
 TC-OLT-01 remains NOT RUN; connectivity UNKNOWN and health
 NOT_MEASURED. See R90_REAL_ZTE_CANDIDATE_TELNET_NETWORK_FIRST_CONTACT.md.
+
+## R9.3 DEV-01 site path acceptance — PENDING, not interoperability
+
+Owner reports DEV-01 ZTE C320 public NAT TCP/321 to plaintext Telnet/23.
+R9.0 owner-Mac unauthenticated handshake is the only observed device-path
+evidence; actual VPS path timed out. No real ZTE identity, firmware,
+privileged login, vendor command or SSH/SNMPv3 capability verified.
+SITE-01..SITE-06 are all NOT RUN. See
+`docs/R93_C320_SECURE_SITE_ACCESS_GATE.md`; TC-OLT-01 NOT RUN.

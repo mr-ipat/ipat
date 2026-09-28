@@ -3548,3 +3548,22 @@ send even test passwords on this
 public plaintext Telnet path.
 R9.2 is an audited stored INTENT
 only, NOT physical authorization.
+
+## R9.3 secure site-access gate draft — 2026-09-28
+
+Following the owner-provided exact DEV-01 C320 public Telnet NAT,
+created `docs/R93_C320_SECURE_SITE_ACCESS_GATE.md` and aligned PRD
+and device ledger. This milestone is DOCUMENTATION ONLY and requires
+owner-side secure management access before any further live attempt.
+No real device login, secret handling, secure route, VPS retest, worker,
+firmware change, deployment, live identity or fresh physical test
+was performed in R9.3. R9.2 stored requests remain NONEXECUTABLE.
+Current blockers: safe management protocol/version and secure owner
+site router/tunnel selection, verification of actual restricted worker
+route, independent exact device identity and account, live IdP/MFA,
+independent review and actual read-only TC-OLT-01 interoperability.
+Next priority: owner confirms SSH/SNMPv3 or site-isolated Telnet over
+verified VPN; validate the exact secure path and identity first, then
+implement narrowly audited leased read-only dispatch with disposable
+tests before separate opt-in physical read. No architectural decision
+changed; existing ADR-038 through ADR-040 remain binding.
