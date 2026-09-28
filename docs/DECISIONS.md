@@ -604,3 +604,21 @@ REQUIRES a real encrypted, recoverable central vault, genuinely
 signed MFA and scoped tenant/site authority, independent B approval,
 verified network route and change-controlled listener/rollback.
 Dev-only keys may not silently be promoted to tenant production keys.
+
+## ADR-048 — APPROVED direct-first per-device protocol + Indonesian UI terms
+
+Owner corrects earlier metaphor: operational UI uses *Server Pusat
+IPAT*, *Gateway Lokasi*, *Jaringan Manajemen* instead of Site A/B.
+These are locally chosen terminology, not a claim of a formal SNI
+mandate. Real connections first use an independently verified existing
+routed network and manufacturer/firmware-specific secure protocol;
+WireGuard and other tunnels are optional, not forced for every
+OLT/ONT/router. RouterOS API-SSL/REST HTTPS are MikroTik-specific;
+never infer C320 HTTPS/API compatibility from network reachability.
+Site gateway config remains self-applied after operator review if a
+tunnel is selected. The existing `site_a/site_b` internal lab JSON
+names remain temporarily for compatibility; replace under a separate
+versioned production BFF contract, NOT as new dashboard language.
+Authenticated physical DEV-01 adoption still REQUIRES independent
+console host RSA identity, restricted account, last-hop isolation,
+actual read-only command and live baseline/MFA approval before RUN.

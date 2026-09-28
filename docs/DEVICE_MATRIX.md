@@ -479,3 +479,17 @@ throwaway B public key and documentation IP examples. Actual RouterOS
 7 peer import/handshake, actual site B identity, real B public key,
 OLT SSH authenticated read and true firmware/model are UNTESTED.
 Never classify this as actual hardware WireGuard compatibility.
+
+## R9.17 exact actual direct transport versus unverified API claims
+
+DEV-01 owner-reported ZTE C320 at owner-given private IP: earlier
+actual VPS credential-free SSH private session returned untrusted
+`ZTE_SSH.1.0` banner, no authenticated inventory or exact firmware.
+Single actual VPS TCP/443 noauth strict TLS check returned TCP NOT
+REACHABLE, credentials/application HTTP requests=0, no device action.
+ZTE C320 RouterOS-style API-SSL is NOT an acceptable inferred
+protocol; SSH pinned and SNMPv3 are firmware-specific candidates.
+Port443 negative result is source/time-specific, not proof of all
+HTTPS service ports. Physical identity=UNVERIFIED, site last hop=
+UNVERIFIED, actual read-only login=NOT RUN, adoption=FALSE,
+health=NOT MEASURED.

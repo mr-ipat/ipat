@@ -1116,3 +1116,17 @@ and B review API are private LAB-only and do not persist tenant/site
 state. Direct-private means no unnecessary tunnel. Full production
 hub/peer provisioner awaits real signed tenant BFF and encrypted
 versioned key vault + separated worker and network change controls.
+
+## R9.17 per-device direct management / optional centralized tunnel
+
+Selection order: already routed verified secure management path FIRST;
+then exact per-device adapter/protocol with separately verified
+identity, rights and service impact. Optional centralized management
+VPN only when independently justified (site access, isolation or
+cross-network requirements); local gateway remains self-managed
+without forced router configuration push. MikroTik API-SSL/HTTPS,
+OLT SSH/SNMPv3/vendor-specific verified HTTPS, and ONT CWMP/USP
+are separate adapters. All REAL worker authorization is deny-by-default
+until signed human identity, tenant/POP grants, backend role, audited
+approval and independent device identity gates pass. A no-auth port
+probe never upgrades physical inventory or marks telemetry healthy.

@@ -209,6 +209,77 @@ async fn preview_site_a_plan(
         })),
     ))
 }
+// R9.17: direct-first protocol selector, private LAB only. No real device
+// address, account, certificate, SNMP community or worker can be submitted.
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct DirectProtocolReview {
+    device_profile: String,
+    candidate_protocol: String,
+    network_evidence: String,
+}
+async fn preview_direct_protocol(
+    headers: HeaderMap,
+    Json(input): Json<DirectProtocolReview>,
+) -> Result<(HeaderMap, Json<Value>), (StatusCode, HeaderMap, Json<Value>)> {
+    if !demo_csrf(&headers) {
+        return Err(reject(StatusCode::FORBIDDEN));
+    }
+    let protocols: &[&str] = match input.device_profile.as_str() {
+        "zte_c320" => &["ssh_pinned", "snmpv3_authpriv"],
+        "cdata_olt" => &["ssh_pinned", "snmpv3_authpriv", "https_vendor_verified"],
+        "mikrotik_routeros7" => &[
+            "routeros_api_ssl",
+            "routeros_rest_https",
+            "ssh_pinned",
+            "snmpv3_authpriv",
+        ],
+        "ont_tr069" => &["cwmp_https", "usp_authenticated"],
+        "ont_usp" => &["usp_authenticated", "cwmp_https"],
+        _ => return Err(reject(StatusCode::BAD_REQUEST)),
+    };
+    if !protocols.contains(&input.candidate_protocol.as_str())
+        || !["observed_private", "unverified"].contains(&input.network_evidence.as_str())
+    {
+        return Err(reject(StatusCode::BAD_REQUEST));
+    }
+    let required = match input.candidate_protocol.as_str() {
+        "ssh_pinned" => "INDEPENDENT_PINNED_HOST_KEY_AND_RESTRICTED_LOGIN_REQUIRED",
+        "snmpv3_authpriv" => "SNMPV3_AUTH_PRIV_ENGINE_ID_AND_READONLY_ACL_REQUIRED",
+        "routeros_api_ssl" | "routeros_rest_https" | "https_vendor_verified" | "cwmp_https" => {
+            "REAL_TLS_CERTIFICATE_AND_EXACT_FIRMWARE_SERVICE_REQUIRED"
+        }
+        "usp_authenticated" => "REAL_USP_CONTROLLER_AGENT_AUTHENTICATION_REQUIRED",
+        _ => return Err(reject(StatusCode::BAD_REQUEST)),
+    };
+    Ok((
+        super::private_lab_headers("application/json; charset=utf-8"),
+        Json(json!({
+            "mode":"DIRECT_MANAGEMENT_PROTOCOL_REVIEW_ONLY",
+            "device_profile":input.device_profile,
+            "candidate_protocol":input.candidate_protocol,
+            "available_candidate_protocols":protocols,
+            "preferred_path":"DIRECT_OVER_EXISTING_NETWORK",
+            "wireguard_required":false,
+            "management_segment_isolation_verified":false,
+            "actual_protocol_compatibility_verified":false,
+            "exact_device_identity_verified":false,
+            "restricted_account_verified":false,
+            "owner_baseline_approved":false,
+            "real_tenant_mfa_verified":false,
+            "next_gate":required,
+            "network_transport_observed_historically":
+                input.device_profile=="zte_c320" &&
+                    input.candidate_protocol=="ssh_pinned" &&
+                    input.network_evidence=="observed_private",
+            "authentication_attempted":false,
+            "device_adopted":false,
+            "network_actions":0,
+            "credentials_accepted":false,
+        })),
+    ))
+}
+
 #[derive(Default)]
 struct DemoState {
     next: u32,
@@ -392,6 +463,10 @@ pub(super) fn router() -> Router {
         .route(
             "/lab/demo/site-a-plan",
             axum::routing::post(preview_site_a_plan),
+        )
+        .route(
+            "/lab/demo/direct-protocol-review",
+            axum::routing::post(preview_direct_protocol),
         )
         .route(
             "/lab/dev-site-a-public-key",
@@ -614,6 +689,14 @@ mod tests {
         assert_eq!(evidence["temporary_owner_mac_vps_ssh_relay_closed"], true);
         assert_eq!(evidence["temporary_relay_olt_commands_executed"], 0);
         assert_eq!(evidence["temporary_relay_trusted_last_hop_verified"], false);
+        assert_eq!(evidence["direct_private_vps_tls443_noauth_checked"], true);
+        assert_eq!(evidence["direct_private_vps_tls443_tcp_reachable"], false);
+        assert_eq!(evidence["direct_private_vps_tls443_api_supported"], false);
+        assert_eq!(
+            evidence["direct_private_vps_tls443_credentials_sent"],
+            false
+        );
+        assert_eq!(evidence["direct_private_vps_tls443_http_requests_sent"], 0);
         assert_eq!(
             evidence["candidate_inventory_state"],
             "OBSERVED_NOT_ADOPTED"
@@ -626,6 +709,88 @@ mod tests {
         assert_eq!(evidence["health"], "NOT_MEASURED");
     }
     const HUB_PLAN: &str = r#"{"method":"wireguard","hub_address_scope":"private","site_b_path":"verified_private","site_b_gateway":"routeros7"}"#;
+    #[tokio::test]
+    async fn r917_direct_first_and_api_ssl_only_for_mikrotik_not_assumed_on_c320() {
+        let app = router();
+        let c320 = r#"{"device_profile":"zte_c320","candidate_protocol":"ssh_pinned","network_evidence":"observed_private"}"#;
+        let reply = request(
+            app.clone(),
+            "POST",
+            "/lab/demo/direct-protocol-review",
+            c320,
+            true,
+        )
+        .await;
+        assert_eq!(reply.status(), StatusCode::OK);
+        let body = to_bytes(reply.into_body(), 4096).await.unwrap();
+        let json: Value = serde_json::from_slice(&body).unwrap();
+        assert_eq!(json["preferred_path"], "DIRECT_OVER_EXISTING_NETWORK");
+        assert_eq!(json["wireguard_required"], false);
+        assert_eq!(json["network_transport_observed_historically"], true);
+        assert_eq!(json["actual_protocol_compatibility_verified"], false);
+        assert_eq!(json["authentication_attempted"], false);
+        assert_eq!(json["device_adopted"], false);
+        assert_eq!(json["network_actions"], 0);
+        assert!(!json["available_candidate_protocols"]
+            .as_array()
+            .unwrap()
+            .contains(&json!("routeros_api_ssl")));
+        let bad = c320.replace("ssh_pinned", "routeros_api_ssl");
+        assert_eq!(
+            request(
+                app.clone(),
+                "POST",
+                "/lab/demo/direct-protocol-review",
+                &bad,
+                true
+            )
+            .await
+            .status(),
+            StatusCode::BAD_REQUEST
+        );
+        let router = r#"{"device_profile":"mikrotik_routeros7","candidate_protocol":"routeros_api_ssl","network_evidence":"unverified"}"#;
+        let approved = request(
+            app.clone(),
+            "POST",
+            "/lab/demo/direct-protocol-review",
+            router,
+            true,
+        )
+        .await;
+        assert_eq!(approved.status(), StatusCode::OK);
+        let payload: Value =
+            serde_json::from_slice(&to_bytes(approved.into_body(), 4096).await.unwrap()).unwrap();
+        assert_eq!(
+            payload["next_gate"],
+            "REAL_TLS_CERTIFICATE_AND_EXACT_FIRMWARE_SERVICE_REQUIRED"
+        );
+        assert_eq!(payload["network_transport_observed_historically"], false);
+        assert_eq!(
+            request(
+                app.clone(),
+                "POST",
+                "/lab/demo/direct-protocol-review",
+                c320,
+                false
+            )
+            .await
+            .status(),
+            StatusCode::FORBIDDEN
+        );
+        assert_eq!(
+            request(
+                app.clone(),
+                "POST",
+                "/lab/demo/direct-protocol-review",
+                &c320.replacen("{", "{\"password\":\"forbidden\",", 1),
+                true
+            )
+            .await
+            .status(),
+            StatusCode::UNPROCESSABLE_ENTITY
+        );
+    }
+
     #[tokio::test]
     async fn r915_hub_is_site_a_and_never_pushes_to_site_b() {
         let app = router();
