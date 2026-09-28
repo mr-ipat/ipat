@@ -444,3 +444,22 @@ per-tenant MFA/approval/audit and firmware-matched read-only acceptance.
 No public edge firewall changes, Nusa integration, firmware upgrade,
 live K3s setup, production tenant enrollment or C320 compatibility
 is authorized by this one-time network observation.
+
+
+## ADR-039 — APPROVED ADOPTION READINESS GATES; READ PROBE EXECUTION STILL BLOCKED (R9.1)
+
+Metadata maker-checker approval is insufficient to contact physical
+equipment. Before any future read-only probe intent can be created,
+require four separate current evidence gates: secure management path,
+device identity, dedicated read-only account and recovery plan.
+Store evidence append-only with bounded lifetime, exact tenant/
+candidate/reviewer identity and latest-verdict fail-closed semantics.
+The attester MUST be the same separately approved security-admin
+reviewer who approved the metadata and must still hold active own
+tenant membership. Expose only boolean readiness through the
+restricted identity reader and opaque-session bridge; never expose
+management IP, evidence contents or secrets there. A true
+read_probe_eligible value is ONLY a prerequisite result and MUST NOT
+enqueue, claim or execute any network operation. A later durable
+read-probe intent/outbox and vendor adapter remain separate review
+milestones, and all firmware/write actions remain blocked.

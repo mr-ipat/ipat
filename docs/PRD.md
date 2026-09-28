@@ -854,3 +854,19 @@ and strictly read-only real model/firmware evidence.
 The visible Device Manager MUST label these R9.0 facts
 as time-limited historical transport observations,
 not live device connectivity/health.
+
+
+## R9.1 adoption-readiness evidence before any physical read
+
+After maker-checker metadata approval, a candidate MUST remain unable
+to trigger a physical read until four fresh independent readiness
+gates are verified: secure management path, physical device identity,
+dedicated read-only account and recovery plan. The latest evidence
+for each gate MUST be append-only, time bounded and tenant scoped;
+a later blocked or expired gate MUST fail closed. Metadata approval
+alone MUST NOT imply connectivity, health or physical permission.
+A safe projection may expose only gate booleans and a derived
+read_probe_eligible flag. That flag MUST NOT itself enqueue,
+execute or authorize network I/O. Browser/session access MUST still
+recheck current exact tenant/POP membership and real-human MFA/BFF
+remains a separate production gate.

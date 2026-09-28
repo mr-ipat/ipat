@@ -39,6 +39,7 @@ IPAT (`IP@`) is a planned commercial multi-tenant ISP network operations platfor
 - [R8.8 original Rust offline opaque BFF session and sealed real PostgreSQL scoped identity bridge (NOT real login)](docs/R88_OFFLINE_SIGNED_PAIR_SEALED_SQL_SESSION_FOUNDATION.md)
 - [R8.9 signed opaque BFF session to sealed PostgreSQL tenant/POP inventory (unmounted, not real login)](docs/R89_OPAQUE_SESSION_SQL_DEVICE_MANAGER_BRIDGE.md)
 - [R9.0 owner-authorized first public ZTE-candidate TCP/Telnet network observation; actual VPS path blocked (NO LOGIN)](docs/R90_REAL_ZTE_CANDIDATE_TELNET_NETWORK_FIRST_CONTACT.md)
+- [R9.1 adoption readiness gates before any physical read-only probe](docs/R91_DEVICE_ADOPTION_READINESS_GATES.md)
 - [Technical architecture](docs/ARCHITECTURE.md)
 - [Physical device and firmware test matrix](docs/DEVICE_MATRIX.md)
 - [Security, tenant isolation and threat model](docs/SECURITY.md)

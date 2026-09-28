@@ -974,3 +974,24 @@ Future site-side encrypted management gateway must
 not share the unsafe public Telnet credential segment.
 R7.9 pinned SSH and original Rust offline C320 parsers
 remain independent candidates, NOT automatically enabled.
+
+
+## R9.1 adoption-readiness state machine
+
+A new append-only adoption-evidence layer sits between metadata
+approval and any future device worker. device_candidates plus the
+immutable maker-checker review remain the source of metadata approval.
+device_adoption_attestations records four expiring readiness gates:
+secure_management_path, device_identity, readonly_account and
+recovery_plan. A SECURITY DEFINER projection computes
+read_probe_eligible only when current membership, approved metadata
+and all unexpired latest positive gates match. The projection never
+returns management address, evidence contents or secrets.
+
+The opaque BFF session domain has an unmounted internal bridge that
+calls only this safe projection under the existing restricted
+identity reader. There is intentionally still NO route from an
+eligible row to a queue or adapter. The next architecture slice is
+a durable read-probe intent/outbox consumed by a separately
+authorized vendor read-only worker, with per-device locking and
+fresh gate revalidation before claim.
