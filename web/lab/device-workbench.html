@@ -27,7 +27,7 @@
       <a href="#inventory">☷ &nbsp; Daftar perangkat</a>
       <a href="#readiness">◈ &nbsp; Adopsi & status</a>
     </nav>
-    <div class="sidebottom"><strong>LABORATORIUM PRIVAT</strong><p>Perangkat belum pernah terhubung. Jangan isi serial, alamat IP asli, username atau password di formulir demo.</p></div>
+    <div class="sidebottom"><strong>LABORATORIUM PRIVAT</strong><p>Belum ada perangkat diadopsi. Kandidat DEV-01 pernah menjawab SSH tanpa autentikasi, tetapi identitasnya belum terverifikasi. Jangan isi serial, alamat IP asli atau kredensial di formulir demo.</p></div>
     <p class="copyright">IPAT · Developed by Mr. iPat</p>
   </aside>
   <div class="main">
@@ -40,13 +40,14 @@
       </div>
       <div class="metric-row" aria-label="Ringkasan perangkat">
         <article class="stat"><small>KANDIDAT DEMO</small><strong id="candidate-count">0</strong><span>Memori laboratorium</span></article>
-        <article class="stat"><small>PERANGKAT NYATA</small><strong>0</strong><span>Belum dihubungkan</span></article>
+        <article class="stat"><small>PERANGKAT NYATA DIADOPSI</small><strong>0</strong><span>SSH kandidat teramati; belum terverifikasi</span></article>
         <article class="stat"><small>TERVERIFIKASI</small><strong>0</strong><span>Tanpa telemetri asli</span></article>
         <article class="stat"><small>KESIAPAN ADOPSI</small><strong class="amber">Terbatas</strong><span>Menunggu MFA dan bukti vendor</span></article>
       </div>
       <section class="panel" aria-labelledby="physical-network-heading">
         <div class="section-top"><div><span class="eyebrow">BUKTI HISTORIS, BUKAN TELEMETRI LIVE</span><h2 id="physical-network-heading">Jalur manajemen OLT kandidat DEV-01</h2></div><span class="pill amber-pill">BELUM ADOPSI</span></div>
         <p>28 September 2026, sekitar 09.52 WIB: dari Mac operator, port manajemen yang diizinkan dapat dihubungi dan mengirim negosiasi Telnet. Negosiasi terbatas sebelumnya menampilkan penanda ZTE yang belum terautentikasi. Dari VPS IPAT, jalur yang sama mengalami timeout.</p>
+        <p><strong>Pemeriksaan terbaru:</strong> pada 28 September 2026, Mac operator juga memperoleh banner SSH privat ZTE_SSH.1.0 dan fingerprint RSA yang belum diverifikasi secara independen. Koneksi tersebut tidak menggunakan kredensial atau perintah OLT.</p>
         <p><strong>Perhatian:</strong> catatan ini hanya bukti jaringan sesaat. OLT C320, firmware, identitas server dan status online perangkat BELUM terverifikasi. Tidak ada login, kata sandi, perubahan konfigurasi atau pembacaan OLT. Akses Telnet publik tidak aman untuk kredensial; gunakan jaringan manajemen privat terenkripsi atau protokol aman yang identitasnya telah diverifikasi.</p>
       </section>
       <section id="physical-readiness" class="panel" aria-labelledby="physical-readiness-title">
