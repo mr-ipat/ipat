@@ -448,3 +448,24 @@ No independently obtained console RSA fingerprint, restricted SSH
 account/firmware command result, measured live baseline or dedicated
 VPS route proof has been received. New six-gate metadata does NOT
 change physical adoption FALSE or live health NOT MEASURED.
+
+## R9.15 actual DEV-01 versus topology plan
+
+Owner-reported site router MikroTik x86 RouterOS7 and C320 management
+private address are NOT independently inventoried. R9.15 allows
+simulated Site A direct-private or Site A WireGuard listening design;
+it does NOT prove VPS-to-OLT private access. Previous nonroot VPS route
+check was DEFAULT_ROUTE_ONLY, and real site management last-hop and
+firmware remain unverified. OLT adoption remains NOT RUN.
+
+## R9.15 direct-from-VPS private SSH transport actually observed
+
+One bounded exact private-IP SSH handshake FROM the actual IPAT VPS
+returned `UNVERIFIED_PRIVATE_SSH_HOST_KEY`, `ZTE_SSH.1.0` and the
+same untrusted RSA fingerprint earlier observed from Mac, with ZERO
+credentials/commands. Linux route metadata still DEFAULT_ROUTE_ONLY
+but that does not prevent observed private host transport reachability
+via an upstream route. Real dedicated management last-hop isolation,
+OOB fingerprint proof, restricted account and firmware UNKNOWN.
+Prefer direct-private as a candidate, NOT as an approved/validated
+physical adoption path. No firmware, chassis serial or health measured.

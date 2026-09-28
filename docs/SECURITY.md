@@ -1163,3 +1163,39 @@ real signed OIDC MFA outside SQL, which repeats live approved
 security_admin own tenant and independent applicant/reviewer.
 Projected six-gate metadata stays nonexecutable even if all synthetic
 values are set verified; revoked/expired latest gates fail closed.
+
+## R9.15 no central push; private/public route semantics
+
+Site A MAY create/rotate only its own listener/peer after genuine
+reviewed authorization. Router B changes stay at Site B in an
+owner-controlled console/GUI import path; dashboard never sends
+configuration to the remote router. Reject shared subnet overlaps,
+extra fields/credentials, unverified private endpoints and unbounded
+peer routes at preflight. Site A and B must each custody their own
+private key; only public peer material is passed in future pairing
+workflow. No default route, broad RFC1918 routes, PPPoE modifications
+or local customer VLANs in generated minimal management peer plans.
+Current lab plan returns zero network actions and no configuration.
+
+R9.15 bounded direct-private point-in-time VPS handshake reached the
+owner-reported OLT SSH transport without credentials/commands and
+stopped at UNVERIFIED RSA host key. Repeat observation via separate
+sources is not OOB proof. No privileged OLT login until independently
+obtained console host RSA public key is matched, site last-hop trust
+is evidenced, account authorization is separately bounded and live
+baseline/recovery is recorded. Direct/private does not bypass these
+gates or require an unnecessary tunnel.
+
+R9.15 owner-Mac prior RouterOS endpoint's pinned SSH key no longer
+matches the network-presented host RSA key. An attempted batch-mode,
+publickey-only version query stopped at SSH host key rejection before
+authentication. No host pin override, password retry or router action
+is authorized until independent trusted console verification of the
+router identity; do not assume it is the exact C320 site gateway.
+
+R9.15 offline pairing preview accepts ONLY distinct canonical 32-byte
+WireGuard public keys and validated private/public topology. All
+Site B RouterOS review commands are disabled; a site owner must
+explicitly apply changes on B, under independently reviewed rollback.
+Never capture Site B's WireGuard private key or accept default/wide
+AllowedIPs exported by version-dependent RouterOS tooling.

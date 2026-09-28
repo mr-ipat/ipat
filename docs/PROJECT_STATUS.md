@@ -3976,3 +3976,126 @@ lines; no migration failure was reported in this run. Corrected the
 harness to exclude `SET` and normalize empty/cell results. This
 first run FAILED; do NOT cite it as a passing SQL integration test.
 Next feature SHA must independently rerun ALL CI jobs.
+
+## R9.15 Site A central connection design and private LAB implementation
+
+Owner clarified binding direction: IPAT/dashboard acts as Site A/hub;
+Router B operator self-applies a Site A-issued peer profile, no remote
+router config push. For separately proven same/connected private
+network choose direct-private without tunnel; for external site use
+independently reachable public Site A endpoint or verified private
+interconnect. Implemented separate Rust fixed-choice private LAB
+`POST /lab/demo/site-a-plan` returning explicit Site A/Site B roles,
+zero execution and negative CSRF/secret-injection tests. Added Site A
+hub planning panel in existing private Device Manager, strict
+browser fail-closed response checks, and offline typed
+`deploy/scripts/lab/r915/site_a_plan.py` that rejects unknown fields,
+missing claimed private route, unsuitable host IP, overlapping /30,
+unsupported gateway and produces narrow management /32 plan only.
+Local R9.0+R9.11+R9.12+R9.15 combined 24/24 PASS,
+Node syntax PASS, diff check PASS. Full independent GitHub Actions
+and separate actual owner-VPS isolated preview deployment must be
+verified before calling this latest branch accepted. REAL Site A
+WireGuard listener, credential vault, signed tenant MFA, downloaded
+Site B peer package, verified return path and authenticated C320
+read are still NOT IMPLEMENTED / NOT EXECUTED. Previous main R9.14
+run `36403059099` 4/4 PASS; no IPAT VPS firewall or customer device
+configuration touched by R9.15.
+
+R9.15 new ACTUAL physical discovery: owner authorized ONE no-auth
+private-IP SSH probe from existing nonroot IPAT VPS directly to
+DEV-01 candidate. Bounded test returned `ZTE_SSH.1.0`, same
+UNTRUSTED RSA fingerprint observed via Mac, zero credential or OLT
+command bytes. This confirms point-in-time SSH transport to private
+candidate despite default eth0 gateway selection. It DOES NOT
+establish independently isolated management hop or approved private
+worker route. R9.15 adds explicit historical direct-VPS reachability
+to private LAB Device Manager and validates that it cannot promote
+host identity, physical adoption or measured health. For DEV-01,
+review DIRECT-PRIVATE first; WireGuard is optional if site policy
+or independent last-hop constraints require it. This was ONE probe,
+no periodic network polling or authenticated physical session.
+
+R9.15 first CI on source SHA f09bc2c identified an existing Rust
+LAB HTML test-body cap of 16 KiB, smaller than the expanded 17 KiB
+Device Manager page. Actual endpoint returned HTTP200; failure was
+a test harness LengthLimitError, not an HTTP route failure. Increased
+that single static HTML test cap to 64 KiB and requires full rerun.
+Do not cite first SHA as a passing independent Rust CI run.
+
+R9.15 additional physical Site B access discovery: a single bounded,
+strict-host-key, NO-PASSWORD public-key-only attempt to query the
+previously owner-provided RouterOS endpoint stopped before login:
+PREEXISTING Mac SSH known_hosts entry DOES NOT match the current
+network-presented RSA host key. ZERO router commands were executed;
+NO known_hosts modifications or insecure retry. Its identity and
+association with DEV-01 site are NOT independently verified. Both
+RouterOS identity proof and C320 trusted-console proof remain
+critical path before actual peer setup or physical adoption.
+R9.15 local tests after historical direct VPS evidence and offline
+self-config unit contract: R9.0+R9.11+R9.12+R9.15 25/25 PASS;
+R7.9+R9.13+R9.14 25/25 PASS; JS syntax and rustfmt PASS.
+The initial f09bc2c CI hit an undersized HTML test cap after adding
+the Site A panel; this was corrected in d8b9cb1. Subsequent feature
+SHA CI and isolated VPS build/deploy status must be checked separately.
+
+R9.15 extra offline Site A pairing renderer:
+`deploy/scripts/lab/r915/pairing_bundle_review.py` now produces
+**disabled=yes** RouterOS7 Site B manual peer review commands using
+A public key and narrow A tunnel /32 plus a separate nonexecutable
+Site A peer review summary using B public key and only B tunnel /32 +
+OLT management /32. No private key input, remote API, sudo, firewall
+or route changes. Independently proven direct-private mode correctly
+generates NO WireGuard package, unimplemented IPsec refuses output.
+R9.15 new offline combined R9.0/11/12/15 test count 29/29 PASS;
+R9.15 standalone pure tests 11/11 PASS. Actual signed Tenant Admin
+profile download, local Site A activation, actual gateway pairing and
+hardware adoption remain NOT DONE. Static VPS preview rollout R9.15
+should be checked independently after versioned source build and
+actual HTTP smoke.
+
+## R9.15 actual private Site A dashboard proven on VPS
+
+R9.15 immutable app source SHA `7149b0b` verified from hash-pinned
+Git bundle into separate nonroot VPS source checkout, original canonical
+VPS main remained untouched. Pinned low-priority offline Rust build
+SHA256 `a236e184e8c0e6abaa0feda9095dfb5c2d3e56fd00f343eef61e668d3c41eaa9`.
+Previous :3002 unit independently hashed and backed up to local
+rollback. R9.15 new user unit and exact HTTP smoke SHA independently
+matched Mac staging; restricted nonroot upgrade script passed. Actual
+VPS :3002 now serves Site A hub panel and Rust POST plan; public/
+private method simulation, denied secret fields/origin, fake real
+business API401, evidence actual direct VPS noauth SSH observed and
+NOT adopted all PASS. Original :3000 HTTP200 before/after.
+Independent actual Mac SSH tunnel fetched new page and issued server
+plan POST, returned PUBLIC_HUB_WG_SITE_B_INITIATES / no push; tunnel
+then closed. Runtime NoNewPrivileges=yes, read-only host filesystem,
+256MiB memory and 20% CPU ceilings. No root, firewall, WireGuard,
+site-router, OLT, ONT or PPPoE changes. Latest R9.15 source followup
+adds STATIC smoke/rollback checks and fixes Linux B bundle misuse;
+final independent CI before merge required, binary Rust source unchanged.
+
+## R9.15 final versioned safety/QA checkpoint
+
+Final source adds a reproducible owner-only nonroot actual-VPS :3002
+private preview deployment script with strict hardcoded app/unit/smoke
+hashes, explicit opt-in, existing unit checksum, prior unit backup,
+new HTTP fail-closed smoke and automatic rollback on failure. The
+script was hash-verified and EXECUTED successfully on the actual
+owner VPS; the app's own approved source SHA remains `7149b0b`.
+The on-login private LAB user service is ACTIVE and old :3000 remained
+HTTP200; independent Mac SSH local-forward fetched the new Site A
+panel and successfully exercised the server POST, with zero router
+push or device network actions. Hardened offline topology CLI now
+accepts owner-only 0600 nonsymlink JSON outside repo, rejects
+noncanonical IP, invalid link-local/multicast hub and duplicate
+network declarations. Separate disabled Site B bundle now REFUSES
+Linux gateway rendering until an independently reviewed Linux
+adapter exists. New R9.15 combined offline 31/31 PASS, R9.15
+standalone 13/13 PASS, existing R7.9/R9.13/R9.14 25/25 PASS,
+JS syntax, Rust rustfmt, Python compile and bash syntax PASS.
+Current latest branch needs its own GitHub CI rerun before merge.
+No privileged OLT login or actual WireGuard peer activation has
+occurred. OLT trusted-console RSA proof, segment isolation and
+restricted account remain the hardware critical path. Earlier
+router management SSH pin mismatch also remains unresolved.
