@@ -192,3 +192,18 @@ remain separate adapters to implement and test. For current DEV-01
 C320, the first option remains direct-private if and only if its
 management last hop is independently proven secure, plus trusted
 OLT console fingerprint and a restricted verified on-device account.
+
+## CI accounting external blocker — do not mislabel as application failure
+
+The last independent app-source GitHub CI run `36427327886` for exact
+SHA `63c42e3` was 4/4 successful. Subsequent docs-only/versioned
+harness SHA `11bf48b` workflow `36428063835` did not start ANY job
+steps: all GitHub check-run annotations reported account billing or
+Actions spending-limit restrictions. This is not a code-test result
+and the newest commit has NOT passed hosted CI. Separately, actual
+owner VPS repeated pinned full locked control-api Rust test suite:
+40/40 passed; `cargo fmt --all -- --check` also passed. Current owner
+VPS nonroot :3002 and old :3000 responded normally. PR #117 must
+remain draft until account billing is restored and new full CI passes.
+The developer-only operational proof must never be promoted to
+production merely because local tests pass.

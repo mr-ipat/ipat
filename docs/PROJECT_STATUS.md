@@ -4191,3 +4191,30 @@ HTTP smoke, strict checksum-pinned operator-only restart script with
 auto-rollback and tests for the original HTTP smoke truncation bug.
 Final docs/scripts-only HEAD requires independent CI before merge;
 production/WireGuard/OLT gates are still NOT complete.
+
+## R9.16 external CI account blocker and independent final local validation
+
+The FINAL R9.16 scripts/docs-only branch SHA `11bf48b` triggered
+GitHub Actions run `36428063835`: all four jobs FAILED BEFORE ANY
+STEP STARTED (job duration ~2 seconds, empty steps, no job logs).
+GitHub check-run annotation explicitly reported either recent account
+payment failure OR an inadequate Actions spending limit. This is an
+EXTERNAL GitHub account billing/spend configuration blocker, NOT
+evidence of failing R9.16 tests. The previously independently verified
+R9.16 app source SHA `63c42e3` still has full 4/4 GitHub CI SUCCESS
+run `36427327886`. Do NOT represent SHA `11bf48b` as passing GitHub
+CI or merge PR #117 until GitHub Actions billing is resolved and the
+LATEST branch SHA successfully completes all required jobs.
+
+Independently of Actions, the actual restricted owner VPS re-ran
+pinned `cargo fmt --all -- --check` and `cargo test --locked --offline
+-p control-api` on exact reviewed application source SHA `63c42e3`:
+40/40 actual Rust tests PASS, 0 failed. Previously demonstrated
+actual versioned restricted :3002 R9.16 deployment and Mac tunnel
+GET real development Site A public key / POST synthetic B review
+remain successful. Actual owner VPS :3002 user service ACTIVE, old
+:3000 API HTTP200, and no WireGuard listener or physical OLT access.
+Latest branch includes a corrected longer HTTP smoke and strengthened
+reset-failed rollback in versioned script; both were executed on the
+actual owner VPS. Current PR remains DRAFT due account CI blocker
+and because this feature remains DEV-only, not commercial/operational.
