@@ -370,3 +370,12 @@ same local network as DEV-01 ZTE C320, with owner-side physical or
 console recovery available. Version/build, actual private management
 IP/VLAN isolation, gateway baseline and restoration remain UNVERIFIED.
 No WireGuard session, live Telnet login or TC-OLT-01 test performed.
+
+## R9.6 DEV-01 live-distribution assumption
+
+For future testing, assume this reported C320 is LIVE with active ONTs:
+no physical authentication, polling, upgrade or configuration change
+until isolated management and approved read-only safeguards are proven.
+Owner-reported endpoint TCP/Telnet can be passively tested with ZERO
+transmit bytes; this is NOT hardware identity or device health.
+R9.6 backend selection tests are synthetic-only, TC-OLT-01 NOT RUN.

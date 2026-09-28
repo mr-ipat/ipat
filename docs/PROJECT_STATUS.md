@@ -3623,3 +3623,19 @@ passed. The broader R7.9 test discovery FAILED one integration
 setUpClass because the required compiled Rust parser binary was
 absent on the owner Mac; do not report the full R7.9 suite passed.
 Actual DEV-01 test was bounded Mac TCP/Telnet transport only.
+
+## R9.6 safe-as-live device protection and backend-only lab planner
+
+Implemented Rust Axum private LAB-only enum `/lab/demo/connection-plan`
+POST and deliberate dashboard validation button, no saved config,
+credentials, network actuation, adoption or worker dispatch. Added
+Rust Axum tests for same-origin denial, plan-only response, public
+Telnet denial, RouterOS6 mismatch, unsupported secure protocol and
+unknown real-secret fields. R9.6 static Python UI 3/3 and JS syntax
+checks executed successfully; Rust code compile/actual Axum tests
+must run on toolchain-equipped Ubuntu or GitHub CI before merge.
+No new physical OLT command, Telnet login or network mutation.
+Prior Mac passive TCP/Telnet 15-byte result is historical only.
+Next: independently run locked Rust tests/CI, merge only after
+acceptance, then build genuine DB-backed Tenant Admin scoped draft
+and approved tunnel workflow with safe staged rollback.

@@ -159,7 +159,37 @@ function describeConnection() {
   if(method==="direct_secure" && gateway==="routeros6")
     result+=" Versi gateway tidak membuktikan bahwa OLT mendukung protokol aman.";
   node("connection-result").textContent=result+" Ini hanya simulasi pilihan UI; tidak ada konfigurasi yang dikirim.";
+  node("server-plan-result").textContent="Pilihan berubah. Jalankan kembali validasi backend lab.";
 }
 node("connection-method").addEventListener("change",describeConnection);
 node("connection-gateway").addEventListener("change",describeConnection);
 describeConnection();
+
+// The backend lab plan is never persisted or executed. This request uses the
+// same local-only origin guard as existing fake-device mutations.
+async function checkConnectionPlan() {
+  const button=node("check-connection");
+  button.disabled=true;
+  node("server-plan-result").textContent="Memvalidasi rencana sintetis…";
+  try {
+    const response=await mutate("POST","/lab/demo/connection-plan",{
+      method:node("connection-method").value,
+      gateway:node("connection-gateway").value,
+      device_profile:node("connection-profile").value
+    });
+    if (!response.ok) throw new Error("lab backend denied request");
+    const result=await response.json();
+    if(result.lab_only!==true || result.plan_only!==true
+       || result.tenant_verified!==false || result.device_adopted!==false
+       || result.credentials_used!==false || result.network_actions!==0
+       || result.worker_dispatch_enabled!==false || result.health!=="NOT_MEASURED") {
+       throw new Error("unexpected backend plan response");
+    }
+    node("server-plan-result").textContent=(result.eligible_for_separate_review
+      ? "Layak ditinjau secara terpisah" : "Ditolak atau belum tersedia")
+      +" · "+result.reason+" · Tidak ada konfigurasi yang diterapkan.";
+  } catch {
+    node("server-plan-result").textContent="Validasi ditolak/gagal. Tidak ada konfigurasi yang diterapkan.";
+  } finally {button.disabled=false;}
+}
+node("check-connection").addEventListener("click",()=>{void checkConnectionPlan();});

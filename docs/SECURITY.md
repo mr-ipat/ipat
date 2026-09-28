@@ -1029,3 +1029,15 @@ before physical I/O. No real credentials,
 OLT public Telnet, management addresses,
 evidence hashes or reviewer details are
 exposed to the proposed browser-facing API.
+
+## R9.6 production-like OLT protection and lab planner boundary
+
+Treat owner DEV-01 as actively serving distribution and subscribers.
+No unauthenticated Telnet public endpoint may accept even temporary
+management passwords, nor may public TCP banner imply trusted hardware.
+The R9.6 synthetic lab planner rejects unknown fields, physical
+addresses and raw secrets; same-origin loopback and explicit demo
+header are NOT production identity or authorization. No network
+actuation, credential storage, dispatch, device adoption or firmware
+function is attached. Real privilege requires signed session/MFA,
+fresh DB tenant+POP membership, maker/checker and secure route.

@@ -27,6 +27,13 @@ class ConnectionPreviewTests(unittest.TestCase):
         for marker in ('localStorage', 'sessionStorage', 'innerHTML'):
             self.assertNotIn(marker, JS)
         self.assertIn('node("connection-result").textContent=', JS)
+        self.assertIn('id="check-connection"', HTML)
+        self.assertIn('"/lab/demo/connection-plan"', JS)
+        self.assertIn('result.network_actions!==0', JS)
+        self.assertIn('async fn preview_connection_plan(', RUST)
+        self.assertIn('"/lab/demo/connection-plan"', RUST)
+        self.assertIn('"PUBLIC_TELNET_CREDENTIALS_FORBIDDEN"', RUST)
+        self.assertIn('"ROUTEROS6_NO_BUILTIN_WIREGUARD"', RUST)
         self.assertIn('include_str!("../../../web/lab/device-workbench.html")', RUST)
 
 if __name__ == '__main__':

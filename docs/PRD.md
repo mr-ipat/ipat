@@ -922,3 +922,15 @@ SSH/SNMPv3 authPriv, WireGuard, compatible IPsec and an IPAT gateway.
 Public Telnet MUST never become an authenticated management transport.
 R9.5 delivers only a clearly marked isolated LAB preview selector,
 NOT saved configuration, production tenant access or OLT adoption.
+
+## R9.6 safe-as-live OLT staging, backend plan check
+
+Treat DEV-01 as carrying active distribution traffic: NO discovery
+sweep, automatic login, firmware, configuration command or bulk ONU
+poll from the public Telnet endpoint. R9.6 MUST provide a nonexecuting
+backend-validated selection UI while live transport and MFA remain
+gated. Acceptance: real Axum tests deny missing origin and injected
+credential fields, reject public Telnet/RouterOS6 WireGuard, allow
+review-only eligible plan with zero network actions and no device
+adoption. Physical TC-OLT-01 requires independently accepted isolated
+last-hop, exact hardware identity and measured no-impact baseline.

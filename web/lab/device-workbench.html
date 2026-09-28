@@ -58,6 +58,10 @@
           <div><label for="connection-gateway">Jenis gateway (contoh)</label>
             <select id="connection-gateway"><option value="routeros7">MikroTik RouterOS 7</option><option value="routeros6">MikroTik RouterOS 6</option><option value="linux">Linux / gateway lain</option><option value="none">Tanpa gateway</option></select></div>
         </div>
+        <label for="connection-profile">Profil kemampuan perangkat (simulasi)</label>
+        <select id="connection-profile"><option value="VIRTUAL-TELNET-ONLY">VIRTUAL-TELNET-ONLY</option><option value="VIRTUAL-SECURE-MANAGED">VIRTUAL-SECURE-MANAGED</option></select>
+        <button id="check-connection" type="button" class="secondary">Validasi rencana di backend lab</button>
+        <div class="form-notice" id="server-plan-result" role="status" aria-live="polite">Belum divalidasi oleh backend lab. Tidak ada koneksi ke perangkat.</div>
         <div class="form-notice" id="connection-result" role="status" aria-live="polite">Pilih metode untuk melihat batas keamanan dan kompatibilitas.</div>
         <p><strong>Alur produksi yang direncanakan:</strong> Tenant Admin → Network Connections → draft → uji koneksi terbatas → persetujuan terpisah → aktivasi → Add OLT. Backend wajib memvalidasi tenant, POP, identitas, audit, protokol, isolasi hop terakhir dan izin sebelum deployment. Belum ada tombol aktivasi karena backend produksi belum terotorisasi.</p>
       </section>
