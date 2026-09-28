@@ -122,7 +122,15 @@ class AdoptionReadiness(unittest.TestCase):
             self.assertNotEqual(created[-1],ZERO)
         row=next(x for x in readiness() if x.startswith(item+"|"))
         self.assertEqual(row,item+"|true|true|true|true|true|true")
-        self.assertEqual(attest(item,*requests[0]),created[0],"precise retry idempotent")
+        stamps=sql(f"""SELECT captured_at::text||'|'||valid_until::text
+          FROM ipat_ops.device_adoption_attestations
+          WHERE attestation_id='{created[0]}'::uuid""").stdout.strip().split("|")
+        self.assertEqual(len(stamps),2)
+        self.assertEqual(
+          attest(item,*requests[0],
+                 captured=q(stamps[0])+"::timestamptz",
+                 valid=q(stamps[1])+"::timestamptz"),
+          created[0],"precise retry idempotent with identical immutable timestamps")
         self.assertEqual(sql(f"""SELECT connectivity||'|'||health||'|'||
           coalesce(last_verified_at::text,'NONE')
           FROM ipat_ops.device_candidates WHERE tenant_id='{TA}' AND id='{item}'""").stdout.strip(),
