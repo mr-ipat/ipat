@@ -408,3 +408,13 @@ RSA host key but stopped before authentication on strict host-key
 verification. Identity, chassis, exact firmware, read-only account,
 management segment isolation and worker/VPS private path remain
 UNVERIFIED. Physical read-only TC-OLT-01 NOT RUN. Health NOT_MEASURED.
+
+## R9.11 second bounded live private SSH observation
+
+One 9-second noauth SSH handshake attempt timed out. Following an
+adjustment to a 20-second MAX subprocess budget, ONE more noauth
+physical candidate probe returned `ZTE_SSH.1.0` and repeated the
+R9.10 RSA SHA256 fingerprint. No authentication or CLI commands.
+This is stable identity-observation evidence ONLY across observations;
+it is not independent identity trust, verified exact model/firmware,
+validated last-hop safety or physical adoption. Physical read=NOT RUN.

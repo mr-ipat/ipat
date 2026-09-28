@@ -1092,3 +1092,14 @@ SHA256 fingerprint using trusted local console/site inventory and
 prove private last-hop trust BEFORE even the proposed temporary
 account can be used. Rotate user-shared factory credentials on a
 trusted channel before enrolling an actual read-only account.
+
+## R9.11 bounded private SSH physical preflight and dashboard gates
+
+A real owner-Mac credential-free legacy SSH handshake is permitted as
+historical evidence only, under a per-run explicit opt-in, exact
+private host+port, and fixed timeout. Process-local ssh-rsa/AES128-CBC
+compatibility must never be reused globally or with disclosed factory
+credentials. Unauthenticated server key is UNTRUSTED pending
+independent owner verification. Private lab JSON/BFF shows false
+for all admission gates, zero device commands and no automatic
+provisioning. Do not use this preview as genuine tenant auth.

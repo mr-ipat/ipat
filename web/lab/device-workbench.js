@@ -193,3 +193,53 @@ async function checkConnectionPlan() {
   } finally {button.disabled=false;}
 }
 node("check-connection").addEventListener("click",()=>{void checkConnectionPlan();});
+// R9.11: Historical credential-free physical evidence, NEVER live telemetry.
+// Ignore malformed/overclaiming server responses rather than showing ONLINE.
+async function showPhysicalEvidence() {
+  const statusNode = node("physical-evidence-status");
+  const gatesNode = node("physical-evidence-gates");
+  const gated = Object.freeze([
+    ["out_of_band_host_key_verified", "Fingerprint terverifikasi melalui konsol/inventaris tepercaya"],
+    ["management_segment_isolation_verified", "Segmen manajemen lokal terisolasi"],
+    ["dedicated_readonly_account_verified", "Akun khusus baca-saja tervalidasi"],
+    ["firmware_exact_readonly_commands_verified", "Perintah firmware baca-saja dikonfirmasi"],
+    ["owner_approved_noimpact_baseline_verified", "Baseline dan penghentian darurat disetujui"],
+    ["actual_worker_private_route_verified", "Worker VPS memiliki jalur privat terverifikasi"]
+  ]);
+  try {
+    const response = await fetch("/lab/device-physical-evidence", {
+      credentials:"omit",cache:"no-store"
+    });
+    if (!response.ok) throw new Error("evidence endpoint unavailable");
+    const evidence=await response.json();
+    if(evidence.schema_version!==1
+      || evidence.mode!=="historical_credential_free_transport_observation"
+      || evidence.target_slot!=="DEV-01"
+      || evidence.private_ssh_transport_observed!==true
+      || evidence.device_adopted!==false
+      || evidence.credentials_sent!==false
+      || evidence.olt_commands_executed!==0
+      || evidence.worker_dispatch_enabled!==false
+      || evidence.firmware_upgrade_enabled!==false
+      || evidence.connectivity!=="UNKNOWN"
+      || evidence.health!=="NOT_MEASURED"
+      || evidence.physical_read_test!=="NOT_RUN"
+      || gated.some(([key])=>evidence[key]!==false)) {
+      throw new Error("backend evidence overclaims physical readiness");
+    }
+    statusNode.textContent="DEV-01 · SSH privat pernah dijangkau tanpa autentikasi ("+
+      evidence.observed_on+") · fingerprint TERAMATI, BELUM DIPERCAYA · " +
+      "status perangkat UNKNOWN / NOT_MEASURED.";
+    const items=document.createDocumentFragment();
+    for(const [,title] of gated) {
+      const item=el("div","physical-gate");
+      item.append(el("span","flag unknown","BELUM DIVERIFIKASI"), el("span","",title));
+      items.append(item);
+    }
+    gatesNode.replaceChildren(items);
+  } catch {
+    gatesNode.replaceChildren();
+    statusNode.textContent="Bukti belum dapat diverifikasi. Tetap UNKNOWN; adopsi terkunci.";
+  }
+}
+void showPhysicalEvidence();

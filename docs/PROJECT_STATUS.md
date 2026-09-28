@@ -3748,3 +3748,20 @@ and local path isolation, then controls one session with audited
 bounded commands and measured operational impact. Newer SSH
 firmware/options should be evaluated vendor-specifically but
 firmware change remains separately gated on this LIVE OLT.
+
+## R9.11 live-distribution physical no-auth pre-adoption — 2026-09-28
+
+Built fixed-target private legacy SSH no-credential transport checker
+`deploy/scripts/lab/r911/private_ssh_identity_probe.py` with exact
+RFC1918 validation and per-run nonroot opt-in. Actual Mac R9.11 first
+9s check TIMEOUT, bounded 20s repeat reached `ZTE_SSH.1.0`, same
+R9.10 RSA SHA256 fingerprint, and STOPPED at unverified host key.
+ZERO SSH credentials and OLT commands; no router/ONT/OLT mutation.
+Added private-only static historical evidence endpoint and Device
+Manager physical-gates panel, including explicit no online/health
+claims. Five new mock/static unit tests PASS; existing R9.0 plus
+new R9.11 12/12 on Mac; JS syntax and git diff check PASS.
+Rust HTTP test/whole workspace should pass pinned CI before merge.
+Physical C320 adoption remains BLOCKED by independent key proof,
+local isolation, restricted read account, approved baseline and
+actual private VPS worker path. No absolute zero-impact guarantee.

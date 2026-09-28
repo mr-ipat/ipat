@@ -112,5 +112,15 @@ class R90Safety(unittest.TestCase):
              for f in calls))
         self.assertNotIn("telnetlib",SCRIPT.read_text())
 
+def load_tests(loader, suite, pattern):
+    # Include R9.11 private no-credential SSH and dashboard status checks
+    # in the existing R9.0 safety CI step without modifying workflow auth.
+    extra=Path(__file__).resolve().parents[1] / "r911" / "test_private_ssh_identity_probe.py"
+    spec=importlib.util.spec_from_file_location("r911_private_ssh_tests",extra)
+    module=importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    suite.addTests(loader.loadTestsFromModule(module))
+    return suite
+
 if __name__=="__main__":
     unittest.main()

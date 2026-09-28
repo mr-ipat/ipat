@@ -944,3 +944,15 @@ distinct no-login EXECUTE writer and restricted own-tenant reader must
 not gain raw table rights. No endpoint/secret/route or job is accepted;
 provisioning_enabled permanently false. Any proposed actual tunnel
 configuration, VPN key or live OLT probe is a SEPARATE milestone.
+
+## R9.11 LIVE C320 pre-adoption fail-closed acceptance
+
+MUST expose observed credential-free SSH handshake separately from
+actual physical adoption/health. Display each missing gate on the
+private lab screen, with no credential input or activation controls.
+Before actual authenticated adoption, require independently pinned
+host key, proven isolated last hop, restricted read-only account,
+exact firmware command allowlist, baseline/abort owner and worker
+private route. Never auto-provision customer ONTs or touch live OLT
+configuration during first-read admission. Transport evidence alone
+MUST NOT change connectivity=UNKNOWN or health=NOT_MEASURED.

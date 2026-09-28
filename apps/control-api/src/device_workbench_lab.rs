@@ -15,6 +15,7 @@ use tokio::sync::Mutex;
 const HTML: &str = include_str!("../../../web/lab/device-workbench.html");
 const CSS: &str = include_str!("../../../web/lab/device-workbench.css");
 const JS: &str = include_str!("../../../web/lab/device-workbench.js");
+const PHYSICAL_EVIDENCE: &str = include_str!("../../../web/lab/physical-intake-evidence.json");
 const MAX_DEMO_CANDIDATES: usize = 24;
 
 #[derive(Clone, Serialize)]
@@ -244,12 +245,19 @@ async fn js() -> (HeaderMap, &'static str) {
         JS,
     )
 }
+async fn physical_evidence() -> (HeaderMap, &'static str) {
+    (
+        super::private_lab_headers("application/json; charset=utf-8"),
+        PHYSICAL_EVIDENCE,
+    )
+}
 pub(super) fn router() -> Router {
     let state = Arc::new(Mutex::new(DemoState::default()));
     Router::new()
         .route("/lab/device-workbench", get(html))
         .route("/lab/device-workbench.css", get(css))
         .route("/lab/device-workbench.js", get(js))
+        .route("/lab/device-physical-evidence", get(physical_evidence))
         .route(
             "/lab/demo/connection-plan",
             axum::routing::post(preview_connection_plan),
@@ -439,6 +447,23 @@ mod tests {
         assert!(html.contains("PERINGATAN PRD"));
         assert!(!html.contains("type=\"password\""));
         assert!(!html.contains("10.0.0.2"));
+    }
+    #[tokio::test]
+    async fn private_evidence_route_never_promotes_untrusted_host_to_adopted() {
+        let reply = request(router(), "GET", "/lab/device-physical-evidence", "", false).await;
+        assert_eq!(reply.status(), StatusCode::OK);
+        assert_eq!(reply.headers()[header::CACHE_CONTROL], "no-store");
+        let body = to_bytes(reply.into_body(), 8192).await.unwrap();
+        let evidence: Value = serde_json::from_slice(&body).unwrap();
+        assert_eq!(evidence["private_ssh_transport_observed"], true);
+        assert_eq!(evidence["out_of_band_host_key_verified"], false);
+        assert_eq!(evidence["dedicated_readonly_account_verified"], false);
+        assert_eq!(evidence["actual_worker_private_route_verified"], false);
+        assert_eq!(evidence["credentials_sent"], false);
+        assert_eq!(evidence["olt_commands_executed"], 0);
+        assert_eq!(evidence["device_adopted"], false);
+        assert_eq!(evidence["physical_read_test"], "NOT_RUN");
+        assert_eq!(evidence["health"], "NOT_MEASURED");
     }
     const LAB_PLAN: &str =
         r#"{"method":"wireguard","gateway":"routeros7","device_profile":"VIRTUAL-TELNET-ONLY"}"#;
