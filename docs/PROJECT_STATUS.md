@@ -4409,3 +4409,21 @@ Private nonroot :3002 actual HTTP smoke and independent operator Mac
 forward both passed. Public CI synthetic mirror refresh was locally
 sanitized and exercised (47+25+13 Python tests, JS syntax), pending
 safe push of the final code snapshot. No true C320 read/adoption.
+
+R9.19 public synthetic source mirror for protected final code/doc SHA
+`6c9273644d38144ae6d341e1ca690c1c8ee76eea` was published at
+`mr-ipat/ipat-open-ci` commit
+`5340d3c06367604f50562ae29a232cf6859b03c7` after scrubbing 9
+distinct source-address fixtures and 2 old observed fingerprints,
+omitting original Git history and operational milestone documents.
+Public mirror local synthetic guard, Mac Python suites 47+25+13,
+and JavaScript syntax PASS. GitHub-hosted public workflow still needs
+OWNER `workflow` scope / authorized web installation of staged
+`ci/github-actions.yml`; no hosted CI result is claimed.
+Protected implementation PR #120 is a DRAFT stacked on #119/#118/#117;
+actual R9.19 runtime remains the separately built SHA `13bed31`
+private :3002 service, old :3000 preserved. No physical hardware
+identity or actual privilege/firmware was obtained. Next real
+adoption prerequisite is independent trusted OLT host RSA proof,
+verified restricted per-device account and protected POP baseline;
+without these, running factory-admin credentials on live OLT is unsafe.
