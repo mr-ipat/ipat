@@ -139,3 +139,27 @@ node("refresh").addEventListener("click",()=>{void refresh();});
 node("pop-filter").addEventListener("change",draw);
 node("kind-filter").addEventListener("change",draw);
 void refresh();
+
+// R9.5 connection selector is PRESENTATION ONLY: no persist, network or secrets.
+function describeConnection() {
+  const method=node("connection-method").value;
+  const gateway=node("connection-gateway").value;
+  const messages={
+    direct_secure:"Hanya bila perangkat mendukung SSH dengan identitas terverifikasi atau SNMPv3 authPriv; wajib membatasi sumber dan izin. Telnet tidak termasuk.",
+    wireguard:"WireGuard membutuhkan gateway yang mendukungnya, rute /32 yang disetujui, autentikasi peer, isolasi hop terakhir dan persetujuan terpisah.",
+    ipsec:"IPsec dapat digunakan dengan gateway yang kompatibel setelah parameter kriptografi, identitas peer, rute dan pemulihan diverifikasi.",
+    agent:"IPAT site gateway adalah rencana pengembangan, belum dapat diinstal atau digunakan untuk adopsi fisik.",
+    public_telnet:"DITOLAK: Telnet melalui IP publik tidak aman untuk autentikasi atau perintah. Pengujian tanpa kredensial hanya mencatat bukti jaringan, bukan adopsi."
+  };
+  let result=messages[method];
+  if(method==="wireguard" && gateway==="routeros6")
+    result="TIDAK KOMPATIBEL: WireGuard bawaan tidak tersedia pada RouterOS 6. Pilih IPsec atau gateway lain yang terverifikasi.";
+  if(method==="wireguard" && gateway==="none")
+    result="Gateway diperlukan untuk mengamankan akses perangkat Telnet-only; tidak ada tunnel site yang dapat dideploy dari pilihan ini.";
+  if(method==="direct_secure" && gateway==="routeros6")
+    result+=" Versi gateway tidak membuktikan bahwa OLT mendukung protokol aman.";
+  node("connection-result").textContent=result+" Ini hanya simulasi pilihan UI; tidak ada konfigurasi yang dikirim.";
+}
+node("connection-method").addEventListener("change",describeConnection);
+node("connection-gateway").addEventListener("change",describeConnection);
+describeConnection();

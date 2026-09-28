@@ -3597,3 +3597,29 @@ C320 local network and physical or console access. R9.4 plan and
 DEVICE_MATRIX updated. Addressing and local isolation remain unknown.
 Five offline address-planning tests passed. No physical test or
 network configuration changes were made in this checkpoint.
+
+## R9.5 optional VPN and lab connection selector — 2026-09-28
+
+Owner clarified VPN should be optional and manageable by Tenant Admin
+Dashboard, not an ad hoc CLI dependency. Added LAB-only connection
+method selector to existing Device Manager HTML/JS with public Telnet
+and RouterOS6+WireGuard rejection, plus static offline contract tests.
+Owner-authorized one-shot no-auth Mac network recheck to reported
+public candidate returned TCP reachable/Telnet IAC/15 bytes, ZERO
+outbound credential or Telnet bytes. This is NOT authentication,
+physical adoption, verified C320 identity or actual VPS route health.
+No actual tenant backend, configuration database, gateway deployment,
+OLT CLI, firmware changes or customer network changes performed.
+Next: signed MFA Tenant Admin network connection inventory persisted
+with exact tenant/POP isolation, reviewed transport-plan workflow,
+and an explicitly nonexecuting dry-run; separately verify owner-site
+secure last hop and dedicated actual worker reachability before any
+physical read-only C320 acceptance.
+
+R9.5 executed local verification: 3/3 new preview contracts, 5/5
+R9.4 network-plan unit tests, 7/7 R9.0 no-auth preflight tests,
+8/8 isolated R7.9 C320 SSH adapter mock tests and Node JS syntax
+passed. The broader R7.9 test discovery FAILED one integration
+setUpClass because the required compiled Rust parser binary was
+absent on the owner Mac; do not report the full R7.9 suite passed.
+Actual DEV-01 test was bounded Mac TCP/Telnet transport only.

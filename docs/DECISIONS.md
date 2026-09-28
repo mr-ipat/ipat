@@ -484,3 +484,19 @@ readiness again, use independent verified site route/device identity,
 per-device durable leases, explicit human approval and recovery before
 any actual device connection. Production release NOT approved.
 See docs/R92_IMMUTABLE_NONEXECUTABLE_READ_INTENT.md.
+
+## ADR-041 — APPROVED PRODUCT DIRECTION / DEPLOYMENT STILL GATED: connection-method choice
+
+Decision 2026-09-28: IPAT must not universally require WireGuard,
+VPN or MikroTik RouterOS >=7. Tenant Admin SHALL ultimately select
+supported direct secure management (verified SSH/SNMPv3 authPriv),
+WireGuard, compatible IPsec or a separately verified IPAT site gateway.
+RouterOS 7 is required only for MikroTik built-in WireGuard, not for
+IPAT device management in general. A device with ONLY Telnet MUST
+be reached solely across an independently verified trusted isolated
+private last hop; public Telnet cannot carry authenticated management
+credentials. Dashboard choice is the product-facing interface, but
+all real tenant rights, reviews and provisioning remain backend-only.
+R9.5 UI selector is a lab prototype, NOT deployed tunnel control.
+Supersedes any reading of R9.3/R9.4 that WireGuard is universally
+required; those earlier documents describe one candidate path only.

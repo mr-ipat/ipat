@@ -912,3 +912,13 @@ private OLT host, with verified isolated final plaintext Telnet hop,
 no unrestricted customer/VPS route, explicit safe rollback and
 separate approval to disable public Telnet NAT. No direct live
 configuration is enabled by the offline R9.4 planner.
+
+## R9.5 approved optional tunnel selection and Tenant Admin UX direction
+
+WireGuard is optional, not a prerequisite for every IPAT tenant or
+RouterOS version. Tenant Admin MUST eventually manage per-site
+connection choices through authorized UI with backend review, including
+SSH/SNMPv3 authPriv, WireGuard, compatible IPsec and an IPAT gateway.
+Public Telnet MUST never become an authenticated management transport.
+R9.5 delivers only a clearly marked isolated LAB preview selector,
+NOT saved configuration, production tenant access or OLT adoption.
