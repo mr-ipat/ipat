@@ -4499,3 +4499,21 @@ maintenance remediation, not automatic key regeneration on live OLT.
 GitHub public synthetic R9.20 workflow `36441157716` completed 2/2
 SUCCESS after R9.20 sanitized source sync; private production CI and
 real C320 login/adoption remain separate and NOT COMPLETED.
+
+R9.21 exact source SHA `89ef532fe33666cf88a2f504c8967467d2e41f95`
+was transferred with SHA256-verified Git bundle into INDEPENDENT
+actual nonroot owner VPS checkout; owner VPS synthetic R9.0+R9.21
+54/54 and standalone 4/4 `show ssh` parser tests PASSED. No physical
+OLT console transcript or password was obtained. Current owner Mac
+serial-device enumeration yielded no identifiable USB/serial ZTE
+console adapter; a nonobvious generic serial device was not used
+without independent owner physical mapping. The parser reports
+historical vendor sample states as diagnostics only.
+
+Public sanitized source mirror `mr-ipat/ipat-open-ci` latest source
+commit `6edae084acd44c493fb59d17130f885799fcbc01` was independently
+scrubbed (9 addresses and 2 observed fingerprints replaced), Mac
+synthetic guard passed and 54 local safety tests PASS. Latest PUBLIC
+hosted Actions run must finish separately before claiming hosted CI
+pass for this exact snapshot; previous R9.20 public hosted run
+`36441157716` was confirmed SUCCESS 2/2.
