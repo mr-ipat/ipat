@@ -955,3 +955,22 @@ reader, not dynamic SQL SET ROLE. Only bounded
 non-sensitive status metadata returns; no new
 public route, actual equipment packet or
 assumption of real MFA is introduced.
+
+
+## R9.0 network-level OLT evidence is separate from protocol admission
+
+The boundary now distinguishes (a) operator-scoped raw network
+transport preflight, (b) independently VERIFIED management peer
+identity, (c) authenticated tenant-bound read-only OLT adapter,
+(d) reviewed timestamped operational health and (e) separate
+high-risk approved write/firmware pipeline. First public Telnet
+observation from an authorized Mac stops at (a); no raw peer
+banner, OLT serial, credential or management IP is persisted
+in public app data or promoted to device health.
+The real Ubuntu26 worker currently times out to the
+operator-supplied public endpoint; private site-to-IPAT
+routing and validated secure protocol remain open.
+Future site-side encrypted management gateway must
+not share the unsafe public Telnet credential segment.
+R7.9 pinned SSH and original Rust offline C320 parsers
+remain independent candidates, NOT automatically enabled.

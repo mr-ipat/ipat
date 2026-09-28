@@ -335,3 +335,21 @@ hardware interoperability test tracks.
 No matrix row becomes 'supported'
 from entering a form or passing
 synthetic tests.
+
+
+## R9.0 DEV-01 owner-authorized PUBLIC network endpoint evidence (NOT hardware test)
+
+At 2026-09-28 ~09:52 WIB, one exact user-approved public IPv4/TCP321
+returned TCP+Telnet IAC from the owner Mac. A separately bounded
+no-credential Telnet OPTION-REFUSAL-only exercise elicited an
+UNAUTHENTICATED 'ZTE' marker; it is merely a server claim.
+Repeatable original R9.0 receive-only preflight observed 15 initial
+IAC bytes from the Mac and wrote a redacted 0600 private evidence
+record. The actual IPAT Ubuntu26 VPS TCP path to the same address
+TIMEOUT twice. No login, host-identity pin, authenticated C320 board,
+model/firmware, PON card, CLI, physical read or trusted tenant/POP
+mapping was measured. This is evidence_type=network_transport,
+NOT evidence_type=physical_device_interop.
+DEV-01 exact device and protocol compatibility remain UNTESTED;
+TC-OLT-01 remains NOT RUN; connectivity UNKNOWN and health
+NOT_MEASURED. See R90_REAL_ZTE_CANDIDATE_TELNET_NETWORK_FIRST_CONTACT.md.

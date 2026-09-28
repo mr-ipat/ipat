@@ -112,6 +112,11 @@ jobs:
           cargo test --locked -p control-api
           cargo build --locked -p control-api
           IPAT_R83_DEMO_HTTP=YES bash deploy/scripts/lab/r83/workbench-http-smoke.sh
+      - name: R9.0 no-login public Telnet TCP321 candidate intake (OFFLINE mock only; never contact operator OLT from CI)
+        run: |
+          python3 -m py_compile deploy/scripts/lab/r90/olt-telnet-network-preflight.py
+          python3 -m unittest discover deploy/scripts/lab/r90 -p test_r90_preflight.py -v
+          python3 deploy/scripts/lab/r90/olt-telnet-network-preflight.py --requirements | python3 -m json.tool >/dev/null
       - name: R8.4 independently signed MFA claim and separately denied maker-checker review boundary (static)
         run: |
           python3 -m unittest discover deploy/scripts/lab/r84 -p test_r84_contract.py -v

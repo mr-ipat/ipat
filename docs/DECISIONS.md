@@ -425,3 +425,22 @@ live device endpoints remain denied;
 actual customer UI login is a separate
 mandatory implementation/review gate.
 Full production approval NOT GRANTED.
+
+
+## ADR-038 — APPROVED PUBLIC TELNET NO-AUTH NETWORK EVIDENCE ONLY (R9.0)
+
+Owner authorized one exact public IPv4/alternative TCP321 as a ZTE
+candidate OLT management endpoint. Real Mac TCP and Telnet IAC were
+observed, and separately an UNAUTHENTICATED peer banner claimed ZTE.
+The actual VPS source TIMEOUT was observed independently. Approve
+a separately gated original one-host Python receive-only preflight
+(never commands, credentials or raw banner) and historical, timestamped
+Mac-only dashboard evidence; never infer trusted OLT/C320 or health.
+Public plaintext Telnet MUST NOT receive ANY actual or test credential.
+Physical access requires independently verified private encrypted
+management transport or authenticated SSH/SNMPv3 if actual firmware
+supports it, verified device identity, dedicated restricted account,
+per-tenant MFA/approval/audit and firmware-matched read-only acceptance.
+No public edge firewall changes, Nusa integration, firmware upgrade,
+live K3s setup, production tenant enrollment or C320 compatibility
+is authorized by this one-time network observation.
