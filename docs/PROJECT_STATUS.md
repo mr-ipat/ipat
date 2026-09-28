@@ -3882,3 +3882,9 @@ Node syntax and JSON parse PASS. No SSH authentication or C320
 command executed. First authenticated production-like adoption remains
 BLOCKED by OOB trusted fingerprint, isolated last hop, dedicated
 restricted account, real MFA, approved live baseline and worker VPN.
+
+R9.13 adds optional STRICT gated single-command `--first-read` mode
+to existing no-password pinned C320 collector to reduce first live
+blast radius; first-read actual DEV-01 NOT RUN. R7.9+R9.13 local
+combined 15/15 tests PASS after this change. The previous CI SHA
+is superseded for merge by the next feature branch HEAD.

@@ -53,3 +53,17 @@ Only then may one bounded read-only session be considered.
 No physical device adoption, changes, firmware or customer impact
 measurements occurred in R9.13. Existing CLI parser mock tests are
 NOT physical ZTE compatibility certification.
+
+## R9.13 one-command first-read plan (only AFTER all real gates)
+
+The original collector also now accepts `--first-read PRIVATE_PACKET
+--out EMPTY_OWNER_0700_DIR` for ONE strictly pinned SSH `show card`
+invocation instead of its historical two-command offline pattern.
+The output stays raw, owner-only 0600, not accepted into production
+inventory before redaction and actual firmware/identity review. It
+STILL requires `IPAT_R79_OPERATOR_APPROVES_REMOTE_READ=YES`, the
+preexisting exact owner-only packet, dedicated nondefault publickey
+identity and every prerequisite independently proven, not merely
+checked by declaring booleans true. This command was NOT EXECUTED
+against live DEV-01 in this milestone. Do not attempt while the
+actual worker still has DEFAULT_ROUTE_ONLY or no trusted RSA pin.

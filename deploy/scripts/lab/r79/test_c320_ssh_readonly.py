@@ -137,6 +137,20 @@ class RemoteSSHNoL1(unittest.TestCase):
         self.assertEqual((self.out/"versions.txt").read_bytes(),VERSIONS)
         for f in self.out.iterdir():
             self.assertEqual(f.stat().st_mode & 0o777,0o600)
+    def test_first_read_mode_is_single_fixed_show_with_explicit_opt_in(self):
+        calls=[]
+        def fake(argv,**kwargs):
+            calls.append(argv[-1])
+            return types.SimpleNamespace(stdout=CARDS,returncode=0)
+        with patch.dict(os.environ,{"IPAT_R79_OPERATOR_APPROVES_REMOTE_READ":"YES"}):
+            with patch.object(M.subprocess,"run",side_effect=fake):
+                result=M.collect(self.private,self.out,PLAN,first_read_only=True)
+        self.assertEqual(calls,["show card"])
+        self.assertEqual(result["commands"],1)
+        self.assertFalse(result["compatibility_verified"])
+        self.assertFalse(result["tenant_enrolled"])
+        self.assertEqual({p.name for p in self.out.iterdir()},{"cards.txt"})
+
     def test_failed_second_read_leaves_no_partial_sensitive_files(self):
         calls=[]
         def fail(argv,**kwargs):

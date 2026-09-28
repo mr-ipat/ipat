@@ -142,13 +142,14 @@ def command_argv(folder, plan, command):
         "-i", str(folder / "id_readonly"), "-p", str(plan["ssh_port"]),
         plan["ssh_user"] + "@" + plan["private_ipv4"], command]
 
-def collect(folder, output, plan):
+def collect(folder, output, plan, first_read_only=False):
     if os.getenv("IPAT_R79_OPERATOR_APPROVES_REMOTE_READ") != "YES":
         raise Denied("separate execution approval absent")
     owner_dir(output, empty=True)
     staged = []
+    approved_commands = COMMANDS[:1] if first_read_only else COMMANDS
     try:
-        for command, filename, heading in COMMANDS:
+        for command, filename, heading in approved_commands:
             result = subprocess.run(command_argv(folder, plan, command),
                 capture_output=True, timeout=12, check=False)
             data = result.stdout
@@ -171,7 +172,7 @@ def collect(folder, output, plan):
             (output / filename).unlink(missing_ok=True)
         raise
     return {"result": "PRIVATE_RAW_CAPTURE_NEEDS_REDACTION_AND_REVIEW",
-            "commands": 2, "compatibility_verified": False,
+            "commands": len(approved_commands), "compatibility_verified": False,
             "tenant_enrolled": False, "firmware_enabled": False}
 
 def main():
@@ -180,17 +181,18 @@ def main():
     group.add_argument("--requirements", action="store_true")
     group.add_argument("--check-plan", type=Path)
     group.add_argument("--collect", type=Path)
+    group.add_argument("--first-read", type=Path)
     parser.add_argument("--out", type=Path)
     args = parser.parse_args()
     if args.requirements:
-        print("R79=PRIVATE_SSH_READONLY_REMOTE_C320_TWO_SHOW_COMMANDS")
-        print("NO_NETWORK_WITHOUT_EXPLICIT_COLLECT_NO_WRITES_NO_FIRMWARE")
+        print("R79=PRIVATE_SSH_READONLY_C320_FIRST_READ_ONE_OR_REVIEWED_TWO_SHOW_COMMANDS")
+        print("NO_NETWORK_WITHOUT_EXPLICIT_OPTIN_NO_WRITES_NO_FIRMWARE")
         return 0
-    if bool(args.collect) != bool(args.out):
+    if bool(args.collect or args.first_read) != bool(args.out):
         print("R79_DENIED:collect requires --out", file=sys.stderr)
         return 4
     try:
-        folder = args.collect or args.check_plan
+        folder = args.collect or args.first_read or args.check_plan
         plan, missing = packet(folder)
         if args.check_plan:
             print(json.dumps({"status": "BLOCKED" if missing else "HUMAN_REVIEW_REQUIRED",
@@ -199,7 +201,7 @@ def main():
                 sort_keys=True))
             return 4 if missing else 0
         if missing: raise Denied("declared remote-read prerequisites incomplete")
-        print(json.dumps(collect(folder,args.out,plan),sort_keys=True))
+        print(json.dumps(collect(folder,args.out,plan,first_read_only=bool(args.first_read)),sort_keys=True))
         return 0
     except (Denied, OSError, UnicodeError, ValueError, subprocess.TimeoutExpired):
         print("R79_DENIED:remote C320 plan or firmware needs review",
