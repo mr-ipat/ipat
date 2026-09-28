@@ -3692,3 +3692,33 @@ actual IPAT VPS recheck TIMEOUT is recorded above; do not
 attempt public Telnet credential-based adoption. Feature PR
 remains a development branch pending separate integration and
 release review; no customer production deploy performed.
+
+## R9.9 owner default OLT credential disclosure and VPS root-access diagnosis — 2026-09-28
+
+Owner offered temporary factory/default DEV-01 C320 username and
+password in chat. Treat as disclosed/high-risk credentials; DO NOT
+persist exact values in repository, tests, terminal history or
+logs. NO Telnet authentication was attempted: public TCP321 is
+plaintext and real VPS source path most recently TIMEOUT. Public
+banner is not validated hardware identity; no device provisioning,
+OLT read, ONT operation or firmware activity occurred.
+
+Independently verified actual owner-Mac `ssh ipat-lab` succeeds as
+nonroot `openai`, which belongs to Linux `sudo` group. VPS has
+`/etc/ssh/sshd_config.d/00-ipat-lab-hardening.conf` with
+`PermitRootLogin no`. Explicit root key attempt is offered and
+accepted at SSH key-selection stage but direct root login is denied;
+there is no SSH authentication-agent session from tool context.
+Advised owner to use `ssh ipat-lab` followed by local interactive
+`sudo -i` without uploading any passphrase/password. User-side
+sudo root shell NOT independently confirmed. No SSH policy, keys,
+root filesystem or perimeter firewall were modified. Direct root
+SSH re-enable remains blocked pending tested independent console
+recovery and approved rollback.
+
+Newest PR #112 docs-only HEAD `e2347171229ee73e5e5d3a78ea0b221124cf866e`
+passed 4/4 GitHub jobs in run `36386319167`. This confirms lab
+software CI, NOT production physical OLT interoperability or
+human MFA. Next gated priority remains owner-controlled secure
+site gateway with dashboard-backed staged review and no-impact
+read-only C320 validation after verifying actual local isolation.

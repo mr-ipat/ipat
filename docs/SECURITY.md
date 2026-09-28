@@ -1061,3 +1061,21 @@ identity via existing sealed vault+fresh restricted member lookup;
 SQL migration 0010 repeats own active tenant+candidate POP. Genuine
 live IdP/MFA and actual separate writer provisioning have NOT been
 end-to-end verified; this remains unmounted and lab-only.
+
+## R9.9 disclosed temporary OLT credentials and direct-root request
+
+Owner-supplied default/factory OLT credentials must be considered
+compromised after chat disclosure. Never transmit them on currently
+exposed public plaintext Telnet, or copy into repository or logs.
+Recommend prompt rotation via trusted site console/isolated network,
+removal of WAN-facing Telnet forwarding under console-backed change,
+and dedicated restricted read-only credentials kept exclusively in
+an approved encrypted local/managed secret store. No actual changes
+were made to live C320, MikroTik, firewall or root SSH policy.
+
+Existing effective SSH lab hardening snippet explicitly denies root
+SSH (`PermitRootLogin no`), while existing key-authenticated nonroot
+`openai` remains reachable and has sudo-group membership. Root
+shell via interactive sudo is preferred to restoring direct root SSH.
+Do not switch `PermitRootLogin yes` or make emergency SSH/firewall
+edits before independent actual console login and rollback proof.
