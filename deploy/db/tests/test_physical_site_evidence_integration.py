@@ -64,12 +64,13 @@ class PhysicalSiteEvidence(unittest.TestCase):
          SELECT gate||'|'||gate_verified::text||'|'||physical_worker_enabled::text
          FROM {READ}({q(ISS)},{q(MAKER)},'{TA}'::uuid)
          WHERE candidate_id='{a}'::uuid ORDER BY gate""").stdout.strip().splitlines()
+        listed=[line for line in listed if '|' in line]  # psql also prints SET
         self.assertEqual(len(listed),6)
         self.assertTrue(all(s.endswith('|true|false') for s in listed),listed)
         other=sql(f"""SET ROLE ipat_identity_query;
           SELECT gate FROM {READ}({q(ISS)},{q(MAKER)},'{TB}'::uuid)
-          WHERE candidate_id='{a}'::uuid""").stdout.strip()
-        self.assertEqual(other,'')
+          WHERE candidate_id='{a}'::uuid""").stdout.strip().splitlines()
+        self.assertEqual(other,['SET'])
         denied=sql(f"""SET ROLE ipat_site_evidence_execute;
           UPDATE ipat_ops.physical_site_evidence SET verdict='verified'
           WHERE tenant_id='{TA}'""",expect=False)
@@ -78,7 +79,7 @@ class PhysicalSiteEvidence(unittest.TestCase):
         recheck=sql(f"""SET ROLE ipat_identity_query;
           SELECT gate_verified::text||'|'||physical_worker_enabled::text
           FROM {READ}({q(ISS)},{q(MAKER)},'{TA}'::uuid)
-          WHERE candidate_id='{a}' AND gate='{GATES[0]}'""").stdout.strip()
+          WHERE candidate_id='{a}' AND gate='{GATES[0]}'""").stdout.strip().splitlines()[-1]
         self.assertEqual(recheck,'false|false')
 
 if __name__=='__main__':unittest.main()
