@@ -44,3 +44,47 @@ MikroTik native WireGuard requires RouterOS 7, not every ISP gateway.
    firmware and no-impact observations without overclaiming safety.
 
 R9.12 must not auto-enable or silently deploy any live configuration.
+
+## Actual owner VPS private LAB deployment (bounded, reversible)
+
+Original code SHA `42f7a2051554e8e6ed2d5f8010515d669d7d53f3`
+passed GitHub R9.12 PR #113 run `36396487249` 4/4 independent
+jobs. An exact source-only Mac Git bundle was SHA256 verified on
+the nonroot owner VPS and checked out separately, leaving the existing
+canonical VPS `main` workspace unchanged. Reproducible low-priority,
+locked, OFFLINE build produced binary SHA256:
+`cef14131bd67cfd0b57efc6228353fef83dd54d0370bb0fbcab1d027aef23147`.
+
+Reviewable replacement user unit:
+`deploy/scripts/lab/r912/ipat-r911-preview.service`. Its checksum
+matched on Mac and VPS before the existing user unit was replaced.
+The old user unit is saved OWNER-ONLY at
+`/home/openai/.cache/ipat/r912-preview/rollback-unit.service`.
+After constrained nonroot user-unit restart, actual VPS HTTP proof
+confirmed: new synthetic review GET page/POST API200, both no-real-
+key conditions and even best-case synthetic scenario blocked, fake
+secret/endpoint injected JSON rejected 4xx, missing origin HTTP403,
+real business API HTTP401, physical adoption false, old :3000 HTTP200.
+Test harness: `deploy/scripts/lab/r912/actual_lab_wizard_http_smoke.py`.
+No live tunnel or customer infrastructure interaction performed.
+
+The restricted R9.12 preview remains loopback-only :3002. It is NOT a
+real signed Tenant Admin wizard; owner Mac requires its private SSH
+port-forward to view. Existing user manager has `Linger=no`, so
+service availability after all SSH user sessions end is NOT promised.
+No system/root service, host SSH/firewall policy or K3s changed.
+
+Owner-only rollback, without affecting original :3000 demo:
+
+```sh
+ssh ipat-lab
+cp -p /home/openai/.cache/ipat/r912-preview/rollback-unit.service \
+  ~/.config/systemd/user/ipat-r911-preview.service
+systemctl --user daemon-reload
+systemctl --user restart ipat-r911-preview.service
+```
+
+A subsequent real tunnel activation feature MUST use authenticated
+Tenant Admin, encrypted key custody, explicit owner-approved firewall
+and routing changes, independent maker/checker, and console-backed
+rollback. This prototype does NOT authorize physical C320 login.

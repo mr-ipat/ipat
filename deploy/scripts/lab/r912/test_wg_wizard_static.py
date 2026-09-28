@@ -27,6 +27,17 @@ class R912StaticContracts(unittest.TestCase):
         self.assertIn('"INDEPENDENT_APPROVAL_REQUIRED"',API)
         self.assertIn('"DEVICE_HOST_KEY_NOT_PINNED"',API)
         self.assertIn('synthetic_wireguard_wizard_never_accepts_secrets_or_activates',API)
+    def test_replacement_user_unit_stays_loopback_and_no_tunnel_dispatch(self):
+        unit=(ROOT/'deploy/scripts/lab/r912/ipat-r911-preview.service').read_text()
+        self.assertIn('/home/openai/.cache/ipat/r912-preview/target/debug/control-api',unit)
+        for key in ('IPAT_LAB_WEB=1','IPAT_R911_PRIVATE_CANARY=YES',
+                    'IPAT_RUN_K3S_LAB=0','IPAT_LAB_OIDC_VERIFY=NO',
+                    'NoNewPrivileges=yes','MemoryMax=256M','CPUQuota=20%'):
+            self.assertIn(key,unit)
+        for danger in ('User=root','ExecStartPre','iptables','nft ',
+                       'IPAT_R83_REGISTRY_WRITE=YES','0.0.0.0:3002'):
+            self.assertNotIn(danger,unit)
+
     def test_browser_rejects_unsafe_server_success(self):
         self.assertIn('result.tunnel_created!==false',JS)
         self.assertIn('result.network_actions!==0',JS)
