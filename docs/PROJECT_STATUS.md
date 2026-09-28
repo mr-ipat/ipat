@@ -4401,3 +4401,11 @@ features; a real HTTP POST for read-only card action got HTTP403,
 `network_actions=0`; temporary tunnel closed. Nonroot VPS private
 proof filenames check located ZERO stored independent C320 console
 public host-key proof. No real physical read occurred.
+
+R9.19 exact owner-VPS protected source SHA `13bed31` successfully ran
+2 targeted C320 Rust unit/router tests and FULL pinned locked offline
+`control-api` test suite 43/43 PASS; fmt PASS; offline build PASS.
+Private nonroot :3002 actual HTTP smoke and independent operator Mac
+forward both passed. Public CI synthetic mirror refresh was locally
+sanitized and exercised (47+25+13 Python tests, JS syntax), pending
+safe push of the final code snapshot. No true C320 read/adoption.
