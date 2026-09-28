@@ -990,3 +990,20 @@ No production/public dashboard is authorized by the observed
 public Telnet endpoint. Use independently validated encrypted
 site-management routing or actual authenticated vendor
 SSH/SNMPv3 if supported, plus MFA/approval, before real read.
+
+
+## R9.1 threat boundary: metadata approval must not become device access
+
+Threats include treating a reviewed inventory row as permission to
+contact hardware, stale secure-path evidence, silently replaced
+device identity, privilege escalation through a browser cookie,
+cross-tenant evidence reuse and a reviewer fabricating health.
+Controls: four explicit append-only expiring gates, exact same
+independently approved security reviewer identity, active own tenant
+and membership checks, forced RLS, separate NOLOGIN owner/EXECUTE
+roles, idempotent evidence requests and latest-verdict fail closed.
+The safe session projection omits management IP, raw evidence,
+attester identity and credentials. connectivity remains unknown,
+health remains not_measured and last_verified_at remains NULL.
+Even read_probe_eligible=true performs zero network I/O and cannot
+authorize firmware or write operations.

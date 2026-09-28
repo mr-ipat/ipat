@@ -88,6 +88,21 @@ def main():
        has_function_privilege('ipat_lab_identity_reader','{review}','EXECUTE')::int,
        has_function_privilege('ipat_lab_device_registrar','{review}','EXECUTE')::int"""
        ).stdout.strip()=="1|1|1|0|0"
+    # R9.1 separate evidence-attestation identity. Disposable CI ONLY.
+    assert sql("SELECT to_regrole('ipat_lab_device_readiness') IS NULL").stdout.strip()=="t"
+    sql("""CREATE ROLE ipat_lab_device_readiness LOGIN INHERIT
+      NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS
+      PASSWORD 'local_ci_synthetic_only'""")
+    sql("GRANT ipat_device_readiness_execute TO ipat_lab_device_readiness")
+    attest="ipat_platform.attest_lab_device_adoption_gate(text,text,uuid,uuid,uuid,text,text,text,text,timestamp with time zone,timestamp with time zone)"
+    readiness="ipat_platform.list_lab_device_adoption_readiness(text,text,uuid,text,text)"
+    assert sql(f"""SELECT
+      has_function_privilege('ipat_lab_device_readiness','{attest}','EXECUTE')::int,
+      has_function_privilege('ipat_lab_identity_reader','{attest}','EXECUTE')::int,
+      has_function_privilege('ipat_lab_identity_reader','{readiness}','EXECUTE')::int,
+      has_function_privilege('ipat_lab_device_readiness','{readiness}','EXECUTE')::int"""
+       ).stdout.strip()=="1|0|1|0"
+    print("R91_DISPOSABLE_SEPARATE_READINESS_ATTESTER_AND_READER")
     print("R84_DISPOSABLE_DISTINCT_REVIEWER_DB_AND_MFA_CLAIM_MEMBERSHIPS")
     print("R83_DISPOSABLE_SEPARATE_READER_AND_REGISTER_WRITER_NO_DIRECT_TABLE_ACCESS")
 if __name__=="__main__":

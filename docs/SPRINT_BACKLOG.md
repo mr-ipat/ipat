@@ -933,3 +933,25 @@ and timestamped genuine health from real protocol evidence.
 LATER: narrowly approved firmware write only after
 actual backup, tested independent recovery and dual approval;
 production K3s/PG/DR external gates remain unchanged.
+
+
+## R9.1 adoption readiness before read-only physical probe
+
+MUST: persist immutable tenant/candidate evidence for secure path,
+device identity, read-only account and recovery plan; cap evidence
+validity; require already approved maker-checker metadata and current
+security-admin membership; expose a safe current tenant/POP readiness
+projection to the unmounted signed-session bridge; keep all network
+adapters and write actuators disconnected.
+
+MUST TEST: real disposable PostgreSQL role isolation/forced RLS,
+positive four-gate path, blocked and expired gate fail-closed,
+idempotency, wrong reviewer, cross-tenant, pending candidate,
+revocation and exact POP; actual signed synthetic OIDC pair plus
+opaque session reading the real restricted PostgreSQL projection.
+
+NEXT MUST: durable read-probe intent and worker claim model that
+revalidates fresh R9.1 gates before claim. Adapter execution remains
+disabled until the actual private path, device fingerprint/model/
+firmware and dedicated real read-only credentials are independently
+verified.

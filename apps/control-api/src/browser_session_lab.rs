@@ -215,6 +215,93 @@ pub(super) async fn pending_devices_for_session(
     Some(inventory)
 }
 
+/// R9.1 UNMOUNTED session projection of adoption evidence. This is ONLY a
+/// readiness decision surface. A true read-probe eligibility result does not
+/// execute, queue or authorize network I/O by itself.
+#[derive(Debug, PartialEq, Eq)]
+pub(super) struct AdoptionReadiness {
+    pub id: Uuid,
+    pub pop_id: String,
+    pub display_name: String,
+    pub kind: String,
+    pub vendor: String,
+    pub adoption_state: String,
+    pub metadata_approved: bool,
+    pub secure_management_path: bool,
+    pub device_identity: bool,
+    pub readonly_account: bool,
+    pub recovery_plan: bool,
+    pub read_probe_eligible: bool,
+}
+
+/// Authentic session + independently current tenant/POP authorization +
+/// sealed DB readiness projection. No management address/evidence hash/reviewer
+/// identity is returned to this browser-facing domain object.
+pub(super) async fn adoption_readiness_for_session(
+    vault: &mut BrowserSessionVault,
+    cookie: &str,
+    trusted_host_origin: bool,
+    restricted_db: &Client,
+    tenant: Uuid,
+    role: &str,
+    pop: Option<&str>,
+    now: u64,
+) -> Option<Vec<AdoptionReadiness>> {
+    if !valid_scope(role, pop) {
+        return None;
+    }
+    let identity = vault.authenticate(cookie, None, RequestKind::Read, trusted_host_origin, now)?;
+    let rows = restricted_db
+        .query(
+            "SELECT id,pop_id,display_name,device_kind,vendor,adoption_state,
+                    metadata_approved,secure_management_path,device_identity,
+                    readonly_account,recovery_plan,read_probe_eligible
+             FROM ipat_platform.list_lab_device_adoption_readiness(
+                    $1,$2,$3::uuid,$4,$5)",
+            &[
+                &identity.issuer(),
+                &identity.subject(),
+                &tenant,
+                &role,
+                &pop,
+            ],
+        )
+        .await
+        .ok()?;
+    if rows.len() > 100 {
+        return None;
+    }
+    let mut out = Vec::with_capacity(rows.len());
+    for row in rows {
+        let row_pop: String = row.get(1);
+        if role == "noc_engineer" && Some(row_pop.as_str()) != pop {
+            return None;
+        }
+        let adoption_state: String = row.get(5);
+        if !matches!(
+            adoption_state.as_str(),
+            "pending_review" | "approved" | "rejected" | "quarantined"
+        ) {
+            return None;
+        }
+        out.push(AdoptionReadiness {
+            id: row.get(0),
+            pop_id: row_pop,
+            display_name: row.get(2),
+            kind: row.get(3),
+            vendor: row.get(4),
+            adoption_state,
+            metadata_approved: row.get(6),
+            secure_management_path: row.get(7),
+            device_identity: row.get(8),
+            readonly_account: row.get(9),
+            recovery_plan: row.get(10),
+            read_probe_eligible: row.get(11),
+        });
+    }
+    Some(out)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -508,6 +595,255 @@ mod tests {
         drop(writer);
         rt.abort();
         wt.abort();
+    }
+
+    #[tokio::test]
+    async fn r91_signed_session_reads_real_pg_adoption_gates_without_probe_execution() {
+        if std::env::var("IPAT_PG_EPHEMERAL_TEST").as_deref() != Ok("1") {
+            return;
+        }
+        assert_eq!(std::env::var("PGHOST").as_deref(), Ok("127.0.0.1"));
+        let connect = |user: &str| {
+            Config::from_str(&format!(
+                "host=127.0.0.1 port=5432 user={user} password=local_ci_synthetic_only dbname=ipat_synthetic"
+            ))
+            .unwrap()
+        };
+        let (reader, reader_conn) = connect("ipat_lab_identity_reader")
+            .connect(NoTls)
+            .await
+            .unwrap();
+        let reader_task = tokio::spawn(async move {
+            let _ = reader_conn.await;
+        });
+        let (writer, writer_conn) = connect("ipat_lab_device_registrar")
+            .connect(NoTls)
+            .await
+            .unwrap();
+        let writer_task = tokio::spawn(async move {
+            let _ = writer_conn.await;
+        });
+        let (reviewer, reviewer_conn) = connect("ipat_lab_device_reviewer")
+            .connect(NoTls)
+            .await
+            .unwrap();
+        let reviewer_task = tokio::spawn(async move {
+            let _ = reviewer_conn.await;
+        });
+        let (attester, attester_conn) = connect("ipat_lab_device_readiness")
+            .connect(NoTls)
+            .await
+            .unwrap();
+        let attester_task = tokio::spawn(async move {
+            let _ = attester_conn.await;
+        });
+
+        let tenant = Uuid::parse_str("11111111-1111-4111-8111-111111111111").unwrap();
+        let request = Uuid::parse_str("91000000-0000-4000-8000-000000009101").unwrap();
+        let created = writer
+            .query_one(
+                "SELECT ipat_platform.propose_lab_device_candidate(
+              $1,$2,$3::uuid,$4::uuid,$5,$6,$7,$8,$9,$10)",
+                &[
+                    &ISS,
+                    &"synthetic-operator",
+                    &tenant,
+                    &request,
+                    &"pop-a",
+                    &"LAB-R91-SESSION-OLT",
+                    &"olt",
+                    &"ZTE",
+                    &Some("VIRTUAL-C320"),
+                    &Some("10.91.1.10"),
+                ],
+            )
+            .await
+            .unwrap();
+        let candidate: Uuid = created.get::<_, Option<Uuid>>(0).expect("candidate");
+
+        let review_request = Uuid::parse_str("91000000-0000-4000-8000-000000009102").unwrap();
+        let reviewed = reviewer
+            .query_one(
+                "SELECT ipat_platform.review_lab_device_candidate(
+              $1,$2,$3::uuid,$4::uuid,$5::uuid,'approved',$6)",
+                &[
+                    &ISS,
+                    &"synthetic-checker",
+                    &tenant,
+                    &candidate,
+                    &review_request,
+                    &"Approved metadata only",
+                ],
+            )
+            .await
+            .unwrap();
+        assert!(reviewed.get::<_, Option<Uuid>>(0).is_some());
+
+        let (verifier, id, access, _keys) = synthetic_pair();
+        let n = now();
+        let mut vault = BrowserSessionVault::default();
+        let issued = issue_after_sealed_membership(
+            &mut vault,
+            &verifier,
+            &id,
+            &access,
+            CLIENT,
+            NONCE,
+            &reader,
+            tenant,
+            "noc_engineer",
+            Some("pop-a"),
+            n,
+        )
+        .await
+        .expect("signed pair plus current exact POP membership");
+
+        let before = adoption_readiness_for_session(
+            &mut vault,
+            issued.cookie_secret(),
+            true,
+            &reader,
+            tenant,
+            "noc_engineer",
+            Some("pop-a"),
+            n,
+        )
+        .await
+        .expect("current signed session");
+        let row = before
+            .iter()
+            .find(|x| x.id == candidate)
+            .expect("approved candidate visible");
+        assert!(row.metadata_approved);
+        assert!(!row.secure_management_path && !row.device_identity);
+        assert!(!row.readonly_account && !row.recovery_plan);
+        assert!(!row.read_probe_eligible);
+
+        for (index, gate) in [
+            "secure_management_path",
+            "device_identity",
+            "readonly_account",
+            "recovery_plan",
+        ]
+        .iter()
+        .enumerate()
+        {
+            let req =
+                Uuid::parse_str(&format!("91000000-0000-4000-8000-{:012}", 9200 + index)).unwrap();
+            let digest = format!("{:064x}", index + 1);
+            let result = attester
+                .query_one(
+                    "SELECT ipat_platform.attest_lab_device_adoption_gate(
+                  $1,$2,$3::uuid,$4::uuid,$5::uuid,$6,'verified',$7,$8,
+                  statement_timestamp(),statement_timestamp()+interval '1 day')",
+                    &[
+                        &ISS,
+                        &"synthetic-checker",
+                        &tenant,
+                        &candidate,
+                        &req,
+                        gate,
+                        &digest,
+                        &"Verified synthetic evidence",
+                    ],
+                )
+                .await
+                .unwrap();
+            assert!(result.get::<_, Option<Uuid>>(0).is_some());
+        }
+        let ready = adoption_readiness_for_session(
+            &mut vault,
+            issued.cookie_secret(),
+            true,
+            &reader,
+            tenant,
+            "noc_engineer",
+            Some("pop-a"),
+            n,
+        )
+        .await
+        .unwrap();
+        let row = ready.iter().find(|x| x.id == candidate).unwrap();
+        assert!(
+            row.metadata_approved
+                && row.secure_management_path
+                && row.device_identity
+                && row.readonly_account
+                && row.recovery_plan
+        );
+        assert!(row.read_probe_eligible);
+
+        let blocked_req = Uuid::parse_str("91000000-0000-4000-8000-000000009299").unwrap();
+        let blocked = attester
+            .query_one(
+                "SELECT ipat_platform.attest_lab_device_adoption_gate(
+              $1,$2,$3::uuid,$4::uuid,$5::uuid,'device_identity','blocked',$6,$7,
+              statement_timestamp(),statement_timestamp()+interval '1 day')",
+                &[
+                    &ISS,
+                    &"synthetic-checker",
+                    &tenant,
+                    &candidate,
+                    &blocked_req,
+                    &"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                    &"Identity evidence withdrawn",
+                ],
+            )
+            .await
+            .unwrap();
+        assert!(blocked.get::<_, Option<Uuid>>(0).is_some());
+        let denied = adoption_readiness_for_session(
+            &mut vault,
+            issued.cookie_secret(),
+            true,
+            &reader,
+            tenant,
+            "noc_engineer",
+            Some("pop-a"),
+            n,
+        )
+        .await
+        .unwrap();
+        assert!(
+            !denied
+                .iter()
+                .find(|x| x.id == candidate)
+                .unwrap()
+                .read_probe_eligible
+        );
+        assert!(adoption_readiness_for_session(
+            &mut vault,
+            "forged",
+            true,
+            &reader,
+            tenant,
+            "noc_engineer",
+            Some("pop-a"),
+            n
+        )
+        .await
+        .is_none());
+        assert!(adoption_readiness_for_session(
+            &mut vault,
+            issued.cookie_secret(),
+            false,
+            &reader,
+            tenant,
+            "noc_engineer",
+            Some("pop-a"),
+            n
+        )
+        .await
+        .is_none());
+
+        drop(reader);
+        drop(writer);
+        drop(reviewer);
+        drop(attester);
+        reader_task.abort();
+        writer_task.abort();
+        reviewer_task.abort();
+        attester_task.abort();
     }
 
     #[tokio::test]
