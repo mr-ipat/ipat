@@ -4119,3 +4119,12 @@ MUST complete before release or claims of running R9.16 dashboard.
 Real B public key, genuine signed tenant Admin, true Site A/B tunnel,
 trusted Router B/OLT RSA host keys, management-segment isolation and
 physical C320 adoption remain NOT COMPLETED.
+
+R9.16 first Rust compiler check and first feature CI on source SHA
+201f980 EXPOSED a new local test bug: a mutable test variable named
+`sample` shadowed the `sample()` fixture function, producing E0618
+(also affecting the CI PostgreSQL job that compiles Rust). Corrected
+the fixture reference and an unused mut warning. The first CI run
+36426862447 is NOT a clean pass and must not be used for acceptance.
+Subsequent actual VPS pinned build and independent new CI MUST pass
+before any runtime upgrade or PR merge.

@@ -36,6 +36,20 @@ class OfflineSiteAKeyPolicy(unittest.TestCase):
         self.assertNotIn('localStorage',js)
         self.assertNotIn('innerHTML',js)
 
+    def test_private_user_service_only_exposes_dev_key_and_preserves_old_lab(self):
+        unit=(ROOT/'deploy/scripts/lab/r916/ipat-r911-preview.service').read_text()
+        for marker in ('/home/openai/.cache/ipat/r916-preview/target/debug/control-api',
+                       'IPAT_R916_DEV_SITE_A_KEY_FOLDER=',
+                       'IPAT_R911_PRIVATE_CANARY=YES',
+                       'IPAT_RUN_K3S_LAB=0', 'NoNewPrivileges=yes',
+                       'ProtectSystem=strict','ProtectHome=read-only',
+                       'MemoryMax=256M','CPUQuota=20%'):
+            self.assertIn(marker,unit)
+        for forbidden in ('User=root','ExecStartPre','iptables','nft ',
+                          'IPAT_LAB_OIDC_VERIFY=YES','IPAT_RUN_K3S_LAB=1',
+                          '0.0.0.0:3002'):
+            self.assertNotIn(forbidden,unit)
+
     def test_never_claims_active_peer_production_backup(self):
         for literal in ("'tunnel_active':False", "'network_actions':0",
                         "'production_vault_verified':False", "'backup_verified':False"):

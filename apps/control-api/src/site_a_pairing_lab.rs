@@ -58,7 +58,7 @@ fn dev_site_a_public_from(root: &Path) -> Option<String> {
         }
     }
     let path = dir.join("public.key");
-    let mut file = OpenOptions::new()
+    let file = OpenOptions::new()
         .read(true)
         .custom_flags(libc::O_NOFOLLOW)
         .open(path)
@@ -281,7 +281,7 @@ mod tests {
         sample.olt_private_host = "192.168.77.10".into();
         sample.site_slug = "../escape".into();
         assert!(prepare(&sample, &a).is_none());
-        let payload = serde_json::to_string(&sample()).unwrap();
+        let payload = serde_json::to_string(&sample).unwrap();
         let injected = payload.replacen("{", "{\"private_key\":\"FORBIDDEN\",", 1);
         assert!(serde_json::from_str::<ManualPairingInput>(&injected).is_err());
     }
