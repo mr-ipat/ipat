@@ -110,5 +110,5 @@ def run():
 if __name__=='__main__':
     try:run()
     except (ValueError,AssertionError,KeyError,TypeError,OSError):
-        print('R916_PRIVATE_HTTP_FAIL_CLOSED',file=sys.stderr)
+        print('R917_PRIVATE_HTTP_FAIL_CLOSED',file=sys.stderr)
         sys.exit(4)

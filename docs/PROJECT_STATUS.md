@@ -4240,3 +4240,44 @@ HTTPS API on actual C320 is NOT VERIFIED. No physical C320 adoption
 was made, and no tunnel/OLT/ONT/router/PPPoE config was touched.
 R9.17 latest Rust build, actual :3002 private rollout and final CI
 must be separately verified before claiming dashboard deployment.
+
+## R9.17 actual restricted VPS direct-first private LAB deployment
+
+Exact R9.17 application SHA `7031924` transferred through verified
+Git delta bundle SHA256
+`6cdbf0b9db958cec0d8a471274965a97a73577fa3b7d21f6916a9d498460bc46`
+into independent nonroot VPS folder without changing canonical main.
+Actual VPS `cargo fmt --all -- --check`, `cargo test --locked --offline
+-p control-api` (41/41 PASS), and locked Rust build PASSED. Binary
+SHA256 `dac06ed8e93ebaa35e8e0ba138cfdc44ce4ddaad116258cd5dadeed25fc182db`.
+
+Initial private :3002 user-unit release attempt FAILED safely and
+rolled back because `r917-preview` was mistyped instead of the real
+`r917-release` binary directory. After correcting the reviewed
+unit, a single diagnostic test observed a systemd ACTIVE-but-HTTP
+not yet ready race; a strict bounded loopback readiness wait was
+added, retaining deterministic SHA-pinned nonroot rollback.
+The fixed exact R9.17 unit SHA256 is
+`c7c8def73e2b087103f550fd2c67c135032b9e6ada5e7c4c89de9900d706804b`,
+real HTTP smoke SHA256
+`d75a8ffcf5ea5b310c34443e9a9b84c921a2155fabf930012e119963490e5543`.
+Final actual restricted VPS release script SHA256
+`ca1e82cde07bf4787a0851b4df8ecca52eb1233e9beaaa8b9a4100543729bf63`
+was ACTUALLY EXECUTED and yielded
+`R917_DEV_DIRECT_FIRST_PRIVATE_VPS_PREVIEW_PASS`. Active PRIVATE
+LAB user service on :3002, old :3000 HTTP200, old prior user unit
+backed up owner-only at
+`/home/openai/.cache/ipat/r917-release/rollback-unit.service`.
+Actual Mac independent SSH local-forward GET new HTML and POST real
+private Rust direct protocol plan also PASS and relay was stopped.
+No dev/public IP/key was treated as hardware-compatible proof; actual
+C320 adoption remains FALSE, health NOT MEASURED and no real OLT
+commands, RouterOS commands, active WG/PPPoE/ONT configuration.
+
+New R9.17 local/static direct protocol 8 cases included in existing
+CI R9.0 suite, full combined Mac safety suite 45/45 PASS;
+R9.15 Python 13/13 PASS; Node syntax and bash syntax PASS.
+Current PR #118 is STACKED on GitHub PR #117 DRAFT (GitHub Actions
+billing limits had prevented all latest #117 jobs from STARTING).
+Do NOT merge stacked PRs until latest actual GitHub full CI and
+required live-device independent identity/least-privilege approvals.

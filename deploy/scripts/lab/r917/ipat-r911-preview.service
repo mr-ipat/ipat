@@ -1,5 +1,5 @@
 [Unit]
-Description=IPAT R9.17 central Site A hub planning private preview (NO DEVICES)
+Description=IPAT R9.17 pusat manajemen langsung (tunnel opsional) private preview (NO DEVICES)
 Documentation=https://github.com/mr-ipat/ipat
 After=network.target
 StartLimitIntervalSec=120
@@ -7,8 +7,8 @@ StartLimitBurst=3
 
 [Service]
 Type=simple
-WorkingDirectory=/home/openai/.cache/ipat/r917-preview/src
-ExecStart=/home/openai/.cache/ipat/r917-preview/target/debug/control-api
+WorkingDirectory=/home/openai/.cache/ipat/r917-release/src
+ExecStart=/home/openai/.cache/ipat/r917-release/target/debug/control-api
 Environment=IPAT_LAB_WEB=1
 Environment=IPAT_R911_PRIVATE_CANARY=YES
 Environment=IPAT_R916_DEV_SITE_A_KEY_FOLDER=/home/openai/.local/share/ipat/r916-dev-keys

@@ -81,6 +81,35 @@ class DirectFirstTests(unittest.TestCase):
         self.assertNotIn('Site A',html)
         self.assertNotIn('Site B',html)
 
+    def test_actual_developer_only_rollout_guard_and_loopback_http_smoke(self):
+        root=DIR.parents[3]
+        unit=(root/'deploy/scripts/lab/r917/ipat-r911-preview.service').read_text()
+        smoke=(root/'deploy/scripts/lab/r917/actual_private_direct_protocol_http_smoke.py').read_text()
+        deploy=(root/'deploy/scripts/lab/r917/deploy_private_direct_protocol_preview.sh').read_text()
+        for item in ('/home/openai/.cache/ipat/r917-release/target/debug/control-api',
+                     'IPAT_LAB_WEB=1','IPAT_R911_PRIVATE_CANARY=YES',
+                     'IPAT_RUN_K3S_LAB=0','IPAT_LAB_OIDC_VERIFY=NO',
+                     'NoNewPrivileges=yes','ProtectSystem=strict',
+                     'MemoryMax=256M','CPUQuota=20%'):
+            self.assertIn(item,unit)
+        for item in ('/lab/demo/direct-protocol-review',
+                     'DIRECT_OVER_EXISTING_NETWORK',
+                     'direct_private_vps_tls443_tcp_reachable',
+                     'res.read(32768)',
+                     'OLT_COMMANDS=0'):
+            self.assertIn(item,smoke)
+        for item in ('IPAT_R917_APPROVE_PRIVATE_DEV_PREVIEW',
+                     'trap rollback ERR','rollback-unit.service',
+                     'test "$ready" = true',
+                     'c7c8def73e2b087103f550fd2c67c135032b9e6ada5e7c4c89de9900d706804b',
+                     'dac06ed8e93ebaa35e8e0ba138cfdc44ce4ddaad116258cd5dadeed25fc182db'):
+            self.assertIn(item,deploy)
+        for forbidden in ('User=root','ExecStartPre','0.0.0.0:3002','IPAT_RUN_K3S_LAB=1'):
+            self.assertNotIn(forbidden,unit)
+        for forbidden in ('sudo ', 'iptables ', 'nft ', 'ufw ',
+                          'wg-quick up','ssh 10.','systemctl restart ssh'):
+            self.assertNotIn(forbidden,deploy)
+
     def test_rejects_nonprivate_probes_and_unsupported_class(self):
         for address in ('0.0.0.0','127.0.0.1','8.8.8.8','169.254.0.1','224.0.0.1','240.0.0.1'):
             with self.assertRaises(ValueError):T.probe(address)
