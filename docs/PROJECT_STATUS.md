@@ -4281,3 +4281,95 @@ Current PR #118 is STACKED on GitHub PR #117 DRAFT (GitHub Actions
 billing limits had prevented all latest #117 jobs from STARTING).
 Do NOT merge stacked PRs until latest actual GitHub full CI and
 required live-device independent identity/least-privilege approvals.
+
+## R9.18 sanitized public GitHub CI mirror and bounded offline OLT action preparation
+
+User authorized a public GitHub repository to avoid exhausting private
+GitHub Actions minutes. Original `mr-ipat/ipat` remains PRIVATE: its
+full Git history and existing Actions logs reference an active C320
+management network. Exposing the existing Git history would risk
+publishing production infrastructure details and would detach
+private forks/affect push rules. A NEW isolated public GitHub repo
+`mr-ipat/ipat-open-ci` was actually CREATED and verified PUBLIC, with
+ONE clean sanitized synthetic source snapshot (initial public SHA
+`cdf2697228907308a2089268b66c70734bd108fe`), NO original private
+history and NO real observed SSH fingerprint, live OLT management
+address or private owner endpoint. Sanitizer changed 35 files,
+replaced 9 distinct live public/private IP literals and 2 sensitive
+RSA fingerprints, discarded historical operational milestone docs;
+Mac test suites R9.0+R9.17 45/45, R7.9 25/25 and R9.15 13/13 PASS
+in sanitized source. New repo public visibility was independently
+queried through GitHub API. Its standard GitHub Actions workflow
+is staged in `ci/github-actions.yml` and is NOT ACTIVATED: current
+authorized GitHub OAuth lacks `workflow` scope and GitHub refused to
+push `.github/workflows/ci.yml`. Owner must grant workflow permission
+or create the workflow via GitHub UI. Do not claim CI executed yet or
+replace the private canonical repo with the public sanitized mirror.
+
+R9.18 new branch `feat/r918-c320-owner-only-capture-parser` adds a
+nonroot purely OFFLINE Rust C320 capture normalizer binary to existing
+`olt-core`. Intended human-controlled local steps, AFTER an
+independently authenticated read has succeeded, are strict owner-only
+0600 raw `show card` plus optionally `show version-running` files,
+validated by the existing `olt-core` parser; exclusive 0600 normalized
+JSON is emitted only to a protected 0700 owner directory with evidence
+hashes and adoption/authorization FALSE. The CLI does NOT contact a
+physical OLT or execute any OLT commands. Rust compiler/integration
+and actual owner-VPS isolated test are required before claiming this
+feature completed. Real C320 restricted SSH access, independently
+trusted host key and baseline continue to block physical adoption.
+
+R9.18 ACTUAL owner-VPS independent offline build/test: 3 new strict
+normalizer tests + 7 existing C320 fixture tests = 10/10 PASS;
+locked OFFLINE build binary SHA256
+`e426c637db7860f803bb01e617fe59eb0650b147b8a1d6ca3aba8d47aacfd266`.
+Controlled minimal lock update added only `serde_json` and `sha2`
+to the existing olt-core package edge. Initial Rust SHA-256 hex
+format attempt failed compile and was corrected before these actual
+passing tests. Actual owner-only synthetic two-card plus two-version
+CLI exercised normalized 0600 JSON output; a duplicate output and
+a world-readable input were both rejected in genuine binary tests.
+Temporary synthetic captures were discarded, not sent to customers
+or stored in Git. No real OLT credentials, SSH login, model/firmware,
+ONT/PPPoE, or provisioning action were observed or changed.
+
+R9.18 operator SOP created as
+`docs/SOP_ZTE_C320_READONLY_ADOPTION.md`. It documents an actual
+DIRECT-PRIVATE + independently pinned SSH first-read sequence,
+pre/post live distribution baseline, exact abort triggers,
+owner-only local normalized evidence and phased permitted actions
+without claiming any actual DEV-01 model/firmware compatibility.
+Only `show card` and (after independent first-read review)
+`show version-running` are candidate initial functions; alarm,
+ONU optical and firmware operations remain restricted pending exact
+on-hardware firmware evidence and production worker authentication.
+Public `mr-ipat/ipat-open-ci` synthetic snapshot updated and verified
+PUBLIC at SHA `df49da8ec10d5877e0ab733d9ed6fbc2b0cd3ec5`; public
+secret scanning AND push protection were verified ENABLED. Latest
+sanitized source maps to protected code SHA `1a9c6d1`, with newly
+added olt-evidence CLI; public staged CI workflow was reduced to
+portable Rust locked + Python synthetic guards, but GitHub OAuth
+still lacks `workflow` scope, so Actions has NO actual workflow
+registered or hosted job result. Account owner needs one-time GitHub
+workflow authorization to activate it. Original production repo stays
+PRIVATE and PR #119 stays DRAFT on top of #118 (and #117), with
+protected operational network information unpublished.
+
+R9.18 SANITIZED MIRROR INDEPENDENT NONROOT VPS VALIDATION:
+`mr-ipat/ipat-open-ci` public source SHA
+`c281ac57ad60d5dabc0378422e4f926ce29d1cc6` was loaded via a
+separately checked Git bundle into a completely isolated actual
+nonroot owner-VPS public CI checkout (no production service changes).
+The sanitized Python R9.0/R9.17 45/45, R7.9/R9.13/R9.14 25/25 and
+R9.15 13/13 passed, synthetic leak-safety guard passed,
+`cargo fmt --all -- --check` PASSED, and full
+`cargo test --workspace --locked --offline -j 1` PASSED independently
+on the actual VPS against SANITIZED public source in 178 seconds.
+Full multi-job HOSTED GitHub Actions still NOT RUN (workflow needs
+separately authorized owner scope). The latest public HEAD
+df49da8 only adjusts the staged runner to the previously known
+Ubuntu24 baseline; no application code changed. This VPS proof is
+NOT equivalent to hosted Actions, disposable production PostgreSQL
+recovery, actual hardware interoperability or source-restricted
+branch CI. R9.18 real device adoption=FALSE and no real OLT
+commands were executed.
