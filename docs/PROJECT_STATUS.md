@@ -3567,3 +3567,16 @@ verified VPN; validate the exact secure path and identity first, then
 implement narrowly audited leased read-only dispatch with disposable
 tests before separate opt-in physical read. No architectural decision
 changed; existing ADR-038 through ADR-040 remain binding.
+
+## R9.3 owner-site transport clarification — 2026-09-28
+
+Owner now confirms DEV-01 ZTE C320 has ONLY Telnet available and
+no existing site VPN. Proposed solution is a separate scoped WireGuard
+site gateway plus truly isolated final local Telnet management hop.
+The site router, VLAN isolation, exact private OLT IP and rollback
+route have NOT been confirmed; no live network modification,
+connection with credentials or physical device test occurred.
+Documented staged requirements and no-bypass risks in
+`docs/R93_C320_SECURE_SITE_ACCESS_GATE.md`. Continue offline
+software work independently; live physical TC-OLT-01 BLOCKED until
+independently reviewed gateway, secure route, account and identity.

@@ -70,3 +70,29 @@ change authorization. A read-only test NEVER implies upgrade approval.
 real account and identity, genuine live UI health and firmware change
 are all currently UNIMPLEMENTED or UNVERIFIED; this document is a
 safety and acceptance gate, not an executed device integration.
+
+## Owner confirmation: Telnet only; no existing VPN (2026-09-28)
+
+Owner confirms no currently available secure management protocol other
+than Telnet and no site VPN yet. Preferred next proposed change:
+IPAT management worker → independently authenticated WireGuard VPN →
+owner-controlled site gateway → isolated local management VLAN →
+C320 TCP/23. WireGuard alone DOES NOT encrypt site-gateway-to-OLT
+Telnet; verify that final hop is a genuinely private, trusted,
+restricted segment with no unauthorized sniffing or shared transit.
+Gateway vendor/capabilities, true OLT private management interface,
+actual site topology, addresses, rollback access and VPS permitted
+VPN egress remain UNKNOWN. No provider firewall changes authorized.
+
+Before applying ANY setup: owner identifies approved gateway that can
+run WireGuard (e.g. supported MikroTik RouterOS 7), confirms out-of-band
+router recovery, protects existing PPPoE/NAT routes, picks a nonoverlap
+VPN subnet and authorizes scoped UDP ingress/egress. Keep all live VPN
+keys solely on approved endpoints/vault; pin public peer keys out of band.
+Test proposed rules OFFLINE, explicitly exclude tunnel->other tenants,
+VPN->customer data, and unrestricted WAN->OLT. Implement staged apply
+with automatic recovery/rollback and verified alternate session only
+after the owner approves exact live configuration and physical scope.
+A reachable VPN alone is NOT an authenticated device or permission
+to send Telnet credentials. Public NAT TCP/321 retirement is mandatory
+before physical authenticated Telnet test.
