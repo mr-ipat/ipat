@@ -1153,3 +1153,13 @@ OLT login or factory-password transport occurred. This is only a
 credential-free LAB transport observation: trusted final hop,
 independent OLT RSA identity, MFA and owner change approval remain
 NOT VERIFIED, therefore all actual remote read operations denied.
+
+## R9.14 physical site evidence storage separation
+
+Physical site evidence digests only, no actual raw secrets, addresses,
+credentials, keys, routes or job payloads, are stored under independent
+append-only FORCE RLS PostgreSQL role. Caller must authenticate via
+real signed OIDC MFA outside SQL, which repeats live approved
+security_admin own tenant and independent applicant/reviewer.
+Projected six-gate metadata stays nonexecutable even if all synthetic
+values are set verified; revoked/expired latest gates fail closed.

@@ -174,6 +174,11 @@ def load_tests(loader, suite, pattern):
     module=importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     suite.addTests(loader.loadTestsFromModule(module))
+    path=HERE.parent / 'r914' / 'test_console_host_key.py'
+    spec=importlib.util.spec_from_file_location('r914_console_key_tests',path)
+    module=importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    suite.addTests(loader.loadTestsFromModule(module))
     return suite
 
 if __name__=="__main__":unittest.main()

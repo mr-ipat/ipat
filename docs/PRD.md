@@ -983,3 +983,15 @@ bounded but incomplete the dashboard MAY show a separate historical
 owner-reported physical candidate, ONLY in the private lab, with
 UNKNOWN connectivity/health, no site/POP assignment and no operational
 buttons. This does NOT satisfy the genuine tenant adoption acceptance.
+
+## R9.14 independently evidenced physical onboarding (MUST, staged)
+
+In addition to existing four metadata adoption checks, require SIX
+separately time-bounded genuine site proofs: trusted OOB SSH host key,
+isolated last hop, dedicated restricted account, firmware exact
+read-only command, observed live baseline/abort and independently
+verified worker route. Metadata alone MUST NEVER make physical
+worker executable, mark hardware adopted or health healthy. A fresh
+blocked or expired gate denies readiness; a separate authorized
+one-command physical observation, audit and verified on-device model
+and firmware is required to transition to operational inventory.

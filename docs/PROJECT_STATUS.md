@@ -3942,3 +3942,37 @@ Unix relay sockets. No real OLT login, ONT/routing/PPPoE commands,
 firmware updates or firewall changes occurred. Current R9.13 CI
 for code SHA 0d0af60 is tracked in PR #114; docs-only final SHA
 requires separate independent CI before main merge.
+
+## R9.14 actual progress and critical physical constraint
+
+Latest GitHub main PR #114 merge SHA `69b77b6` and independent main
+CI run `36400853750` ALL 4/4 successful. New branch
+`feat/r914-physical-adoption-site-evidence` adds 0011 dedicated six
+physical-proof append-only TTL evidence schema + separate owner and
+EXECUTE-only role, restricted own-tenant readiness projection with
+physical_worker_enabled hardcoded FALSE. Its disposable PostgreSQL
+integration tests are chained after migration 0010 into existing
+locked R9.2 CI discovery (local non-disposable execution SKIPPED,
+which is not a passing real PG test). No actual site evidence or
+secrets were submitted; no hardware authentication, live access or
+customer-network changes. Main physical DEV-01 adoption remains
+UNIMPLEMENTED due to unverified independent RSA console fingerprint,
+actual last-hop isolation, dedicated firmware-supported restricted
+account, long-lived VPS route, real MFA and live baseline/abort.
+
+R9.14 operator offline OOB RSA fingerprint comparison tool added:
+`deploy/scripts/lab/r914/verify_owner_console_host_key.py`.
+No real console host public key has been supplied. The tool accepts
+only independently owner-asserted provenance and 0600 one-line RSA
+PUBLIC keys outside the repository, never network, secrets or remote
+OLT I/O; a match still records independent approver FALSE and device
+adopted FALSE. Four synthetic mock tests PASS. Linked into existing
+R7.9 offline CI suite, pending next complete CI run.
+
+R9.14 first independent PostgreSQL CI run `36402092264` exposed a
+new test-harness error: `psql` prefixes results with `SET`, so an
+unfiltered count incorrectly expected six instead of seven output
+lines; no migration failure was reported in this run. Corrected the
+harness to exclude `SET` and normalize empty/cell results. This
+first run FAILED; do NOT cite it as a passing SQL integration test.
+Next feature SHA must independently rerun ALL CI jobs.
