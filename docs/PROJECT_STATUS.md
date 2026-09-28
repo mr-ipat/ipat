@@ -4099,3 +4099,122 @@ No privileged OLT login or actual WireGuard peer activation has
 occurred. OLT trusted-console RSA proof, segment isolation and
 restricted account remain the hardware critical path. Earlier
 router management SSH pin mismatch also remains unresolved.
+
+## R9.16 central hub key ownership (initial actual owner VPS dev evidence)
+
+Owner-approved R9.15 main SHA 2be4081 passed independent main 4/4 CI.
+R9.16 branch `feat/r916-site-a-local-keypair` introduces actual local
+Site A X25519 dev-only key generation/readback, local B PUBLIC key
+pairing renderer, private LAB Site A public-key endpoint and disabled
+RouterOS B review UI/backend. Actual nonroot owner VPS has ONE dev-only
+Site A `dev01-lab` pair in secure outside-repo 0700/0600 location;
+no verified production key vault/backup or active WireGuard listener.
+Real owner-VPS cryptography integration 3/3 key tests and 3/3
+synthetic local B reconciliation tests PASS; actual dev A PUBLIC key
+plus synthetic B PUBLIC key yielded exactly three disabled RouterOS7
+review commands and no network actions; discarded sample package.
+Mac offline safety-contract suite 34/34 PASS; Node JS parse PASS.
+Rust new manual pairing API compiler/CI and actual VPS HTTP staging
+MUST complete before release or claims of running R9.16 dashboard.
+Real B public key, genuine signed tenant Admin, true Site A/B tunnel,
+trusted Router B/OLT RSA host keys, management-segment isolation and
+physical C320 adoption remain NOT COMPLETED.
+
+R9.16 first Rust compiler check and first feature CI on source SHA
+201f980 EXPOSED a new local test bug: a mutable test variable named
+`sample` shadowed the `sample()` fixture function, producing E0618
+(also affecting the CI PostgreSQL job that compiles Rust). Corrected
+the fixture reference and an unused mut warning. The first CI run
+36426862447 is NOT a clean pass and must not be used for acceptance.
+Subsequent actual VPS pinned build and independent new CI MUST pass
+before any runtime upgrade or PR merge.
+
+## R9.16 ACTUAL VPS Site A developer panel and B manual preview verified
+
+On the actual owner nonroot VPS, code source SHA `63c42e3` transferred
+via separately validated SHA256 Git bundles was compiled with pinned
+Rust offline, 3/3 new Rust Site A pairing unit tests PASSED; binary
+SHA256 `3fb2d5369a1e42b35a05ba4c128ab0b8f8414c1997f02c7a1085741587db46da`.
+Actual encrypted Site A dev secret remains owner-only in 0700 folder,
+private/public key files 0600; actual on-VPS local cryptography and
+synthetic B reconciliation tests 6/6 PASS. These prove development
+X25519 handling, NOT an actual RouterOS/WireGuard handshake.
+
+First private HTTP smoke failed due a 10KiB harness read truncating
+actual new 19KiB HTML and 23KiB JavaScript. User-only rollback
+restored old service; rapid testing caused user-systemd start-limit,
+which was nonroot reset before old service was independently confirmed
+ACTIVE. Revised 32KiB bounded smoke and robust verified user-unit
+rollback then ACTUALLY PASSED owner-VPS deployment. New private DEV
+service only on loopback :3002, previous :3000 remained HTTP200,
+production/real API fake requests denied, no WAN/public port or
+provider firewall changed. A separate Mac SSH local-forward also
+successfully fetched new HTML and actual dev A public key, then
+submitted a synthetic B public key and received exactly THREE
+disabled RouterOS7 B review lines; tunnel remained INACTIVE and the
+forward was stopped. R9.16 new scripts and reviewed user unit are
+versioned at `deploy/scripts/lab/r916/`; prior unit backed up at
+`/home/openai/.cache/ipat/r916-preview/rollback-unit.service`.
+
+Current Mac static safety suite 37/37 PASS; R9.15 13/13 PASS;
+R7.9/R9.13/R9.14 25/25 PASS; JS parse + shell syntax PASS.
+First new GitHub CI source SHA `201f980` FAILED a Rust test fixture
+shadowing error; corrected at SHA `63c42e3`, new full independent CI
+run `36427327886` in progress at last partial check. Latest
+script/docs-only HEAD must pass its own CI before merge.
+
+CRITICAL NOT DONE: exact real Site B public key and trusted identity,
+active Site A UDP hub, real encrypted backup of dev/production keys,
+customer/site address overlap/return-path and firewall review,
+actual tenant signed MFA/approvals, ZTE C320 independently trusted RSA
+host key and restricted account, true last-hop isolation, operational
+service baseline and physical read. Do NOT call physical OLT adopted.
+
+## R9.16 independent integration pass and actual owner VPS status
+
+Corrected app SHA `63c42e3` full independent GitHub Actions run
+`36427327886` ALL 4/4 SUCCESS: locked unit/static Rust tests,
+real disposable PostgreSQL RLS/restore, isolated PostgreSQL physical
+recovery and disposable Ubuntu26 K3s. The first run with the shadowed
+Rust test variable FAILED and is explicitly superseded.
+Actual restricted owner VPS user service remains ACTIVE on PRIVATE
+127.0.0.1:3002 from verified unit SHA256
+`b0bf33b1012dba4ff8fb967cc9b2b6dda3131e58f824d770e7ffe92dc6b2c0f8`;
+original 127.0.0.1:3000 also returned HTTP200. Current actual
+private `dev01-lab` key file mode0600, no active UDP 51820 listener.
+Separate new operator-Mac temporary SSH local forward performed real
+GET public-key and POST synthetic B-key backend pairing and confirmed
+THREE disabled lines, no router push/network actions or Site A active
+listener; the test tunnel was closed.
+Latest working tree includes R9.16 revised versioned full-HTML/JS
+HTTP smoke, strict checksum-pinned operator-only restart script with
+auto-rollback and tests for the original HTTP smoke truncation bug.
+Final docs/scripts-only HEAD requires independent CI before merge;
+production/WireGuard/OLT gates are still NOT complete.
+
+## R9.16 external CI account blocker and independent final local validation
+
+The FINAL R9.16 scripts/docs-only branch SHA `11bf48b` triggered
+GitHub Actions run `36428063835`: all four jobs FAILED BEFORE ANY
+STEP STARTED (job duration ~2 seconds, empty steps, no job logs).
+GitHub check-run annotation explicitly reported either recent account
+payment failure OR an inadequate Actions spending limit. This is an
+EXTERNAL GitHub account billing/spend configuration blocker, NOT
+evidence of failing R9.16 tests. The previously independently verified
+R9.16 app source SHA `63c42e3` still has full 4/4 GitHub CI SUCCESS
+run `36427327886`. Do NOT represent SHA `11bf48b` as passing GitHub
+CI or merge PR #117 until GitHub Actions billing is resolved and the
+LATEST branch SHA successfully completes all required jobs.
+
+Independently of Actions, the actual restricted owner VPS re-ran
+pinned `cargo fmt --all -- --check` and `cargo test --locked --offline
+-p control-api` on exact reviewed application source SHA `63c42e3`:
+40/40 actual Rust tests PASS, 0 failed. Previously demonstrated
+actual versioned restricted :3002 R9.16 deployment and Mac tunnel
+GET real development Site A public key / POST synthetic B review
+remain successful. Actual owner VPS :3002 user service ACTIVE, old
+:3000 API HTTP200, and no WireGuard listener or physical OLT access.
+Latest branch includes a corrected longer HTTP smoke and strengthened
+reset-failed rollback in versioned script; both were executed on the
+actual owner VPS. Current PR remains DRAFT due account CI blocker
+and because this feature remains DEV-only, not commercial/operational.

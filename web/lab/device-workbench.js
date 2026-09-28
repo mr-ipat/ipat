@@ -369,3 +369,86 @@ async function checkSiteAPlan() {
   } finally {button.disabled=false;}
 }
 node("check-site-a-plan").addEventListener("click",()=>{void checkSiteAPlan();});
+// R9.16: only PUBLIC Site A/B keys. Lab output is DISABLED RouterOS text.
+// The real production tenant onboarding workflow is deliberately not mounted.
+let siteADevPublicAvailable=false;
+async function loadSiteADevPublicKey(){
+  const keyNode=node("site-a-public-key");
+  const statusNode=node("site-a-key-status");
+  const button=node("manual-pairing-button");
+  button.disabled=true;
+  siteADevPublicAvailable=false;
+  keyNode.textContent="BELUM TERSEDIA";
+  try{
+    const response=await fetch("/lab/dev-site-a-public-key",{credentials:"omit",cache:"no-store"});
+    if(!response.ok)throw new Error("developer key endpoint denied");
+    const value=await response.json();
+    if(value.mode!=="DEV_ONLY_PUBLIC_SITE_A_KEY_NOT_AN_ACTIVE_TUNNEL"
+      || typeof value.site_a_public_key!=="string"
+      || !/^[A-Za-z0-9+/]{43}=$/.test(value.site_a_public_key)
+      || value.site_a_private_key_exported!==false
+      || value.backup_verified!==false || value.tunnel_active!==false
+      || value.router_push_enabled!==false || value.network_actions!==0
+      || value.device_adopted!==false || value.genuine_tenant_mfa_verified!==false)
+      throw new Error("server key status overclaims production authority");
+    keyNode.textContent=value.site_a_public_key;
+    statusNode.textContent="Public key DEV Site A dimuat. Tidak ada listener, peer atau router yang diubah.";
+    siteADevPublicAvailable=true;
+    button.disabled=false;
+  }catch{
+    statusNode.textContent="Kunci Site A tidak tersedia/terverifikasi pada backend lab; review terkunci.";
+  }
+}
+async function submitSiteBManualReview(event){
+  event.preventDefault();
+  const button=node("manual-pairing-button");
+  const statusNode=node("manual-pairing-status");
+  const output=node("manual-pairing-output");
+  output.textContent="";
+  if(!siteADevPublicAvailable){
+    statusNode.textContent="Ditolak: public key Site A belum dapat dibuktikan backend.";
+    return;
+  }
+  button.disabled=true;
+  try{
+    const publicB=node("manual-site-b-key").value.trim();
+    if(!/^[A-Za-z0-9+/]{43}=$/.test(publicB))
+      throw new Error("format public key B tidak valid");
+    const response=await mutate("POST","/lab/demo/site-a-manual-pairing",{
+      site_slug:"dev01-lab", hub_endpoint:node("manual-hub-ip").value.trim(),
+      external_site_b:node("manual-external").value==="yes",
+      a_tunnel_host:node("manual-a-ip").value.trim(),
+      b_tunnel_host:node("manual-b-ip").value.trim(),
+      olt_private_host:node("manual-olt-ip").value.trim(),
+      site_b_public_key:publicB,
+      udp_port:Number(node("manual-udp-port").value)
+    });
+    if(!response.ok)throw new Error("server refused unsafe pairing");
+    const result=await response.json();
+    const commands=result.site_b_routeros_disabled_review_commands;
+    if(result.mode!=="DEV_ONLY_DISABLED_MANUAL_SITE_B_PAIRING"
+      || result.site_a_role!=="CENTRAL_HUB_KEY_CUSTODY_ONLY"
+      || result.site_b_role!=="OPERATOR_APPLIES_AFTER_SEPARATE_APPROVAL"
+      || result.site_a_public_key!==node("site-a-public-key").textContent
+      || result.site_b_public_key_received!==true
+      || result.router_push_enabled!==false || result.config_applied!==false
+      || result.site_a_listener_active!==false || result.network_actions!==0
+      || result.device_adopted!==false || result.real_tenant_mfa_verified!==false
+      || result.backup_verified!==false || result.real_peer_activation_authorized!==false
+      || result.last_hop_isolation_verified!==false
+      || result.return_route_independently_verified!==false
+      || result.site_b_console_recovery_verified!==false
+      || !Array.isArray(commands) || commands.length!==3
+      || commands.some(cmd=>typeof cmd!=="string" || cmd.length>512
+         || !cmd.startsWith("/") || !cmd.includes("disabled=yes")
+         || cmd.includes("private-key") || cmd.includes("0.0.0.0/0")))
+      throw new Error("unsafe or inconsistent server pairing result");
+    output.textContent="# LAB ONLY — JANGAN TERAPKAN KE ROUTER AKTIF\n"+commands.join("\n");
+    statusNode.textContent="Draf nonaktif dibuat dari public key A dan B. Belum ada pairing, listener, atau tindakan jaringan. Perlu persetujuan dan pemeriksaan topologi sebenarnya.";
+  }catch{
+    output.textContent="";
+    statusNode.textContent="Draf ditolak/gagal. Tidak ada konfigurasi diterapkan.";
+  }finally{button.disabled=!siteADevPublicAvailable;}
+}
+node("manual-site-b-form").addEventListener("submit",event=>{void submitSiteBManualReview(event);});
+void loadSiteADevPublicKey();

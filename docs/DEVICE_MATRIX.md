@@ -469,3 +469,13 @@ via an upstream route. Real dedicated management last-hop isolation,
 OOB fingerprint proof, restricted account and firmware UNKNOWN.
 Prefer direct-private as a candidate, NOT as an approved/validated
 physical adoption path. No firmware, chassis serial or health measured.
+
+## R9.16 actual Site A local cryptography versus hardware interoperability
+
+Owner VPS X25519 key generation/0600 custody and CLI readback were
+actually exercised. A real developer Site A PUBLIC key successfully
+produced a disabled RouterOS7 B review combined with a SYNTHETIC
+throwaway B public key and documentation IP examples. Actual RouterOS
+7 peer import/handshake, actual site B identity, real B public key,
+OLT SSH authenticated read and true firmware/model are UNTESTED.
+Never classify this as actual hardware WireGuard compatibility.

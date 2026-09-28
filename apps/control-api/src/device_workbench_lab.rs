@@ -236,7 +236,19 @@ fn valid_input(v: &DemoInput) -> bool {
         && v.exact_model.starts_with("VIRTUAL-")
         && safe_text(&v.exact_model, 80)
 }
-fn demo_csrf(headers: &HeaderMap) -> bool {
+pub(super) fn demo_csrf_read(headers: &HeaderMap) -> bool {
+    if headers.get_all(header::HOST).iter().count() != 1 {
+        return false;
+    }
+    headers
+        .get(header::HOST)
+        .and_then(|v| v.to_str().ok())
+        .and_then(|h| h.strip_prefix("127.0.0.1:"))
+        .and_then(|port| port.parse::<u16>().ok())
+        .is_some_and(|port| port > 0)
+}
+
+pub(super) fn demo_csrf(headers: &HeaderMap) -> bool {
     if headers.get_all(header::HOST).iter().count() != 1
         || headers.get_all(header::ORIGIN).iter().count() != 1
         || headers.get_all("x-ipat-demo-only").iter().count() != 1
@@ -380,6 +392,14 @@ pub(super) fn router() -> Router {
         .route(
             "/lab/demo/site-a-plan",
             axum::routing::post(preview_site_a_plan),
+        )
+        .route(
+            "/lab/dev-site-a-public-key",
+            get(super::site_a_pairing_lab::show_public),
+        )
+        .route(
+            "/lab/demo/site-a-manual-pairing",
+            axum::routing::post(super::site_a_pairing_lab::manual_pairing),
         )
         .route("/lab/demo/device-candidates", get(list_demo).post(add_demo))
         .route("/lab/demo/device-candidates/{id}", delete(remove_demo))

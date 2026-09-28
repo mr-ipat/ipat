@@ -1105,3 +1105,14 @@ peer; B's local OLT routing and secure reply path must be verified,
 not silently modified. IPsec is a separate pending adapter.
 Current R9.15 Rust private LAB endpoint and offline address review
 cannot configure either endpoint or replace real signed MFA.
+
+## R9.16 Site A key custody and B self-applied import (dev milestone)
+
+Only Site A locally generates and retains Site A private X25519 key.
+Only B locally generates and retains B private key. IPAT consumes B
+PUBLIC key and creates an independent disabled RouterOS7 review for
+B operator, never SSH/RouterOS API config push. Site A pub-read API
+and B review API are private LAB-only and do not persist tenant/site
+state. Direct-private means no unnecessary tunnel. Full production
+hub/peer provisioner awaits real signed tenant BFF and encrypted
+versioned key vault + separated worker and network change controls.
