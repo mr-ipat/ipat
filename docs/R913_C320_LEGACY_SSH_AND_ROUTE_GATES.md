@@ -82,3 +82,43 @@ and always displays unknown connectivity / unmeasured health.
 If evidence is missing or overclaims safety the row disappears;
 no target address or credentials are rendered. Real signed tenant
 assignment and independent physical identity remain gated.
+
+## Physical no-auth connectivity via ephemeral owner Mac SSH relay
+
+Actual, separately bounded owner Mac test also successfully established
+an OWNER-ONLY SSH encrypted reverse AF_UNIX socket (inside a 0700
+nonroot VPS folder), forwarding precisely ONE private SSH TCP endpoint.
+From the actual VPS, a single read-only socket client RECEIVED 20
+inbound bytes containing the same UNTRUSTED `ZTE_SSH.1.0` banner.
+ZERO credentials, ZERO outbound SSH commands, ZERO OLT config changes.
+The relay was closed and its remote socket removed and independently
+verified absent. It is NOT a durable VPN, site-managed tunnel,
+verified management LAN or approval to log into the distribution OLT.
+
+The reproducible guarded helper is
+`deploy/scripts/lab/r913/temporary_mac_relay_noauth.py`. It defaults
+to NO action, only accepts exact RFC1918 IPv4 and port, requires
+nonroot operator and explicit per-run opt-in, checks a 0700 owner-only
+remote Unix socket parent, relies on existing pinned VPS SSH trust,
+and destroys the randomly named socket after precisely one inbound
+banner observation. It never stores credentials or enables any OLT
+commands. Its five mock tests cover strict SSH/reverse-socket options,
+public address denial, no opt-in denial, single read/cleanup and
+fail-closed cleanup failure. Actual bounded script test PASS on the
+owner Mac/VPS with repeat 20-byte untrusted banner, zero credentials,
+and verified socket cleanup. Do NOT run this as continuous monitoring.
+
+Operator-only one-time reproduction, ONLY for explicitly authorized
+transport tests and never for credentials:
+
+```sh
+IPAT_R913_APPROVE_ONESHOT_PRIVATE_SSH_RELAY=YES \
+  python3 deploy/scripts/lab/r913/temporary_mac_relay_noauth.py \
+    --probe --private-ipv4 OWNER_APPROVED_PRIVATE_IP --port APPROVED_SSH_PORT
+```
+
+The dashboard now documents the historical test and its closure,
+while still reporting the actual long-lived VPS worker path as
+DEFAULT_ROUTE_ONLY, last-hop trust FALSE, physical adoption FALSE.
+For actual onboarding use a separately approved durable site tunnel,
+independently pinned OLT key and dedicated read-only account.

@@ -41,3 +41,21 @@ class RouteGateTests(unittest.TestCase):
         self.assertNotIn('ssh ',P.read_text())
 
 if __name__=='__main__':unittest.main()
+
+class PrivatePhysicalCandidateUnit(unittest.TestCase):
+    def test_replacement_user_unit_cannot_open_real_device_actions(self):
+        root=Path(__file__).resolve().parents[4]
+        unit=(root/'deploy/scripts/lab/r913/ipat-r911-preview.service').read_text()
+        smoke=(root/'deploy/scripts/lab/r913/actual_lab_physical_candidate_http_smoke.py').read_text()
+        for safe in ('IPAT_LAB_WEB=1','IPAT_R911_PRIVATE_CANARY=YES',
+                     'IPAT_RUN_K3S_LAB=0','IPAT_LAB_OIDC_VERIFY=NO',
+                     'NoNewPrivileges=yes','MemoryMax=256M','CPUQuota=20%',
+                     '/home/openai/.cache/ipat/r913-preview/target/debug/control-api'):
+            self.assertIn(safe,unit)
+        for forbidden in ('User=root','ExecStartPre','iptables','nft ',
+                          'IPAT_R83_REGISTRY_WRITE=YES'):
+            self.assertNotIn(forbidden,unit)
+        for marker in ('OBSERVED_NOT_ADOPTED','DEFAULT_ROUTE_ONLY',
+                       'physical-observed-row','/v1/devices/DEV-01',
+                       'actual_worker_private_route_verified'):
+            self.assertIn(marker,smoke)

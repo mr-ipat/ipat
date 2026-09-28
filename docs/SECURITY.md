@@ -1141,3 +1141,15 @@ Factory/default privileged accounts are rejected by the first-read
 collector. The actual current VPS route lookup is DEFAULT_ROUTE_ONLY;
 never conclude an RFC1918 destination is isolated merely because
 `ip route get` returns a route. No weak SSH client setting is global.
+
+## R9.13 owner-only ephemeral encrypted reverse SSH transport check
+
+A bounded zero-credential reverse Unix-socket port forward from owner
+Mac into the existing nonroot VPS demonstrated private SSH banner
+reachability. Unix socket parent is 0700, VPS SSH host trust remains
+strict, and the relay was stopped/deleted. No public TCP listener,
+provider firewall change, SSH global downgrade, RouterOS alteration,
+OLT login or factory-password transport occurred. This is only a
+credential-free LAB transport observation: trusted final hop,
+independent OLT RSA identity, MFA and owner change approval remain
+NOT VERIFIED, therefore all actual remote read operations denied.

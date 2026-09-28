@@ -429,3 +429,14 @@ R9.13 pinned legacy RSA/CBC SSH support is offline-only tested; no
 public-key restricted user login, C320 firmware or fixed `show`
 interop was physically verified. Real worker route=NOT VERIFIED,
 physical adoption=NOT RUN, health=NOT MEASURED.
+
+## R9.13 actual credential-free relay observation
+
+Owner Mac→VPS strictly temporary reverse encrypted AF_UNIX port
+forward allowed VPS one passive inbound TCP SSH banner read:
+`ZTE_SSH.1.0`, 20 bytes, zero credentials/commands. One versioned
+helper repeat passed and independently verified relay socket removed.
+This is NOT proof of actual ZTE C320 chassis/model/firmware, OLT
+restricted login, isolation or long-lived worker reachability.
+Physical OLT TC-OLT-01 authenticated read remains NOT RUN; adoption
+FALSE and health NOT MEASURED.

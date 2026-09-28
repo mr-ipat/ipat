@@ -552,3 +552,10 @@ An actual worker DEFAULT_ROUTE_ONLY is explicitly inadequate as
 proof of private site access; do not grant adoption on that basis.
 Real OLT commands and tunnel/router activation remain unapproved
 until the full SITE and operational no-impact acceptance ladder passes.
+
+ADR-044 addendum: one ephemeral, encrypted owner-Mac→VPS reverse
+Unix-socket relay may be used for specifically authorized NONAUTH
+transport checks while durable site gateway is unavailable. It must
+not persist, must close after one test, cannot carry live customer
+OLT credentials, cannot claim independently isolated last hop, and
+cannot substitute for true tenant-owned dashboard-managed tunnel.

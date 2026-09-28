@@ -526,6 +526,10 @@ mod tests {
         assert_eq!(evidence["dedicated_readonly_account_verified"], false);
         assert_eq!(evidence["actual_worker_private_route_verified"], false);
         assert_eq!(evidence["worker_route_observation"], "DEFAULT_ROUTE_ONLY");
+        assert_eq!(evidence["temporary_owner_mac_vps_ssh_relay_observed"], true);
+        assert_eq!(evidence["temporary_owner_mac_vps_ssh_relay_closed"], true);
+        assert_eq!(evidence["temporary_relay_olt_commands_executed"], 0);
+        assert_eq!(evidence["temporary_relay_trusted_last_hop_verified"], false);
         assert_eq!(
             evidence["candidate_inventory_state"],
             "OBSERVED_NOT_ADOPTED"

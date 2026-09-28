@@ -3897,3 +3897,22 @@ strict client-side schema and zero-execution assertions or the
 row is hidden. It is NOT present in production tenant tables.
 R9.11+R9.0 tests 18/18 PASS after this update; Node syntax PASS.
 Full latest feature SHA independent CI pending before merge.
+
+## R9.13 actual ephemeral encrypted private relay — no login
+
+Last committed R9.13 physical-pending dashboard SHA `04b2796`
+independently passed all four feature CI jobs run `36399495088`.
+One earlier manual owner Mac→VPS reverse Unix SSH relay received the
+untrusted ZTE private SSH banner without credentials, commands or
+customer-side changes. R9.13 versioned guarded one-shot helper then
+executed once on authorized Mac: actual VPS received EXACTLY 20
+banner bytes, observed `ZTE_SSH.1.0`, zero credential bytes and zero
+OLT commands, long-lived worker route FALSE, site last-hop trusted
+FALSE. The private owner-only remote Unix socket was removed and
+verified absent; no persistent relay process was left running.
+Versioned helper has five offline tests; R7.9/R9.13 combined local
+21/21 PASS and R9.0/R9.11/R9.12 combined 18/18 PASS. Historical
+lab evidence now marks the temporary relay OBSERVED AND CLOSED,
+NOT actual tenant device onboarding, identity or physical health.
+The actual worker default route still remains unacceptable for
+ongoing device polling or authenticated command transport.

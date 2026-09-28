@@ -169,6 +169,11 @@ def load_tests(loader, suite, pattern):
     module=importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     suite.addTests(loader.loadTestsFromModule(module))
+    path=HERE.parent / 'r913' / 'test_temporary_relay.py'
+    spec=importlib.util.spec_from_file_location('r913_temporary_relay_tests',path)
+    module=importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    suite.addTests(loader.loadTestsFromModule(module))
     return suite
 
 if __name__=="__main__":unittest.main()

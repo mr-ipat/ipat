@@ -254,6 +254,11 @@ async function showPhysicalEvidence() {
       || evidence.owner_reported_pop!=="UNVERIFIED"
       || evidence.candidate_inventory_state!=="OBSERVED_NOT_ADOPTED"
       || evidence.worker_route_observation!=="DEFAULT_ROUTE_ONLY"
+      || evidence.temporary_owner_mac_vps_ssh_relay_observed!==true
+      || evidence.temporary_owner_mac_vps_ssh_relay_closed!==true
+      || evidence.temporary_relay_credentials_sent!==false
+      || evidence.temporary_relay_olt_commands_executed!==0
+      || evidence.temporary_relay_trusted_last_hop_verified!==false
       || evidence.worker_route_check_packets_sent!==0
       || evidence.physical_read_test!=="NOT_RUN"
       || gated.some(([key])=>evidence[key]!==false)) {
@@ -263,6 +268,7 @@ async function showPhysicalEvidence() {
     draw();
     statusNode.textContent="DEV-01 · SSH privat pernah dijangkau tanpa autentikasi ("+
       evidence.observed_on+") · fingerprint TERAMATI, BELUM DIPERCAYA · " +
+      "relay sementara Mac/VPS diuji tanpa login dan sudah ditutup · " +
       "rute VPS saat ini masih default, belum ada tunnel manajemen terverifikasi · " +
       "status perangkat UNKNOWN / NOT_MEASURED.";
     const items=document.createDocumentFragment();
