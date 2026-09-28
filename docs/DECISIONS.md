@@ -559,3 +559,13 @@ transport checks while durable site gateway is unavailable. It must
 not persist, must close after one test, cannot carry live customer
 OLT credentials, cannot claim independently isolated last hop, and
 cannot substitute for true tenant-owned dashboard-managed tunnel.
+
+## ADR-045 — APPEND-only physical site proof is NOT operational admission
+
+R9.14 six missing site proofs are modeled as expiring independent
+security-admin-attested digests in separated no-login PostgreSQL
+privileges, NEVER as an executable job or actual physical adoption.
+Approved candidate maker and site reviewer must be distinct; latest
+BLOCKED/expired evidence resets the affected gate. No BFF HTTP
+mount, real MFA, live worker, VPN activation or owner secret intake
+is authorized by this database migration.

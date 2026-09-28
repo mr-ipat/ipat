@@ -1076,3 +1076,14 @@ Neither result grants adoption. The C320 collector's legacy RSA/CBC
 client profile is opt-in and inherits strict independent host key
 pinning and no-password public-key-only restrictions; default
 credentialed access is not a valid live-read transport.
+
+## R9.14 six-gate physical metadata boundary
+
+Existing candidate/reviewer/4-gate LAB readiness and NONEXECUTABLE
+read intents stay unchanged. A separate six-gate immutable physical
+site-evidence table, independently controlled SECURITY DEFINER
+owner/EXECUTE role and restricted tenant-admin projection models
+real-world admission gaps but ALWAYS disables physical execution.
+Only future real MFA BFF, per-device worker locking, preflight
+revalidation, approved private tunnel and live evidence can implement
+actual physical adoption. Metadata tables never dispatch SSH.

@@ -440,3 +440,11 @@ This is NOT proof of actual ZTE C320 chassis/model/firmware, OLT
 restricted login, isolation or long-lived worker reachability.
 Physical OLT TC-OLT-01 authenticated read remains NOT RUN; adoption
 FALSE and health NOT MEASURED.
+
+## R9.14 six physical proofs now represented but NOT supplied
+
+Device DEV-01 owner-reported ZTE C320 remains physical UNVERIFIED.
+No independently obtained console RSA fingerprint, restricted SSH
+account/firmware command result, measured live baseline or dedicated
+VPS route proof has been received. New six-gate metadata does NOT
+change physical adoption FALSE or live health NOT MEASURED.

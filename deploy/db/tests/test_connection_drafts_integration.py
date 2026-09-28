@@ -91,5 +91,11 @@ class DurableConnectionDrafts(unittest.TestCase):
           WHERE draft_id='{created}'::uuid""",expect=False)
         self.assertNotEqual(denied.returncode,0)
 
+def load_tests(loader, standard_tests, pattern):
+    # Ordered under the existing R9.2 disposable PG CI after migration 0010.
+    import test_physical_site_evidence_integration
+    standard_tests.addTests(loader.loadTestsFromModule(test_physical_site_evidence_integration))
+    return standard_tests
+
 if __name__=='__main__':
     unittest.main()
