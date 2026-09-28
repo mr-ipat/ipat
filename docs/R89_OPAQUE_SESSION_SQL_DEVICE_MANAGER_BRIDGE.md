@@ -89,3 +89,81 @@ credentials through a synthetic browser form.
 INTERNAL trust-to-database integration, **NOT** a real
 customer login, mounted production device manager,
 physical adoption, active monitoring or full product GO.
+
+
+## Verified release and owner-private controls (2026-09-28)
+
+Feature PR #105 merged exact original
+Rust source into main SHA
+`bd788f43e19d94edf5d8eb518053fc2610370a70`.
+The separately executed feature
+GitHub run `36368344427`
+and independently executed
+post-code-main run
+`36368663242` both
+completed SUCCESS 4/4
+independent jobs each,
+including real PostgreSQL
+two-company synthetic
+signed OIDC→original
+restricted reader→opaque
+session→POP-specific
+candidate data and
+negative cross-tenant,
+role, POP, origin and
+expiry tests.
+
+GitHub private, owner
+Mac and actual authorized
+nonroot Ubuntu26 VPS
+were synchronized to
+the exact source code
+SHA by SHA256-checked
+Git bundle fast-forward.
+Final canonical VPS full
+locked offline Rust
+workspace, rustfmt and
+4/4 R8.9 static
+security checks passed.
+The owner-private
+localhost preview
+initially refused old
+stale PID state correctly,
+then was guardedly
+stopped and rebuilt
+from the matching new
+source. Live actual
+Mac GET Device Manager
+returned 200; unprovisioned
+real customer signed
+registration GET returned
+404 and ALL THREE real
+business API GET
+namespaces returned 401.
+No new R8.9 public
+browser route was mounted.
+
+Owner Mac FileVault
+encrypted SOURCE-only
+Restic snapshot
+`65b40fa7` all encrypted
+packs read 158/158
+and isolated SHA256-exact
+source restore passed;
+selected historical
+PARTIAL readable root
+config SHA256 restored.
+NOT whole-host/customer
+PostgreSQL/live K3s
+or offsite real DR.
+
+**PRD STILL OPEN:** no
+actual human MFA IdP,
+real confidential HTTPS
+PKCE exchange, Secure
+cookie login into
+commercial operational
+device UI, actual
+OLT/ONT health evidence
+or physical firmware
+compatibility proof.

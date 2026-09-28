@@ -1,7 +1,7 @@
 # IPAT — Project Status
 
 **As-of:** 2026-09-28 Asia/Jakarta
-**Current milestone:** R8.9 CANDIDATE: original opaque BFF session connected internally to actual PostgreSQL restricted two-company tenant/POP candidate inventory with current per-request permission rechecks; new disposable real DB CI is pending. R8.8 signed two-token → genuine restricted PostgreSQL → original short-lived opaque session already merged and independently verified. Actual human MFA IdP, confidential HTTPS browser login, authorized real customer dashboard and physical equipment adoption remain OPEN; no public/device API was enabled. See latest appended evidence.
+**Current milestone:** R8.9 VERIFIED: original signed-ID/access-pair→opaque BFF session→genuine restricted PostgreSQL tenant/POP-scoped device candidate bridge implemented UNMOUNTED, with independent two-company real disposable SQL integration; feature and post-code-main GitHub CI each 4/4 SUCCESS. R8.8 identity-only opaque session already verified. Actual independent real human MFA IdP, confidential HTTPS customer browser login, fully authorized real operational dashboard and physical device adoption are STILL OPEN; no public/device API enabled. See latest appended evidence.
 **Historical R7.1 state (superseded by later entries):** R7.1 original Rust ZTE C320 strict offline read-only evidence parser, owner-private non-network importer, hard-disabled firmware and large RED unfulfilled-PRD warning across all three private dashboard previews FEATURE PR #71 MERGED at code SHA d452d1be6943bb4b3685b2136ad30b587e6af1e9. Both independent feature-PR GitHub CI 36249894205 and post-feature-main CI 36250108104 completed SUCCESS in all four independent jobs (locked Rust/security/UI/OLT offline, disposable Ubuntu26 K3s and two isolated synthetic PostgreSQL recovery jobs, none deployed live). Actual clean unchanged Ubuntu 26.04.1 VPS canonical source, private GitHub and owner FileVault Mac main synchronized at feature SHA; actual VPS rustfmt and 145/145 locked OFFLINE whole-workspace Rust tests, 5/5 synthetic offline CLI permission/data tests, 5/5 source PRD red warning + disabled firmware checks and 7/7 existing R6.8 Python dashboard tests PASS. Existing R6.8 synthetic Node DOM proof rerun on Mac Node v22.22, actual authorized Mac private dashboard served LARGE red PRD alert via real HTTP 200/no-store/CSS high contrast while 3 business APIs remained HTTP401. FileVault Mac encrypted exact merged-feature-source Restic snapshot 63c7c461 independently isolated SHA256 restored plus full encrypted pack read PASS; selected historical root-readable config separately restored, NOT full VPS or real PostgreSQL PITR. Clean main production readiness 8/8 automatic gates PASS, ALL 7/7 independent external safety gates BLOCKED, production NO_GO; live VPS K3s/PostgreSQL/nftables inactive. ZTE C320 actual model/boards/running firmware, authenticated private device route and owner recovery/maintenance approval still unavailable; TC-OLT-01 physical NOT RUN, no firmware update or device changes. Separate physical blocker Issue #72 and high-risk firmware Issue #73 OPEN. Final docs-only checkpoint independent CI, exact updated source synchronization and backup to be logged immutably after docs merge to avoid recursive SHA-changing commits. Developer Mr. iPat.
 
 ## 1. Source of truth and provenance
@@ -3126,3 +3126,128 @@ evidence-backed health/firmware
 remain MUST. This is NOT yet
 a usable authenticated real-device
 dashboard or production launch.
+
+
+## R8.9 VERIFIED feature-code release checkpoint — 2026-09-28
+
+**Original source:** R8.9 merged
+GitHub feature PR #105 at exact
+main code SHA
+`bd788f43e19d94edf5d8eb518053fc2610370a70`.
+The separate feature CI run
+`36368344427` completed
+SUCCESS all FOUR jobs. A fully
+independent post-code-main run
+`36368663242` completed
+SUCCESS all FOUR jobs again,
+including genuine disposable
+PostgreSQL 16 separate synthetic
+reader/registrar plus genuine
+RSA signed ID/access pair→
+original opaque browser session→
+actual POP-scoped two-ISP
+candidate list with negative
+wrong company, POP, role,
+origin and expiry probes.
+The unchanged CI also executed
+full Rust workspace, genuine
+native USP/CWMP software slices,
+a disposable physical PostgreSQL
+recovery drill and a genuine
+disposable Ubuntu 26.04
+one-node K3s isolation smoke.
+These are SOFTWARE/CI results,
+not actual customer/ONT/OLT
+or independent production
+HA/disaster-recovery results.
+
+**Actual owner deployment and
+negative controls:** private
+GitHub, clean FileVault
+owner Mac and real nonroot
+Ubuntu26 canonical VPS code
+synchronized to the exact
+R8.9 main source SHA by
+SHA256-verified Git bundle,
+clean fast-forward verified.
+Actual final VPS full locked
+OFFLINE Rust workspace,
+rustfmt and R8.9
+static contract 4/4 PASS.
+The prior private web
+preview initially had old
+stale tracked PID state
+and correctly REFUSED
+unsafe silent restart.
+After reviewing its exact
+safety-checking stop/start
+scripts, the existing
+guarded mechanism stopped
+the tracked original
+nonroot process and rebuilt
+the original control-api
+from exact canonical code.
+Live owner Mac localhost
+HTTP `/lab/device-workbench`
+returned 200; absent
+unprovisioned actual signed
+identity candidate path
+returned 404, and the
+three real platform/tenant/
+operations business API
+namespaces all returned
+401. The R8.9 internal
+session-list function
+deliberately remains
+UNMOUNTED. No physical
+device or firewall,
+live K3s, real customer
+DB, real MFA provider
+or firmware action was
+activated.
+
+**Recovery:** FileVault
+owner Mac encrypted
+SOURCE-ONLY Restic
+snapshot `65b40fa7`
+of merged code main
+fully verified 158/158
+encrypted pack reads
+and independently
+isolated SHA256-exact
+source restore. Selected
+historical PARTIAL
+readable root-config
+restore independently
+SHA256 PASS. These DO
+NOT prove complete
+offsite whole-host,
+customer PostgreSQL
+or live K3s datastore
+recoverability.
+
+**MUST next:** approved
+independent real human
+OIDC IdP/MFA and
+issuer+MFA semantics,
+confidential private HTTPS
+authorization code/PKCE
+token exchange, actual
+safe Secure HttpOnly
+revocable session and
+exact tenant/POP backend
+data-list with only
+permitted visible menus;
+maker-checker adoption
+approval with independent
+real human actors and
+audit, THEN approved
+fingerprint/identity
+based actual OLT/ONT
+read-only physical
+interoperability. R8.9
+is an essential genuine
+backend security and
+data-integration slice;
+the full commercial
+PRD is NOT COMPLETE.
