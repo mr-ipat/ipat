@@ -395,3 +395,33 @@ token exchange, secure production TLS, shared
 durable session storage, device privileges or
 production API route is approved by this ADR.
 See docs/R88_OFFLINE_SIGNED_PAIR_SEALED_SQL_SESSION_FOUNDATION.md.
+
+
+## ADR-037 — APPROVED INTERNAL SESSION→SCOPED DEVICE READ, HTTP STILL BLOCKED (R8.9)
+
+While owner-approved real human OIDC MFA,
+verified provider-specific confidential
+authorization-code/PKCE redemption and
+secure HTTPS browser session transport
+are absent, add ONLY an internal unmounted
+original Rust BFF function connecting the
+R8.8 genuine signed identity-only opaque
+session to the R8.3 genuinely sealed
+tenant/POP SQL candidate inventory.
+A cookie never stores or grants an
+implicit tenant, role, POP or device
+permission. Every request authenticates
+the current session and queries
+separately current exact signed issuer/
+subject, active approved per-company
+membership and optional exact NOC
+POP in one PostgreSQL snapshot; the
+restricted reader has EXECUTE-only
+permissions. Returned metadata has
+no management IP, credentials or
+unverified physical telemetry.
+The existing real `/v1/*` and
+live device endpoints remain denied;
+actual customer UI login is a separate
+mandatory implementation/review gate.
+Full production approval NOT GRANTED.

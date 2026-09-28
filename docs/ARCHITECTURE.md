@@ -933,3 +933,25 @@ server-side confidential code-token
 exchange, shared durable revocable
 session persistence and live
 PostgreSQL entitlements.
+
+
+## R8.9 internal session-to-inventory anti-escalation boundary
+
+The original unmounted
+`apps/control-api/src/browser_session_lab.rs`
+`pending_devices_for_session` revalidates the
+short-lived original cryptographic BFF identity
+cookie and an independently trusted origin,
+then performs a single PostgreSQL statement:
+MATERIALIZED active exact
+`lookup_active_membership` and LATERAL sealed
+`list_lab_device_candidates` for current signed
+issuer+subject and separately selected exact
+tenant UUID, approved role and exact POP.
+The browser cookie does not cache any company
+entitlement. Query identity is a separately
+restricted NO direct table SELECT function-only
+reader, not dynamic SQL SET ROLE. Only bounded
+non-sensitive status metadata returns; no new
+public route, actual equipment packet or
+assumption of real MFA is introduced.

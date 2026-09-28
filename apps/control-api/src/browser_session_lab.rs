@@ -115,6 +115,106 @@ pub(super) async fn current_scope_allowed(
     .await
 }
 
+/// R8.9 UNMOUNTED BFF Device Manager bridge: only tenant/POP-authorized
+/// candidate metadata, including honestly recorded pending/review outcomes.
+/// Never returns a management IP, secret or invented connectivity measurement.
+#[derive(Debug, PartialEq, Eq)]
+pub(super) struct PendingDevice {
+    pub id: Uuid,
+    pub pop_id: String,
+    pub display_name: String,
+    pub kind: String,
+    pub vendor: String,
+    pub adoption_state: String,
+    pub connectivity: String,
+    pub health: String,
+}
+/// Every request proves the cryptographic session again AND joins current
+/// membership and strictly scoped rows in ONE PostgreSQL statement/snapshot.
+/// No HTTP route until a REAL independently verified IdP/MFA/HTTPS BFF exists.
+pub(super) async fn pending_devices_for_session(
+    vault: &mut BrowserSessionVault,
+    cookie: &str,
+    trusted_host_origin: bool,
+    restricted_db: &Client,
+    tenant: Uuid,
+    role: &str,
+    pop: Option<&str>,
+    now: u64,
+) -> Option<Vec<PendingDevice>> {
+    if !valid_scope(role, pop) {
+        return None;
+    }
+    let identity = vault.authenticate(cookie, None, RequestKind::Read, trusted_host_origin, now)?;
+    let rows = restricted_db
+        .query(
+            "WITH permit AS MATERIALIZED (
+                SELECT approved_by, EXTRACT(EPOCH FROM expires_at)::bigint AS expiry
+                FROM ipat_platform.lookup_active_membership($1,$2,$3::uuid,$4,$5)
+             )
+             SELECT permit.approved_by,permit.expiry,d.id,d.pop_id,
+               d.display_name,d.device_kind,d.vendor,d.adoption_state,
+               d.connectivity,d.health
+             FROM permit LEFT JOIN LATERAL
+               ipat_platform.list_lab_device_candidates($1,$2,$3::uuid,$4,$5) d
+               ON true ORDER BY d.requested_at DESC,d.id",
+            &[
+                &identity.issuer(),
+                &identity.subject(),
+                &tenant,
+                &role,
+                &pop,
+            ],
+        )
+        .await
+        .ok()?;
+    let first = rows.first()?;
+    let approved_by: String = first.get(0);
+    let expires: i64 = first.get(1);
+    if approved_by.trim().is_empty()
+        || !u64::try_from(expires).is_ok_and(|expiry| now < expiry)
+        || rows.len() > 100
+    {
+        return None;
+    }
+    let mut inventory = Vec::new();
+    for row in rows {
+        let Some(id): Option<Uuid> = row.get(2) else {
+            continue;
+        };
+        let row_pop: String = row.get(3);
+        if role == "noc_engineer" && Some(row_pop.as_str()) != pop {
+            return None;
+        }
+        let adoption_state: String = row.get(7);
+        let connectivity: String = row.get(8);
+        let health: String = row.get(9);
+        if !matches!(
+            adoption_state.as_str(),
+            "pending_review" | "approved" | "rejected" | "quarantined"
+        ) || !matches!(
+            connectivity.as_str(),
+            "unknown" | "reachable" | "unreachable"
+        ) || !matches!(
+            health.as_str(),
+            "not_measured" | "normal" | "degraded" | "critical"
+        ) {
+            return None;
+        }
+        inventory.push(PendingDevice {
+            id,
+            pop_id: row_pop,
+            display_name: row.get(4),
+            kind: row.get(5),
+            vendor: row.get(6),
+            adoption_state,
+            connectivity,
+            health,
+        });
+    }
+    Some(inventory)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -204,6 +304,212 @@ mod tests {
         );
         (verifier, id, access, dir)
     }
+    #[tokio::test]
+    async fn r89_actual_signed_opaque_session_reads_real_sealed_pop_candidate_rows() {
+        if std::env::var("IPAT_PG_EPHEMERAL_TEST").as_deref() != Ok("1") {
+            return; // real DB test ONLY in mandatory disposable CI
+        }
+        assert_eq!(std::env::var("PGHOST").as_deref(), Ok("127.0.0.1"));
+        assert_eq!(std::env::var("PGDATABASE").as_deref(), Ok("ipat_synthetic"));
+        assert_eq!(
+            std::env::var("IPAT_PG_SYNTHETIC_PASSWORD").as_deref(),
+            Ok("local_ci_synthetic_only")
+        );
+        let db = Config::from_str(
+            "host=127.0.0.1 port=5432 user=ipat_lab_identity_reader password=local_ci_synthetic_only dbname=ipat_synthetic"
+        ).unwrap();
+        let (reader, read_conn) = db.connect(NoTls).await.unwrap();
+        let rt = tokio::spawn(async move {
+            let _ = read_conn.await;
+        });
+        let writer_cfg = Config::from_str(
+            "host=127.0.0.1 port=5432 user=ipat_lab_device_registrar password=local_ci_synthetic_only dbname=ipat_synthetic"
+        ).unwrap();
+        let (writer, write_conn) = writer_cfg.connect(NoTls).await.unwrap();
+        let wt = tokio::spawn(async move {
+            let _ = write_conn.await;
+        });
+        let a = Uuid::parse_str("11111111-1111-4111-8111-111111111111").unwrap();
+        let b = Uuid::parse_str("22222222-2222-4222-8222-222222222222").unwrap();
+        let (verifier, id, access, _keys) = synthetic_pair();
+        let n = now();
+        let mut vault = BrowserSessionVault::default();
+        assert!(pending_devices_for_session(
+            &mut vault,
+            "forged",
+            true,
+            &reader,
+            a,
+            "noc_engineer",
+            Some("pop-a"),
+            n
+        )
+        .await
+        .is_none());
+        let issued = issue_after_sealed_membership(
+            &mut vault,
+            &verifier,
+            &id,
+            &access,
+            CLIENT,
+            NONCE,
+            &reader,
+            a,
+            "noc_engineer",
+            Some("pop-a"),
+            n,
+        )
+        .await
+        .expect("actual restricted SQL and verified independently signed pair");
+        let before = pending_devices_for_session(
+            &mut vault,
+            issued.cookie_secret(),
+            true,
+            &reader,
+            a,
+            "noc_engineer",
+            Some("pop-a"),
+            n,
+        )
+        .await
+        .expect("real empty or preseeded allowed rows");
+        assert!(before.iter().all(|x| x.pop_id == "pop-a"));
+        for (tenant, request, pop, name) in [
+            (
+                a,
+                "b0000000-0000-4000-8000-000000000089",
+                "pop-a",
+                "LAB-R89-OLT-A",
+            ),
+            (
+                b,
+                "b0000000-0000-4000-8000-000000000090",
+                "pop-b",
+                "LAB-R89-ONT-B",
+            ),
+        ] {
+            let request = Uuid::parse_str(request).unwrap();
+            let created = writer
+                .query_one(
+                    "SELECT ipat_platform.propose_lab_device_candidate(
+                   $1,$2,$3::uuid,$4::uuid,$5,$6,$7,$8,$9,$10)",
+                    &[
+                        &ISS,
+                        &"synthetic-operator",
+                        &tenant,
+                        &request,
+                        &pop,
+                        &name,
+                        &"olt",
+                        &"ZTE",
+                        &Some("VIRTUAL-C320"),
+                        &Some("10.20.3.4"),
+                    ],
+                )
+                .await
+                .unwrap();
+            let _: Uuid = created
+                .get::<_, Option<Uuid>>(0)
+                .expect("genuine pending draft");
+        }
+        let rows_a = pending_devices_for_session(
+            &mut vault,
+            issued.cookie_secret(),
+            true,
+            &reader,
+            a,
+            "noc_engineer",
+            Some("pop-a"),
+            n,
+        )
+        .await
+        .expect("exact POP after independent recheck");
+        assert!(rows_a.iter().any(|d| d.display_name == "LAB-R89-OLT-A"
+            && d.adoption_state == "pending_review"
+            && d.connectivity == "unknown"
+            && d.health == "not_measured"));
+        assert!(rows_a.iter().all(|d| d.pop_id == "pop-a"));
+        assert!(!rows_a.iter().any(|d| d.display_name == "LAB-R89-ONT-B"));
+        assert!(pending_devices_for_session(
+            &mut vault,
+            issued.cookie_secret(),
+            true,
+            &reader,
+            b,
+            "noc_engineer",
+            Some("pop-a"),
+            n
+        )
+        .await
+        .is_none());
+        assert!(pending_devices_for_session(
+            &mut vault,
+            issued.cookie_secret(),
+            true,
+            &reader,
+            a,
+            "noc_engineer",
+            Some("pop-b"),
+            n
+        )
+        .await
+        .is_none());
+        assert!(pending_devices_for_session(
+            &mut vault,
+            issued.cookie_secret(),
+            true,
+            &reader,
+            a,
+            "platform_owner",
+            None,
+            n
+        )
+        .await
+        .is_none());
+        assert!(pending_devices_for_session(
+            &mut vault,
+            issued.cookie_secret(),
+            false,
+            &reader,
+            a,
+            "noc_engineer",
+            Some("pop-a"),
+            n
+        )
+        .await
+        .is_none());
+        let rows_b = pending_devices_for_session(
+            &mut vault,
+            issued.cookie_secret(),
+            true,
+            &reader,
+            b,
+            "noc_engineer",
+            Some("pop-b"),
+            n,
+        )
+        .await
+        .expect("separately approved SECOND company NOC POP");
+        assert!(rows_b.iter().any(|d| d.display_name == "LAB-R89-ONT-B"));
+        assert!(!rows_b.iter().any(|d| d.display_name == "LAB-R89-OLT-A"));
+        assert!(pending_devices_for_session(
+            &mut vault,
+            issued.cookie_secret(),
+            true,
+            &reader,
+            a,
+            "noc_engineer",
+            Some("pop-a"),
+            issued.expires_at()
+        )
+        .await
+        .is_none());
+        drop(reader);
+        drop(writer);
+        rt.abort();
+        wt.abort();
+    }
+
     #[tokio::test]
     async fn r88_real_rsa_pair_to_disposable_postgres_tenant_pop_then_opaque_session() {
         // Separate REQUIRED CI fixture; on owner Mac/actual VPS never

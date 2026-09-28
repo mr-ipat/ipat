@@ -1,7 +1,7 @@
 # IPAT — Project Status
 
-**As-of:** 2026-09-27 Asia/Jakarta
-**Current milestone:** R8.8 CANDIDATE: signed OIDC ID/access pair plus actual restricted sealed PostgreSQL membership bridge to original bounded identity-only opaque browser session and per-request SQL scope recheck; true disposable multi-ISP CI still pending. Earlier R8.7 original genuine pinned two-token core already independently verified. Actual human MFA IdP, secure confidential HTTPS exchange/customer login and real device adoption remain OPEN. See newest appended evidence.
+**As-of:** 2026-09-28 Asia/Jakarta
+**Current milestone:** R8.9 CANDIDATE: original opaque BFF session connected internally to actual PostgreSQL restricted two-company tenant/POP candidate inventory with current per-request permission rechecks; new disposable real DB CI is pending. R8.8 signed two-token → genuine restricted PostgreSQL → original short-lived opaque session already merged and independently verified. Actual human MFA IdP, confidential HTTPS browser login, authorized real customer dashboard and physical equipment adoption remain OPEN; no public/device API was enabled. See latest appended evidence.
 **Historical R7.1 state (superseded by later entries):** R7.1 original Rust ZTE C320 strict offline read-only evidence parser, owner-private non-network importer, hard-disabled firmware and large RED unfulfilled-PRD warning across all three private dashboard previews FEATURE PR #71 MERGED at code SHA d452d1be6943bb4b3685b2136ad30b587e6af1e9. Both independent feature-PR GitHub CI 36249894205 and post-feature-main CI 36250108104 completed SUCCESS in all four independent jobs (locked Rust/security/UI/OLT offline, disposable Ubuntu26 K3s and two isolated synthetic PostgreSQL recovery jobs, none deployed live). Actual clean unchanged Ubuntu 26.04.1 VPS canonical source, private GitHub and owner FileVault Mac main synchronized at feature SHA; actual VPS rustfmt and 145/145 locked OFFLINE whole-workspace Rust tests, 5/5 synthetic offline CLI permission/data tests, 5/5 source PRD red warning + disabled firmware checks and 7/7 existing R6.8 Python dashboard tests PASS. Existing R6.8 synthetic Node DOM proof rerun on Mac Node v22.22, actual authorized Mac private dashboard served LARGE red PRD alert via real HTTP 200/no-store/CSS high contrast while 3 business APIs remained HTTP401. FileVault Mac encrypted exact merged-feature-source Restic snapshot 63c7c461 independently isolated SHA256 restored plus full encrypted pack read PASS; selected historical root-readable config separately restored, NOT full VPS or real PostgreSQL PITR. Clean main production readiness 8/8 automatic gates PASS, ALL 7/7 independent external safety gates BLOCKED, production NO_GO; live VPS K3s/PostgreSQL/nftables inactive. ZTE C320 actual model/boards/running firmware, authenticated private device route and owner recovery/maintenance approval still unavailable; TC-OLT-01 physical NOT RUN, no firmware update or device changes. Separate physical blocker Issue #72 and high-risk firmware Issue #73 OPEN. Final docs-only checkpoint independent CI, exact updated source synchronization and backup to be logged immutably after docs merge to avoid recursive SHA-changing commits. Developer Mr. iPat.
 
 ## 1. Source of truth and provenance
@@ -3061,3 +3061,68 @@ customer records were used.
 All real business API namespaces
 and prior synthetic browser
 callback remain default denied.
+
+
+## R8.9 — internal original BFF session-to-device candidate bridge (2026-09-28, CI candidate)
+
+Continued the binding user priority before
+connecting the actual physical OLT/ONT:
+integrate genuine verified user identity
+session with server-authorized per-tenant
+and exact-POP device candidate inventory.
+The new UNMOUNTED original Rust
+`pending_devices_for_session` accepts
+ONLY a previously cryptographically
+signed genuine R8.7 ID/access pair→
+R8.8 opaque identity-only session;
+EVERY request independently checks
+actual current PostgreSQL exact approved
+active issuer/subject/tenant/role/POP
+membership AND current scoped
+candidate rows within ONE SQL
+statement/snapshot. It never
+accepts role/tenant from a cookie
+or spoofed HTTP headers. Results
+exclude management IP, credentials
+and fabricated network telemetry,
+and preserve unknown/not-measured
+states where no proof exists.
+
+The independent genuine disposable
+PostgreSQL CI gate executes a real
+synthetic two-company signed ID+access
+pair→separately restricted SQL→
+opaque cookie→separately reviewed
+draft rows. Negative tests cover
+forged session, wrong tenant/POP/
+role/origin and expired session.
+Owner Mac standalone static R8.9
+contracts 4/4 PASS and isolated
+actual nonroot Ubuntu26 original
+control-api Rust 30/30 tests
+and rustfmt PASS. The new genuine
+CI and final canonical source
+release verification are still
+PENDING until actually executed.
+No real MFA IdP, browser login,
+real service/customer DB, physical
+device, firmware, live K3s, or
+public server configuration
+was changed by this candidate.
+
+**PRD OPEN:** actual human
+OIDC/MFA enrollment and issuer,
+confidential HTTPS PKCE exchange,
+public customer TLS and secure
+host/origin/CSRF cookie middleware,
+real privileged restricted DB
+accounts and human maker-checker
+audit, horizontally shared
+revocable sessions, server-authorized
+authenticated tenant/NOC web
+integration, genuine vendor
+read-only connectivity and
+evidence-backed health/firmware
+remain MUST. This is NOT yet
+a usable authenticated real-device
+dashboard or production launch.

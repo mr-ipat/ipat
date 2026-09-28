@@ -940,3 +940,33 @@ real router, durable HA/revocable
 server sessions, audit and real
 device enrollment. No live app
 route was changed to permit access.
+
+
+## R8.9 unmounted session-backed candidate read threat model
+
+Threat: a stolen/stale session or forged
+tenant/POP selector could list a different
+ISP's devices. Control: original identity
+cookie authenticates only the verified
+issuer/subject, and each request also
+executes current sealed PostgreSQL exact
+membership and POP-bound list within one
+database snapshot. No cached client role,
+untrusted Host tenant, broad implicit owner
+grant, direct table access, management IP,
+credential or invented health data are
+included. Deny missing/untrusted origin,
+expired cookie, missing/revoked/expired
+company membership, wrong role or POP.
+A single real user may separately hold
+membership in two companies: access to
+each MUST depend on its separate
+current approved database grant.
+The synthetic signed MFA lab issuer
+IS NOT actual independently verified
+human identity/MFA. This code MUST NOT
+be mounted on a public/device listener
+or given real privileges before the
+confidential OIDC code flow, safe HTTPS,
+approved membership enrollment and
+audited real login are verified.

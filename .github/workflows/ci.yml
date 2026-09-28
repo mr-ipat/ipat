@@ -311,6 +311,9 @@ jobs:
       - name: R8.8 real RSA signed synthetic ID/access pair into separate sealed real two-tenant PostgreSQL membership then opaque BFF session
         run: |
           cargo test --locked -p control-api browser_session_lab::tests::r88_real_rsa_pair_to_disposable_postgres_tenant_pop_then_opaque_session -- --exact
+      - name: R8.9 signed opaque BFF session per-request real POP-scoped device candidates (unmounted, actual disposable PostgreSQL)
+        run: |
+          cargo test --locked -p control-api browser_session_lab::tests::r89_actual_signed_opaque_session_reads_real_sealed_pop_candidate_rows -- --exact
 
 # Separate disposable CI runner and PostgreSQL server process.
   # This rehearses a physical base backup; it is NOT production PITR/offsite HA.

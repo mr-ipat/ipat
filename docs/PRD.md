@@ -816,3 +816,22 @@ confidential code exchange, real approved
 membership and Secure browser callback
 are independently verified. Current
 physical hardware admission remains BLOCKED.
+
+
+## R8.9 session-scoped real PostgreSQL candidate inventory checkpoint
+
+MUST: The eventual authenticated tenant Device Manager
+shall bind individually verified OIDC ID/access JWTs and
+an independently authorized real-human MFA claim to
+a cryptographic opaque short-lived BFF session and
+actual restricted PostgreSQL membership. Every
+candidate listing must RECHECK exact tenant/POP/role
+authorization in a single SQL snapshot; a cookie
+alone grants NO permanent role, device entitlement
+or access to management IP/secret/telemetry.
+Acceptance now: independent disposable real
+PostgreSQL two-company positive/negative
+integration for this ORIGINAL Rust bridge.
+An unmounted software bridge does NOT fulfill
+the production dashboard, real MFA or live
+device interoperability acceptance criteria.
