@@ -658,3 +658,14 @@ role-gated; test default/admin login does not certify least privilege.
 ## ADR-051 C320 individual action catalog is evidence-based
 
 Do not equate an offline parser test or historic SSH banner with real OLT interoperability. All live actions stay disabled until actual identity, scoped restricted login, firmware and tenant controls are independently proven. High-impact actions additionally need separately approved maintenance and rollback. Keep private LAB readiness metadata separate from a future real tenant-authorized worker.
+
+## ADR-052 — Trustworthy physical host key cannot be derived from network SSH
+
+R9.20 makes the independently trusted chassis console RSA public-key
+handoff a separate offline, owner-only operation. A same-fingerprint
+match between owner-asserted console key and previous network
+observations is necessary but INSUFFICIENT for an active OLT login;
+source provenance, independent reviewer, bounded production access,
+nonprivileged account, POP isolation and baseline remain independent
+hard gates. Never retry legacy SSH with password or disable pinning
+to work around a preauthentication KEX stall.

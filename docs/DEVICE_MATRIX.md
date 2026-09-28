@@ -520,3 +520,12 @@ actual health remain UNVERIFIED. This is not a failed ZTE account
 password test. Avoid forced firmware/cryptographic changes or blind
 retries on production distribution. Require trusted device-side
 console/network investigation first.
+
+## R9.20 physical ZTE C320 remains blocked before SSH host-key exchange
+
+Actual owner Mac and VPS credential-free preauthentication attempts
+both reached SSH KEX selection but timed out prior to receipt of
+SSH server host key and NEWKEYS. No independently sourced actual
+physical DEV-01 RSA public host key is yet available. R9.20 offline
+pin creation has SYNTHETIC test coverage only; no real OLT CLI
+read, chassis/firmware identification or adoption has occurred.
