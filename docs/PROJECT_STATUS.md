@@ -1,7 +1,7 @@
 # IPAT — Project Status
 
 **As-of:** 2026-09-28 Asia/Jakarta
-**Current milestone:** R9.0 ACTUAL NETWORK FIRST CONTACT: owner-authorized public TCP321 from Mac reachable and sent Telnet IAC; a separate untrusted ZTE banner was observed without login, but the actual IPAT VPS source TIMES OUT. Original strict ONE-TARGET, ZERO-SEND, no-login owner-private network preflight and dated non-live dashboard note implemented; local safety tests 7/7 PASS. Actual secure OLT identity, C320 model/firmware, approved worker route, real human MFA and authenticated physical adoption remain OPEN. GitHub feature CI is pending; see latest appended field evidence.
+**Current milestone:** R9.0 VERIFIED physical-network-only first contact: user-approved public TCP321 reachable from actual owner Mac with Telnet IAC and separate UNAUTHENTICATED ZTE banner; identical actual Ubuntu26 VPS source TIMES OUT. Original strict single-IP receive-only NO-CREDENTIAL preflight and dated redacted Device Manager historical panel implemented, Mac/VPS real source proofs recorded, actual real owner preview checked, feature AND independent post-code-merge main GitHub CI each 4/4 PASS. Secure private routed management, independently authenticated actual C320/firmware read, live customer MFA and real physical device adoption remain MUST/OPEN.
 **Historical R7.1 state (superseded by later entries):** R7.1 original Rust ZTE C320 strict offline read-only evidence parser, owner-private non-network importer, hard-disabled firmware and large RED unfulfilled-PRD warning across all three private dashboard previews FEATURE PR #71 MERGED at code SHA d452d1be6943bb4b3685b2136ad30b587e6af1e9. Both independent feature-PR GitHub CI 36249894205 and post-feature-main CI 36250108104 completed SUCCESS in all four independent jobs (locked Rust/security/UI/OLT offline, disposable Ubuntu26 K3s and two isolated synthetic PostgreSQL recovery jobs, none deployed live). Actual clean unchanged Ubuntu 26.04.1 VPS canonical source, private GitHub and owner FileVault Mac main synchronized at feature SHA; actual VPS rustfmt and 145/145 locked OFFLINE whole-workspace Rust tests, 5/5 synthetic offline CLI permission/data tests, 5/5 source PRD red warning + disabled firmware checks and 7/7 existing R6.8 Python dashboard tests PASS. Existing R6.8 synthetic Node DOM proof rerun on Mac Node v22.22, actual authorized Mac private dashboard served LARGE red PRD alert via real HTTP 200/no-store/CSS high contrast while 3 business APIs remained HTTP401. FileVault Mac encrypted exact merged-feature-source Restic snapshot 63c7c461 independently isolated SHA256 restored plus full encrypted pack read PASS; selected historical root-readable config separately restored, NOT full VPS or real PostgreSQL PITR. Clean main production readiness 8/8 automatic gates PASS, ALL 7/7 independent external safety gates BLOCKED, production NO_GO; live VPS K3s/PostgreSQL/nftables inactive. ZTE C320 actual model/boards/running firmware, authenticated private device route and owner recovery/maintenance approval still unavailable; TC-OLT-01 physical NOT RUN, no firmware update or device changes. Separate physical blocker Issue #72 and high-risk firmware Issue #73 OPEN. Final docs-only checkpoint independent CI, exact updated source synchronization and backup to be logged immutably after docs merge to avoid recursive SHA-changing commits. Developer Mr. iPat.
 
 ## 1. Source of truth and provenance
@@ -3316,3 +3316,95 @@ K3s on the live VPS or independent production disaster
 recovery is claimed. Release source SHA, independent
 GitHub CI and backup evidence must be appended
 only after independently observed success.
+
+
+## R9.0 verified original first-site TCP/Telnet no-auth milestone — 2026-09-28
+
+Feature PR #107 merged at canonical exact source SHA
+`d516113e9ac1bce29383adbe65e743877b0671c8`.
+Feature GitHub CI run `36372210621` finished SUCCESS all FOUR
+jobs. Independently, AFTER real feature merge the canonical
+main run `36372564123` finished SUCCESS all FOUR
+jobs: new R9.0 strict mock-socket seven negative/static
+tests, full locked Rust workspace and existing
+native genuine USP/CWMP domain software tests,
+real disposable PostgreSQL data-integrity/recovery
+jobs and real disposable Ubuntu26 checksum-pinned
+single-node K3s isolation. CI never contacted
+the real owner OLT endpoint, installed production
+services or changed network ACLs.
+
+The exact SHA was verified on private GitHub
+and clean FileVault owner Mac. By SHA256-verified
+Git bundle, the actual authorized nonroot
+Ubuntu26 VPS main fast-forwarded cleanly
+to that same exact source SHA. On that
+actual VPS the FULL locked OFFLINE Rust
+workspace, rustfmt and R9.0 mocked seven
+zero-send security tests PASSED.
+On the owner Mac, the original privately
+tunnelled nonroot Rust web preview
+was guardedly rebuilt and restarted
+from this exact R9.0 code SHA.
+Real Mac HTTP verified
+`/lab/device-workbench` HTTP200,
+the explicitly time-labelled
+R9.0 network-only historical
+panel and no raw management IP;
+0 simulated candidates and
+0 physically enrolled devices.
+Unprovisioned true signed/SQL
+candidate routes remained HTTP404,
+and actual Platform/Tenant/Operations
+business API namespaces returned
+HTTP401 even without real login.
+Real physical probes, status
+telemetry and firmware remained
+HARD DISABLED.
+
+FileVault owner Mac encrypted
+SOURCE-ONLY Restic snapshot
+`b8684d06` at merged R9.0
+code SHA passed full 162/162
+encrypted pack reads and isolated
+exact source SHA256 restoration;
+selected historical PARTIAL
+readable root configuration
+also independently restored.
+The separate 0700/0600
+sanitized live network probe
+evidence on Mac is local
+operator-controlled field evidence,
+NOT a separately tested offsite
+backup nor authenticated
+hardware compatibility evidence.
+
+**INCOMPLETE / PRD blocker:**
+one visible TCP/Telnet handshake
+and an unverified ZTE text
+banner are NOT successful
+authenticated physical OLT
+integration. Actual nonroot
+VPS cannot currently reach
+the authorized public source
+endpoint; no identity pin,
+actual C320 model/card/firmware,
+physical PON read, trusted
+private route or physical
+tenant enrollment exists.
+Telnet cleartext MUST NOT
+receive credentials, even
+temporary trial credentials.
+Actual approved human MFA,
+site-to-IPAT private secure
+management, independent
+OLT identity proof, restricted
+read-only pilot, durable
+device approvals, production
+PostgreSQL+K3s recovery
+and commercial dashboards
+remain OPEN. Docs-only
+R9.0 checkpoint CI and
+exact final docs-main SHA
+will be recorded separately
+after the docs merge.

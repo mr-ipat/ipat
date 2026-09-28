@@ -133,3 +133,41 @@ Successful TCP/Telnet handshake is NOT authenticated OLT access.
 Actual commercial device enrollment/telemetry,
 real MFA dashboard, live heterogeneous K3s and independent
 whole-host+PostgreSQL recovery are NOT COMPLETE.
+
+
+## Independently executed original-code release evidence
+
+Feature PR #107 was merged into canonical private GitHub
+main at exact code SHA `d516113e9ac1bce29383adbe65e743877b0671c8`.
+Actual GitHub feature CI `36372210621` and
+independent post-code-main CI `36372564123` each
+completed **SUCCESS in all four jobs**. The new
+offline-only seven mock-socket/no-send security tests
+ran beside full locked Rust workspace,
+original native USP/CWMP software, real disposable
+PostgreSQL recovery and disposable Ubuntu26 K3s.
+
+The actual authorized nonroot Ubuntu26 VPS, owner
+FileVault Mac and private GitHub main were
+synchronized and exact SHA independently verified
+through a SHA256-checked clean fast-forward Git bundle.
+The actual VPS passed full locked offline Rust
+workspace/rustfmt and 7/7 local-only network
+safety tests. On the owner Mac the
+guardedly restarted original private
+Rust Device Manager served the dated R9.0
+network-only historical card at HTTP200,
+reported zero simulated/physical devices,
+kept true signed-DB login routes HTTP404
+and rejected all three real business
+API namespaces HTTP401.
+
+Encrypted owner Mac SOURCE-ONLY Restic
+snapshot `b8684d06` fully read 162/162
+packs and isolated SHA256-exact restored;
+a separately selected historical PARTIAL
+readable-root archive was also restored.
+This does **NOT** establish independent
+whole-host, real PG or production K3s
+disaster recovery, nor backup of private
+R9.0 operator link evidence itself.
