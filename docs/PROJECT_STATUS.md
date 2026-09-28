@@ -3580,3 +3580,12 @@ Documented staged requirements and no-bypass risks in
 `docs/R93_C320_SECURE_SITE_ACCESS_GATE.md`. Continue offline
 software work independently; live physical TC-OLT-01 BLOCKED until
 independently reviewed gateway, secure route, account and identity.
+
+## R9.4 RouterOS 7 owner confirmation and offline planning
+
+Owner confirms MikroTik RouterOS 7 is available at the C320 site.
+Added offline-only WireGuard site-gateway predeployment guidance and
+address overlap preflight/tests. No actual MikroTik, C320 or Ubuntu
+VPS changes or credentials were used. Next: review redacted gateway
+model/RouterOS minor version, safe OOB recovery and exact isolated
+OLT management path; only then propose an attended staged rollout.

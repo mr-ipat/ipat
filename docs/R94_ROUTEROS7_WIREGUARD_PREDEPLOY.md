@@ -1,0 +1,85 @@
+# R9.4 — RouterOS 7 C320 management WireGuard predeployment
+
+Owner confirms a MikroTik RouterOS 7 gateway exists at the C320 site.
+Status: OFFLINE design only; no access or changes to real RouterOS,
+public Telnet NAT, VPS firewall, routing or customer sessions.
+Binding safety controls: R9.0–R9.3, SECURITY and ADR-038–040.
+RouterOS version 7 alone does not verify model, firmware patch level,
+management interface, VLAN, overlapping IP ranges or recovery method.
+
+## Fixed architecture boundary
+
+- Ubuntu 26.04 restricted IPAT management worker runs WireGuard peer;
+  site RouterOS 7 initiates a persistent tunnel to an owner-approved
+  VPS management-only UDP endpoint. This is a proposed direction,
+  NOT permission to open inbound UDP on an existing shared VPS.
+- Route ONLY the chosen isolated OLT management host (/32), not the
+  ISP subscriber VLAN, RFC1918 supernet or a default route, through
+  WireGuard. Do not place wg-ipat into MikroTik's LAN interface list.
+- Telnet TCP/23 must be permitted only from the designated gateway or
+  restricted IPAT worker through the verified isolated LAST HOP.
+  A VPN over public WAN does not secure a shared/sniffable local hop.
+- Deny other worker traffic at both VPS egress and RouterOS forward;
+  RouterOS input accepts tunnel control only if strictly necessary.
+  Do not modify source NAT, existing default routes, PPPoE or fasttrack
+  without independently reviewing the complete existing rule order.
+- Retire the WAN public Telnet TCP/321 forwarding as a separately
+  approved maintenance action WITH tested out-of-band router recovery.
+
+## Owner-side SAFE read-only discovery (run locally; REDACT outputs)
+
+Do not paste unredacted exports, credentials, interface private keys,
+customer IPs or PPPoE users into ChatGPT. A trusted operator can run:
+
+```routeros
+/system/resource/print
+/system/package/print
+/interface/wireguard/print terse
+/ip/address/print terse
+/ip/route/print terse
+/interface/vlan/print terse
+/ip/firewall/filter/print terse
+/ip/firewall/nat/print terse
+```
+
+The `wireguard print` command may expose keys in some display modes:
+REMOVE any private-key, preshared-key and sensitive comments before
+sharing. Prefer owner-prepared redacted inventory of OS minor version,
+router model, management bridge/VLAN, OLT private management host,
+VPS source/reachability and recovery capability; do not send full exports.
+
+## Owner-approved pre-change backups and review
+
+Confirm tested WinBox/console/OOB recovery and separately encrypted,
+owner-held RouterOS backup/export. Before deployment, record exact
+current NAT/filter rule order and management routes in encrypted local
+evidence. Owner must review conflict-free WireGuard subnet, exact
+private OLT /32 and a VPN UDP port independently permitted by VPS.
+Use RouterOS Safe Mode for an attended, pre-reviewed minimal staging
+change; it is not a substitute for a proved independent rescue path.
+Allow no changes to provider firewall/shared security group until
+per-VPS blast radius and recovery are verified.
+
+## Offline address-plan preflight (no changes, no device traffic)
+
+`deploy/scripts/lab/r94/check_address_plan.py` deliberately refuses
+public management IPs, a VPN subnet containing the private OLT IP and
+VPN conflicts with enumerated existing site/VPS networks. It does NOT
+validate actual routes, VLAN separation, NAT rule order or safety.
+Example documentation-only synthetic IPs, NOT real site assignments:
+
+```sh
+python3 deploy/scripts/lab/r94/check_address_plan.py \
+  --vpn-subnet 10.253.77.0/30 --olt-private-ip 192.168.77.10 \
+  --existing-network 192.168.77.0/24 \
+  --existing-network 10.40.0.0/16
+python3 -m unittest discover deploy/scripts/lab/r94 -p 'test_*.py' -v
+```
+
+Before implementation: get only REDACTED RouterOS model/minor build,
+site gateway ownership/recovery, isolated local management VLAN and
+OLT private management /32, existing route-CIDR summary, and planned
+VPS UDP permission. Independently pin peer public keys and validate
+WireGuard handshakes without exposing keys or touching OLT. Then
+separately approve retiring public Telnet NAT under attended rollback.
+All SITE-01..06 remain NOT RUN; no Telnet credentials are requested.
