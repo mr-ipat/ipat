@@ -4469,3 +4469,16 @@ Combined local R9.0/R9.20 suite 50/50 PASS; prior R9.14 independent
 RSA unit tests 4/4 PASS. Actual separately trusted physical C320
 console RSA public key remains NOT PROVIDED, source/ACL/baseline
 NOT VERIFIED. No real OLT login/adoption can be asserted.
+
+R9.20 actual owner VPS isolated source checkout SHA `1f1820b`
+passed 50/50 combined static/safety tests, 4/4 existing offline
+RSA checks and 3/3 new synthetic owner-console pin tests. A fresh
+public synthetic mirror commit
+`ad6f999a90857b33b6fedf7c73be12ece9d50ba1` was independently
+scrubbed, checked against the public snapshot leak guard and uploaded
+to active PUBLIC Actions repository `mr-ipat/ipat-open-ci`; latest
+hosted workflow run has not yet been confirmed green as of this
+entry. Original private project Git history and operator sites were
+NOT published. No actual new live device attempt or SSH password was
+sent; independent physical console provenance and KEX server response
+remain BLOCKING the first genuine C320 read.
