@@ -1185,3 +1185,17 @@ obtained console host RSA public key is matched, site last-hop trust
 is evidenced, account authorization is separately bounded and live
 baseline/recovery is recorded. Direct/private does not bypass these
 gates or require an unnecessary tunnel.
+
+R9.15 owner-Mac prior RouterOS endpoint's pinned SSH key no longer
+matches the network-presented host RSA key. An attempted batch-mode,
+publickey-only version query stopped at SSH host key rejection before
+authentication. No host pin override, password retry or router action
+is authorized until independent trusted console verification of the
+router identity; do not assume it is the exact C320 site gateway.
+
+R9.15 offline pairing preview accepts ONLY distinct canonical 32-byte
+WireGuard public keys and validated private/public topology. All
+Site B RouterOS review commands are disabled; a site owner must
+explicitly apply changes on B, under independently reviewed rollback.
+Never capture Site B's WireGuard private key or accept default/wide
+AllowedIPs exported by version-dependent RouterOS tooling.

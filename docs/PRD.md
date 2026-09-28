@@ -1014,3 +1014,11 @@ an approved private cross-site route actually exists. Never equate
 private address syntax with proven private reachability. R9.15 is
 LAB-only fixed-choice UI + offline nonexecuting review, NOT actual
 server activation, Router B export or real physical OLT adoption.
+
+R9.15 additional SHOULD: Central Site A can derive a **disabled,
+review-only** Site B RouterOS7 pairing package from validated topology
+and separately provided PUBLIC keys. Site A and Site B each retain
+their own PRIVATE keys. No Site A remote push, wide default AllowedIPs,
+unsafe export QR defaults or automatic route/firewall modifications.
+Actual signed Tenant Admin profile download and separately approved
+Site A local activation remain MUST/NOT IMPLEMENTED.

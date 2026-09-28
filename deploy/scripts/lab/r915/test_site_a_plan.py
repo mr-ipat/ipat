@@ -1,5 +1,7 @@
 """Lab-only no-device central Site A connection decision tests."""
 import importlib.util
+import base64
+import sys
 from pathlib import Path
 import unittest
 
@@ -8,6 +10,10 @@ spec = importlib.util.spec_from_file_location('site_a_plan',
 module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
 P = module
+sys.path.insert(0,str(Path(__file__).resolve().parent))
+from pairing_bundle_review import render, public_key
+AKEY=base64.b64encode(b'A'*32).decode()
+BKEY=base64.b64encode(b'B'*32).decode()
 
 BASE = {'mode':'wireguard', 'site_a_endpoint':'198.51.100.9',
     'site_b_gateway':'routeros7','management_host':'10.10.13.233',
@@ -53,6 +59,24 @@ class HubSpokeTests(unittest.TestCase):
         self.assertFalse(result['router_push_enabled'])
 
 class SiteADashboardContracts(unittest.TestCase):
+    def test_nonroot_user_unit_preserves_private_listener_and_demo_only(self):
+        root=Path(__file__).resolve().parents[4]
+        unit=(root/'deploy/scripts/lab/r915/ipat-r911-preview.service').read_text()
+        smoke=(root/'deploy/scripts/lab/r915/actual_lab_hub_http_smoke.py').read_text()
+        for expected in ('/home/openai/.cache/ipat/r915-preview/target/debug/control-api',
+                         'IPAT_LAB_WEB=1','IPAT_R911_PRIVATE_CANARY=YES',
+                         'IPAT_RUN_K3S_LAB=0','IPAT_LAB_OIDC_VERIFY=NO',
+                         'NoNewPrivileges=yes','ProtectSystem=strict',
+                         'MemoryMax=256M','CPUQuota=20%'):
+            self.assertIn(expected,unit)
+        for unsafe in ('User=root','ExecStartPre','iptables','nft ',
+                       '0.0.0.0:3002','IPAT_R83_REGISTRY_WRITE=YES'):
+            self.assertNotIn(unsafe,unit)
+        for marker in ('PUBLIC_HUB_WG_SITE_B_INITIATES','PRIVATE_HUB_WG_SITE_B_INITIATES',
+                       'SITE_OPERATOR_SELF_CONFIGURES_NO_PUSH','router_push_enabled',
+                       'direct_private_vps_ssh_transport_observed'):
+            self.assertIn(marker,smoke)
+
     def test_hub_dashboard_and_backend_are_paired_and_no_push(self):
         root=Path(__file__).resolve().parents[4]
         html=(root/'web/lab/device-workbench.html').read_text()
@@ -70,5 +94,44 @@ class SiteADashboardContracts(unittest.TestCase):
         self.assertIn('r915_hub_is_site_a_and_never_pushes_to_site_b',rust)
         self.assertIn('\"router_push_enabled\":false',rust)
         self.assertIn('\"network_actions\":0',rust)
+
+class ManualSiteBPairingBundleTests(unittest.TestCase):
+    def test_approved_topology_only_generates_disabled_operator_package(self):
+        result=render(BASE,'lab-a',AKEY,BKEY,51820)
+        self.assertEqual(result['mode'],'NONEXECUTABLE_PAIRING_REVIEW')
+        self.assertFalse(result['router_push_enabled'])
+        self.assertFalse(result['config_applied'])
+        self.assertEqual(result['network_actions'],0)
+        self.assertFalse(result['device_adopted'])
+        self.assertEqual(result['site_a_management_route'],'10.10.13.233/32')
+        self.assertEqual(result['site_b_peer_allowed_ips'],['10.253.77.1/32'])
+        self.assertEqual(result['site_a_peer_allowed_ips'],['10.253.77.2/32','10.10.13.233/32'])
+        lines=result['site_b_routeros_disabled_review_commands']
+        self.assertEqual(len(lines),3)
+        self.assertTrue(all('disabled=yes' in line for line in lines))
+        self.assertIn('endpoint-address=198.51.100.9',lines[2])
+        self.assertIn('public-key="'+AKEY+'"',lines[2])
+        self.assertNotIn(BKEY,' '.join(lines))
+        self.assertNotIn('0.0.0.0/0',str(result))
+        self.assertNotIn('private-key=',str(result))
+    def test_only_real_site_owner_keypair_can_be_inserted_and_must_be_distinct(self):
+        with self.assertRaises(ValueError):public_key('bad')
+        with self.assertRaises(ValueError):public_key(base64.b64encode(bytes(32)).decode())
+        with self.assertRaises(ValueError):render(BASE,'lab-a',AKEY,AKEY,51820)
+        with self.assertRaises(ValueError):render(BASE,'unsafe / name',AKEY,BKEY,51820)
+        with self.assertRaises(ValueError):render(BASE,'lab-a',AKEY,BKEY,80)
+        with self.assertRaises(ValueError):render(dict(BASE,mode='ipsec'),'lab-a',AKEY,BKEY,51820)
+    def test_direct_verified_path_requires_no_vpn_package(self):
+        data=dict(BASE,mode='direct_private',site_a_endpoint='10.99.0.10',
+                  private_path_verified=True)
+        result=render(data,'lab-a','','',51820)
+        self.assertEqual(result['mode'],'DIRECT_PRIVATE_NO_PAIRING')
+        self.assertFalse(result['router_push_enabled'])
+        self.assertFalse(result['config_generated'])
+    def test_static_preview_never_calls_ssh_or_firewall(self):
+        source=Path(__file__).with_name('pairing_bundle_review.py').read_text()
+        for forbidden in ('subprocess','paramiko','iptables','wg set','ip route add',
+                          'RouterOS API','ssh '):
+            self.assertNotIn(forbidden,source)
 
 if __name__=='__main__': unittest.main()

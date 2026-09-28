@@ -116,3 +116,56 @@ R9.15 updated the private lab physical historical record and UI with
 this exact no-auth result WITHOUT marking physical onboarding or
 actual_worker_private_route_verified true. This result is a dated
 historical fact, NOT an online health probe.
+
+## Router B independent SSH host key discrepancy
+
+A single bounded owner-authorized, **public-key-only** attempted
+read-only RouterOS version query against the PREVIOUSLY supplied
+management endpoint aborted locally because its current RSA SSH host
+key differs from the Mac's PREEXISTING pinned known_hosts entry.
+There was no router authentication and NO RouterOS command was
+executed. The endpoint has NOT been independently proven to be the
+same x86 RouterOS7 gateway at the C320 site, so it is NOT bound to
+DEV-01's Site B inventory. Never run `ssh-keygen -R`, overwrite the
+existing pin or supply the earlier chat password to bypass this.
+Trusted physical/router console must independently confirm the
+router's currently expected host key, model and firmware before
+staging any Site B peer pairing or privileged configuration.
+This is a distinct security blocker from the OLT's own unverified
+RSA key; resolving one does NOT resolve the other.
+
+## Review-only pairing bundle generated AT Site A
+
+`deploy/scripts/lab/r915/pairing_bundle_review.py` now accepts a
+validated no-secret topology plus the two separately generated 32-byte
+WireGuard **PUBLIC** keys, a unique site suffix and reviewed port.
+It produces a Site A local peer review summary and three RouterOS7
+Site B commands, ALL explicitly `disabled=yes`; these are **manual
+operator review artifacts**, not executable approved configuration.
+The Site B operator alone generates/retains its own private key;
+Site A alone retains its own private key. IPAT does not collect either.
+Site A's reviewed peer routes include only Site B tunnel /32 and
+one approved OLT management /32. Site B's peer AllowedIPs includes
+only Site A tunnel /32; no default route, customer VLAN, generic
+RFC1918 or automatic OLT return-path NAT is configured.
+
+The renderer validates distinct canonical public keys, strictly
+restricted site identifier and safe UDP port; it rejects unsupported
+IPsec pairing instead of silently inventing implementation. For an
+independently verified direct-private network it generates **no VPN
+package at all**. Eleven pure offline R9.15 tests verify the no-push
+rules, key boundaries and disabled output. The RouterOS snippet is
+still NOT reviewed against the actual site gateway/firmware and must
+NOT be applied to the live distribution router before separate
+signed owner/maker/checker change approval, firewall ordering and
+console-backed rollback are actually demonstrated.
+
+According to MikroTik's documented WireGuard peer behavior, RouterOS
+can generate its own interface private key; only the public key is
+shared. Exact allowed-address and endpoint semantics require explicit
+review, especially with different RouterOS 7 minor versions. Do NOT
+blindly import automatically exported client profiles if they contain
+wide/default AllowedIPs; the IPAT template intentionally restricts
+this to narrow management tunnel hosts. Official references:
+https://help.mikrotik.com/docs/spaces/ROS/pages/69664792/WireGuard
+https://www.wireguard.com/quickstart/

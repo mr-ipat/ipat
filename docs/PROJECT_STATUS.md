@@ -4022,3 +4022,34 @@ Device Manager page. Actual endpoint returned HTTP200; failure was
 a test harness LengthLimitError, not an HTTP route failure. Increased
 that single static HTML test cap to 64 KiB and requires full rerun.
 Do not cite first SHA as a passing independent Rust CI run.
+
+R9.15 additional physical Site B access discovery: a single bounded,
+strict-host-key, NO-PASSWORD public-key-only attempt to query the
+previously owner-provided RouterOS endpoint stopped before login:
+PREEXISTING Mac SSH known_hosts entry DOES NOT match the current
+network-presented RSA host key. ZERO router commands were executed;
+NO known_hosts modifications or insecure retry. Its identity and
+association with DEV-01 site are NOT independently verified. Both
+RouterOS identity proof and C320 trusted-console proof remain
+critical path before actual peer setup or physical adoption.
+R9.15 local tests after historical direct VPS evidence and offline
+self-config unit contract: R9.0+R9.11+R9.12+R9.15 25/25 PASS;
+R7.9+R9.13+R9.14 25/25 PASS; JS syntax and rustfmt PASS.
+The initial f09bc2c CI hit an undersized HTML test cap after adding
+the Site A panel; this was corrected in d8b9cb1. Subsequent feature
+SHA CI and isolated VPS build/deploy status must be checked separately.
+
+R9.15 extra offline Site A pairing renderer:
+`deploy/scripts/lab/r915/pairing_bundle_review.py` now produces
+**disabled=yes** RouterOS7 Site B manual peer review commands using
+A public key and narrow A tunnel /32 plus a separate nonexecutable
+Site A peer review summary using B public key and only B tunnel /32 +
+OLT management /32. No private key input, remote API, sudo, firewall
+or route changes. Independently proven direct-private mode correctly
+generates NO WireGuard package, unimplemented IPsec refuses output.
+R9.15 new offline combined R9.0/11/12/15 test count 29/29 PASS;
+R9.15 standalone pure tests 11/11 PASS. Actual signed Tenant Admin
+profile download, local Site A activation, actual gateway pairing and
+hardware adoption remain NOT DONE. Static VPS preview rollout R9.15
+should be checked independently after versioned source build and
+actual HTTP smoke.
