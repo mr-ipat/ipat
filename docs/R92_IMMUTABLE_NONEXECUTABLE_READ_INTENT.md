@@ -106,3 +106,42 @@ or actual health reading is triggered by the R9.2 intent.
 R9.0 documented that owner Mac only had untrusted
 public Telnet negotiation while the actual VPS route timed out;
 NO CREDENTIAL may be sent on that plaintext channel.
+
+## Independent executed software release checkpoint
+
+PR #110 R9.2 feature SHA
+`b9e3edd264bb7336b68fe071603ea5c7af69f9cc`
+passed GitHub CI `36379223832`
+4/4 SUCCESS. After merge canonical
+code SHA `9e02ded020d697b8c5b82bc6ad3e3357c2eda2bb`
+passed independent GitHub MAIN
+CI `36379530246` 4/4 SUCCESS.
+Actual release source hashes
+matched private GitHub, owner
+FileVault Mac and clean actual
+nonroot Ubuntu26 VPS by
+SHA256-verified Git bundle
+clean fast-forward. VPS final
+full locked offline Rust workspace
+and fmt, R9.1 5/5 static and
+R9.2 4/4 static PASS.
+Real browser-local Mac access
+to actual private Rust
+Device Manager and main
+preview 200, ZERO physical
+devices, forged business API
+namespace HTTP401 and
+unprovisioned signed SQL
+HTTP404 also reverified.
+Encrypted SOURCE-only Restic
+`f7aa9126` all 168/168
+packs full-read, exact
+isolated source SHA256
+restore plus historical
+PARTIAL root-readable
+config restoration PASS;
+NOT offsite whole-host
+or real database/K3s recovery.
+No live human MFA, physical
+device, Telnet login or
+read-probe execution occurred.

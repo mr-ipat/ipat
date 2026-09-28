@@ -1,7 +1,7 @@
 # IPAT — Project Status
 
 **As-of:** 2026-09-28 Asia/Jakarta
-**Current milestone:** R9.2 CANDIDATE — immutable, permanent, NONEXECUTABLE read-only probe intents following real R9.1 four-gate readiness (R9.1 main independently CI 4/4); R9.2 feature's disposable SQL/signed session CI verification PENDING. Actual authenticated physical OLT read, real customer IdP+MFA and full production DR remain OPEN.
+**Current milestone:** R9.2 VERIFIED SOFTWARE — real durable IMMUTABLE NONEXECUTABLE first-read intents with signed opaque CSRF session and latest four-gate PostgreSQL checks; R9.2 feature CI 36379223832 and independent post-code-main CI 36379530246 each 4/4 SUCCESS. Final code SHA 9e02ded020d697b8c5b82bc6ad3e3357c2eda2bb synced clean GitHub/owner Mac/nonroot Ubuntu26 VPS. Actual physical OLT/ONT probe, live customer MFA/BFF and full production DR remain MUST/OPEN. Detailed final evidence appended.
 **Historical R7.1 state (superseded by later entries):** R7.1 original Rust ZTE C320 strict offline read-only evidence parser, owner-private non-network importer, hard-disabled firmware and large RED unfulfilled-PRD warning across all three private dashboard previews FEATURE PR #71 MERGED at code SHA d452d1be6943bb4b3685b2136ad30b587e6af1e9. Both independent feature-PR GitHub CI 36249894205 and post-feature-main CI 36250108104 completed SUCCESS in all four independent jobs (locked Rust/security/UI/OLT offline, disposable Ubuntu26 K3s and two isolated synthetic PostgreSQL recovery jobs, none deployed live). Actual clean unchanged Ubuntu 26.04.1 VPS canonical source, private GitHub and owner FileVault Mac main synchronized at feature SHA; actual VPS rustfmt and 145/145 locked OFFLINE whole-workspace Rust tests, 5/5 synthetic offline CLI permission/data tests, 5/5 source PRD red warning + disabled firmware checks and 7/7 existing R6.8 Python dashboard tests PASS. Existing R6.8 synthetic Node DOM proof rerun on Mac Node v22.22, actual authorized Mac private dashboard served LARGE red PRD alert via real HTTP 200/no-store/CSS high contrast while 3 business APIs remained HTTP401. FileVault Mac encrypted exact merged-feature-source Restic snapshot 63c7c461 independently isolated SHA256 restored plus full encrypted pack read PASS; selected historical root-readable config separately restored, NOT full VPS or real PostgreSQL PITR. Clean main production readiness 8/8 automatic gates PASS, ALL 7/7 independent external safety gates BLOCKED, production NO_GO; live VPS K3s/PostgreSQL/nftables inactive. ZTE C320 actual model/boards/running firmware, authenticated private device route and owner recovery/maintenance approval still unavailable; TC-OLT-01 physical NOT RUN, no firmware update or device changes. Separate physical blocker Issue #72 and high-risk firmware Issue #73 OPEN. Final docs-only checkpoint independent CI, exact updated source synchronization and backup to be logged immutably after docs merge to avoid recursive SHA-changing commits. Developer Mr. iPat.
 
 ## 1. Source of truth and provenance
@@ -3472,3 +3472,356 @@ no claim of successful physical device
 adoption is made. See the detailed
 R9.2 runbook, ADR-040 and newest CI
 checkpoint at milestone close.
+
+## R9.2 independently verified immutable nonexecutable read-intent release — 2026-09-28
+
+**Real software acceptance:** feature PR #110 commit
+`b9e3edd264bb7336b68fe071603ea5c7af69f9cc`
+passed mandatory GitHub run `36379223832`
+ALL **4/4 SUCCESS**, including real disposable
+PostgreSQL 16 0009 migration/role isolation/
+two-company maker-checker readiness/intent/audit
+checks and the real RSA signed ID+access-bound
+opaque identity session with exact CSRF, fresh
+separate restricted SQL role and a successful
+actual PostgreSQL immutable request+safe list.
+Independent AFTER CODE MAIN merge CI
+`36379530246` passed ALL **4/4 SUCCESS**
+at exact canonical code main SHA
+`9e02ded020d697b8c5b82bc6ad3e3357c2eda2bb`.
+All existing real disposable 1-node Ubuntu26
+K3s, PostgreSQL physical/logical restore,
+CWMP original SOAP/USP actual protobuf
+software tests were retained and passed;
+NO test contacted owner's real OLT.
+
+Private GitHub, owner's clean FileVault Mac
+and actual authorized clean NONROOT
+Ubuntu 26.04 VPS were independently
+synchronized to this exact code SHA by
+SHA256-verified Git bundle and clean
+fast-forward. Actual nonroot canonical VPS
+full locked OFFLINE Rust workspace/fmt,
+R9.1 static 5/5 and new R9.2 static
+4/4 PASS. The existing actual nonroot
+VPS Rust dashboard preview was guardedly
+restarted and owner Mac's actual private
+SSH tunnel reestablished using exact SHA.
+Real owner Mac HTTP returned HTTP200
+for current /lab and /lab/device-workbench,
+physical device count remained ZERO;
+forged Host/tenant/role/bearer were refused
+HTTP401 by all three business
+namespaces; unprovisioned true signed
+SQL private routes remained HTTP404.
+No intent mutation or live IdP
+route was publicly or privately mounted.
+
+FileVault owner Mac encrypted
+SOURCE-only Restic snapshot
+`f7aa9126` passed full 168/168
+pack reads, isolated exact
+SHA256 source restoration,
+and separately selected historical
+PARTIAL root-readable restore.
+This is NOT complete offsite
+VPS/actual customer PostgreSQL
+or actual K3s datastore DR.
+
+**RED MUST REMAIN UNIMPLEMENTED:** customer
+confidential true IdP authorization-code
+redemption, production human MFA and
+multinode HTTPS session, physical
+device-specific verified secure
+private management, exact real C320
+identity/model/firmware, independently
+approved restricted real device
+read-only account, actual
+hardware interop/health, separately
+audited per-device durable worker
+execution with atomic fresh gate
+checks, and whole-host+PG+K3s
+offsite restore. R9.0 owner Mac
+observed untrusted public Telnet IAC
+but actual VPS timeout; NEVER
+send even test passwords on this
+public plaintext Telnet path.
+R9.2 is an audited stored INTENT
+only, NOT physical authorization.
+
+## R9.3 secure site-access gate draft — 2026-09-28
+
+Following the owner-provided exact DEV-01 C320 public Telnet NAT,
+created `docs/R93_C320_SECURE_SITE_ACCESS_GATE.md` and aligned PRD
+and device ledger. This milestone is DOCUMENTATION ONLY and requires
+owner-side secure management access before any further live attempt.
+No real device login, secret handling, secure route, VPS retest, worker,
+firmware change, deployment, live identity or fresh physical test
+was performed in R9.3. R9.2 stored requests remain NONEXECUTABLE.
+Current blockers: safe management protocol/version and secure owner
+site router/tunnel selection, verification of actual restricted worker
+route, independent exact device identity and account, live IdP/MFA,
+independent review and actual read-only TC-OLT-01 interoperability.
+Next priority: owner confirms SSH/SNMPv3 or site-isolated Telnet over
+verified VPN; validate the exact secure path and identity first, then
+implement narrowly audited leased read-only dispatch with disposable
+tests before separate opt-in physical read. No architectural decision
+changed; existing ADR-038 through ADR-040 remain binding.
+
+## R9.3 owner-site transport clarification — 2026-09-28
+
+Owner now confirms DEV-01 ZTE C320 has ONLY Telnet available and
+no existing site VPN. Proposed solution is a separate scoped WireGuard
+site gateway plus truly isolated final local Telnet management hop.
+The site router, VLAN isolation, exact private OLT IP and rollback
+route have NOT been confirmed; no live network modification,
+connection with credentials or physical device test occurred.
+Documented staged requirements and no-bypass risks in
+`docs/R93_C320_SECURE_SITE_ACCESS_GATE.md`. Continue offline
+software work independently; live physical TC-OLT-01 BLOCKED until
+independently reviewed gateway, secure route, account and identity.
+
+## R9.4 RouterOS 7 owner confirmation and offline planning
+
+Owner confirms MikroTik RouterOS 7 is available at the C320 site.
+Added offline-only WireGuard site-gateway predeployment guidance and
+address overlap preflight/tests. No actual MikroTik, C320 or Ubuntu
+VPS changes or credentials were used. Next: review redacted gateway
+model/RouterOS minor version, safe OOB recovery and exact isolated
+OLT management path; only then propose an attended staged rollout.
+
+## R9.4 gateway information checkpoint — 2026-09-28
+
+Owner reports an x86 RouterOS 7 gateway directly connected to the
+C320 local network and physical or console access. R9.4 plan and
+DEVICE_MATRIX updated. Addressing and local isolation remain unknown.
+Five offline address-planning tests passed. No physical test or
+network configuration changes were made in this checkpoint.
+
+## R9.5 optional VPN and lab connection selector — 2026-09-28
+
+Owner clarified VPN should be optional and manageable by Tenant Admin
+Dashboard, not an ad hoc CLI dependency. Added LAB-only connection
+method selector to existing Device Manager HTML/JS with public Telnet
+and RouterOS6+WireGuard rejection, plus static offline contract tests.
+Owner-authorized one-shot no-auth Mac network recheck to reported
+public candidate returned TCP reachable/Telnet IAC/15 bytes, ZERO
+outbound credential or Telnet bytes. This is NOT authentication,
+physical adoption, verified C320 identity or actual VPS route health.
+No actual tenant backend, configuration database, gateway deployment,
+OLT CLI, firmware changes or customer network changes performed.
+Next: signed MFA Tenant Admin network connection inventory persisted
+with exact tenant/POP isolation, reviewed transport-plan workflow,
+and an explicitly nonexecuting dry-run; separately verify owner-site
+secure last hop and dedicated actual worker reachability before any
+physical read-only C320 acceptance.
+
+R9.5 executed local verification: 3/3 new preview contracts, 5/5
+R9.4 network-plan unit tests, 7/7 R9.0 no-auth preflight tests,
+8/8 isolated R7.9 C320 SSH adapter mock tests and Node JS syntax
+passed. The broader R7.9 test discovery FAILED one integration
+setUpClass because the required compiled Rust parser binary was
+absent on the owner Mac; do not report the full R7.9 suite passed.
+Actual DEV-01 test was bounded Mac TCP/Telnet transport only.
+
+## R9.6 safe-as-live device protection and backend-only lab planner
+
+Implemented Rust Axum private LAB-only enum `/lab/demo/connection-plan`
+POST and deliberate dashboard validation button, no saved config,
+credentials, network actuation, adoption or worker dispatch. Added
+Rust Axum tests for same-origin denial, plan-only response, public
+Telnet denial, RouterOS6 mismatch, unsupported secure protocol and
+unknown real-secret fields. R9.6 static Python UI 3/3 and JS syntax
+checks executed successfully; Rust code compile/actual Axum tests
+must run on toolchain-equipped Ubuntu or GitHub CI before merge.
+No new physical OLT command, Telnet login or network mutation.
+Prior Mac passive TCP/Telnet 15-byte result is historical only.
+Next: independently run locked Rust tests/CI, merge only after
+acceptance, then build genuine DB-backed Tenant Admin scoped draft
+and approved tunnel workflow with safe staged rollback.
+
+## R9.7 staged durable network-method draft (development only)
+
+Proposed `deploy/db/migrations/0010_lab_connection_drafts.sql` and
+new actual disposable PostgreSQL integration test plus ordered CI
+step; no live customer migration, HTTP mount or tunnel executor.
+Client can select supported methods via R9.5 and invoke nonexecuting
+R9.6 LAB backend plan; R9.7 intends server-side durable actual-tenant
+method-only drafts once real IdP/MFA prerequisite is proven. Until
+fresh complete CI after this change, SQL integration is UNVERIFIED.
+No actual C320 provisioning or CLI command performed; treat it as
+live distribution and require independent safe path + evidence.
+
+## R9.8 unmounted typed tenant connection BFF (development only)
+
+Added Rust signed opaque-session plus exact CSRF and fresh scoped SQL
+seam to propose only immutable connection-choice metadata via separate
+role. Not mounted in actual HTTP. R9.8 static boundary test 1/1 PASS
+and pinned Linux rustfmt stream comparison PASS. Rust compile and
+real signed-session/PG R9.8 integration NOT YET independently proven.
+No keys, credentials, device traffic, gateway configuration or
+real C320 operation introduced by R9.8.
+
+## R9.8 actual IPAT VPS source-route recheck — 2026-09-28
+
+One explicitly bounded nonroot no-auth check from the real Ubuntu
+IPAT VPS to the exact owner-provided public DEV-01 TCP321 endpoint
+returned TIMEOUT (observed 2026-09-28T06:19:51Z), despite historical
+owner-Mac TCP/Telnet receipt. Zero client credential bytes,
+no OLT command, authentication, firewall/NAT/router modification,
+firmware or physical-adoption status changes. This is a source-
+dependent reachability blocker of UNDETERMINED cause. Public Telnet
+would STILL be unsuitable for credentials even if route were fixed.
+No provider firewall mutations are approved without independent
+recovery and per-VPS isolation; obtain controlled private site path.
+
+## R9.6–R9.8 independent GitHub acceptance — 2026-09-28
+
+Feature SHA `434e6b9144b05ef6a54dc46c4439c40ad0189d14`
+passed ALL 4/4 independent GitHub Actions jobs in run
+`36385828544` on PR #112: locked Rust/unit/static tests,
+real disposable PostgreSQL two-tenant R9.7 draft migration
+and exact own-POP policy tests, separate PostgreSQL physical
+recovery lab, and isolated Ubuntu26 K3s. CI does NOT imply
+real private OLT connectivity, real IdP/MFA or secure management.
+R9.8 original Rust session seam is UNMOUNTED and only static
+boundary plus compilation/unit code was exercised, not genuine
+joined live human IdP and separate real writer account.
+Owner-reported C320 must remain UNKNOWN/NOT_MEASURED. Current
+actual IPAT VPS recheck TIMEOUT is recorded above; do not
+attempt public Telnet credential-based adoption. Feature PR
+remains a development branch pending separate integration and
+release review; no customer production deploy performed.
+
+## R9.9 owner default OLT credential disclosure and VPS root-access diagnosis — 2026-09-28
+
+Owner offered temporary factory/default DEV-01 C320 username and
+password in chat. Treat as disclosed/high-risk credentials; DO NOT
+persist exact values in repository, tests, terminal history or
+logs. NO Telnet authentication was attempted: public TCP321 is
+plaintext and real VPS source path most recently TIMEOUT. Public
+banner is not validated hardware identity; no device provisioning,
+OLT read, ONT operation or firmware activity occurred.
+
+Independently verified actual owner-Mac `ssh ipat-lab` succeeds as
+nonroot `openai`, which belongs to Linux `sudo` group. VPS has
+`/etc/ssh/sshd_config.d/00-ipat-lab-hardening.conf` with
+`PermitRootLogin no`. Explicit root key attempt is offered and
+accepted at SSH key-selection stage but direct root login is denied;
+there is no SSH authentication-agent session from tool context.
+Advised owner to use `ssh ipat-lab` followed by local interactive
+`sudo -i` without uploading any passphrase/password. User-side
+sudo root shell NOT independently confirmed. No SSH policy, keys,
+root filesystem or perimeter firewall were modified. Direct root
+SSH re-enable remains blocked pending tested independent console
+recovery and approved rollback.
+
+Newest PR #112 docs-only HEAD `e2347171229ee73e5e5d3a78ea0b221124cf866e`
+passed 4/4 GitHub jobs in run `36386319167`. This confirms lab
+software CI, NOT production physical OLT interoperability or
+human MFA. Next gated priority remains owner-controlled secure
+site gateway with dashboard-backed staged review and no-impact
+read-only C320 validation after verifying actual local isolation.
+
+## R9.10 DEV-01 private SSH: actual Mac handshake only (2026-09-28)
+
+Owner reported private SSH candidate `10.10.13.233:321` and
+OpenSSH failure with legacy host key offers. Per-owner-authorized
+Mac diagnostics established TCP and received `ZTE_SSH.1.0` SSHv2
+banner. Default client negotiation failed because offered host key
+algorithms were ssh-rsa and ssh-dss. Explicit per-process
+HostKeyAlgorithms=+ssh-rsa negotiated group16-sha512, then failed
+because server offered only older CBC cipher suites. A SECOND
+bounded diagnostic with per-process Ciphers=+aes128-cbc
+negotiated AES128-CBC / HMAC-SHA1, obtained an RSA host-key
+fingerprint (reported to owner for independent trusted-site
+verification), and STOPPED at `Host key verification failed`.
+No SSH login, passwords, stored known_host pin, shell commands,
+production gateway change, OLT/ONT config read or write occurred.
+The host banner and network reachability do NOT independently prove
+actual chassis serial/model/firmware or nonshared trusted last hop.
+No host-key verification bypass or global weak SSH config change
+was performed. Next gate: owner compares host-key fingerprint
+via independently trusted local OLT console or controlled site
+inventory, validates dedicated non-disruptive read-only account
+and local path isolation, then controls one session with audited
+bounded commands and measured operational impact. Newer SSH
+firmware/options should be evaluated vendor-specifically but
+firmware change remains separately gated on this LIVE OLT.
+
+## R9.11 live-distribution physical no-auth pre-adoption — 2026-09-28
+
+Built fixed-target private legacy SSH no-credential transport checker
+`deploy/scripts/lab/r911/private_ssh_identity_probe.py` with exact
+RFC1918 validation and per-run nonroot opt-in. Actual Mac R9.11 first
+9s check TIMEOUT, bounded 20s repeat reached `ZTE_SSH.1.0`, same
+R9.10 RSA SHA256 fingerprint, and STOPPED at unverified host key.
+ZERO SSH credentials and OLT commands; no router/ONT/OLT mutation.
+Added private-only static historical evidence endpoint and Device
+Manager physical-gates panel, including explicit no online/health
+claims. Five new mock/static unit tests PASS; existing R9.0 plus
+new R9.11 12/12 on Mac; JS syntax and git diff check PASS.
+Rust HTTP test/whole workspace should pass pinned CI before merge.
+Physical C320 adoption remains BLOCKED by independent key proof,
+local isolation, restricted read account, approved baseline and
+actual private VPS worker path. No absolute zero-impact guarantee.
+
+R9.11 added an explicit Rust public-API regression test that rejects
+the physical-evidence route outside private non-K3s lab mode.
+R9.11 source also documents offline repro plus an optional bounded
+nonroot one-shot NO-AUTH private SSH probe; it is NOT a polling worker.
+This final code must clear independent CI before merging. The owner
+has not yet independently verified the observed RSA fingerprint,
+so physical login remains prohibited in the live-distribution gate.
+
+R9.11 parallel-lab canary code: hardcoded opt-in isolated
+`127.0.0.1:3002`, never interferes with existing :3000 and refuses
+public K3s and all identity/membership/registrar/reviewer options.
+New Rust bind-control tests added; actual Ubuntu nonroot canary
+runtime/network isolation remains UNVERIFIED until build, listener
+inspection and HTTP negative checks are explicitly executed.
+No live OLT login or router operations authorized by this setting.
+
+## R9.11 independently tested owner VPS temporary canary
+
+Owner nonroot VPS build from verified Git bundle SHA
+`cea7692fcd4ab73be7aa62bb0ba73a68837fa4b023e4ea560e7de29d69185f4c`
+checked out standalone code SHA `621ad09` and compiled pinned locked
+Rust OFFLINE single job at low priority; binary SHA
+`39d3bb51d6b5359c48af00732d185cd0c46aab65b02ab207ec26a206b0cec233`.
+Independent GitHub Actions on SAME code SHA: run `36391439831`
+ALL 4/4 jobs PASS (unit/static Rust, disposable PostgreSQL RLS,
+separate PG physical recovery, isolated K3s Ubuntu26).
+Temporary private VPS HTTP canary after two corrected smoke-harness
+failures (TIME_WAIT bind check and header casing) PASSED actual
+127.0.0.1:3002 evidence HTTP200/no-store, denied POST405 and forged
+real APIs401, loopback-only bind, original :3000 HTTP200 before/after.
+No account/tenant data or OLT credentials read; canary intentionally
+STOPPED at end and no persistent public service installed.
+Added versioned Python smoke script and static safety contract;
+local combined R9.0+R9.11 tests 13/13 PASS.
+This is LAB preview validation, NOT verified actual OLT adoption.
+
+## R9.11 current owner VPS on-login private preview operational evidence
+
+After successful temporary nonroot canary smoke and previously verified
+4/4 CI on exact app code SHA `621ad09`, staged reviewed source-only
+user service SHA256:
+`7dffe3e79e492a830cd69ba9d90fa2fe0b878455c860e7de29d69185f4c`.
+Installed at `~/.config/systemd/user/ipat-r911-preview.service`.
+Installed/running/enabled under `openai` WITHOUT `sudo`; existing
+127.0.0.1:3000 remained bound and HTTP200 throughout. New
+127.0.0.1:3002 responds HTTP200 on device-workbench and physical
+evidence GET with no-store; unsupported POST HTTP405 and fake real
+business API GET HTTP401. A separate actual Mac SSH local-forward to
+VPS :3002 successfully fetched both and confirmed adoption false.
+Verified systemd runtime: ActiveState=active, SubState=running,
+NoNewPrivileges=yes, ProtectSystem=strict, ProtectHome=read-only,
+MemoryMax=268435456 bytes and CPU quota 200ms per second.
+`Linger=no`: service is enabled to start with user session, not
+promised HA after all sessions end; root-level linger intentionally
+unchanged. Safe nonroot rollback:
+`systemctl --user disable --now ipat-r911-preview.service`.
+No change to old :3000.
+This preview DOES NOT accept real VPN keys, OLT logins, provisioning
+or customer tenant data; physical DEV-01 remains NOT ADOPTED.

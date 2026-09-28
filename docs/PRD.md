@@ -889,3 +889,70 @@ trusted Host/Origin, CSRF and fresh SQL membership.
 No customer/public listener, worker, queue consumer,
 real credentials, Telnet login or physical health
 claim is enabled by this milestone.
+
+## R9.3 proposed secure physical C320 site-access gate
+
+MUST NOT treat owner-provided publicly NATed Telnet TCP/321 as an
+authenticated, encrypted or worker-reachable management route. Before
+any login or actual physical read: verify owner-authorized secure site
+transport and isolated last hop, independent host/device identity,
+restricted read-only account, exact tenant/POP and NOC reviewer,
+restricted actual nonroot worker reachability and fresh R9.1 gate
+revalidation. Keep R9.2 stored intents permanently nonexecutable.
+Record SITE-01 through SITE-06 evidence in
+`docs/R93_C320_SECURE_SITE_ACCESS_GATE.md`. Firmware mutation remains
+a separate prohibited high-risk workflow pending explicit authorization.
+
+## R9.4 RouterOS 7 site-gateway predeployment (offline only)
+
+Owner confirms a RouterOS 7 gateway exists, but its patch version,
+private C320 management VLAN and recovery access remain unverified.
+MUST limit any eventual WireGuard tunnel to one authorized site and
+private OLT host, with verified isolated final plaintext Telnet hop,
+no unrestricted customer/VPS route, explicit safe rollback and
+separate approval to disable public Telnet NAT. No direct live
+configuration is enabled by the offline R9.4 planner.
+
+## R9.5 approved optional tunnel selection and Tenant Admin UX direction
+
+WireGuard is optional, not a prerequisite for every IPAT tenant or
+RouterOS version. Tenant Admin MUST eventually manage per-site
+connection choices through authorized UI with backend review, including
+SSH/SNMPv3 authPriv, WireGuard, compatible IPsec and an IPAT gateway.
+Public Telnet MUST never become an authenticated management transport.
+R9.5 delivers only a clearly marked isolated LAB preview selector,
+NOT saved configuration, production tenant access or OLT adoption.
+
+## R9.6 safe-as-live OLT staging, backend plan check
+
+Treat DEV-01 as carrying active distribution traffic: NO discovery
+sweep, automatic login, firmware, configuration command or bulk ONU
+poll from the public Telnet endpoint. R9.6 MUST provide a nonexecuting
+backend-validated selection UI while live transport and MFA remain
+gated. Acceptance: real Axum tests deny missing origin and injected
+credential fields, reject public Telnet/RouterOS6 WireGuard, allow
+review-only eligible plan with zero network actions and no device
+adoption. Physical TC-OLT-01 requires independently accepted isolated
+last-hop, exact hardware identity and measured no-impact baseline.
+
+## R9.7 durable own-tenant network draft acceptance (NOT provisioning)
+
+After verified active tenant-admin membership, ONLY one immutable
+nonexecutable method/gateway draft per exact own candidate/POP may be
+stored with exact idempotent retry and same-transaction audit. SQL
+distinct no-login EXECUTE writer and restricted own-tenant reader must
+not gain raw table rights. No endpoint/secret/route or job is accepted;
+provisioning_enabled permanently false. Any proposed actual tunnel
+configuration, VPN key or live OLT probe is a SEPARATE milestone.
+
+## R9.11 LIVE C320 pre-adoption fail-closed acceptance
+
+MUST expose observed credential-free SSH handshake separately from
+actual physical adoption/health. Display each missing gate on the
+private lab screen, with no credential input or activation controls.
+Before actual authenticated adoption, require independently pinned
+host key, proven isolated last hop, restricted read-only account,
+exact firmware command allowlist, baseline/abort owner and worker
+private route. Never auto-provision customer ONTs or touch live OLT
+configuration during first-read admission. Transport evidence alone
+MUST NOT change connectivity=UNKNOWN or health=NOT_MEASURED.

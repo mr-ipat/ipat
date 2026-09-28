@@ -365,6 +365,63 @@ pub(super) async fn submit_nonexecutable_read_intent_for_session(
     result.get::<_, Option<Uuid>>(0)
 }
 
+/// R9.8 UNMOUNTED BFF connection-choice draft. Neither a VPN installer nor
+/// physical device admission. No real endpoint, secrets or route inputs.
+pub(super) async fn submit_nonexecutable_connection_draft_for_session(
+    vault: &mut BrowserSessionVault,
+    cookie: &str,
+    csrf: &str,
+    trusted_host_origin: bool,
+    restricted_reader: &Client,
+    restricted_draft_writer: &Client,
+    tenant: Uuid,
+    candidate: Uuid,
+    request_id: Uuid,
+    pop: &str,
+    method: &str,
+    gateway: &str,
+    now: u64,
+) -> Option<Uuid> {
+    if pop.is_empty()
+        || pop.len() > 128
+        || !pop
+            .bytes()
+            .all(|b| b.is_ascii_alphanumeric() || matches!(b, b'-' | b'_' | b'.'))
+        || !matches!(method, "direct_secure" | "wireguard" | "ipsec")
+        || !matches!(gateway, "routeros7" | "routeros6" | "linux" | "none")
+        || (method == "wireguard" && matches!(gateway, "routeros6" | "none"))
+        || (method == "ipsec" && gateway == "none")
+    {
+        return None;
+    }
+    let identity = vault.authenticate(
+        cookie,
+        Some(csrf),
+        RequestKind::Mutation,
+        trusted_host_origin,
+        now,
+    )?;
+    if !member(
+        restricted_reader,
+        identity.issuer(),
+        identity.subject(),
+        tenant,
+        "tenant_admin",
+        None,
+        now,
+    )
+    .await
+    {
+        return None;
+    }
+    let row = restricted_draft_writer.query_one(
+        "SELECT ipat_platform.propose_lab_connection_draft(         $1,$2,$3::uuid,$4::uuid,$5::uuid,$6,$7,$8)",
+        &[&identity.issuer(), &identity.subject(), &tenant,
+          &candidate, &request_id, &pop, &method, &gateway],
+    ).await.ok()?;
+    row.get::<_, Option<Uuid>>(0)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

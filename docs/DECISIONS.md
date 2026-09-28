@@ -484,3 +484,52 @@ readiness again, use independent verified site route/device identity,
 per-device durable leases, explicit human approval and recovery before
 any actual device connection. Production release NOT approved.
 See docs/R92_IMMUTABLE_NONEXECUTABLE_READ_INTENT.md.
+
+## ADR-041 — APPROVED PRODUCT DIRECTION / DEPLOYMENT STILL GATED: connection-method choice
+
+Decision 2026-09-28: IPAT must not universally require WireGuard,
+VPN or MikroTik RouterOS >=7. Tenant Admin SHALL ultimately select
+supported direct secure management (verified SSH/SNMPv3 authPriv),
+WireGuard, compatible IPsec or a separately verified IPAT site gateway.
+RouterOS 7 is required only for MikroTik built-in WireGuard, not for
+IPAT device management in general. A device with ONLY Telnet MUST
+be reached solely across an independently verified trusted isolated
+private last hop; public Telnet cannot carry authenticated management
+credentials. Dashboard choice is the product-facing interface, but
+all real tenant rights, reviews and provisioning remain backend-only.
+R9.5 UI selector is a lab prototype, NOT deployed tunnel control.
+Supersedes any reading of R9.3/R9.4 that WireGuard is universally
+required; those earlier documents describe one candidate path only.
+
+## ADR-042 — PROPOSED, NOT APPROVED: live C320 no-change gateway return path
+
+For the owner-reported active distribution ZTE C320 with directly
+connected x86 RouterOS7, consider an independently scoped secure
+site VPN plus one-destination source NAT on its dedicated management
+hop to avoid a live OLT static-route change. THIS IS A PROPOSAL,
+not a customer-network change or proof the last hop is isolated.
+An alternate independently secured gateway/protocol may be selected.
+Requires verified real topology, management VLAN and return path,
+existing RouterOS filter/NAT order, owner console/recovery, approved
+worker identity, signed tenant review and observed no-impact baseline.
+Public Telnet credentials remain forbidden. No tunnel/gateway action
+or real C320 provisioning was performed by this ADR.
+
+## ADR-043 — Development-only isolated parallel UI canary
+
+For safe progression without disrupting the previously running
+SSH-private Device Manager on the actual VPS, new preview builds may
+run ONLY when explicitly opted in on hardcoded `127.0.0.1:3002`,
+with actual/synthetic OIDC and tenant-write options disabled, and
+no K3s/public deployment. Original :3000 and :3001 must remain
+unmodified. Canary test MUST verify actual loopback bind and negative
+real-business API responses and terminate cleanly. This is not
+a substitute for live MFA Tenant Admin, approved device management,
+independently pinned legacy SSH host identity or private VPN rollout.
+
+ADR-043 implementation note 2026-09-28: the temporary smoke runner
+was complemented by an actual reviewed nonroot systemd user unit on
+the owner VPS, restricted and verified to 127.0.0.1:3002 while :3000
+kept serving. Existing host Linger=no remains unchanged; this
+unit is an on-login private LAB preview, not persistent enterprise
+availability or permission to operate real OLT/ONT hardware.

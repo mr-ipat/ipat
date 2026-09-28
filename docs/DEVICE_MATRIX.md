@@ -353,3 +353,68 @@ NOT evidence_type=physical_device_interop.
 DEV-01 exact device and protocol compatibility remain UNTESTED;
 TC-OLT-01 remains NOT RUN; connectivity UNKNOWN and health
 NOT_MEASURED. See R90_REAL_ZTE_CANDIDATE_TELNET_NETWORK_FIRST_CONTACT.md.
+
+## R9.3 DEV-01 site path acceptance — PENDING, not interoperability
+
+Owner reports DEV-01 ZTE C320 public NAT TCP/321 to plaintext Telnet/23.
+R9.0 owner-Mac unauthenticated handshake is the only observed device-path
+evidence; actual VPS path timed out. No real ZTE identity, firmware,
+privileged login, vendor command or SSH/SNMPv3 capability verified.
+SITE-01..SITE-06 are all NOT RUN. See
+`docs/R93_C320_SECURE_SITE_ACCESS_GATE.md`; TC-OLT-01 NOT RUN.
+
+## R9.4 owner-reported site topology (no physical acceptance)
+
+Owner reports a MikroTik x86 RouterOS 7 connected directly on the
+same local network as DEV-01 ZTE C320, with owner-side physical or
+console recovery available. Version/build, actual private management
+IP/VLAN isolation, gateway baseline and restoration remain UNVERIFIED.
+No WireGuard session, live Telnet login or TC-OLT-01 test performed.
+
+## R9.6 DEV-01 live-distribution assumption
+
+For future testing, assume this reported C320 is LIVE with active ONTs:
+no physical authentication, polling, upgrade or configuration change
+until isolated management and approved read-only safeguards are proven.
+Owner-reported endpoint TCP/Telnet can be passively tested with ZERO
+transmit bytes; this is NOT hardware identity or device health.
+R9.6 backend selection tests are synthetic-only, TC-OLT-01 NOT RUN.
+
+## R9.7 durable connection metadata is NOT ZTE interoperability
+
+New disposable-only tenant method/gateway draft does not include
+private/public IP, credentials, exact device identity, management
+route, tunnel key or live probe. DEV-01 authentic physical TC-OLT-01
+remains NOT RUN. No performance/ONT impact measurements exist yet.
+
+## 2026-09-28 VPS owner-authorized passive DEV-01 repeat observation
+
+At 2026-09-28T06:19:51Z the actual authorized nonroot IPAT VPS
+performed ONE bounded public TCP/321 receive-only R9.0 check to the
+owner-provided numeric DEV-01 candidate endpoint. It returned TIMEOUT.
+Zero credential bytes were sent, no Telnet commands, login, site route
+or hardware changes occurred. Owner Mac's earlier credential-free
+TCP/Telnet handshake DOES NOT prove VPS reachability or device identity.
+Physical TC-OLT-01 remains NOT RUN; connectivity UNKNOWN,
+health NOT_MEASURED and exact model/firmware UNVERIFIED.
+
+## R9.10 owner-provided private SSH endpoint (unauthenticated)
+
+At 2026-09-28 the actual owner Mac established TCP/SSH with the
+reported private candidate management address TCP321. Banner
+`ZTE_SSH.1.0`; peer offered ssh-rsa/ssh-dss and legacy CBC ciphers.
+Explicit per-process compatibility testing reached server
+RSA host key but stopped before authentication on strict host-key
+verification. Identity, chassis, exact firmware, read-only account,
+management segment isolation and worker/VPS private path remain
+UNVERIFIED. Physical read-only TC-OLT-01 NOT RUN. Health NOT_MEASURED.
+
+## R9.11 second bounded live private SSH observation
+
+One 9-second noauth SSH handshake attempt timed out. Following an
+adjustment to a 20-second MAX subprocess budget, ONE more noauth
+physical candidate probe returned `ZTE_SSH.1.0` and repeated the
+R9.10 RSA SHA256 fingerprint. No authentication or CLI commands.
+This is stable identity-observation evidence ONLY across observations;
+it is not independent identity trust, verified exact model/firmware,
+validated last-hop safety or physical adoption. Physical read=NOT RUN.

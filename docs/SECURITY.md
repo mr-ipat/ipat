@@ -1029,3 +1029,95 @@ before physical I/O. No real credentials,
 OLT public Telnet, management addresses,
 evidence hashes or reviewer details are
 exposed to the proposed browser-facing API.
+
+## R9.6 production-like OLT protection and lab planner boundary
+
+Treat owner DEV-01 as actively serving distribution and subscribers.
+No unauthenticated Telnet public endpoint may accept even temporary
+management passwords, nor may public TCP banner imply trusted hardware.
+The R9.6 synthetic lab planner rejects unknown fields, physical
+addresses and raw secrets; same-origin loopback and explicit demo
+header are NOT production identity or authorization. No network
+actuation, credential storage, dispatch, device adoption or firmware
+function is attached. Real privilege requires signed session/MFA,
+fresh DB tenant+POP membership, maker/checker and secure route.
+
+## R9.7 owner tenant draft authorization (DISPOSABLE LAB ONLY)
+
+Migration 0010 rejects public Telnet method and RouterOS6 WireGuard,
+excludes all keys/addresses/credentials, checks active own tenant-admin
+membership and exact own candidate POP at insert and listing time,
+uses FORCE RLS and separate NOLOGIN SECURITY DEFINER owner/EXECUTE,
+and writes a unique same-transaction immutable audit. Identity claim
+text alone is never authentication; external signed OIDC MFA plus fresh
+opaque session and independent authorizations are mandatory before
+any mount. No actual VPN worker or public device dispatch exists.
+
+## R9.8 BFF proposal restrictions
+
+No public or lab HTTP route invokes R9.8 draft proposal. It denies
+missing trusted origin, CSRF and stale or incorrect signed-session
+identity via existing sealed vault+fresh restricted member lookup;
+SQL migration 0010 repeats own active tenant+candidate POP. Genuine
+live IdP/MFA and actual separate writer provisioning have NOT been
+end-to-end verified; this remains unmounted and lab-only.
+
+## R9.9 disclosed temporary OLT credentials and direct-root request
+
+Owner-supplied default/factory OLT credentials must be considered
+compromised after chat disclosure. Never transmit them on currently
+exposed public plaintext Telnet, or copy into repository or logs.
+Recommend prompt rotation via trusted site console/isolated network,
+removal of WAN-facing Telnet forwarding under console-backed change,
+and dedicated restricted read-only credentials kept exclusively in
+an approved encrypted local/managed secret store. No actual changes
+were made to live C320, MikroTik, firewall or root SSH policy.
+
+Existing effective SSH lab hardening snippet explicitly denies root
+SSH (`PermitRootLogin no`), while existing key-authenticated nonroot
+`openai` remains reachable and has sudo-group membership. Root
+shell via interactive sudo is preferred to restoring direct root SSH.
+Do not switch `PermitRootLogin yes` or make emergency SSH/firewall
+edits before independent actual console login and rollback proof.
+
+## R9.10 legacy ZTE private SSH compatibility risk
+
+The observed private SSH server offers weak legacy ssh-rsa host-key
+signature and CBC cipher suites; no global OpenSSH policy downgrade,
+known-host verification bypass, SSH-DSS or public Telnet credential
+transport is authorized. A narrowly scoped per-process lab-only
+compatibility invocation negotiated to host-key verification, then
+stopped without credentials. Independently verify actual OLT RSA
+SHA256 fingerprint using trusted local console/site inventory and
+prove private last-hop trust BEFORE even the proposed temporary
+account can be used. Rotate user-shared factory credentials on a
+trusted channel before enrolling an actual read-only account.
+
+## R9.11 bounded private SSH physical preflight and dashboard gates
+
+A real owner-Mac credential-free legacy SSH handshake is permitted as
+historical evidence only, under a per-run explicit opt-in, exact
+private host+port, and fixed timeout. Process-local ssh-rsa/AES128-CBC
+compatibility must never be reused globally or with disclosed factory
+credentials. Unauthenticated server key is UNTRUSTED pending
+independent owner verification. Private lab JSON/BFF shows false
+for all admission gates, zero device commands and no automatic
+provisioning. Do not use this preview as genuine tenant auth.
+
+## R9.11 separate-private-port canary control
+
+Parallel canary `127.0.0.1:3002` requires explicit opt-in and
+rejects OIDC, scoped identity, registry/reviewer and public K3s
+settings; it may NEVER be treated as Tenant Admin authentication.
+The normal production/public API does not mount its physical
+historical evidence route and remains deny-by-default. Do not bind
+an alternate public hostname or create provider firewall changes.
+
+## R9.11 canary runtime observed security controls
+
+On actual owner VPS, user service showed NoNewPrivileges=yes,
+ProtectHome=read-only, ProtectSystem=strict, MemoryMax=256MiB,
+CPUQuota=20%, and only 127.0.0.1:3002 listener. No root or firewall
+changes. Genuine business endpoints returned HTTP401; historical
+physical evidence GET HTTP200 is PRIVATE LAB ONLY and POST 405.
+Factory C320 credentials were NEVER used by this dashboard or VPS.

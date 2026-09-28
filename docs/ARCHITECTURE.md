@@ -1009,3 +1009,53 @@ durable worker must make a SECOND fresh real approval/readiness
 and physical private-route decision; no intent grants any
 network permission. The BFF opaque CSRF mutation bridge
 is UNMOUNTED pending verified live human IdP/MFA and trusted TLS.
+
+## R9.6 staging: safe tenant connection plan boundary
+
+The existing private LAB-only Rust `device_workbench_lab` Axum router
+now handles a fixed-enum, body-limited, CSRF/Host/Origin-checked
+nonpersistent `/lab/demo/connection-plan` POST; it cannot accept
+addresses, keys, credentials or network configuration. Response always
+reports zero network actions, worker disabled and physical adoption
+false. The LAB browser invokes it only by deliberate button click.
+Future REAL Tenant Admin network-connection service belongs behind
+signed MFA and exact tenant/POP scoped authorization, tenant RLS and
+separate immutable approval ledger; its reviewed executor must be
+isolated from browser and all R9.2 immutable intents.
+
+## R9.7 tenant connection-choice persistence boundary
+
+Migration 0010 proposes a sealed tenant+candidate+POP nonexecutable
+method/gateway draft with separate immutable audit and dedicated
+NOLOGIN owner and EXECUTE roles. A separate existing restricted
+identity-reader obtains own verified current tenant-admin plans only.
+This does not grant device connection, live identity login, actual
+WireGuard key management, public API, route installation or firmware.
+
+## R9.8 signed-session to sealed connection-draft bridge (unmounted)
+
+The Rust browser-session module now contains an UNMOUNTED
+nonexecuting connection-choice proposal seam requiring verified
+opaque signed-session mutation+CSRF, independent origin and fresh
+restricted own-tenant `tenant_admin` SQL verification before
+sending only approved method and gateway enums to a separate
+EXECUTE-only writer. No tunnel/network worker, active device
+route, real IdP admission or secret vault is connected here.
+
+## R9.11 parallel restricted private canary binding
+
+`IPAT_R911_PRIVATE_CANARY=YES` is accepted only when unprivileged
+`IPAT_LAB_WEB=1` without actual or synthetic OIDC, scoped membership,
+registry, review or public K3s mode. It selects hardcoded loopback
+127.0.0.1:3002 instead of disturbing the existing :3000 demo or
+:3001 independent identity proof. No public port/firewall changes.
+Lab physical SSH record is historical static noauth evidence only.
+
+## R9.11 reviewed user-session unit on actual owner VPS
+
+Actual nonroot canary uses `deploy/scripts/lab/r911/ipat-r911-preview.service`
+installed as a user unit with explicit lab-only environment, locked
+loopback :3002, strict systemd home/system read-only settings and
+CPU/memory ceilings. Existing :3000 lab was left serving and unchanged.
+Unit autostart is linked to user's systemd session; linger remains
+OFF, so no permanent HA/service-level availability claim is made.

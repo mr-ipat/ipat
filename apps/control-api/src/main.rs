@@ -40,6 +40,16 @@ fn bind_address(k3s_lab: bool) -> &'static str {
     }
 }
 
+/// Separate strictly loopback-only private canary: NEVER alter the
+/// existing :3000 lab or :3001 identity listener and never serve in K3s.
+fn private_canary_bind(k3s_lab: bool, lab: bool, identity: bool, requested: bool) -> &'static str {
+    if requested && lab && !identity && !k3s_lab {
+        "127.0.0.1:3002"
+    } else {
+        identity_lab_bind_address(k3s_lab, identity)
+    }
+}
+
 fn lab_web_enabled(k3s_lab: bool, lab_requested: bool) -> bool {
     lab_requested && !k3s_lab
 }
@@ -269,7 +279,18 @@ async fn main() {
         None
     };
     // Never serve restricted identity proof from the public K3s interface.
-    let address = identity_lab_bind_address(k3s_lab, identity.is_some());
+    let private_canary = std::env::var("IPAT_R911_PRIVATE_CANARY").as_deref() == Ok("YES");
+    if private_canary
+        && (!lab_web_enabled
+            || identity.is_some()
+            || scoped_requested
+            || registry_requested
+            || review_requested
+            || k3s_lab)
+    {
+        panic!("private no-identity canary requires explicit isolated non-K3s lab");
+    }
+    let address = private_canary_bind(k3s_lab, lab_web_enabled, identity.is_some(), private_canary);
     let listener = tokio::net::TcpListener::bind(address)
         .await
         .expect("bind isolated identity/dashboard lab listener");
@@ -315,6 +336,27 @@ mod tests {
         assert_eq!(identity_lab_bind_address(false, true), "127.0.0.1:3001");
         assert_eq!(identity_lab_bind_address(false, false), "127.0.0.1:3000");
         assert_eq!(identity_lab_bind_address(true, true), "0.0.0.0:3000");
+    }
+
+    #[test]
+    fn private_canary_has_strict_loopback_only_and_never_changes_live_ports() {
+        assert_eq!(
+            private_canary_bind(false, true, false, true),
+            "127.0.0.1:3002"
+        );
+        assert_eq!(
+            private_canary_bind(false, true, false, false),
+            "127.0.0.1:3000"
+        );
+        assert_eq!(
+            private_canary_bind(false, true, true, true),
+            "127.0.0.1:3001"
+        );
+        assert_eq!(
+            private_canary_bind(true, false, false, true),
+            "0.0.0.0:3000"
+        );
+        assert!(!lab_web_enabled(true, true));
     }
 
     #[tokio::test]
@@ -376,6 +418,23 @@ mod tests {
         assert!(LAB_INDEX.contains("Mode terbatas"));
         assert!(LAB_INDEX.contains("Mr. iPat"));
         assert!(!LAB_INDEX.contains("type=\"password\""));
+    }
+
+    #[tokio::test]
+    async fn r911_physical_evidence_is_never_mounted_in_public_or_k3s_mode() {
+        let path = "/lab/device-physical-evidence";
+        assert_eq!(get_path(app(), path).await.status(), StatusCode::NOT_FOUND);
+        assert!(!lab_web_enabled(true, true));
+        let response = get_path(app_with_lab(true), path).await;
+        assert_eq!(response.status(), StatusCode::OK);
+        assert_eq!(response.headers()[header::CACHE_CONTROL], "no-store");
+        let body = axum::body::to_bytes(response.into_body(), 8192)
+            .await
+            .unwrap();
+        let data: serde_json::Value = serde_json::from_slice(&body).unwrap();
+        assert_eq!(data["device_adopted"], false);
+        assert_eq!(data["out_of_band_host_key_verified"], false);
+        assert_eq!(data["olt_commands_executed"], 0);
     }
 
     #[tokio::test]

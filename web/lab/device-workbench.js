@@ -139,3 +139,107 @@ node("refresh").addEventListener("click",()=>{void refresh();});
 node("pop-filter").addEventListener("change",draw);
 node("kind-filter").addEventListener("change",draw);
 void refresh();
+
+// R9.5 connection selector is PRESENTATION ONLY: no persist, network or secrets.
+function describeConnection() {
+  const method=node("connection-method").value;
+  const gateway=node("connection-gateway").value;
+  const messages={
+    direct_secure:"Hanya bila perangkat mendukung SSH dengan identitas terverifikasi atau SNMPv3 authPriv; wajib membatasi sumber dan izin. Telnet tidak termasuk.",
+    wireguard:"WireGuard membutuhkan gateway yang mendukungnya, rute /32 yang disetujui, autentikasi peer, isolasi hop terakhir dan persetujuan terpisah.",
+    ipsec:"IPsec dapat digunakan dengan gateway yang kompatibel setelah parameter kriptografi, identitas peer, rute dan pemulihan diverifikasi.",
+    agent:"IPAT site gateway adalah rencana pengembangan, belum dapat diinstal atau digunakan untuk adopsi fisik.",
+    public_telnet:"DITOLAK: Telnet melalui IP publik tidak aman untuk autentikasi atau perintah. Pengujian tanpa kredensial hanya mencatat bukti jaringan, bukan adopsi."
+  };
+  let result=messages[method];
+  if(method==="wireguard" && gateway==="routeros6")
+    result="TIDAK KOMPATIBEL: WireGuard bawaan tidak tersedia pada RouterOS 6. Pilih IPsec atau gateway lain yang terverifikasi.";
+  if(method==="wireguard" && gateway==="none")
+    result="Gateway diperlukan untuk mengamankan akses perangkat Telnet-only; tidak ada tunnel site yang dapat dideploy dari pilihan ini.";
+  if(method==="direct_secure" && gateway==="routeros6")
+    result+=" Versi gateway tidak membuktikan bahwa OLT mendukung protokol aman.";
+  node("connection-result").textContent=result+" Ini hanya simulasi pilihan UI; tidak ada konfigurasi yang dikirim.";
+  node("server-plan-result").textContent="Pilihan berubah. Jalankan kembali validasi backend lab.";
+}
+node("connection-method").addEventListener("change",describeConnection);
+node("connection-gateway").addEventListener("change",describeConnection);
+describeConnection();
+
+// The backend lab plan is never persisted or executed. This request uses the
+// same local-only origin guard as existing fake-device mutations.
+async function checkConnectionPlan() {
+  const button=node("check-connection");
+  button.disabled=true;
+  node("server-plan-result").textContent="Memvalidasi rencana sintetis…";
+  try {
+    const response=await mutate("POST","/lab/demo/connection-plan",{
+      method:node("connection-method").value,
+      gateway:node("connection-gateway").value,
+      device_profile:node("connection-profile").value
+    });
+    if (!response.ok) throw new Error("lab backend denied request");
+    const result=await response.json();
+    if(result.lab_only!==true || result.plan_only!==true
+       || result.tenant_verified!==false || result.device_adopted!==false
+       || result.credentials_used!==false || result.network_actions!==0
+       || result.worker_dispatch_enabled!==false || result.health!=="NOT_MEASURED") {
+       throw new Error("unexpected backend plan response");
+    }
+    node("server-plan-result").textContent=(result.eligible_for_separate_review
+      ? "Layak ditinjau secara terpisah" : "Ditolak atau belum tersedia")
+      +" · "+result.reason+" · Tidak ada konfigurasi yang diterapkan.";
+  } catch {
+    node("server-plan-result").textContent="Validasi ditolak/gagal. Tidak ada konfigurasi yang diterapkan.";
+  } finally {button.disabled=false;}
+}
+node("check-connection").addEventListener("click",()=>{void checkConnectionPlan();});
+// R9.11: Historical credential-free physical evidence, NEVER live telemetry.
+// Ignore malformed/overclaiming server responses rather than showing ONLINE.
+async function showPhysicalEvidence() {
+  const statusNode = node("physical-evidence-status");
+  const gatesNode = node("physical-evidence-gates");
+  const gated = Object.freeze([
+    ["out_of_band_host_key_verified", "Fingerprint terverifikasi melalui konsol/inventaris tepercaya"],
+    ["management_segment_isolation_verified", "Segmen manajemen lokal terisolasi"],
+    ["dedicated_readonly_account_verified", "Akun khusus baca-saja tervalidasi"],
+    ["firmware_exact_readonly_commands_verified", "Perintah firmware baca-saja dikonfirmasi"],
+    ["owner_approved_noimpact_baseline_verified", "Baseline dan penghentian darurat disetujui"],
+    ["actual_worker_private_route_verified", "Worker VPS memiliki jalur privat terverifikasi"]
+  ]);
+  try {
+    const response = await fetch("/lab/device-physical-evidence", {
+      credentials:"omit",cache:"no-store"
+    });
+    if (!response.ok) throw new Error("evidence endpoint unavailable");
+    const evidence=await response.json();
+    if(evidence.schema_version!==1
+      || evidence.mode!=="historical_credential_free_transport_observation"
+      || evidence.target_slot!=="DEV-01"
+      || evidence.private_ssh_transport_observed!==true
+      || evidence.device_adopted!==false
+      || evidence.credentials_sent!==false
+      || evidence.olt_commands_executed!==0
+      || evidence.worker_dispatch_enabled!==false
+      || evidence.firmware_upgrade_enabled!==false
+      || evidence.connectivity!=="UNKNOWN"
+      || evidence.health!=="NOT_MEASURED"
+      || evidence.physical_read_test!=="NOT_RUN"
+      || gated.some(([key])=>evidence[key]!==false)) {
+      throw new Error("backend evidence overclaims physical readiness");
+    }
+    statusNode.textContent="DEV-01 · SSH privat pernah dijangkau tanpa autentikasi ("+
+      evidence.observed_on+") · fingerprint TERAMATI, BELUM DIPERCAYA · " +
+      "status perangkat UNKNOWN / NOT_MEASURED.";
+    const items=document.createDocumentFragment();
+    for(const [,title] of gated) {
+      const item=el("div","physical-gate");
+      item.append(el("span","flag unknown","BELUM DIVERIFIKASI"), el("span","",title));
+      items.append(item);
+    }
+    gatesNode.replaceChildren(items);
+  } catch {
+    gatesNode.replaceChildren();
+    statusNode.textContent="Bukti belum dapat diverifikasi. Tetap UNKNOWN; adopsi terkunci.";
+  }
+}
+void showPhysicalEvidence();
