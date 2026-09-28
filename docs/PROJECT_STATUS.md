@@ -4281,3 +4281,40 @@ Current PR #118 is STACKED on GitHub PR #117 DRAFT (GitHub Actions
 billing limits had prevented all latest #117 jobs from STARTING).
 Do NOT merge stacked PRs until latest actual GitHub full CI and
 required live-device independent identity/least-privilege approvals.
+
+## R9.18 sanitized public GitHub CI mirror and bounded offline OLT action preparation
+
+User authorized a public GitHub repository to avoid exhausting private
+GitHub Actions minutes. Original `mr-ipat/ipat` remains PRIVATE: its
+full Git history and existing Actions logs reference an active C320
+management network. Exposing the existing Git history would risk
+publishing production infrastructure details and would detach
+private forks/affect push rules. A NEW isolated public GitHub repo
+`mr-ipat/ipat-open-ci` was actually CREATED and verified PUBLIC, with
+ONE clean sanitized synthetic source snapshot (initial public SHA
+`cdf2697228907308a2089268b66c70734bd108fe`), NO original private
+history and NO real observed SSH fingerprint, live OLT management
+address or private owner endpoint. Sanitizer changed 35 files,
+replaced 9 distinct live public/private IP literals and 2 sensitive
+RSA fingerprints, discarded historical operational milestone docs;
+Mac test suites R9.0+R9.17 45/45, R7.9 25/25 and R9.15 13/13 PASS
+in sanitized source. New repo public visibility was independently
+queried through GitHub API. Its standard GitHub Actions workflow
+is staged in `ci/github-actions.yml` and is NOT ACTIVATED: current
+authorized GitHub OAuth lacks `workflow` scope and GitHub refused to
+push `.github/workflows/ci.yml`. Owner must grant workflow permission
+or create the workflow via GitHub UI. Do not claim CI executed yet or
+replace the private canonical repo with the public sanitized mirror.
+
+R9.18 new branch `feat/r918-c320-owner-only-capture-parser` adds a
+nonroot purely OFFLINE Rust C320 capture normalizer binary to existing
+`olt-core`. Intended human-controlled local steps, AFTER an
+independently authenticated read has succeeded, are strict owner-only
+0600 raw `show card` plus optionally `show version-running` files,
+validated by the existing `olt-core` parser; exclusive 0600 normalized
+JSON is emitted only to a protected 0700 owner directory with evidence
+hashes and adoption/authorization FALSE. The CLI does NOT contact a
+physical OLT or execute any OLT commands. Rust compiler/integration
+and actual owner-VPS isolated test are required before claiming this
+feature completed. Real C320 restricted SSH access, independently
+trusted host key and baseline continue to block physical adoption.

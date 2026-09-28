@@ -622,3 +622,19 @@ versioned production BFF contract, NOT as new dashboard language.
 Authenticated physical DEV-01 adoption still REQUIRES independent
 console host RSA identity, restricted account, last-hop isolation,
 actual read-only command and live baseline/MFA approval before RUN.
+
+## ADR-049 — Public synthetic CI MIRROR, private operational original
+
+Never set the existing operational `mr-ipat/ipat` PRIVATE Git history
+public merely to bypass hosted CI quota: it contains active device
+management addresses and historical network audit evidence. User's
+request for free public CI is satisfied through a NEW clean-source,
+synthetic-only PUBLIC mirror `mr-ipat/ipat-open-ci`; no original Git
+history or previous CI logs are included. Every mirror refresh must
+independently sanitize IP/domain/fingerprint fixtures and scan for
+secrets, with synthetic CI result provenance mapped to exact private
+source SHA. GitHub workflow installation remains blocked until owner
+updates OAuth `workflow` scope or installs checked-in staged YAML via
+GitHub UI. Public GitHub-hosted STANDARD runner minutes may be free;
+this never makes production deployment or physical device tests free
+of separate review. Preserve original private source and live evidence.
