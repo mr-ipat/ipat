@@ -101,3 +101,13 @@ kompatibilitas yang belum terbukti. Perbarui `DEVICE_MATRIX.md`,
 `PROJECT_STATUS.md` dan keputusan arsitektur hanya berdasarkan
 hasil yang benar-benar terjadi. Tidak boleh membuat status ADOPTED
 berdasarkan pengujian sintetis atau kredensial administrator bawaan.
+
+## Catatan kompatibilitas firmware ZTE
+
+Historical ZXA10 C300/C320 documentation describes `show card`
+and `show version-running` in operator modes other than initial
+unprivileged user mode. The actual DEV-01 firmware privilege layout
+and noninteractive SSH `exec` support remain unverified; never add
+`enable`, a privileged password or arbitrary interactive prompts
+to bypass failure. Confirm the smallest safe read-only role and
+exact command support through approved console/inventory first.

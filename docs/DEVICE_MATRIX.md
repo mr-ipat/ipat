@@ -493,3 +493,17 @@ Port443 negative result is source/time-specific, not proof of all
 HTTPS service ports. Physical identity=UNVERIFIED, site last hop=
 UNVERIFIED, actual read-only login=NOT RUN, adoption=FALSE,
 health=NOT MEASURED.
+
+## R9.19 C320 action availability evidence
+
+Owner-reported physical DEV-01 ZTE C320 is a known candidate, not an
+adopted or verified device. Reconfirmed private SSH banner transport
+on owner VPS, but no physical firmware/model/read-only login output.
+Offline parser `show card` and `show version-running` validated only
+with SYNTHETIC fixtures. Proprietary historical ZXA10 C300/C320
+command references describe both CLI commands but require a suitable
+operator CLI mode (not necessarily initial low-privilege user prompt).
+Exact command layout, privilege mode, noninteractive SSH execution and
+firmware on this physical chassis are UNKNOWN until the independent
+one-command restricted test. Active alarms, ONT listing/optics and
+all writes remain untested or blocked as classified in R9.19.

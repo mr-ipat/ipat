@@ -4377,3 +4377,27 @@ commands were executed.
 ## R9.19 C320 readiness catalog under implementation
 
 Branch `feat/r919-c320-real-action-readiness` adds a Rust private LAB GET with 8 C320 capability classifications and unconditional HTTP403 POST handlers. Card/version parser was tested offline in R9.18 but exact DEV-01 firmware/real restricted login remain unknown. Browser displays only disabled catalog metadata; no real worker, device authentication or network action is enabled. Initial Mac safety static checks 47/47 passed; actual R9.19 Rust compile/deploy still pending. No physical OLT read/adoption has occurred.
+
+R9.19 actual independent owner-VPS proof COMPLETE for PRIVATE LAB
+catalog ONLY: latest compiled application source SHA `13bed31`
+passed pinned Rust format check, targeted C320 unit/router tests and
+full locked offline `control-api` Rust suite; binary SHA256
+`7478f575a8bb2bb9f984ba15a8dd6cd18b68beb3db78d6a7aeaef2e906a8c9a4`.
+Separate nonroot actual VPS only upgraded protected loopback
+`127.0.0.1:3002` using guarded script SHA256
+`7511ba0c9efbacb17a2d8ab16ebe27a10c957a5bc760943961202c6cd3ab446a`;
+actual HTTP smoke SHA256
+`2c5e477ca4f1b75e6d9f495e08bfeebe105e91c08865d28a26f7864eaca9b488`
+PASSED. Eight C320 capabilities now visible in private Device
+Manager as disabled, all POST dispatch requests rejected 403, direct
+private SSH prioritized, old :3000 remains HTTP200. Prior user unit
+backed up for exact nonroot rollback in r919-release. No real C320
+credentials, chassis/firmware capture or network configuration
+commands were executed. Production C320 adoption remains BLOCKED.
+
+R9.19 actual owner Mac temporary SSH loopback forward confirmed NEW
+owner-VPS running dashboard has all eight explicit locked C320
+features; a real HTTP POST for read-only card action got HTTP403,
+`network_actions=0`; temporary tunnel closed. Nonroot VPS private
+proof filenames check located ZERO stored independent C320 console
+public host-key proof. No real physical read occurred.
