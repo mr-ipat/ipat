@@ -1022,3 +1022,12 @@ Future REAL Tenant Admin network-connection service belongs behind
 signed MFA and exact tenant/POP scoped authorization, tenant RLS and
 separate immutable approval ledger; its reviewed executor must be
 isolated from browser and all R9.2 immutable intents.
+
+## R9.7 tenant connection-choice persistence boundary
+
+Migration 0010 proposes a sealed tenant+candidate+POP nonexecutable
+method/gateway draft with separate immutable audit and dedicated
+NOLOGIN owner and EXECUTE roles. A separate existing restricted
+identity-reader obtains own verified current tenant-admin plans only.
+This does not grant device connection, live identity login, actual
+WireGuard key management, public API, route installation or firmware.

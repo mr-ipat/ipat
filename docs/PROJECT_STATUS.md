@@ -3639,3 +3639,15 @@ Prior Mac passive TCP/Telnet 15-byte result is historical only.
 Next: independently run locked Rust tests/CI, merge only after
 acceptance, then build genuine DB-backed Tenant Admin scoped draft
 and approved tunnel workflow with safe staged rollback.
+
+## R9.7 staged durable network-method draft (development only)
+
+Proposed `deploy/db/migrations/0010_lab_connection_drafts.sql` and
+new actual disposable PostgreSQL integration test plus ordered CI
+step; no live customer migration, HTTP mount or tunnel executor.
+Client can select supported methods via R9.5 and invoke nonexecuting
+R9.6 LAB backend plan; R9.7 intends server-side durable actual-tenant
+method-only drafts once real IdP/MFA prerequisite is proven. Until
+fresh complete CI after this change, SQL integration is UNVERIFIED.
+No actual C320 provisioning or CLI command performed; treat it as
+live distribution and require independent safe path + evidence.

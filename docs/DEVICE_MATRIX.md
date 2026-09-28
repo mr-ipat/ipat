@@ -379,3 +379,10 @@ until isolated management and approved read-only safeguards are proven.
 Owner-reported endpoint TCP/Telnet can be passively tested with ZERO
 transmit bytes; this is NOT hardware identity or device health.
 R9.6 backend selection tests are synthetic-only, TC-OLT-01 NOT RUN.
+
+## R9.7 durable connection metadata is NOT ZTE interoperability
+
+New disposable-only tenant method/gateway draft does not include
+private/public IP, credentials, exact device identity, management
+route, tunnel key or live probe. DEV-01 authentic physical TC-OLT-01
+remains NOT RUN. No performance/ONT impact measurements exist yet.

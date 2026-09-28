@@ -53,28 +53,48 @@ async fn preview_connection_plan(
     headers: HeaderMap,
     Json(plan): Json<LabConnectionPlan>,
 ) -> Result<(HeaderMap, Json<Value>), (StatusCode, HeaderMap, Json<Value>)> {
-    if !demo_csrf(&headers) { return Err(reject(StatusCode::FORBIDDEN)); }
-    if !["direct_secure", "wireguard", "ipsec", "agent", "public_telnet"]
-        .contains(&plan.method.as_str())
+    if !demo_csrf(&headers) {
+        return Err(reject(StatusCode::FORBIDDEN));
+    }
+    if ![
+        "direct_secure",
+        "wireguard",
+        "ipsec",
+        "agent",
+        "public_telnet",
+    ]
+    .contains(&plan.method.as_str())
         || !["routeros7", "routeros6", "linux", "none"].contains(&plan.gateway.as_str())
-        || !["VIRTUAL-SECURE-MANAGED", "VIRTUAL-TELNET-ONLY"].contains(&plan.device_profile.as_str())
-    { return Err(reject(StatusCode::BAD_REQUEST)); }
-    let (eligible_for_review, reason) = match (plan.method.as_str(), plan.gateway.as_str(), plan.device_profile.as_str()) {
+        || !["VIRTUAL-SECURE-MANAGED", "VIRTUAL-TELNET-ONLY"]
+            .contains(&plan.device_profile.as_str())
+    {
+        return Err(reject(StatusCode::BAD_REQUEST));
+    }
+    let (eligible_for_review, reason) = match (
+        plan.method.as_str(),
+        plan.gateway.as_str(),
+        plan.device_profile.as_str(),
+    ) {
         ("public_telnet", _, _) => (false, "PUBLIC_TELNET_CREDENTIALS_FORBIDDEN"),
-        ("direct_secure", _, "VIRTUAL-TELNET-ONLY") => (false, "DEVICE_HAS_NO_SECURE_NATIVE_PROTOCOL"),
+        ("direct_secure", _, "VIRTUAL-TELNET-ONLY") => {
+            (false, "DEVICE_HAS_NO_SECURE_NATIVE_PROTOCOL")
+        }
         ("wireguard", "routeros6", _) => (false, "ROUTEROS6_NO_BUILTIN_WIREGUARD"),
         ("wireguard" | "ipsec", "none", _) => (false, "SITE_GATEWAY_REQUIRED"),
         ("agent", _, _) => (false, "SITE_AGENT_NOT_IMPLEMENTED"),
         ("direct_secure", _, _) => (true, "VERIFY_REAL_SSH_OR_SNMPV3_IDENTITY"),
         ("wireguard" | "ipsec", _, _) => (true, "VERIFY_ISOLATED_LAST_HOP_AND_RECOVERY"),
-        _ => (false, "UNSUPPORTED")
+        _ => (false, "UNSUPPORTED"),
     };
-    Ok((super::private_lab_headers("application/json; charset=utf-8"), Json(json!({
-        "lab_only":true,"plan_only":true,"eligible_for_separate_review":eligible_for_review,
-        "reason":reason,"tenant_verified":false,"device_identity_verified":false,
-        "device_adopted":false,"credentials_used":false,"network_actions":0,
-        "worker_dispatch_enabled":false,"health":"NOT_MEASURED"
-    }))))
+    Ok((
+        super::private_lab_headers("application/json; charset=utf-8"),
+        Json(json!({
+            "lab_only":true,"plan_only":true,"eligible_for_separate_review":eligible_for_review,
+            "reason":reason,"tenant_verified":false,"device_identity_verified":false,
+            "device_adopted":false,"credentials_used":false,"network_actions":0,
+            "worker_dispatch_enabled":false,"health":"NOT_MEASURED"
+        })),
+    ))
 }
 
 #[derive(Default)]
@@ -230,7 +250,10 @@ pub(super) fn router() -> Router {
         .route("/lab/device-workbench", get(html))
         .route("/lab/device-workbench.css", get(css))
         .route("/lab/device-workbench.js", get(js))
-        .route("/lab/demo/connection-plan", axum::routing::post(preview_connection_plan))
+        .route(
+            "/lab/demo/connection-plan",
+            axum::routing::post(preview_connection_plan),
+        )
         .route("/lab/demo/device-candidates", get(list_demo).post(add_demo))
         .route("/lab/demo/device-candidates/{id}", delete(remove_demo))
         .layer(DefaultBodyLimit::max(2048))
@@ -417,38 +440,64 @@ mod tests {
         assert!(!html.contains("type=\"password\""));
         assert!(!html.contains("10.0.0.2"));
     }
-    const LAB_PLAN: &str = r#"{"method":"wireguard","gateway":"routeros7","device_profile":"VIRTUAL-TELNET-ONLY"}"#;
+    const LAB_PLAN: &str =
+        r#"{"method":"wireguard","gateway":"routeros7","device_profile":"VIRTUAL-TELNET-ONLY"}"#;
     #[tokio::test]
     async fn actual_axum_lab_plan_never_deploys_or_adopts() {
-        let app=router();
-        let missing_origin=request(app.clone(),"POST","/lab/demo/connection-plan",LAB_PLAN,false).await;
-        assert_eq!(missing_origin.status(),StatusCode::FORBIDDEN);
-        let allowed=request(app.clone(),"POST","/lab/demo/connection-plan",LAB_PLAN,true).await;
-        assert_eq!(allowed.status(),StatusCode::OK);
-        let body:Value=serde_json::from_slice(&to_bytes(allowed.into_body(),4096).await.unwrap()).unwrap();
-        assert_eq!(body["eligible_for_separate_review"],true);
-        assert_eq!(body["network_actions"],0);
-        assert_eq!(body["device_adopted"],false);
-        assert_eq!(body["worker_dispatch_enabled"],false);
-        assert_eq!(body["tenant_verified"],false);
+        let app = router();
+        let missing_origin = request(
+            app.clone(),
+            "POST",
+            "/lab/demo/connection-plan",
+            LAB_PLAN,
+            false,
+        )
+        .await;
+        assert_eq!(missing_origin.status(), StatusCode::FORBIDDEN);
+        let allowed = request(
+            app.clone(),
+            "POST",
+            "/lab/demo/connection-plan",
+            LAB_PLAN,
+            true,
+        )
+        .await;
+        assert_eq!(allowed.status(), StatusCode::OK);
+        let body: Value =
+            serde_json::from_slice(&to_bytes(allowed.into_body(), 4096).await.unwrap()).unwrap();
+        assert_eq!(body["eligible_for_separate_review"], true);
+        assert_eq!(body["network_actions"], 0);
+        assert_eq!(body["device_adopted"], false);
+        assert_eq!(body["worker_dispatch_enabled"], false);
+        assert_eq!(body["tenant_verified"], false);
         for bad in [
             r#"{"method":"public_telnet","gateway":"none","device_profile":"VIRTUAL-TELNET-ONLY"}"#,
             r#"{"method":"wireguard","gateway":"routeros6","device_profile":"VIRTUAL-TELNET-ONLY"}"#,
             r#"{"method":"direct_secure","gateway":"none","device_profile":"VIRTUAL-TELNET-ONLY"}"#,
         ] {
-            let resp=request(app.clone(),"POST","/lab/demo/connection-plan",bad,true).await;
-            assert_eq!(resp.status(),StatusCode::OK);
-            let body:Value=serde_json::from_slice(&to_bytes(resp.into_body(),4096).await.unwrap()).unwrap();
-            assert_eq!(body["eligible_for_separate_review"],false);
-            assert_eq!(body["network_actions"],0);
+            let resp = request(app.clone(), "POST", "/lab/demo/connection-plan", bad, true).await;
+            assert_eq!(resp.status(), StatusCode::OK);
+            let body: Value =
+                serde_json::from_slice(&to_bytes(resp.into_body(), 4096).await.unwrap()).unwrap();
+            assert_eq!(body["eligible_for_separate_review"], false);
+            assert_eq!(body["network_actions"], 0);
         }
         for unsafe_payload in [
             r#"{"method":"wireguard","gateway":"routeros7","device_profile":"VIRTUAL-TELNET-ONLY","password":"sensitive"}"#,
             r#"{"method":"telnet","gateway":"routeros7","device_profile":"VIRTUAL-TELNET-ONLY"}"#,
         ] {
-            let resp=request(app.clone(),"POST","/lab/demo/connection-plan",unsafe_payload,true).await;
-            assert!(matches!(resp.status(), StatusCode::BAD_REQUEST|StatusCode::UNPROCESSABLE_ENTITY));
+            let resp = request(
+                app.clone(),
+                "POST",
+                "/lab/demo/connection-plan",
+                unsafe_payload,
+                true,
+            )
+            .await;
+            assert!(matches!(
+                resp.status(),
+                StatusCode::BAD_REQUEST | StatusCode::UNPROCESSABLE_ENTITY
+            ));
         }
     }
-
 }

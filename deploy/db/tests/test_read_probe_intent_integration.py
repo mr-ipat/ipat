@@ -155,4 +155,12 @@ class DurableReadOnlyIntent(unittest.TestCase):
         self.assertEqual(intent(TA,a,"92000000-0000-4000-8000-000000000035",
                                 "pop-a",subject=CHECKER),ZERO)
         self.assertEqual(list_intents(TA,"pop-b"),"SET\n")
+def load_tests(loader, standard_tests, pattern):
+    # R9.7 piggybacks on the EXISTING disposable R9.2 CI discovery step;
+    # the OAuth bot has no workflow-edit scope. Existing R9.2 fixtures run
+    # first; then R9.7 adds a separately gated, nonexecuting 0010 migration.
+    import test_connection_drafts_integration
+    standard_tests.addTests(loader.loadTestsFromModule(test_connection_drafts_integration))
+    return standard_tests
+
 if __name__=="__main__": unittest.main()

@@ -1041,3 +1041,14 @@ header are NOT production identity or authorization. No network
 actuation, credential storage, dispatch, device adoption or firmware
 function is attached. Real privilege requires signed session/MFA,
 fresh DB tenant+POP membership, maker/checker and secure route.
+
+## R9.7 owner tenant draft authorization (DISPOSABLE LAB ONLY)
+
+Migration 0010 rejects public Telnet method and RouterOS6 WireGuard,
+excludes all keys/addresses/credentials, checks active own tenant-admin
+membership and exact own candidate POP at insert and listing time,
+uses FORCE RLS and separate NOLOGIN SECURITY DEFINER owner/EXECUTE,
+and writes a unique same-transaction immutable audit. Identity claim
+text alone is never authentication; external signed OIDC MFA plus fresh
+opaque session and independent authorizations are mandatory before
+any mount. No actual VPN worker or public device dispatch exists.

@@ -934,3 +934,13 @@ credential fields, reject public Telnet/RouterOS6 WireGuard, allow
 review-only eligible plan with zero network actions and no device
 adoption. Physical TC-OLT-01 requires independently accepted isolated
 last-hop, exact hardware identity and measured no-impact baseline.
+
+## R9.7 durable own-tenant network draft acceptance (NOT provisioning)
+
+After verified active tenant-admin membership, ONLY one immutable
+nonexecutable method/gateway draft per exact own candidate/POP may be
+stored with exact idempotent retry and same-transaction audit. SQL
+distinct no-login EXECUTE writer and restricted own-tenant reader must
+not gain raw table rights. No endpoint/secret/route or job is accepted;
+provisioning_enabled permanently false. Any proposed actual tunnel
+configuration, VPN key or live OLT probe is a SEPARATE milestone.
