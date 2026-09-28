@@ -3781,3 +3781,23 @@ New Rust bind-control tests added; actual Ubuntu nonroot canary
 runtime/network isolation remains UNVERIFIED until build, listener
 inspection and HTTP negative checks are explicitly executed.
 No live OLT login or router operations authorized by this setting.
+
+## R9.11 independently tested owner VPS temporary canary
+
+Owner nonroot VPS build from verified Git bundle SHA
+`cea7692fcd4ab73be7aa62bb0ba73a68837fa4b023e4ea560e7de29d69185f4c`
+checked out standalone code SHA `621ad09` and compiled pinned locked
+Rust OFFLINE single job at low priority; binary SHA
+`39d3bb51d6b5359c48af00732d185cd0c46aab65b02ab207ec26a206b0cec233`.
+Independent GitHub Actions on SAME code SHA: run `36391439831`
+ALL 4/4 jobs PASS (unit/static Rust, disposable PostgreSQL RLS,
+separate PG physical recovery, isolated K3s Ubuntu26).
+Temporary private VPS HTTP canary after two corrected smoke-harness
+failures (TIME_WAIT bind check and header casing) PASSED actual
+127.0.0.1:3002 evidence HTTP200/no-store, denied POST405 and forged
+real APIs401, loopback-only bind, original :3000 HTTP200 before/after.
+No account/tenant data or OLT credentials read; canary intentionally
+STOPPED at end and no persistent public service installed.
+Added versioned Python smoke script and static safety contract;
+local combined R9.0+R9.11 tests 13/13 PASS.
+This is LAB preview validation, NOT verified actual OLT adoption.

@@ -90,3 +90,18 @@ class DashboardEvidenceContract(unittest.TestCase):
         self.assertIn('evidence.device_adopted!==false',script)
         self.assertIn('/lab/device-physical-evidence',api)
         self.assertNotIn('password',json.dumps(doc).lower())
+
+class CanarySafetyContract(unittest.TestCase):
+    def test_private_canary_runner_never_touches_current_service_or_devices(self):
+        source=Path(__file__).with_name('private_loopback_canary_smoke.py').read_text()
+        for needed in ('IPAT_R911_CANARY_SMOKE', '127.0.0.1:',
+                       "BIN = Path('/home/openai/.cache/ipat/r911-canary/target/debug/control-api')",
+                       'IPAT_R911_PRIVATE_CANARY', "get(3000, '/healthz')",
+                       "get(3002, '/lab/device-physical-evidence')",
+                       "get(3002, '/v1/devices/DEV-01')",
+                       "get(3002, '/v1/tenant/overview')",
+                       'proc.terminate()', 'sock.listen(1)'):
+            self.assertIn(needed,source)
+        for disallowed in ('sudo ', 'iptables ', 'nft ', 'ufw ', 'telnet ',
+                           'ssh ', 'firewall-cmd', "sock.bind(('0.0.0.0', 3002))"):
+            self.assertNotIn(disallowed,source)

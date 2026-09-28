@@ -87,7 +87,31 @@ Private canary never exposes physical connection functionality or
 secret-taking HTTP routes. It refuses non-lab, actual OIDC, restricted
 membership, registry/reviewer options and K3s mode. Review real
 per-VPS loopback listener before attempting side-by-side deployment.
-No live OLT or site-router connectivity is required to show historical
-signed-in? NO: this page is a PRIVATE DEMO behind SSH tunneling only,
-not an authenticated tenant dashboard. Operator must never enter keys
-or real device passwords into this interface.
+No live OLT or site-router connectivity is required to display
+historical transport evidence. This page is a PRIVATE DEMO accessible
+only through an approved SSH tunnel, NOT an authenticated tenant
+dashboard. Never enter actual keys or device passwords into it.
+
+## Actual private canary on owner VPS: independently exercised
+
+On the actual nonroot Ubuntu owner VPS, source-only Git bundle was
+created from reviewed Mac checkout, verified by SHA-256 and Git bundle
+base check, and checked out separately at exact tested code SHA
+`621ad09ae466283898afd4f5de951ab3dffedc68`. The canonical VPS
+main workspace and old :3000 process were NOT modified. Bounded
+low-priority single-job `cargo build --locked --offline -p control-api`
+produced a binary with SHA256
+`39d3bb51d6b5359c48af00732d185cd0c46aab65b02ab207ec26a206b0cec233`.
+
+`private_loopback_canary_smoke.py` starts a temporary nonroot, no-OIDC
+process at 127.0.0.1:3002, tests the evidence JSON and true status
+claims, GET 200 / no-store, POST 405, both forged business API GET
+401, loopback-only bind, old :3000 health 200 before/after, then
+terminates and checks the canary listener is gone. Initial script
+attempts FAILED locally on a TIME_WAIT port-bind check and
+case-sensitive HTTP header check, then were CORRECTED. The final
+actual VPS full canary smoke PASSED. No root, SSH policy, firewall,
+customer data, site gateway or OLT operation was modified.
+The new panel was smoke tested on actual VPS as a TEMPORARY canary,
+NOT left running as an always-available service or rolled out to
+production/tenant users. Existing :3000 main LAB remains unchanged.

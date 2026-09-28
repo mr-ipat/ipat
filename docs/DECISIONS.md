@@ -514,3 +514,15 @@ existing RouterOS filter/NAT order, owner console/recovery, approved
 worker identity, signed tenant review and observed no-impact baseline.
 Public Telnet credentials remain forbidden. No tunnel/gateway action
 or real C320 provisioning was performed by this ADR.
+
+## ADR-043 — Development-only isolated parallel UI canary
+
+For safe progression without disrupting the previously running
+SSH-private Device Manager on the actual VPS, new preview builds may
+run ONLY when explicitly opted in on hardcoded `127.0.0.1:3002`,
+with actual/synthetic OIDC and tenant-write options disabled, and
+no K3s/public deployment. Original :3000 and :3001 must remain
+unmodified. Canary test MUST verify actual loopback bind and negative
+real-business API responses and terminate cleanly. This is not
+a substitute for live MFA Tenant Admin, approved device management,
+independently pinned legacy SSH host identity or private VPN rollout.
