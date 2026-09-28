@@ -1103,3 +1103,12 @@ credentials. Unauthenticated server key is UNTRUSTED pending
 independent owner verification. Private lab JSON/BFF shows false
 for all admission gates, zero device commands and no automatic
 provisioning. Do not use this preview as genuine tenant auth.
+
+## R9.11 separate-private-port canary control
+
+Parallel canary `127.0.0.1:3002` requires explicit opt-in and
+rejects OIDC, scoped identity, registry/reviewer and public K3s
+settings; it may NEVER be treated as Tenant Admin authentication.
+The normal production/public API does not mount its physical
+historical evidence route and remains deny-by-default. Do not bind
+an alternate public hostname or create provider firewall changes.

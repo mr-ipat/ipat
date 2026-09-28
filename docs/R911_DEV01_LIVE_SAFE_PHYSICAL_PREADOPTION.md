@@ -75,3 +75,19 @@ No physical authentication step is enabled until independently
 verified source trust plus isolated last hop and read-only account.
 Private Axum evidence is mounted only in explicit non-K3s lab mode;
 a separate regression ensures it is not mounted by normal public API.
+
+## Safe parallel loopback canary for the real VPS
+
+To demonstrate the new LAB physical-intake panel without restarting
+the existing SSH-private 127.0.0.1:3000 app, R9.11 permits a SEPARATE
+opt-in identity-free/private-only canary at 127.0.0.1:3002 using
+`IPAT_LAB_WEB=1 IPAT_R911_PRIVATE_CANARY=YES`. The normal lab still
+binds 127.0.0.1:3000; the distinct identity lab still uses :3001.
+Private canary never exposes physical connection functionality or
+secret-taking HTTP routes. It refuses non-lab, actual OIDC, restricted
+membership, registry/reviewer options and K3s mode. Review real
+per-VPS loopback listener before attempting side-by-side deployment.
+No live OLT or site-router connectivity is required to show historical
+signed-in? NO: this page is a PRIVATE DEMO behind SSH tunneling only,
+not an authenticated tenant dashboard. Operator must never enter keys
+or real device passwords into this interface.

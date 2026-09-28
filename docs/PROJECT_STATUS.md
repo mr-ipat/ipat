@@ -3773,3 +3773,11 @@ nonroot one-shot NO-AUTH private SSH probe; it is NOT a polling worker.
 This final code must clear independent CI before merging. The owner
 has not yet independently verified the observed RSA fingerprint,
 so physical login remains prohibited in the live-distribution gate.
+
+R9.11 parallel-lab canary code: hardcoded opt-in isolated
+`127.0.0.1:3002`, never interferes with existing :3000 and refuses
+public K3s and all identity/membership/registrar/reviewer options.
+New Rust bind-control tests added; actual Ubuntu nonroot canary
+runtime/network isolation remains UNVERIFIED until build, listener
+inspection and HTTP negative checks are explicitly executed.
+No live OLT login or router operations authorized by this setting.

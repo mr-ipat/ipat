@@ -1041,3 +1041,12 @@ restricted own-tenant `tenant_admin` SQL verification before
 sending only approved method and gateway enums to a separate
 EXECUTE-only writer. No tunnel/network worker, active device
 route, real IdP admission or secret vault is connected here.
+
+## R9.11 parallel restricted private canary binding
+
+`IPAT_R911_PRIVATE_CANARY=YES` is accepted only when unprivileged
+`IPAT_LAB_WEB=1` without actual or synthetic OIDC, scoped membership,
+registry, review or public K3s mode. It selects hardcoded loopback
+127.0.0.1:3002 instead of disturbing the existing :3000 demo or
+:3001 independent identity proof. No public port/firewall changes.
+Lab physical SSH record is historical static noauth evidence only.
