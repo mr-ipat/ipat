@@ -41,6 +41,8 @@ class HubSpokeTests(unittest.TestCase):
         result=P.review(data)
         self.assertEqual(result['site_a_endpoint_kind'],'PRIVATE')
         self.assertEqual(result['link_mode'],'direct_private')
+        self.assertEqual(result['site_a_role'],'EXISTING_PRIVATE_SITE_A_NO_TUNNEL')
+        self.assertEqual(result['site_b_role'],'EXISTING_PRIVATE_SITE_B_NO_TUNNEL')
     def test_unverified_private_hub_cannot_be_external_endpoint(self):
         with self.assertRaises(ValueError):
             P.review(dict(BASE,site_a_endpoint='10.99.0.10'))

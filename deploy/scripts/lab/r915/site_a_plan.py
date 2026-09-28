@@ -69,8 +69,10 @@ def review(data):
     if not data['site_b_recovery_verified']:
         flags.append('site_b_console_recovery')
     return {'schema': 1, 'state': 'REVIEW_ONLY',
-            'site_a_role': 'CENTRAL_HUB_LISTENER',
-            'site_b_role': 'SELF_CONFIGURED_SPOKE',
+            'site_a_role': ('EXISTING_PRIVATE_SITE_A_NO_TUNNEL' if data['mode']=='direct_private'
+                            else 'CENTRAL_HUB_LISTENER'),
+            'site_b_role': ('EXISTING_PRIVATE_SITE_B_NO_TUNNEL' if data['mode']=='direct_private'
+                            else 'SELF_CONFIGURED_SPOKE'),
             'site_a_endpoint_kind': 'PRIVATE' if private(a) else 'PUBLIC',
             'link_mode': data['mode'],
             'a_tunnel_host': str(x), 'b_tunnel_host': str(y),
