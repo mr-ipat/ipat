@@ -870,3 +870,22 @@ read_probe_eligible flag. That flag MUST NOT itself enqueue,
 execute or authorize network I/O. Browser/session access MUST still
 recheck current exact tenant/POP membership and real-human MFA/BFF
 remains a separate production gate.
+
+
+## R9.2 hardware-free durable first-read request criterion
+
+MUST distinguish operator's nonexecuting read-only
+probe REQUEST from both four-gate readiness and
+an independently approved actual transport dispatch.
+Acceptance: real disposable two-tenant/POP SQL
+demonstrates no intent before separate maker/checker
+approval+all four latest valid readiness gates,
+correct current NOC POP and authenticated signer;
+one immutable per candidate with exact idempotent
+retry and same-transaction private audit; later
+block cannot create another. The unmounted signed
+ID/access opaque BFF method separately requires
+trusted Host/Origin, CSRF and fresh SQL membership.
+No customer/public listener, worker, queue consumer,
+real credentials, Telnet login or physical health
+claim is enabled by this milestone.

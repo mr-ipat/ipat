@@ -1007,3 +1007,25 @@ attester identity and credentials. connectivity remains unknown,
 health remains not_measured and last_verified_at remains NULL.
 Even read_probe_eligible=true performs zero network I/O and cannot
 authorize firmware or write operations.
+
+
+## R9.2 permanent request is not device authorization
+
+Readiness, metadata approval and an authenticated
+session are all independent mandatory conditions.
+An own-tenant exact POP NOC session with correct CSRF
+may only propose one immutable, PRIVATE, nonexecutable
+request; the SQL function separately revalidates all
+conditions at insert time. Dedicated owner/EXECUTE
+and reader NOLOGIN role separation, FORCE RLS,
+same-transaction audit, unique per-candidate
+idempotency, no UPDATE/DELETE and always-NULL
+published_at prevent this software milestone
+from becoming a device-write or network-execution
+route. Later blocked/expired evidence cannot
+be overridden by any historical intent;
+future worker MUST revalidate independently
+before physical I/O. No real credentials,
+OLT public Telnet, management addresses,
+evidence hashes or reviewer details are
+exposed to the proposed browser-facing API.

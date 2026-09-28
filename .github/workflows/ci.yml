@@ -114,6 +114,8 @@ jobs:
           IPAT_R83_DEMO_HTTP=YES bash deploy/scripts/lab/r83/workbench-http-smoke.sh
       - name: R9.1 adoption readiness source gates remain unmounted and no-probe
         run: python3 -m unittest discover deploy/scripts/lab/r91 -p test_r91_contract.py -v
+      - name: R9.2 durable nonexecutable intent remains unmounted and no device I/O
+        run: python3 -m unittest discover deploy/scripts/lab/r92 -p test_r92_contract.py -v
       - name: R9.0 no-login public Telnet TCP321 candidate intake (OFFLINE mock only; never contact operator OLT from CI)
         run: |
           python3 -m py_compile deploy/scripts/lab/r90/olt-telnet-network-preflight.py
@@ -303,6 +305,9 @@ jobs:
       - name: R9.1 real disposable PostgreSQL immutable adoption readiness evidence and fail-closed eligibility
         run: |
           python3 -m unittest discover deploy/db/tests -p test_device_adoption_readiness_integration.py -v
+      - name: R9.2 separate sealed nonexecutable durable intent and immutable private audit (disposable ONLY)
+        run: |
+          python3 -m unittest discover deploy/db/tests -p test_read_probe_intent_integration.py -v
       - name: R7.8 real signed JWT to isolated Postgres reader to private Axum menu (synthetic CI ONLY)
         run: |
           python3 deploy/db/tests/seed_private_http_identity_ci.py

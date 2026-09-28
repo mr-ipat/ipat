@@ -102,6 +102,28 @@ def main():
       has_function_privilege('ipat_lab_identity_reader','{readiness}','EXECUTE')::int,
       has_function_privilege('ipat_lab_device_readiness','{readiness}','EXECUTE')::int"""
        ).stdout.strip()=="1|0|1|0"
+    # R9.2 distinct login used ONLY by actual disposable Rust signed opaque
+    # session tests. NO grants to real operators or live VPS PostgreSQL.
+    assert sql("SELECT to_regrole('ipat_lab_read_intent_writer') IS NULL").stdout.strip()=="t"
+    sql("""CREATE ROLE ipat_lab_read_intent_writer LOGIN INHERIT
+      NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS
+      PASSWORD 'local_ci_synthetic_only'""")
+    sql("GRANT ipat_read_intent_execute TO ipat_lab_read_intent_writer")
+    intent="ipat_platform.request_lab_read_probe_intent(text,text,uuid,uuid,uuid,text)"
+    visible="ipat_platform.list_lab_read_probe_intents(text,text,uuid,text)"
+    assert sql(f"""SELECT
+      has_function_privilege('ipat_lab_read_intent_writer','{intent}','EXECUTE')::int,
+      has_function_privilege('ipat_lab_identity_reader','{intent}','EXECUTE')::int,
+      has_function_privilege('ipat_lab_read_intent_writer','{visible}','EXECUTE')::int,
+      has_function_privilege('ipat_lab_identity_reader','{visible}','EXECUTE')::int
+    """).stdout.strip()=="1|0|0|1"
+    for role in ("ipat_lab_identity_reader","ipat_lab_read_intent_writer"):
+        for table in ("ipat_ops.device_read_probe_intents",
+                      "ipat_ops.device_read_probe_intent_audit"):
+            for privilege in ("SELECT","INSERT","UPDATE","DELETE"):
+                assert sql(f"""SELECT has_table_privilege(
+                  '{role}','{table}','{privilege}')::int""").stdout.strip()=="0"
+    print("R92_DISPOSABLE_SEPARATE_NONEXECUTABLE_INTENT_AND_READER")
     print("R91_DISPOSABLE_SEPARATE_READINESS_ATTESTER_AND_READER")
     print("R84_DISPOSABLE_DISTINCT_REVIEWER_DB_AND_MFA_CLAIM_MEMBERSHIPS")
     print("R83_DISPOSABLE_SEPARATE_READER_AND_REGISTER_WRITER_NO_DIRECT_TABLE_ACCESS")

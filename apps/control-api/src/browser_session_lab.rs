@@ -302,6 +302,69 @@ pub(super) async fn adoption_readiness_for_session(
     Some(out)
 }
 
+/// R9.2 UNMOUNTED: genuine opaque signed-identity BFF mutation that records
+/// exactly ONE immutable and NONEXECUTABLE read-only intent. Independently
+/// pinned MFA/real HTTPS is required before any actual HTTP route may call it.
+/// NO host address, broker, worker, physical SSH, SNMP or ACS execution here.
+pub(super) async fn submit_nonexecutable_read_intent_for_session(
+    vault: &mut BrowserSessionVault,
+    cookie: &str,
+    csrf: &str,
+    trusted_host_origin: bool,
+    restricted_reader: &Client,
+    restricted_intent_writer: &Client,
+    tenant: Uuid,
+    candidate: Uuid,
+    request_id: Uuid,
+    pop: &str,
+    now: u64,
+) -> Option<Uuid> {
+    if !valid_scope("noc_engineer", Some(pop)) {
+        return None;
+    }
+    let identity = vault.authenticate(
+        cookie,
+        Some(csrf),
+        RequestKind::Mutation,
+        trusted_host_origin,
+        now,
+    )?;
+    // Not just the role from a cookie or supplied header: independently
+    // recheck current exact own company and explicit POP membership.
+    if !member(
+        restricted_reader,
+        identity.issuer(),
+        identity.subject(),
+        tenant,
+        "noc_engineer",
+        Some(pop),
+        now,
+    )
+    .await
+    {
+        return None;
+    }
+    // Separate EXECUTE-only writer repeats exact SQL membership, freshness
+    // and FOUR adoption gates against the latest DB statement snapshot.
+    // The INSERT and audit share one transaction inside the sealed function.
+    let result = restricted_intent_writer
+        .query_one(
+            "SELECT ipat_platform.request_lab_read_probe_intent(
+              $1,$2,$3::uuid,$4::uuid,$5::uuid,$6)",
+            &[
+                &identity.issuer(),
+                &identity.subject(),
+                &tenant,
+                &candidate,
+                &request_id,
+                &pop,
+            ],
+        )
+        .await
+        .ok()?;
+    result.get::<_, Option<Uuid>>(0)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -637,6 +700,13 @@ mod tests {
         let attester_task = tokio::spawn(async move {
             let _ = attester_conn.await;
         });
+        let (intent_writer, intent_conn) = connect("ipat_lab_read_intent_writer")
+            .connect(NoTls)
+            .await
+            .unwrap();
+        let intent_task = tokio::spawn(async move {
+            let _ = intent_conn.await;
+        });
 
         let tenant = Uuid::parse_str("11111111-1111-4111-8111-111111111111").unwrap();
         let request = Uuid::parse_str("91000000-0000-4000-8000-000000009101").unwrap();
@@ -773,6 +843,115 @@ mod tests {
         );
         assert!(row.read_probe_eligible);
 
+        // R9.2: a GOOD synthetic readiness projection still cannot run
+        // a network action. It can produce only immutable no-worker intent,
+        // after signed ID/access bound session + current POP SQL + CSRF.
+        let intent_req = Uuid::parse_str("92000000-0000-4000-8000-000000009210").unwrap();
+        assert!(submit_nonexecutable_read_intent_for_session(
+            &mut vault,
+            issued.cookie_secret(),
+            "wrong",
+            true,
+            &reader,
+            &intent_writer,
+            tenant,
+            candidate,
+            intent_req,
+            "pop-a",
+            n
+        )
+        .await
+        .is_none());
+        assert!(submit_nonexecutable_read_intent_for_session(
+            &mut vault,
+            issued.cookie_secret(),
+            issued.csrf_secret(),
+            false,
+            &reader,
+            &intent_writer,
+            tenant,
+            candidate,
+            intent_req,
+            "pop-a",
+            n
+        )
+        .await
+        .is_none());
+        assert!(submit_nonexecutable_read_intent_for_session(
+            &mut vault,
+            issued.cookie_secret(),
+            issued.csrf_secret(),
+            true,
+            &reader,
+            &intent_writer,
+            tenant,
+            candidate,
+            intent_req,
+            "pop-b",
+            n
+        )
+        .await
+        .is_none());
+        let saved = submit_nonexecutable_read_intent_for_session(
+            &mut vault,
+            issued.cookie_secret(),
+            issued.csrf_secret(),
+            true,
+            &reader,
+            &intent_writer,
+            tenant,
+            candidate,
+            intent_req,
+            "pop-a",
+            n,
+        )
+        .await
+        .expect("exact signed session and all four SQL gates");
+        assert_eq!(
+            Some(saved),
+            submit_nonexecutable_read_intent_for_session(
+                &mut vault,
+                issued.cookie_secret(),
+                issued.csrf_secret(),
+                true,
+                &reader,
+                &intent_writer,
+                tenant,
+                candidate,
+                intent_req,
+                "pop-a",
+                n
+            )
+            .await
+        );
+        assert!(submit_nonexecutable_read_intent_for_session(
+            &mut vault,
+            issued.cookie_secret(),
+            issued.csrf_secret(),
+            true,
+            &reader,
+            &intent_writer,
+            tenant,
+            candidate,
+            Uuid::parse_str("92000000-0000-4000-8000-000000009211").unwrap(),
+            "pop-a",
+            n
+        )
+        .await
+        .is_none());
+        let visible = reader
+            .query(
+                "SELECT intent_id,state,must_revalidate_before_execution
+             FROM ipat_platform.list_lab_read_probe_intents(
+                $1,$2,$3::uuid,$4)",
+                &[&ISS, &"synthetic-operator", &tenant, &"pop-a"],
+            )
+            .await
+            .unwrap();
+        assert!(visible.iter().any(|x| x.get::<_, Uuid>(0) == saved
+            && x.get::<_, String>(1) == "awaiting_separate_execution_review"
+            && x.get::<_, bool>(2)));
+
         let blocked_req = Uuid::parse_str("91000000-0000-4000-8000-000000009299").unwrap();
         let blocked = attester
             .query_one(
@@ -840,6 +1019,8 @@ mod tests {
         drop(writer);
         drop(reviewer);
         drop(attester);
+        drop(intent_writer);
+        intent_task.abort();
         reader_task.abort();
         writer_task.abort();
         reviewer_task.abort();
