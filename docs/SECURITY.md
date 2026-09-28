@@ -1052,3 +1052,12 @@ and writes a unique same-transaction immutable audit. Identity claim
 text alone is never authentication; external signed OIDC MFA plus fresh
 opaque session and independent authorizations are mandatory before
 any mount. No actual VPN worker or public device dispatch exists.
+
+## R9.8 BFF proposal restrictions
+
+No public or lab HTTP route invokes R9.8 draft proposal. It denies
+missing trusted origin, CSRF and stale or incorrect signed-session
+identity via existing sealed vault+fresh restricted member lookup;
+SQL migration 0010 repeats own active tenant+candidate POP. Genuine
+live IdP/MFA and actual separate writer provisioning have NOT been
+end-to-end verified; this remains unmounted and lab-only.

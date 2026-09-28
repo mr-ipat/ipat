@@ -3651,3 +3651,13 @@ method-only drafts once real IdP/MFA prerequisite is proven. Until
 fresh complete CI after this change, SQL integration is UNVERIFIED.
 No actual C320 provisioning or CLI command performed; treat it as
 live distribution and require independent safe path + evidence.
+
+## R9.8 unmounted typed tenant connection BFF (development only)
+
+Added Rust signed opaque-session plus exact CSRF and fresh scoped SQL
+seam to propose only immutable connection-choice metadata via separate
+role. Not mounted in actual HTTP. R9.8 static boundary test 1/1 PASS
+and pinned Linux rustfmt stream comparison PASS. Rust compile and
+real signed-session/PG R9.8 integration NOT YET independently proven.
+No keys, credentials, device traffic, gateway configuration or
+real C320 operation introduced by R9.8.

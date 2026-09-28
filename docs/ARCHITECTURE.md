@@ -1031,3 +1031,13 @@ NOLOGIN owner and EXECUTE roles. A separate existing restricted
 identity-reader obtains own verified current tenant-admin plans only.
 This does not grant device connection, live identity login, actual
 WireGuard key management, public API, route installation or firmware.
+
+## R9.8 signed-session to sealed connection-draft bridge (unmounted)
+
+The Rust browser-session module now contains an UNMOUNTED
+nonexecuting connection-choice proposal seam requiring verified
+opaque signed-session mutation+CSRF, independent origin and fresh
+restricted own-tenant `tenant_admin` SQL verification before
+sending only approved method and gateway enums to a separate
+EXECUTE-only writer. No tunnel/network worker, active device
+route, real IdP admission or secret vault is connected here.
