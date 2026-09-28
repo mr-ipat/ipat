@@ -533,3 +533,10 @@ the owner VPS, restricted and verified to 127.0.0.1:3002 while :3000
 kept serving. Existing host Linger=no remains unchanged; this
 unit is an on-login private LAB preview, not persistent enterprise
 availability or permission to operate real OLT/ONT hardware.
+
+ADR-043 addendum — R9.12 uses the SAME isolated, nonroot, on-login
+private preview service and exact :3002 port; it does NOT enable
+actual tunnel provisioning or replace existing :3000. Upgrades must
+pin source bundle and compiled binary, review unit checksum, back up
+the old unit, retest actual HTTP deny-by-default behavior and retain
+immediate nonroot rollback. Linger remains OFF, no HA claim.

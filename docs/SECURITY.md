@@ -1121,3 +1121,12 @@ CPUQuota=20%, and only 127.0.0.1:3002 listener. No root or firewall
 changes. Genuine business endpoints returned HTTP401; historical
 physical evidence GET HTTP200 is PRIVATE LAB ONLY and POST 405.
 Factory C320 credentials were NEVER used by this dashboard or VPS.
+
+## R9.12 simulated tunnel wizard is NOT site authority
+
+R9.12 private lab CSRF/loopback validation does not substitute for
+real tenant MFA. Every option is labeled synthetic; even all-positive
+simulation returns BLOCKED for real owner identity, site plan,
+independent approval and hardware SSH identity. Strict deserialization
+refuses injection of real endpoints or secret material. No network
+executor is bound and no credentials are retained.

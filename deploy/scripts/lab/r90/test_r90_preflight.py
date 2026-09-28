@@ -120,6 +120,12 @@ def load_tests(loader, suite, pattern):
     module=importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     suite.addTests(loader.loadTestsFromModule(module))
+    # R9.12 fixed-enum, no-secrets WireGuard UI is purely lab.
+    extra=Path(__file__).resolve().parents[1] / "r912" / "test_wg_wizard_static.py"
+    spec=importlib.util.spec_from_file_location("r912_wg_wizard_tests",extra)
+    module=importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    suite.addTests(loader.loadTestsFromModule(module))
     return suite
 
 if __name__=="__main__":

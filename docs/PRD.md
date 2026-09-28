@@ -956,3 +956,13 @@ exact firmware command allowlist, baseline/abort owner and worker
 private route. Never auto-provision customer ONTs or touch live OLT
 configuration during first-read admission. Transport evidence alone
 MUST NOT change connectivity=UNKNOWN or health=NOT_MEASURED.
+
+## R9.12 WireGuard tenant-wizard synthetic safety gate
+
+SHOULD provide a dashboard-led tunnel planning interface that
+communicates missing isolated management LAN, console restore test,
+observed service baseline, real signed MFA, maker/checker and pinned
+vendor SSH identity. LAB prototype MUST NOT treat scenario selections
+as evidence or generate/apply configuration and must reject unlisted
+fields. Real tunnel activation remains MUST but NOT IMPLEMENTED and
+requires a separate approved implementation milestone.

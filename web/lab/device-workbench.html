@@ -73,6 +73,19 @@
         <div class="form-notice" id="connection-result" role="status" aria-live="polite">Pilih metode untuk melihat batas keamanan dan kompatibilitas.</div>
         <p><strong>Alur produksi yang direncanakan:</strong> Tenant Admin → Network Connections → draft → uji koneksi terbatas → persetujuan terpisah → aktivasi → Add OLT. Backend wajib memvalidasi tenant, POP, identitas, audit, protokol, isolasi hop terakhir dan izin sebelum deployment. Belum ada tombol aktivasi karena backend produksi belum terotorisasi.</p>
       </section>
+      <section id="tunnel-wizard" class="panel" aria-labelledby="tunnel-wizard-title">
+        <div class="section-top"><div><span class="eyebrow">R9.12 / TENANT CONNECTION WIZARD PROTOTYPE</span><h2 id="tunnel-wizard-title">Simulasi kesiapan tunnel WireGuard</h2></div><span class="pill amber-pill">TANPA KONFIGURASI AKTIF</span></div>
+        <p>Semua pilihan di bawah hanya skenario sintetis untuk memeriksa aturan backend. Jangan menafsirkan pilihan sebagai bukti bahwa lokasi sebenarnya sudah diverifikasi; tidak ada kunci, IP, kredensial, skrip RouterOS maupun perintah jaringan dibuat.</p>
+        <div class="form-grid">
+          <div><label for="wg-gateway">Gateway contoh</label><select id="wg-gateway"><option value="routeros7_x86">MikroTik x86 RouterOS 7</option><option value="routeros6">MikroTik RouterOS 6</option><option value="other">Lainnya (belum diuji)</option></select></div>
+          <div><label for="wg-segmentation">Skenario segmen manajemen</label><select id="wg-segmentation"><option value="unknown">Belum diketahui</option><option value="same_shared_lan">Satu LAN bersama pelanggan</option><option value="verified_isolated">Simulasi: segmen terisolasi dan diverifikasi</option></select></div>
+          <div><label for="wg-recovery">Skenario pemulihan</label><select id="wg-recovery"><option value="console_available_untested">Console tersedia, pemulihan belum diuji</option><option value="unknown">Tidak diketahui</option><option value="console_restore_tested">Simulasi: pemulihan console sudah diuji</option></select></div>
+          <div><label for="wg-baseline">Skenario baseline distribusi</label><select id="wg-baseline"><option value="unmeasured">Belum diukur dan disetujui</option><option value="approved_measured">Simulasi: sudah diukur dan disetujui</option></select></div>
+        </div>
+        <button type="button" class="secondary" id="check-wg-review">Periksa syarat melalui backend lab</button>
+        <p id="wg-review-status" class="form-notice" role="status" aria-live="polite">Belum diperiksa. Perubahan jaringan dan adopsi tetap terkunci.</p>
+        <div id="wg-review-gates" aria-label="Persyaratan yang belum terpenuhi"></div>
+      </section>
       <div class="twocol">
         <section id="register" class="panel" aria-labelledby="register-title">
           <div class="section-top"><div><span class="eyebrow">01 / REGISTRATION</span><h2 id="register-title">Tambah kandidat perangkat</h2></div><span class="pill">DEMO</span></div>

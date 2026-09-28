@@ -3825,3 +3825,42 @@ unchanged. Safe nonroot rollback:
 No change to old :3000.
 This preview DOES NOT accept real VPN keys, OLT logins, provisioning
 or customer tenant data; physical DEV-01 remains NOT ADOPTED.
+
+## R9.12 synthetic dashboard WireGuard review implementation
+
+PR #112 R9.3–R9.11 MERGED into GitHub main SHA e4ab353 after
+independent feature CI 4/4 PASS; newest GitHub main CI should be
+separately verified before claiming main acceptance. Branch
+`feat/r912-wg-reviewed-dashboard-preflight` introduces one synthetic
+WireGuard wizard in existing lab Device Manager and private Rust
+fixed-enum zero-action review POST, with real Axum tests and
+static tests included in pre-existing CI R9.0 test discovery.
+Mac local combined lab 17/17 PASS, Node JS syntax PASS, diff clean.
+Real OLT authentication, tunnel configuration, live tenant MFA,
+worker private routing and physical adoption remain NOT DONE.
+
+## R9.12 actual VPS review wizard deployment checkpoint — 2026-09-28
+
+R9.12 reviewed original code SHA `42f7a20` passed GitHub PR #113
+CI run `36396487249` ALL 4/4 including locked Rust unit/static,
+disposable PostgreSQL tenant isolation, isolated PG physical restore,
+and Ubuntu26 disposable K3s. Independent GitHub MAIN CI for prior
+merged PR #112 (`e4ab353`) also returned ALL 4/4 SUCCESS.
+Actual owner VPS source bundle SHA256
+`1c8322a999b3ec96317c8071abd3b6a612199f66c9aa57bf652c3b5088fe14eb`
+verified against the Mac source bundle; separately checked-out
+R9.12 SHA matched `42f7a20`, canonical actual VPS main remained
+UNMODIFIED. Offline nonroot low-priority Rust build verified binary
+SHA256 `cef14131bd67cfd0b57efc6228353fef83dd54d0370bb0fbcab1d027aef23147`.
+Staged R9.12 user unit SHA256
+`99f7954dacf11c5f81c14323902791acef49f9888fa48753c76892a96cc15772`
+matched Mac/VPS and passed local systemd unit validation. Owner-only
+previous unit rollback saved separately. Nonroot on-login user unit
+at :3002 restarted with R9.12 binary and ACTUAL local HTTP smoke
+PASSED, including simulated positive case STILL BLOCKED, foreign
+secret/endpoint field rejected, missing origin HTTP403, false device
+adoption, real APIs HTTP401, old :3000 HTTP200. No live router or
+OLT access, firewall, routing, credentials, keys, ONTs or PPPoE changes.
+New reproducible unit and HTTP smoke script added to R9.12 codebase,
+new local combined offline preflight 18/18 PASS. Final latest commit
+requires own independent CI after documenting this checkpoint.
