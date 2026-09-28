@@ -22,5 +22,10 @@
   "worker_dispatch_enabled": false,
   "firmware_upgrade_enabled": false,
   "worker_route_observation": "DEFAULT_ROUTE_ONLY",
-  "worker_route_check_packets_sent": 0
+  "worker_route_check_packets_sent": 0,
+  "owner_reported_vendor": "ZTE",
+  "owner_reported_model": "C320",
+  "owner_reported_device_kind": "olt",
+  "owner_reported_pop": "UNVERIFIED",
+  "candidate_inventory_state": "OBSERVED_NOT_ADOPTED"
 }

@@ -3888,3 +3888,12 @@ to existing no-password pinned C320 collector to reduce first live
 blast radius; first-read actual DEV-01 NOT RUN. R7.9+R9.13 local
 combined 15/15 tests PASS after this change. The previous CI SHA
 is superseded for merge by the next feature branch HEAD.
+
+R9.13 private lab inventory UI now adds a separate read-only
+observed DEV-01 historical row, labeled owner-reported ZTE C320,
+UNKNOWN/NOT_MEASURED, unverified POP, with no adoption or
+configuration actions. All historical evidence must pass
+strict client-side schema and zero-execution assertions or the
+row is hidden. It is NOT present in production tenant tables.
+R9.11+R9.0 tests 18/18 PASS after this update; Node syntax PASS.
+Full latest feature SHA independent CI pending before merge.

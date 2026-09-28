@@ -77,6 +77,9 @@ class DashboardEvidenceContract(unittest.TestCase):
         self.assertEqual(doc['health'],'NOT_MEASURED')
         self.assertEqual(doc['worker_route_observation'],'DEFAULT_ROUTE_ONLY')
         self.assertEqual(doc['worker_route_check_packets_sent'],0)
+        self.assertEqual(doc['candidate_inventory_state'],'OBSERVED_NOT_ADOPTED')
+        self.assertEqual(doc['owner_reported_model'],'C320')
+        self.assertEqual(doc['owner_reported_pop'],'UNVERIFIED')
         for key in ('out_of_band_host_key_verified',
                     'management_segment_isolation_verified',
                     'dedicated_readonly_account_verified',
@@ -89,6 +92,9 @@ class DashboardEvidenceContract(unittest.TestCase):
         api=(root/'apps/control-api/src/device_workbench_lab.rs').read_text()
         self.assertIn('id="physical-evidence-gates"',html)
         self.assertIn('/lab/device-physical-evidence',script)
+        self.assertIn('physical-observed-row',script)
+        self.assertIn('BELUM DIADOPSI',script)
+        self.assertIn('observedPhysical=null',script)
         self.assertIn('evidence.device_adopted!==false',script)
         self.assertIn('/lab/device-physical-evidence',api)
         self.assertNotIn('password',json.dumps(doc).lower())

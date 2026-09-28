@@ -4,6 +4,7 @@
 const node = (id) => document.getElementById(id);
 const source = "/lab/demo/device-candidates";
 let candidates = [];
+let observedPhysical = null; // historical owner report, NEVER enrolled inventory
 function el(tag, cls, content) {
   const e = document.createElement(tag);
   if (cls) e.className = cls;
@@ -50,7 +51,32 @@ function draw() {
     row.appendChild(remove);
     fragment.appendChild(row);
   }
-  if (!view.length) {
+  // A separately labeled historical row is never part of volatile
+  // registered candidates or production tenant inventory.
+  const physicalVisible=observedPhysical !== null && pop === "all"
+    && (kind === "all" || kind === "olt");
+  if (physicalVisible) {
+    const physicalRow=el("tr","physical-observed-row");
+    const identity=el("td");
+    identity.append(el("strong","","DEV-01 · LAPORAN PEMILIK"),
+                    el("small","","SSH teramati pada "+observedPhysical.observed_on));
+    physicalRow.appendChild(identity);
+    const device=el("td");
+    device.append(el("strong","","OLT · ZTE C320 (DILAPORKAN)"),
+                  el("small","","Model dan firmware BELUM diverifikasi"));
+    physicalRow.appendChild(device);
+    physicalRow.appendChild(td("POP BELUM DIVERIFIKASI"));
+    physicalRow.appendChild(el("td","","KANDIDAT FISIK, BELUM DIADOPSI"));
+    const transport=el("td");
+    transport.appendChild(badge("HISTORIS / UNKNOWN","unknown"));
+    physicalRow.appendChild(transport);
+    const health=el("td");
+    health.appendChild(badge("BELUM DIUKUR","unknown"));
+    physicalRow.appendChild(health);
+    physicalRow.appendChild(td("Tidak ada operasi perangkat"));
+    fragment.appendChild(physicalRow);
+  }
+  if (!view.length && !physicalVisible) {
     const row = el("tr");
     const cell = el("td","empty","Tidak ada kandidat untuk filter ini. Gunakan formulir untuk menambah perangkat demo.");
     cell.colSpan = 7;
@@ -223,12 +249,18 @@ async function showPhysicalEvidence() {
       || evidence.firmware_upgrade_enabled!==false
       || evidence.connectivity!=="UNKNOWN"
       || evidence.health!=="NOT_MEASURED"
+      || evidence.owner_reported_vendor!=="ZTE"
+      || evidence.owner_reported_model!=="C320"
+      || evidence.owner_reported_pop!=="UNVERIFIED"
+      || evidence.candidate_inventory_state!=="OBSERVED_NOT_ADOPTED"
       || evidence.worker_route_observation!=="DEFAULT_ROUTE_ONLY"
       || evidence.worker_route_check_packets_sent!==0
       || evidence.physical_read_test!=="NOT_RUN"
       || gated.some(([key])=>evidence[key]!==false)) {
       throw new Error("backend evidence overclaims physical readiness");
     }
+    observedPhysical={observed_on:evidence.observed_on};
+    draw();
     statusNode.textContent="DEV-01 · SSH privat pernah dijangkau tanpa autentikasi ("+
       evidence.observed_on+") · fingerprint TERAMATI, BELUM DIPERCAYA · " +
       "rute VPS saat ini masih default, belum ada tunnel manajemen terverifikasi · " +
@@ -241,6 +273,8 @@ async function showPhysicalEvidence() {
     }
     gatesNode.replaceChildren(items);
   } catch {
+    observedPhysical=null;
+    draw();
     gatesNode.replaceChildren();
     statusNode.textContent="Bukti belum dapat diverifikasi. Tetap UNKNOWN; adopsi terkunci.";
   }

@@ -67,3 +67,18 @@ identity and every prerequisite independently proven, not merely
 checked by declaring booleans true. This command was NOT EXECUTED
 against live DEV-01 in this milestone. Do not attempt while the
 actual worker still has DEFAULT_ROUTE_ONLY or no trusted RSA pin.
+
+## Evidence-backed physical candidate appears on the private dashboard
+
+The LAB-only Device Manager now displays a separate, clearly marked
+historical physical-observation DEV-01 row if and ONLY if the server's
+strict historical evidence validates: owner reported ZTE C320,
+2026-09-28 no-auth private SSH banner observed, host identity still
+UNVERIFIED, POP UNKNOWN, actual VPS route DEFAULT_ROUTE_ONLY,
+zero credentials/commands, no worker dispatch and no adoption.
+It is not inserted into tenant SQL, is never included in the demo
+candidate count, cannot be deleted or used for configuration actions,
+and always displays unknown connectivity / unmeasured health.
+If evidence is missing or overclaims safety the row disappears;
+no target address or credentials are rendered. Real signed tenant
+assignment and independent physical identity remain gated.
