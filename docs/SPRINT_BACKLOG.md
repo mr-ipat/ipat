@@ -878,3 +878,36 @@ firmware changes. Multi-host
 K3s/whole-host+DB recovery
 remains blocked on its own
 external gates.
+
+
+## R8.9 exact BFF session→tenant device registry read integration
+
+MUST current milestone: original
+session-cookie identity verifier,
+independent current active
+issuer/subject/tenant/role/POP
+membership plus sealed real
+device candidate list from ONE
+PostgreSQL statement/snapshot.
+Genuine disposable CI tests
+must prove the exact separate
+two-company grants, cross-tenant/
+wrong-POP/forged-session/origin/
+expiry denies, no device secrets
+and no public route.
+MUST next: actual independently
+proven human MFA OIDC issuer,
+confidential HTTPS PKCE exchange,
+production safe session transport
+and approved DB roles; build
+authenticated tenant admin/NOC
+device list/review UI with
+backend RBAC and truly hidden
+non-permitted menu. The current
+fake-only private device workbench
+MUST stay visibly fake until
+these prerequisites are real.
+SHOULD next: trusted device
+read-only protocol profiles plus
+evidence freshness, separately
+from later firmware write approval.
