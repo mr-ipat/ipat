@@ -4099,3 +4099,23 @@ No privileged OLT login or actual WireGuard peer activation has
 occurred. OLT trusted-console RSA proof, segment isolation and
 restricted account remain the hardware critical path. Earlier
 router management SSH pin mismatch also remains unresolved.
+
+## R9.16 central hub key ownership (initial actual owner VPS dev evidence)
+
+Owner-approved R9.15 main SHA 2be4081 passed independent main 4/4 CI.
+R9.16 branch `feat/r916-site-a-local-keypair` introduces actual local
+Site A X25519 dev-only key generation/readback, local B PUBLIC key
+pairing renderer, private LAB Site A public-key endpoint and disabled
+RouterOS B review UI/backend. Actual nonroot owner VPS has ONE dev-only
+Site A `dev01-lab` pair in secure outside-repo 0700/0600 location;
+no verified production key vault/backup or active WireGuard listener.
+Real owner-VPS cryptography integration 3/3 key tests and 3/3
+synthetic local B reconciliation tests PASS; actual dev A PUBLIC key
+plus synthetic B PUBLIC key yielded exactly three disabled RouterOS7
+review commands and no network actions; discarded sample package.
+Mac offline safety-contract suite 34/34 PASS; Node JS parse PASS.
+Rust new manual pairing API compiler/CI and actual VPS HTTP staging
+MUST complete before release or claims of running R9.16 dashboard.
+Real B public key, genuine signed tenant Admin, true Site A/B tunnel,
+trusted Router B/OLT RSA host keys, management-segment isolation and
+physical C320 adoption remain NOT COMPLETED.

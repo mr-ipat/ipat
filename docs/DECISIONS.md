@@ -592,3 +592,15 @@ tested adapters. For separately proven existing bidirectional private
 management access, generate no redundant VPN package. No amount of
 synthetic CLI metadata, remote TCP SSH handshake or approved database
 metadata alone may authorize live device management.
+
+## ADR-047 — Site A development key staging is NOT production tunnel
+
+R9.16 development IPAT Site A locally generates original X25519 key
+material (0700 owner folder, separate 0600 public/private files), and
+provides only its public key for Site B operator's MANUAL disabled
+review. B returns only its independently generated public key, not a
+private key; IPAT never pushes config to B. Production activation
+REQUIRES a real encrypted, recoverable central vault, genuinely
+signed MFA and scoped tenant/site authority, independent B approval,
+verified network route and change-controlled listener/rollback.
+Dev-only keys may not silently be promoted to tenant production keys.

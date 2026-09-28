@@ -97,6 +97,26 @@
         </div>
         <button type="button" id="check-site-a-plan" class="secondary">Periksa topologi Site A</button>
         <p role="status" aria-live="polite" id="site-a-plan-result" class="form-notice">Belum diperiksa. Formulir simulasi tidak menerima IP aktual, kredensial, atau kunci.</p>
+        <div class="divider"></div>
+        <h3>R9.16 — Site A dev key & pencocokan manual Site B</h3>
+        <p><strong>LAB PENGEMBANGAN SAJA, BUKAN KONFIGURASI PRODUKSI.</strong> Public key yang ditampilkan berasal dari berkas owner-only pada server Site A, jika tersedia. Private key Site A tidak pernah dikirim ke browser. Private key Site B hanya dibuat dan disimpan di Router B sendiri. Hasilnya tiga perintah RouterOS berstatus <code>disabled=yes</code> untuk peninjauan, bukan skrip yang sudah disetujui untuk dijalankan.</p>
+        <div id="site-a-key-status" class="form-notice" role="status" aria-live="polite">Memeriksa public key pengembangan Site A…</div>
+        <div class="form-grid"><div><label>Public key Site A (DEV, publik)</label><code id="site-a-public-key" class="key-display">BELUM TERSEDIA</code></div></div>
+        <form id="manual-site-b-form" autocomplete="off">
+          <label for="manual-site-b-key">Public key Site B (BUKAN private key)</label>
+          <input id="manual-site-b-key" type="text" maxlength="44" placeholder="44 karakter public key dari Router B" autocomplete="off" required />
+          <div class="form-grid">
+            <div><label for="manual-hub-ip">Endpoint Site A (contoh saja)</label><input id="manual-hub-ip" maxlength="15" value="198.51.100.9" required /></div>
+            <div><label for="manual-external">Jalur Site B</label><select id="manual-external"><option value="yes">Eksternal, endpoint publik</option><option value="no">Privat, endpoint privat terverifikasi</option></select></div>
+            <div><label for="manual-a-ip">Host tunnel A /30 (contoh)</label><input id="manual-a-ip" maxlength="15" value="10.253.77.1" required /></div>
+            <div><label for="manual-b-ip">Host tunnel B /30 (contoh)</label><input id="manual-b-ip" maxlength="15" value="10.253.77.2" required /></div>
+            <div><label for="manual-olt-ip">Host manajemen OLT /32 (contoh)</label><input id="manual-olt-ip" maxlength="15" value="192.168.77.10" required /></div>
+            <div><label for="manual-udp-port">Port UDP untuk direncanakan</label><input id="manual-udp-port" type="number" min="1024" max="65535" value="51820" required /></div>
+          </div>
+          <button type="submit" id="manual-pairing-button" class="secondary" disabled>Buat review Router B nonaktif</button>
+        </form>
+        <p id="manual-pairing-status" class="form-notice" role="status" aria-live="polite">Penggunaan contoh tidak membuktikan jangkauan endpoint, isolasi segmen, backup atau persetujuan.</p>
+        <pre id="manual-pairing-output" class="key-display" aria-label="Perintah Router B disabled untuk review" style="white-space:pre-wrap;overflow-wrap:anywhere"></pre>
       </section>
       <div class="twocol">
         <section id="register" class="panel" aria-labelledby="register-title">

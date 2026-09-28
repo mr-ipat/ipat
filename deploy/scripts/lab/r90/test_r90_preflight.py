@@ -131,6 +131,11 @@ def load_tests(loader, suite, pattern):
     module=importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     suite.addTests(loader.loadTestsFromModule(module))
+    extra=Path(__file__).resolve().parents[1] / "r916" / "test_site_a_keypair_static.py"
+    spec=importlib.util.spec_from_file_location("r916_site_a_key_policy",extra)
+    module=importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    suite.addTests(loader.loadTestsFromModule(module))
     return suite
 
 if __name__=="__main__":

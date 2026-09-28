@@ -1199,3 +1199,18 @@ Site B RouterOS review commands are disabled; a site owner must
 explicitly apply changes on B, under independently reviewed rollback.
 Never capture Site B's WireGuard private key or accept default/wide
 AllowedIPs exported by version-dependent RouterOS tooling.
+
+## R9.16 DEV-only Site A X25519 public key and no-push peer review
+
+Actual owner VPS generated a dev-only nonroot X25519 keypair entirely
+inside owner-only 0700 outside-repository folder (key files 0600).
+The private key never enters browser, chat, repo or B peer package.
+No production secrets backup/vault is verified, so this dev key is
+NOT acceptable for active live-tenant WireGuard pairing. The lab
+Rust public endpoint opens only a fixed `public.key` filename with
+no-follow/owner/mode constraints. Matching backend accepts strictly
+PUBLIC B key, canonical IPv4 narrow routes and no unknown fields,
+returning disabled manual B review only. Public key exchange is NOT
+identity authentication; independently verified B identity, signed
+Tenant Admin MFA, true site reachability, approved firewall policy,
+audit/rollback and OLT key isolation remain mandatory.

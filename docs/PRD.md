@@ -1022,3 +1022,16 @@ their own PRIVATE keys. No Site A remote push, wide default AllowedIPs,
 unsafe export QR defaults or automatic route/firewall modifications.
 Actual signed Tenant Admin profile download and separately approved
 Site A local activation remain MUST/NOT IMPLEMENTED.
+
+## R9.16 Site A-owned pairing proof (SHOULD completed in DEV LAB ONLY)
+
+IPAT Site A MUST own the central private key and the eventual
+listener. Site B MUST own its own key and apply B config LOCALLY;
+never permit central router configuration push. A same-network site
+with independently proven private routing SHOULD use direct-private
+without a VPN; outside sites need independently reachable public Site
+A endpoint or proved existing routed private interconnect. Developer
+lab MAY display Site A public key and render nonexecuting, disabled
+B peer review using B PUBLIC key only. DEV-only local files do not
+satisfy production vault backup, real MFA, signed approval, stable
+listener or physical device adoption acceptance.
