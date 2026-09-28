@@ -4517,3 +4517,17 @@ synthetic guard passed and 54 local safety tests PASS. Latest PUBLIC
 hosted Actions run must finish separately before claiming hosted CI
 pass for this exact snapshot; previous R9.20 public hosted run
 `36441157716` was confirmed SUCCESS 2/2.
+
+R9.21 latest PUBLIC synthetic GitHub Actions run `36441854423` against
+public source SHA `6edae084acd44c493fb59d17130f885799fcbc01`
+completed independently with SUCCESS 2/2 (`synthetic-static` and
+locked Rust `rust-locked` jobs). This does NOT establish actual OLT
+identity or enable real hardware operations; private source branch
+PR #122 remains DRAFT, stacked on #121/#120/#119/#118/#117.
+The authorized VPS existing private R9.19 C320 capability dashboard
+still returned HTTP200 on :3002; untouched original :3000 HTTP200.
+There is no authenticated real DEV-01 CLI output, host key or site
+console transcript in IPAT. One safe actual `show ssh` inspection by
+a trusted physical-console operator remains the first unresolved
+real-world diagnostic; do NOT assume the historical example's
+server key state matches physical equipment.
