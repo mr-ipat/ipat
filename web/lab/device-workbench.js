@@ -253,6 +253,15 @@ async function showPhysicalEvidence() {
       || evidence.owner_reported_model!=="C320"
       || evidence.owner_reported_pop!=="UNVERIFIED"
       || evidence.candidate_inventory_state!=="OBSERVED_NOT_ADOPTED"
+      || evidence.direct_private_vps_ssh_transport_observed!==true
+      || evidence.direct_private_vps_ssh_observed_on!=="2026-09-28"
+      || evidence.direct_private_vps_ssh_observation_source!=="ipat-vps"
+      || evidence.direct_private_vps_ssh_banner!=="ZTE_SSH.1.0"
+      || evidence.direct_private_vps_ssh_untrusted_fingerprint_same_as_mac!==true
+      || evidence.direct_private_vps_ssh_credentials_sent!==false
+      || evidence.direct_private_vps_ssh_olt_commands_executed!==0
+      || evidence.direct_private_vps_ssh_host_identity_verified!==false
+      || evidence.direct_private_vps_ssh_last_hop_isolation_verified!==false
       || evidence.worker_route_observation!=="DEFAULT_ROUTE_ONLY"
       || evidence.temporary_owner_mac_vps_ssh_relay_observed!==true
       || evidence.temporary_owner_mac_vps_ssh_relay_closed!==true
@@ -268,6 +277,8 @@ async function showPhysicalEvidence() {
     draw();
     statusNode.textContent="DEV-01 · SSH privat pernah dijangkau tanpa autentikasi ("+
       evidence.observed_on+") · fingerprint TERAMATI, BELUM DIPERCAYA · " +
+      "VPS juga menjangkau SSH OLT langsung melalui IP privat tanpa login · " +
+      "jalur akhir dan fingerprint BELUM dipercaya · " +
       "relay sementara Mac/VPS diuji tanpa login dan sudah ditutup · " +
       "rute VPS saat ini masih default, belum ada tunnel manajemen terverifikasi · " +
       "status perangkat UNKNOWN / NOT_MEASURED.";

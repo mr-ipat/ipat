@@ -89,3 +89,30 @@ All example addresses must be documentation-only and not inferred as
 real site assignments. The output is design guidance, not proof of
 physical isolation, real site route, or permission to modify a live
 OLT or router.
+
+## Actual restricted VPS private-IP no-credential test (NEW R9.15)
+
+One explicitly approved bounded no-auth SSH handshake was executed
+from the actual nonroot IPAT VPS DIRECTLY to the owner-reported private
+OLT SSH host/port, NOT through the earlier temporary Mac relay.
+Result: `UNVERIFIED_PRIVATE_SSH_HOST_KEY`, banner `ZTE_SSH.1.0`,
+RSA fingerprint equal to the independently timed *network observation*
+from the operator Mac. ZERO passwords, SSH user keys or OLT commands
+were sent; the test stopped on strict host-key failure. It proves
+PRIVATE-DESTINATION SSH TRANSPORT from that VPS was reachable at the
+time of testing, even though Linux `ip route get` chose the existing
+default eth0 gateway. It does NOT establish an isolated management
+last hop or true out-of-band host identity. Do not equate a default
+route with an unreachable private destination, nor a successful SSH
+handshake with a safe management connection. The owner-reported C320
+still has NO authenticated inventory, observed firmware or health.
+
+For THIS site, choose direct-private as first connection candidate,
+subject to separately verified exact VLAN/last-hop isolation, bounded
+restricted public-key device account and owner-approved baseline.
+Only introduce optional Site A hub WireGuard if isolation, routing,
+policy or site-to-site tenancy requires it after actual review.
+R9.15 updated the private lab physical historical record and UI with
+this exact no-auth result WITHOUT marking physical onboarding or
+actual_worker_private_route_verified true. This result is a dated
+historical fact, NOT an online health probe.

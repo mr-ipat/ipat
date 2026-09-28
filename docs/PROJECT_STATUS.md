@@ -4001,3 +4001,24 @@ Site B peer package, verified return path and authenticated C320
 read are still NOT IMPLEMENTED / NOT EXECUTED. Previous main R9.14
 run `36403059099` 4/4 PASS; no IPAT VPS firewall or customer device
 configuration touched by R9.15.
+
+R9.15 new ACTUAL physical discovery: owner authorized ONE no-auth
+private-IP SSH probe from existing nonroot IPAT VPS directly to
+DEV-01 candidate. Bounded test returned `ZTE_SSH.1.0`, same
+UNTRUSTED RSA fingerprint observed via Mac, zero credential or OLT
+command bytes. This confirms point-in-time SSH transport to private
+candidate despite default eth0 gateway selection. It DOES NOT
+establish independently isolated management hop or approved private
+worker route. R9.15 adds explicit historical direct-VPS reachability
+to private LAB Device Manager and validates that it cannot promote
+host identity, physical adoption or measured health. For DEV-01,
+review DIRECT-PRIVATE first; WireGuard is optional if site policy
+or independent last-hop constraints require it. This was ONE probe,
+no periodic network polling or authenticated physical session.
+
+R9.15 first CI on source SHA f09bc2c identified an existing Rust
+LAB HTML test-body cap of 16 KiB, smaller than the expanded 17 KiB
+Device Manager page. Actual endpoint returned HTTP200; failure was
+a test harness LengthLimitError, not an HTTP route failure. Increased
+that single static HTML test cap to 64 KiB and requires full rerun.
+Do not cite first SHA as a passing independent Rust CI run.

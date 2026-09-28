@@ -1176,3 +1176,12 @@ private key; only public peer material is passed in future pairing
 workflow. No default route, broad RFC1918 routes, PPPoE modifications
 or local customer VLANs in generated minimal management peer plans.
 Current lab plan returns zero network actions and no configuration.
+
+R9.15 bounded direct-private point-in-time VPS handshake reached the
+owner-reported OLT SSH transport without credentials/commands and
+stopped at UNVERIFIED RSA host key. Repeat observation via separate
+sources is not OOB proof. No privileged OLT login until independently
+obtained console host RSA public key is matched, site last-hop trust
+is evidenced, account authorization is separately bounded and live
+baseline/recovery is recorded. Direct/private does not bypass these
+gates or require an unnecessary tunnel.

@@ -559,7 +559,7 @@ mod tests {
         let page = request(router(), "GET", "/lab/device-workbench", "", false).await;
         assert_eq!(page.status(), StatusCode::OK);
         assert_eq!(page.headers()[header::CACHE_CONTROL], "no-store");
-        let bytes = to_bytes(page.into_body(), 16384).await.unwrap();
+        let bytes = to_bytes(page.into_body(), 65536).await.unwrap();
         let html = String::from_utf8(bytes.to_vec()).unwrap();
         assert!(html.contains("Tambah kandidat perangkat"));
         assert!(html.contains("Daftar kandidat"));
@@ -579,6 +579,17 @@ mod tests {
         assert_eq!(evidence["dedicated_readonly_account_verified"], false);
         assert_eq!(evidence["actual_worker_private_route_verified"], false);
         assert_eq!(evidence["worker_route_observation"], "DEFAULT_ROUTE_ONLY");
+        assert_eq!(evidence["direct_private_vps_ssh_transport_observed"], true);
+        assert_eq!(evidence["direct_private_vps_ssh_olt_commands_executed"], 0);
+        assert_eq!(evidence["direct_private_vps_ssh_credentials_sent"], false);
+        assert_eq!(
+            evidence["direct_private_vps_ssh_host_identity_verified"],
+            false
+        );
+        assert_eq!(
+            evidence["direct_private_vps_ssh_last_hop_isolation_verified"],
+            false
+        );
         assert_eq!(evidence["temporary_owner_mac_vps_ssh_relay_observed"], true);
         assert_eq!(evidence["temporary_owner_mac_vps_ssh_relay_closed"], true);
         assert_eq!(evidence["temporary_relay_olt_commands_executed"], 0);
