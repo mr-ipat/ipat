@@ -83,3 +83,28 @@ VPS UDP permission. Independently pin peer public keys and validate
 WireGuard handshakes without exposing keys or touching OLT. Then
 separately approve retiring public Telnet NAT under attended rollback.
 All SITE-01..06 remain NOT RUN; no Telnet credentials are requested.
+
+## 2026-09-28 exact owner site input (supersedes generic gateway unknown)
+
+Owner confirms gateway hardware is MikroTik **x86 with RouterOS 7**;
+OLT is directly reachable on the same local network; owner has
+physical or console recovery access. These are REPORTED, not yet
+independently inspected. The exact RouterOS 7 patch version,
+WireGuard package availability, real OLT private IP and CIDRs, shared
+LAN versus physically/virtually isolated management segment, route
+return path and existing firewall/NAT rule order are still UNKNOWN.
+Direct layer-2 connectivity does NOT prove Telnet cannot be sniffed;
+require separately demonstrated dedicated physical port or verified
+isolated VLAN/bridge access and restricted switch/router management.
+
+With owner-approved console access, first take a separately encrypted
+local x86 RouterOS backup and test recovery without applying any
+network changes. Do not place the backup or output of `/export`
+with credentials in repository or chat. Stage a new distinct
+WireGuard interface, tunnel addresses and narrow /32 routes WITHOUT
+altering the existing default route, NAT, PPPoE or customer bridges.
+Only after separate review of existing filter order and a tunnel
+handshake should source-constrained read-only route verification occur.
+Actual public Telnet port-forward closure is a distinct approved
+change with console-backed rollback. No live device authentication
+until verified last-hop isolation and all R9.1 evidence gates pass.

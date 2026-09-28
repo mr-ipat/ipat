@@ -3589,3 +3589,11 @@ address overlap preflight/tests. No actual MikroTik, C320 or Ubuntu
 VPS changes or credentials were used. Next: review redacted gateway
 model/RouterOS minor version, safe OOB recovery and exact isolated
 OLT management path; only then propose an attended staged rollout.
+
+## R9.4 gateway information checkpoint — 2026-09-28
+
+Owner reports an x86 RouterOS 7 gateway directly connected to the
+C320 local network and physical or console access. R9.4 plan and
+DEVICE_MATRIX updated. Addressing and local isolation remain unknown.
+Five offline address-planning tests passed. No physical test or
+network configuration changes were made in this checkpoint.

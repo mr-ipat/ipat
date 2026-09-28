@@ -362,3 +362,11 @@ evidence; actual VPS path timed out. No real ZTE identity, firmware,
 privileged login, vendor command or SSH/SNMPv3 capability verified.
 SITE-01..SITE-06 are all NOT RUN. See
 `docs/R93_C320_SECURE_SITE_ACCESS_GATE.md`; TC-OLT-01 NOT RUN.
+
+## R9.4 owner-reported site topology (no physical acceptance)
+
+Owner reports a MikroTik x86 RouterOS 7 connected directly on the
+same local network as DEV-01 ZTE C320, with owner-side physical or
+console recovery available. Version/build, actual private management
+IP/VLAN isolation, gateway baseline and restoration remain UNVERIFIED.
+No WireGuard session, live Telnet login or TC-OLT-01 test performed.
