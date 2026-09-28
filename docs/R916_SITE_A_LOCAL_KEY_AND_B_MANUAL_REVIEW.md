@@ -95,3 +95,100 @@ and approved port. Router B's operator generates/retains B PRIVATE
 key, gives IPAT only B PUBLIC key and locally applies independently
 reviewed B config after rollback readiness. Private-connected sites
 must opt out of unnecessary VPN.
+
+## Actual restricted Site A VPS dashboard rollout / rollback evidence
+
+Reviewed app source SHA `63c42e333e1351b477a073ef5983ffdb100ee1a2`
+was transferred from the authorized Mac using a SHA256-verified Git
+bundle into a separate new nonroot owner-only VPS checkout at
+`/home/openai/.cache/ipat/r916-preview/src`, preserving the canonical
+VPS workspace. Pinned single-job, low-priority OFFLINE Rust build and
+three real `site_a_pairing_lab` unit tests PASSED; binary SHA256:
+`3fb2d5369a1e42b35a05ba4c128ab0b8f8414c1997f02c7a1085741587db46da`.
+This source changed no real router/OLT/ONT infrastructure.
+
+New dedicated PRIVATE DEV-only user unit:
+`deploy/scripts/lab/r916/ipat-r911-preview.service`
+SHA256 `b0bf33b1012dba4ff8fb967cc9b2b6dda3131e58f824d770e7ffe92dc6b2c0f8`.
+It updates ONLY the existing `127.0.0.1:3002` nonroot private LAB
+listener, binding a dev-only Site A key-folder environment path while
+retaining `NoNewPrivileges`, read-only host filesystem, 256MiB and
+20% CPU ceilings. The original :3000 API remains unchanged. Do NOT
+expose the new key route via a public ingress: it is a private DEV
+public-key interface, not tenant-authenticated production API.
+
+The FIRST actual VPS HTTP smoke attempt revealed a SMOKE-HARNESS
+failure, not a Rust handler failure: it truncated the ~19KiB HTML
+and ~23KiB JS at 10KiB before checking for new UI controls.
+The strict user-service rollback restored the R9.15 user unit; after
+repeated short test restarts hit systemd start limiting, the owner
+nonroot manager's failed state was reset and the prior private
+service independently verified ACTIVE, with old :3000 HTTP200.
+The harness was corrected to bounded 32768-byte reads and regression
+checks now guard full HTML+JS size. The deployment rollback was
+hardened to reset the user unit failed state and reuse only the
+independently SHA-verified previous unit backup.
+
+Final versioned HTTP smoke SHA256:
+`2d549259a4efb3b3aa0e519979aa229965e316dcd8d2b45646c7e572f9e86ad7`.
+Versioned guarded one-shot nonroot upgrade:
+`deploy/scripts/lab/r916/deploy_private_preview.sh`, SHA256
+`ffe1e77b97c7d8fb4fa5822f053ba23cf7381cfc377aae940be29b613209398e`.
+This script was hash-verified and ACTUALLY EXECUTED on owner VPS,
+result `R916_DEV_SITE_A_PUBLIC_ONLY_PRIVATE_VPS_PREVIEW_PASS`.
+It confirmed actual dev Site A public HTTP GET, synthetic B public
+POST reviewed narrow addresses and exactly 3 disabled RouterOS7
+lines, wrong key/unknown secret field denied, missing Origin denied,
+fake real business endpoints HTTP401, private listener, and untouched
+original :3000 HTTP200. A separate new Mac temporary SSH local
+forward also fetched the real new dashboard, read the actual VPS
+Site A DEV public key and POSTed an ephemeral SYNTHETIC B public key;
+all no-push, no listener, no-adoption assertions PASSED. The Mac
+forward was closed, and no router peer or OLT was contacted.
+
+Owner-only previous user-unit rollback remains at:
+`/home/openai/.cache/ipat/r916-preview/rollback-unit.service`.
+Nonroot safe rollback (only if necessary):
+
+```sh
+ssh ipat-lab
+cp -p /home/openai/.cache/ipat/r916-preview/rollback-unit.service \
+  ~/.config/systemd/user/ipat-r911-preview.service
+systemctl --user daemon-reload
+systemctl --user reset-failed ipat-r911-preview.service
+systemctl --user restart ipat-r911-preview.service
+```
+
+Actual DEV panel Mac access (keep Mac SSH tunnel terminal open):
+
+```sh
+ssh -N -L 3302:127.0.0.1:3002 ipat-lab
+# Mac browser: http://127.0.0.1:3302/lab/device-workbench
+```
+
+The user manager previously reported Linger=no; the private DEV
+preview is not promised HA after ALL SSH user sessions end. Releasing
+this module to actual tenants requires real IdP/MFA, tenant isolation,
+secret vault/backup and signed change approval, not a change to
+these developer demo flags.
+
+## Commercial release exclusions and confirmed CI
+
+The exact R9.16 application SHA `63c42e3` achieved 4/4 GitHub
+independent CI success, run `36427327886`, after correcting the
+initial Rust test fixture shadowing failure at previous SHA 201f980.
+Actual owner VPS test deployment and separate operator Mac tunnel
+passed from that exact application binary.
+
+This source demonstrates genuine local DEV cryptography and a real
+private Rust HTTP B public-key reconciliation workflow, NOT an active
+commercial central WireGuard service. Required for a later production
+site onboarding: independently reviewed site/POP ownership, signed
+MFA/maker-checker, real tenant database persistence and isolation,
+real per-tenant key vault with separate process identity and encrypted
+restore validation, verified endpoint/UDP listener, true route/VLAN
+inventory and local site B return-path recovery. IPsec/L2 overlay
+remain separate adapters to implement and test. For current DEV-01
+C320, the first option remains direct-private if and only if its
+management last hop is independently proven secure, plus trusted
+OLT console fingerprint and a restricted verified on-device account.

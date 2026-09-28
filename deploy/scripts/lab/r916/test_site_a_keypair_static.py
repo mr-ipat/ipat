@@ -50,6 +50,28 @@ class OfflineSiteAKeyPolicy(unittest.TestCase):
                           '0.0.0.0:3002'):
             self.assertNotIn(forbidden,unit)
 
+    def test_approved_preview_upgrade_requires_pinned_binary_and_rollback(self):
+        source=(ROOT/'deploy/scripts/lab/r916/deploy_private_preview.sh').read_text()
+        for marker in ('IPAT_R916_APPROVE_PRIVATE_DEV_PREVIEW',
+                       'test "$(id -un)" = openai', 'trap rollback ERR',
+                       'rollback-unit.service', 'IPAT_R916_ACTUAL_PRIVATE_HTTP_SMOKE=YES',
+                       '3fb2d5369a1e42b35a05ba4c128ab0b8f8414c1997f02c7a1085741587db46da'):
+            self.assertIn(marker,source)
+        for forbidden in ('sudo ', 'iptables ', 'nft ', 'ufw ',
+                          'wg-quick up','ssh 10.','systemctl restart ssh'):
+            self.assertNotIn(forbidden,source)
+
+    def test_actual_http_harness_reads_full_dashboard_and_never_publishes_secrets(self):
+        source=(ROOT/'deploy/scripts/lab/r916/actual_private_site_a_http_smoke.py').read_text()
+        for marker in ('res.read(32768)', 'SITE_A_KEY_READBACK',
+                       'site_b_routeros_disabled_review_commands',
+                       "'/lab/dev-site-a-public-key'", "'/lab/demo/site-a-manual-pairing'",
+                       "'/v1/devices/DEV-01'"):
+            self.assertIn(marker,source)
+        self.assertLessEqual(len((ROOT/'web/lab/device-workbench.html').read_bytes()),32768)
+        self.assertLessEqual(len((ROOT/'web/lab/device-workbench.js').read_bytes()),32768)
+        self.assertNotIn('private-key=',source)
+
     def test_never_claims_active_peer_production_backup(self):
         for literal in ("'tunnel_active':False", "'network_actions':0",
                         "'production_vault_verified':False", "'backup_verified':False"):

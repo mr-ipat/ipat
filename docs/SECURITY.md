@@ -1214,3 +1214,15 @@ returning disabled manual B review only. Public key exchange is NOT
 identity authentication; independently verified B identity, signed
 Tenant Admin MFA, true site reachability, approved firewall policy,
 audit/rollback and OLT key isolation remain mandatory.
+
+R9.16 actual restricted deployment evidence: current nonroot private
+preview reads ONLY DEV Site A public key from an owner 0700 folder,
+actual `private.key` file stays 0600 and never reaches browser, Git,
+B peer package or logs. The Rust preview and dev key owner are the
+SAME operating-system principal for lab simplicity. This is NOT
+production-grade key isolation: future commercial hub must separate
+key-vault/privileged network-worker identity from web/BFF identity,
+with independently tested encrypted backups and scoped secret release.
+Actual UDP port 51820 had NO listener at latest local inspection.
+The DEV-only panel cannot provision real WireGuard or claim a safe
+last hop from an address matching RFC1918 text alone.

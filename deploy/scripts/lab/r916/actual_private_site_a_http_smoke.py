@@ -24,7 +24,7 @@ def call(path,payload=None,auth=True):
         method='POST' if payload is not None else 'GET')
     try:
         with OPENER.open(request,timeout=3) as res:
-            return res.status,dict(res.headers),res.read(10000)
+            return res.status,dict(res.headers),res.read(32768)
     except HTTPError as exc:
         return exc.code,dict(exc.headers),exc.read(4096)
 

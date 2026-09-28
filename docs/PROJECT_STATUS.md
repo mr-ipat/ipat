@@ -4128,3 +4128,66 @@ the fixture reference and an unused mut warning. The first CI run
 36426862447 is NOT a clean pass and must not be used for acceptance.
 Subsequent actual VPS pinned build and independent new CI MUST pass
 before any runtime upgrade or PR merge.
+
+## R9.16 ACTUAL VPS Site A developer panel and B manual preview verified
+
+On the actual owner nonroot VPS, code source SHA `63c42e3` transferred
+via separately validated SHA256 Git bundles was compiled with pinned
+Rust offline, 3/3 new Rust Site A pairing unit tests PASSED; binary
+SHA256 `3fb2d5369a1e42b35a05ba4c128ab0b8f8414c1997f02c7a1085741587db46da`.
+Actual encrypted Site A dev secret remains owner-only in 0700 folder,
+private/public key files 0600; actual on-VPS local cryptography and
+synthetic B reconciliation tests 6/6 PASS. These prove development
+X25519 handling, NOT an actual RouterOS/WireGuard handshake.
+
+First private HTTP smoke failed due a 10KiB harness read truncating
+actual new 19KiB HTML and 23KiB JavaScript. User-only rollback
+restored old service; rapid testing caused user-systemd start-limit,
+which was nonroot reset before old service was independently confirmed
+ACTIVE. Revised 32KiB bounded smoke and robust verified user-unit
+rollback then ACTUALLY PASSED owner-VPS deployment. New private DEV
+service only on loopback :3002, previous :3000 remained HTTP200,
+production/real API fake requests denied, no WAN/public port or
+provider firewall changed. A separate Mac SSH local-forward also
+successfully fetched new HTML and actual dev A public key, then
+submitted a synthetic B public key and received exactly THREE
+disabled RouterOS7 B review lines; tunnel remained INACTIVE and the
+forward was stopped. R9.16 new scripts and reviewed user unit are
+versioned at `deploy/scripts/lab/r916/`; prior unit backed up at
+`/home/openai/.cache/ipat/r916-preview/rollback-unit.service`.
+
+Current Mac static safety suite 37/37 PASS; R9.15 13/13 PASS;
+R7.9/R9.13/R9.14 25/25 PASS; JS parse + shell syntax PASS.
+First new GitHub CI source SHA `201f980` FAILED a Rust test fixture
+shadowing error; corrected at SHA `63c42e3`, new full independent CI
+run `36427327886` in progress at last partial check. Latest
+script/docs-only HEAD must pass its own CI before merge.
+
+CRITICAL NOT DONE: exact real Site B public key and trusted identity,
+active Site A UDP hub, real encrypted backup of dev/production keys,
+customer/site address overlap/return-path and firewall review,
+actual tenant signed MFA/approvals, ZTE C320 independently trusted RSA
+host key and restricted account, true last-hop isolation, operational
+service baseline and physical read. Do NOT call physical OLT adopted.
+
+## R9.16 independent integration pass and actual owner VPS status
+
+Corrected app SHA `63c42e3` full independent GitHub Actions run
+`36427327886` ALL 4/4 SUCCESS: locked unit/static Rust tests,
+real disposable PostgreSQL RLS/restore, isolated PostgreSQL physical
+recovery and disposable Ubuntu26 K3s. The first run with the shadowed
+Rust test variable FAILED and is explicitly superseded.
+Actual restricted owner VPS user service remains ACTIVE on PRIVATE
+127.0.0.1:3002 from verified unit SHA256
+`b0bf33b1012dba4ff8fb967cc9b2b6dda3131e58f824d770e7ffe92dc6b2c0f8`;
+original 127.0.0.1:3000 also returned HTTP200. Current actual
+private `dev01-lab` key file mode0600, no active UDP 51820 listener.
+Separate new operator-Mac temporary SSH local forward performed real
+GET public-key and POST synthetic B-key backend pairing and confirmed
+THREE disabled lines, no router push/network actions or Site A active
+listener; the test tunnel was closed.
+Latest working tree includes R9.16 revised versioned full-HTML/JS
+HTTP smoke, strict checksum-pinned operator-only restart script with
+auto-rollback and tests for the original HTTP smoke truncation bug.
+Final docs/scripts-only HEAD requires independent CI before merge;
+production/WireGuard/OLT gates are still NOT complete.
