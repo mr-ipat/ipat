@@ -995,3 +995,22 @@ worker executable, mark hardware adopted or health healthy. A fresh
 blocked or expired gate denies readiness; a separate authorized
 one-command physical observation, audit and verified on-device model
 and firmware is required to transition to operational inventory.
+
+## R9.15 Site A/IPAT central tunnel ownership — binding product refinement
+
+MUST treat IPAT/dashboard as Site A central hub; do not push router
+configuration to Site B. After REAL signed scoped Tenant Admin MFA,
+Site A SHOULD prepare a reviewed downloadable pairing profile containing
+only Site A's independently reachable endpoint, its public key,
+nonoverlapping peer /30, one approved management host /32 and relevant
+narrow routes. Site B operator independently generates/retains its
+own private key, supplies only its public key and applies the reviewed
+profile locally. Site A locally stages its own listener only after
+independent approval, recovery and verified topology. Choose direct
+private connectivity (no tunnel required) ONLY when the actual
+bidirectional management path and isolation are independently verified;
+for an external site use a reachable public Site A endpoint unless
+an approved private cross-site route actually exists. Never equate
+private address syntax with proven private reachability. R9.15 is
+LAB-only fixed-choice UI + offline nonexecuting review, NOT actual
+server activation, Router B export or real physical OLT adoption.

@@ -86,6 +86,18 @@
         <p id="wg-review-status" class="form-notice" role="status" aria-live="polite">Belum diperiksa. Perubahan jaringan dan adopsi tetap terkunci.</p>
         <div id="wg-review-gates" aria-label="Persyaratan yang belum terpenuhi"></div>
       </section>
+      <section class="panel" id="site-a-hub-panel" aria-labelledby="site-a-hub-title">
+        <div class="section-top"><div><span class="eyebrow">R9.15 / SITE A CENTRAL HUB</span><h2 id="site-a-hub-title">Rancangan Site A → Site B (tanpa push)</h2></div><span class="pill amber-pill">SIMULASI, BELUM AKTIF</span></div>
+        <p>IPAT adalah Site A, pusat perencanaan koneksi. Router Site B dikonfigurasi operatornya sendiri menggunakan data yang sudah disetujui. IP privat boleh digunakan bila jalur dua arah benar-benar sudah diverifikasi; Site B di luar network memakai endpoint Site A yang dapat dijangkau secara publik. Tidak ada router yang menerima push dari panel ini.</p>
+        <div class="form-grid">
+          <div><label for="hub-method">Metode</label><select id="hub-method"><option value="direct_private">Langsung pada network privat yang sudah tersambung</option><option value="wireguard">WireGuard: Site A listener, Site B initiator</option><option value="ipsec">IPsec: rancangan saja</option></select></div>
+          <div><label for="hub-address-scope">Alamat endpoint Site A (contoh)</label><select id="hub-address-scope"><option value="private">Alamat privat</option><option value="public">Alamat publik</option></select></div>
+          <div><label for="site-b-path">Hubungan jaringan (contoh)</label><select id="site-b-path"><option value="unverified">Belum diverifikasi</option><option value="verified_private">Jalur privat dua arah telah diverifikasi (simulasi)</option><option value="external">Site B berada di jaringan luar</option></select></div>
+          <div><label for="site-b-gateway">Jenis gateway Site B</label><select id="site-b-gateway"><option value="routeros7">MikroTik RouterOS 7</option><option value="linux">Linux</option></select></div>
+        </div>
+        <button type="button" id="check-site-a-plan" class="secondary">Periksa topologi Site A</button>
+        <p role="status" aria-live="polite" id="site-a-plan-result" class="form-notice">Belum diperiksa. Formulir simulasi tidak menerima IP aktual, kredensial, atau kunci.</p>
+      </section>
       <div class="twocol">
         <section id="register" class="panel" aria-labelledby="register-title">
           <div class="section-top"><div><span class="eyebrow">01 / REGISTRATION</span><h2 id="register-title">Tambah kandidat perangkat</h2></div><span class="pill">DEMO</span></div>

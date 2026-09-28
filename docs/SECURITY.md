@@ -1163,3 +1163,16 @@ real signed OIDC MFA outside SQL, which repeats live approved
 security_admin own tenant and independent applicant/reviewer.
 Projected six-gate metadata stays nonexecutable even if all synthetic
 values are set verified; revoked/expired latest gates fail closed.
+
+## R9.15 no central push; private/public route semantics
+
+Site A MAY create/rotate only its own listener/peer after genuine
+reviewed authorization. Router B changes stay at Site B in an
+owner-controlled console/GUI import path; dashboard never sends
+configuration to the remote router. Reject shared subnet overlaps,
+extra fields/credentials, unverified private endpoints and unbounded
+peer routes at preflight. Site A and B must each custody their own
+private key; only public peer material is passed in future pairing
+workflow. No default route, broad RFC1918 routes, PPPoE modifications
+or local customer VLANs in generated minimal management peer plans.
+Current lab plan returns zero network actions and no configuration.

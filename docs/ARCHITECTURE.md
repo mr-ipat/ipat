@@ -1087,3 +1087,21 @@ real-world admission gaps but ALWAYS disables physical execution.
 Only future real MFA BFF, per-device worker locking, preflight
 revalidation, approved private tunnel and live evidence can implement
 actual physical adoption. Metadata tables never dispatch SSH.
+
+## R9.15 Site A central / Site B self-configured topology direction
+
+Binding product flow: Site A is the IPAT central WireGuard listener
+and tenant pairing authority. Site B initiates and locally installs
+its own peer after reviewing a Site A-generated profile. No Site A
+router-configuration push over SSH/API/TR-069. Site A generates,
+retains and rotates its own local private key in a secure vault; Site B
+generates/retains its own private key. Only public peer keys and
+approved narrow AllowedIPs are exchanged. Direct private management
+requires independent route and isolation proof and needs NO redundant
+tunnel. External Site B needs a reachable public Site A endpoint or
+separately proven routed private interconnect. For WireGuard, the
+approved Site A route to the Site B OLT /32 is through only that B
+peer; B's local OLT routing and secure reply path must be verified,
+not silently modified. IPsec is a separate pending adapter.
+Current R9.15 Rust private LAB endpoint and offline address review
+cannot configure either endpoint or replace real signed MFA.

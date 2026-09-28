@@ -3976,3 +3976,28 @@ lines; no migration failure was reported in this run. Corrected the
 harness to exclude `SET` and normalize empty/cell results. This
 first run FAILED; do NOT cite it as a passing SQL integration test.
 Next feature SHA must independently rerun ALL CI jobs.
+
+## R9.15 Site A central connection design and private LAB implementation
+
+Owner clarified binding direction: IPAT/dashboard acts as Site A/hub;
+Router B operator self-applies a Site A-issued peer profile, no remote
+router config push. For separately proven same/connected private
+network choose direct-private without tunnel; for external site use
+independently reachable public Site A endpoint or verified private
+interconnect. Implemented separate Rust fixed-choice private LAB
+`POST /lab/demo/site-a-plan` returning explicit Site A/Site B roles,
+zero execution and negative CSRF/secret-injection tests. Added Site A
+hub planning panel in existing private Device Manager, strict
+browser fail-closed response checks, and offline typed
+`deploy/scripts/lab/r915/site_a_plan.py` that rejects unknown fields,
+missing claimed private route, unsuitable host IP, overlapping /30,
+unsupported gateway and produces narrow management /32 plan only.
+Local R9.0+R9.11+R9.12+R9.15 combined 24/24 PASS,
+Node syntax PASS, diff check PASS. Full independent GitHub Actions
+and separate actual owner-VPS isolated preview deployment must be
+verified before calling this latest branch accepted. REAL Site A
+WireGuard listener, credential vault, signed tenant MFA, downloaded
+Site B peer package, verified return path and authenticated C320
+read are still NOT IMPLEMENTED / NOT EXECUTED. Previous main R9.14
+run `36403059099` 4/4 PASS; no IPAT VPS firewall or customer device
+configuration touched by R9.15.

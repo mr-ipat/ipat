@@ -160,6 +160,55 @@ async fn preview_tunnel_review(
     ))
 }
 
+// R9.15: Site A centrally planned, site B self-configures. LAB only.
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct HubSpokePreview {
+    method: String,
+    hub_address_scope: String,
+    site_b_path: String,
+    site_b_gateway: String,
+}
+async fn preview_site_a_plan(
+    headers: HeaderMap,
+    Json(value): Json<HubSpokePreview>,
+) -> Result<(HeaderMap, Json<Value>), (StatusCode, HeaderMap, Json<Value>)> {
+    if !demo_csrf(&headers) {
+        return Err(reject(StatusCode::FORBIDDEN));
+    }
+    if !["direct_private", "wireguard", "ipsec"].contains(&value.method.as_str())
+        || !["private", "public"].contains(&value.hub_address_scope.as_str())
+        || !["verified_private", "external", "unverified"].contains(&value.site_b_path.as_str())
+        || !["routeros7", "linux"].contains(&value.site_b_gateway.as_str())
+    {
+        return Err(reject(StatusCode::BAD_REQUEST));
+    }
+    let topology_candidate = match (
+        value.method.as_str(),
+        value.hub_address_scope.as_str(),
+        value.site_b_path.as_str(),
+    ) {
+        ("direct_private", "private", "verified_private") => "DIRECT_PRIVATE_NO_TUNNEL_REQUIRED",
+        ("wireguard", "private", "verified_private") => "PRIVATE_HUB_WG_SITE_B_INITIATES",
+        ("wireguard", "public", "external") => "PUBLIC_HUB_WG_SITE_B_INITIATES",
+        ("ipsec", _, _) => "IPSEC_NOT_YET_IMPLEMENTED",
+        ("direct_private", _, _) => "VERIFIED_PRIVATE_ROUTE_REQUIRED",
+        _ => "HUB_ENDPOINT_REACHABILITY_UNVERIFIED",
+    };
+    Ok((
+        super::private_lab_headers("application/json; charset=utf-8"),
+        Json(json!({
+            "lab_only":true,"topology_candidate":topology_candidate,
+            "site_a_role":"IPAT_CENTRAL_CONFIGURATION_AUTHORITY",
+            "site_b_role":"SITE_OPERATOR_SELF_CONFIGURES_NO_PUSH",
+            "config_generated":false,"secrets_accepted":false,
+            "router_push_enabled":false,"network_actions":0,
+            "site_path_independently_verified":false,
+            "real_mfa_verified":false,"device_adopted":false,
+            "state":"REVIEW_ONLY_NOT_DEPLOYABLE"
+        })),
+    ))
+}
 #[derive(Default)]
 struct DemoState {
     next: u32,
@@ -327,6 +376,10 @@ pub(super) fn router() -> Router {
         .route(
             "/lab/demo/tunnel-review",
             axum::routing::post(preview_tunnel_review),
+        )
+        .route(
+            "/lab/demo/site-a-plan",
+            axum::routing::post(preview_site_a_plan),
         )
         .route("/lab/demo/device-candidates", get(list_demo).post(add_demo))
         .route("/lab/demo/device-candidates/{id}", delete(remove_demo))
@@ -540,6 +593,60 @@ mod tests {
         assert_eq!(evidence["device_adopted"], false);
         assert_eq!(evidence["physical_read_test"], "NOT_RUN");
         assert_eq!(evidence["health"], "NOT_MEASURED");
+    }
+    const HUB_PLAN: &str = r#"{"method":"wireguard","hub_address_scope":"private","site_b_path":"verified_private","site_b_gateway":"routeros7"}"#;
+    #[tokio::test]
+    async fn r915_hub_is_site_a_and_never_pushes_to_site_b() {
+        let app = router();
+        assert_eq!(
+            request(
+                app.clone(),
+                "POST",
+                "/lab/demo/site-a-plan",
+                HUB_PLAN,
+                false
+            )
+            .await
+            .status(),
+            StatusCode::FORBIDDEN
+        );
+        let reply = request(app.clone(), "POST", "/lab/demo/site-a-plan", HUB_PLAN, true).await;
+        assert_eq!(reply.status(), StatusCode::OK);
+        let data: Value =
+            serde_json::from_slice(&to_bytes(reply.into_body(), 8192).await.unwrap()).unwrap();
+        assert_eq!(data["site_a_role"], "IPAT_CENTRAL_CONFIGURATION_AUTHORITY");
+        assert_eq!(data["site_b_role"], "SITE_OPERATOR_SELF_CONFIGURES_NO_PUSH");
+        assert_eq!(
+            data["topology_candidate"],
+            "PRIVATE_HUB_WG_SITE_B_INITIATES"
+        );
+        for field in [
+            "router_push_enabled",
+            "config_generated",
+            "secrets_accepted",
+            "site_path_independently_verified",
+            "real_mfa_verified",
+            "device_adopted",
+        ] {
+            assert_eq!(data[field], false, "{field}");
+        }
+        assert_eq!(data["network_actions"], 0);
+        let external = r#"{"method":"wireguard","hub_address_scope":"public","site_b_path":"external","site_b_gateway":"routeros7"}"#;
+        let resp = request(app.clone(), "POST", "/lab/demo/site-a-plan", external, true).await;
+        let data: Value =
+            serde_json::from_slice(&to_bytes(resp.into_body(), 8192).await.unwrap()).unwrap();
+        assert_eq!(data["topology_candidate"], "PUBLIC_HUB_WG_SITE_B_INITIATES");
+        for injected in [
+            r#"{"method":"wireguard","hub_address_scope":"public","site_b_path":"external","site_b_gateway":"routeros7","password":"never"}"#,
+            r#"{"method":"wireguard","hub_address_scope":"public","site_b_path":"external","site_b_gateway":"routeros7","endpoint":"10.10.13.233"}"#,
+        ] {
+            let denied =
+                request(app.clone(), "POST", "/lab/demo/site-a-plan", injected, true).await;
+            assert!(matches!(
+                denied.status(),
+                StatusCode::BAD_REQUEST | StatusCode::UNPROCESSABLE_ENTITY
+            ));
+        }
     }
     const SYNTHETIC_WG: &str = r#"{"gateway":"routeros7_x86","segmentation":"same_shared_lan","recovery":"console_available_untested","service_baseline":"unmeasured"}"#;
     #[tokio::test]

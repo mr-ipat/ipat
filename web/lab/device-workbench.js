@@ -325,3 +325,36 @@ async function checkSyntheticWireGuardReview() {
   } finally {button.disabled=false;}
 }
 node("check-wg-review").addEventListener("click",()=>{void checkSyntheticWireGuardReview();});
+// R9.15: Site A chooses topology, Site B self-configures after separate review.
+async function checkSiteAPlan() {
+  const button=node("check-site-a-plan");
+  const output=node("site-a-plan-result");
+  button.disabled=true;
+  output.textContent="Memvalidasi skenario Site A secara lokal pada backend privat...";
+  try {
+    const response=await mutate("POST","/lab/demo/site-a-plan",{
+      method:node("hub-method").value,
+      hub_address_scope:node("hub-address-scope").value,
+      site_b_path:node("site-b-path").value,
+      site_b_gateway:node("site-b-gateway").value
+    });
+    if(!response.ok) throw new Error("rejected plan");
+    const result=await response.json();
+    if(result.lab_only!==true || result.state!=="REVIEW_ONLY_NOT_DEPLOYABLE"
+      || result.site_a_role!=="IPAT_CENTRAL_CONFIGURATION_AUTHORITY"
+      || result.site_b_role!=="SITE_OPERATOR_SELF_CONFIGURES_NO_PUSH"
+      || result.config_generated!==false || result.secrets_accepted!==false
+      || result.router_push_enabled!==false || result.network_actions!==0
+      || result.site_path_independently_verified!==false
+      || result.real_mfa_verified!==false || result.device_adopted!==false
+      || !["DIRECT_PRIVATE_NO_TUNNEL_REQUIRED","PRIVATE_HUB_WG_SITE_B_INITIATES",
+            "PUBLIC_HUB_WG_SITE_B_INITIATES","IPSEC_NOT_YET_IMPLEMENTED",
+            "VERIFIED_PRIVATE_ROUTE_REQUIRED","HUB_ENDPOINT_REACHABILITY_UNVERIFIED"]
+            .includes(result.topology_candidate)) throw new Error("safety mismatch");
+    output.textContent="SITE A / IPAT: "+result.topology_candidate.replaceAll("_"," ")+
+      ". SITE B mengatur gateway sendiri. Belum ada konfigurasi atau koneksi dibuat.";
+  } catch {
+    output.textContent="Perencanaan ditolak/tidak dapat diverifikasi; semua tindakan terkunci.";
+  } finally {button.disabled=false;}
+}
+node("check-site-a-plan").addEventListener("click",()=>{void checkSiteAPlan();});

@@ -126,6 +126,11 @@ def load_tests(loader, suite, pattern):
     module=importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     suite.addTests(loader.loadTestsFromModule(module))
+    path=Path(__file__).resolve().parents[1] / 'r915' / 'test_site_a_plan.py'
+    spec=importlib.util.spec_from_file_location('r915_site_a_tests',path)
+    module=importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    suite.addTests(loader.loadTestsFromModule(module))
     return suite
 
 if __name__=="__main__":

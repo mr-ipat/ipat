@@ -569,3 +569,18 @@ Approved candidate maker and site reviewer must be distinct; latest
 BLOCKED/expired evidence resets the affected gate. No BFF HTTP
 mount, real MFA, live worker, VPN activation or owner secret intake
 is authorized by this database migration.
+
+## ADR-046 — APPROVED design direction: Site A central, Site B self-applied
+
+Owner specified IPAT dashboard/server as Site A, not a remote Router B
+configuration-pushing controller. WireGuard is optional; use direct
+private address for independently demonstrated same/connected network
+management, not merely an RFC1918 address. For external sites, use
+verified reachable public Site A endpoint (or an independently
+verified routed private interconnect). Generate the reviewed pairing
+profile at Site A; Site B operator applies it LOCALLY and retains its
+own private key. Site A handles only its own listener, peer and tenant
+scope after real signed identity, maker/checker, recovery and narrow
+route approval. IPsec remains an alternative in future implementation,
+not feature-complete. R9.15 LAB-only design preflight is NOT deployment
+approval and carries no hardware-adoption privileges.

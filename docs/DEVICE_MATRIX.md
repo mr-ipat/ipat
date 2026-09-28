@@ -448,3 +448,12 @@ No independently obtained console RSA fingerprint, restricted SSH
 account/firmware command result, measured live baseline or dedicated
 VPS route proof has been received. New six-gate metadata does NOT
 change physical adoption FALSE or live health NOT MEASURED.
+
+## R9.15 actual DEV-01 versus topology plan
+
+Owner-reported site router MikroTik x86 RouterOS7 and C320 management
+private address are NOT independently inventoried. R9.15 allows
+simulated Site A direct-private or Site A WireGuard listening design;
+it does NOT prove VPS-to-OLT private access. Previous nonroot VPS route
+check was DEFAULT_ROUTE_ONLY, and real site management last-hop and
+firmware remain unverified. OLT adoption remains NOT RUN.
