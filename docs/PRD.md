@@ -966,3 +966,20 @@ vendor SSH identity. LAB prototype MUST NOT treat scenario selections
 as evidence or generate/apply configuration and must reject unlisted
 fields. Real tunnel activation remains MUST but NOT IMPLEMENTED and
 requires a separate approved implementation milestone.
+
+## R9.13 production-like live C320 one-command first read
+
+Actual live initial C320 authentication MUST prefer one single
+bounded read-only identity/inventory operation before any subsequent
+version or ONT poll; no default factory/privileged account is allowed
+by the dedicated read-only collector. Simulated CLI and route-table
+proof do not count as physical adoption or a no-customer-impact test.
+
+## R9.13 private laboratory observed physical candidate display
+
+MUST distinguish physical transport observations from registered,
+independently authenticated operational inventory. When evidence is
+bounded but incomplete the dashboard MAY show a separate historical
+owner-reported physical candidate, ONLY in the private lab, with
+UNKNOWN connectivity/health, no site/POP assignment and no operational
+buttons. This does NOT satisfy the genuine tenant adoption acceptance.

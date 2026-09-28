@@ -3864,3 +3864,81 @@ OLT access, firewall, routing, credentials, keys, ONTs or PPPoE changes.
 New reproducible unit and HTTP smoke script added to R9.12 codebase,
 new local combined offline preflight 18/18 PASS. Final latest commit
 requires own independent CI after documenting this checkpoint.
+
+## R9.13 actual VPS route negative evidence and strict legacy SSH
+
+Mac main includes merged R9.12 PR #113 SHA ea7b973; independent
+GitHub Actions MAIN run 36397588544 4/4 PASS. Actual VPS nonroot
+route-table-only inspection against the owner-provided private C320
+candidate classified DEFAULT_ROUTE_ONLY, no packets transmitted,
+so a real dedicated worker management path remains UNVERIFIED.
+R9.13 adds offline `r913/verify_restricted_private_route.py`,
+new explicit strict legacy SSH publickey-only RSA/CBC profile and
+blocks factory/privileged usernames in C320 first-read collector.
+Physical historical dashboard evidence now states actual worker
+route still DEFAULT_ROUTE_ONLY and refuses a positive adoption/health.
+Offline local R7.9+R9.13 14/14 PASS; R9.0+R9.11+R9.12 18/18 PASS;
+Node syntax and JSON parse PASS. No SSH authentication or C320
+command executed. First authenticated production-like adoption remains
+BLOCKED by OOB trusted fingerprint, isolated last hop, dedicated
+restricted account, real MFA, approved live baseline and worker VPN.
+
+R9.13 adds optional STRICT gated single-command `--first-read` mode
+to existing no-password pinned C320 collector to reduce first live
+blast radius; first-read actual DEV-01 NOT RUN. R7.9+R9.13 local
+combined 15/15 tests PASS after this change. The previous CI SHA
+is superseded for merge by the next feature branch HEAD.
+
+R9.13 private lab inventory UI now adds a separate read-only
+observed DEV-01 historical row, labeled owner-reported ZTE C320,
+UNKNOWN/NOT_MEASURED, unverified POP, with no adoption or
+configuration actions. All historical evidence must pass
+strict client-side schema and zero-execution assertions or the
+row is hidden. It is NOT present in production tenant tables.
+R9.11+R9.0 tests 18/18 PASS after this update; Node syntax PASS.
+Full latest feature SHA independent CI pending before merge.
+
+## R9.13 actual ephemeral encrypted private relay — no login
+
+Last committed R9.13 physical-pending dashboard SHA `04b2796`
+independently passed all four feature CI jobs run `36399495088`.
+One earlier manual owner Mac→VPS reverse Unix SSH relay received the
+untrusted ZTE private SSH banner without credentials, commands or
+customer-side changes. R9.13 versioned guarded one-shot helper then
+executed once on authorized Mac: actual VPS received EXACTLY 20
+banner bytes, observed `ZTE_SSH.1.0`, zero credential bytes and zero
+OLT commands, long-lived worker route FALSE, site last-hop trusted
+FALSE. The private owner-only remote Unix socket was removed and
+verified absent; no persistent relay process was left running.
+Versioned helper has five offline tests; R7.9/R9.13 combined local
+21/21 PASS and R9.0/R9.11/R9.12 combined 18/18 PASS. Historical
+lab evidence now marks the temporary relay OBSERVED AND CLOSED,
+NOT actual tenant device onboarding, identity or physical health.
+The actual worker default route still remains unacceptable for
+ongoing device polling or authenticated command transport.
+
+## R9.13 actual owner VPS constrained LAB physical candidate visible
+
+Actual final branch application source SHA `0d0af60` checked out in
+isolated owner VPS sandbox from independently hashed Git delta
+bundle SHA256
+`eb89a9d14e64a832a12b4018806c4d78a257c54f600366c9dbc6355504e8c99d`.
+Low-priority pinned offline Rust binary SHA256
+`672caf4e756853d0226e93b7cf712f8d229af170cc7450a348ae94b9ee86aeac`.
+Owner-only previous R9.12 unit backed up; versioned R9.13 nonroot
+systemd preview unit verified SHA256
+`2f9d254675c9080b94287035a0722e1e3c7b41f233fce679bfd50b11b52d72c1`,
+then restarted on private loopback :3002. Actual versioned VPS HTTP
+smoke PASS: physical C320 owner-reported DEV-01 displayed PENDING,
+Mac temporary reverse SSH relay appears OBSERVED AND CLOSED, long-
+lived VPS route still DEFAULT_ROUTE_ONLY/NOT VERIFIED, OLT host key
+and exact chassis UNVERIFIED, adoption FALSE, health NOT MEASURED.
+Fake real APIs HTTP401; original :3000 HTTP200 before/after.
+Independent Mac SSH local-forward also fetched same physical evidence
+and dashboard JS successfully; temporary local forward then closed.
+VPS constrained user service ACTIVE on loopback-only :3002, two
+loopback listeners :3000 and :3002, no leftover temporary reverse
+Unix relay sockets. No real OLT login, ONT/routing/PPPoE commands,
+firmware updates or firewall changes occurred. Current R9.13 CI
+for code SHA 0d0af60 is tracked in PR #114; docs-only final SHA
+requires separate independent CI before main merge.

@@ -540,3 +540,22 @@ actual tunnel provisioning or replace existing :3000. Upgrades must
 pin source bundle and compiled binary, review unit checksum, back up
 the old unit, retest actual HTTP deny-by-default behavior and retain
 immediate nonroot rollback. Linger remains OFF, no HA claim.
+
+## ADR-044 — R9.13 no-credential first-read and strict legacy mode
+
+FIRST live-C320 read uses a separately verified/pinned host RSA key,
+site-isolated private management route and dedicated restricted
+public-key credentials, never the factory/default account disclosed
+in chat. Process-scoped SSH RSA/AES128-CBC may be considered only
+for observed exact firmware after review, not as a global downgrade.
+An actual worker DEFAULT_ROUTE_ONLY is explicitly inadequate as
+proof of private site access; do not grant adoption on that basis.
+Real OLT commands and tunnel/router activation remain unapproved
+until the full SITE and operational no-impact acceptance ladder passes.
+
+ADR-044 addendum: one ephemeral, encrypted owner-Mac→VPS reverse
+Unix-socket relay may be used for specifically authorized NONAUTH
+transport checks while durable site gateway is unavailable. It must
+not persist, must close after one test, cannot carry live customer
+OLT credentials, cannot claim independently isolated last hop, and
+cannot substitute for true tenant-owned dashboard-managed tunnel.

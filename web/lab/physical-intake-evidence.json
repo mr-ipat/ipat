@@ -20,5 +20,17 @@
   "health": "NOT_MEASURED",
   "connectivity": "UNKNOWN",
   "worker_dispatch_enabled": false,
-  "firmware_upgrade_enabled": false
+  "firmware_upgrade_enabled": false,
+  "worker_route_observation": "DEFAULT_ROUTE_ONLY",
+  "worker_route_check_packets_sent": 0,
+  "owner_reported_vendor": "ZTE",
+  "owner_reported_model": "C320",
+  "owner_reported_device_kind": "olt",
+  "owner_reported_pop": "UNVERIFIED",
+  "candidate_inventory_state": "OBSERVED_NOT_ADOPTED",
+  "temporary_owner_mac_vps_ssh_relay_observed": true,
+  "temporary_owner_mac_vps_ssh_relay_closed": true,
+  "temporary_relay_credentials_sent": false,
+  "temporary_relay_olt_commands_executed": 0,
+  "temporary_relay_trusted_last_hop_verified": false
 }
