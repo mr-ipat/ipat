@@ -243,3 +243,42 @@ async function showPhysicalEvidence() {
   }
 }
 void showPhysicalEvidence();
+// R9.12 simulator is an explicitly NONATTESTING preflight display.
+async function checkSyntheticWireGuardReview() {
+  const button=node("check-wg-review");
+  const statusNode=node("wg-review-status");
+  const gatesNode=node("wg-review-gates");
+  button.disabled=true;
+  statusNode.textContent="Memeriksa skenario contoh melalui backend lab...";
+  gatesNode.replaceChildren();
+  try {
+    const response=await mutate("POST","/lab/demo/tunnel-review",{
+      gateway:node("wg-gateway").value,
+      segmentation:node("wg-segmentation").value,
+      recovery:node("wg-recovery").value,
+      service_baseline:node("wg-baseline").value
+    });
+    if(!response.ok) throw new Error("backend rejected simulation");
+    const result=await response.json();
+    if(result.lab_only!==true || result.synthetic_only!==true
+       || result.preflight_status!=="BLOCKED_PENDING_REAL_REVIEW"
+       || result.config_generated!==false || result.secrets_accepted!==false
+       || result.tunnel_created!==false || result.network_actions!==0
+       || result.worker_dispatch_enabled!==false || result.device_adopted!==false
+       || result.service_impact_measured!==false
+       || !Array.isArray(result.missing_evidence)
+       || result.missing_evidence.length<4 || result.missing_evidence.length>8
+       || result.missing_evidence.some(code=>typeof code!=="string"
+         || !/^[A-Z_]{8,72}$/.test(code))) {
+      throw new Error("invalid safety response");
+    }
+    statusNode.textContent="DITAHAN: skenario belum mengizinkan pembuatan tunnel atau operasi OLT.";
+    const fragment=document.createDocumentFragment();
+    for(const code of result.missing_evidence)
+      fragment.appendChild(el("p","form-notice",code.replaceAll("_"," ")));
+    gatesNode.replaceChildren(fragment);
+  } catch {
+    statusNode.textContent="Validasi gagal/ditolak. Seluruh aktivasi tetap terkunci.";
+  } finally {button.disabled=false;}
+}
+node("check-wg-review").addEventListener("click",()=>{void checkSyntheticWireGuardReview();});

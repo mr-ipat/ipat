@@ -1059,3 +1059,11 @@ loopback :3002, strict systemd home/system read-only settings and
 CPU/memory ceilings. Existing :3000 lab was left serving and unchanged.
 Unit autostart is linked to user's systemd session; linger remains
 OFF, so no permanent HA/service-level availability claim is made.
+
+## R9.12 lab-only tunnel review boundary
+
+Fixed-enum Rust Axum synthetic tunnel preflight in private lab mode
+is separate from sealed tenant connection DB drafts and any privileged
+worker. It refuses endpoints, CIDRs, credentials and private keys,
+and always reports pending real independent review; neither browser
+nor HTTP can trigger live RouterOS script generation or device I/O.

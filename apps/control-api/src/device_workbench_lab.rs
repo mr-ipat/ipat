@@ -98,6 +98,68 @@ async fn preview_connection_plan(
     ))
 }
 
+// R9.12 strictly synthetic tenant wizard UX. Never accepts networks,
+// credentials, keys or real devices; a reviewer cannot activate a tunnel here.
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct SyntheticTunnelReview {
+    gateway: String,
+    segmentation: String,
+    recovery: String,
+    service_baseline: String,
+}
+async fn preview_tunnel_review(
+    headers: HeaderMap,
+    Json(plan): Json<SyntheticTunnelReview>,
+) -> Result<(HeaderMap, Json<Value>), (StatusCode, HeaderMap, Json<Value>)> {
+    if !demo_csrf(&headers) {
+        return Err(reject(StatusCode::FORBIDDEN));
+    }
+    if !["routeros7_x86", "routeros6", "other"].contains(&plan.gateway.as_str())
+        || !["verified_isolated", "same_shared_lan", "unknown"]
+            .contains(&plan.segmentation.as_str())
+        || ![
+            "console_restore_tested",
+            "console_available_untested",
+            "unknown",
+        ]
+        .contains(&plan.recovery.as_str())
+        || !["approved_measured", "unmeasured"].contains(&plan.service_baseline.as_str())
+    {
+        return Err(reject(StatusCode::BAD_REQUEST));
+    }
+    let mut missing = Vec::new();
+    if plan.gateway != "routeros7_x86" {
+        missing.push("BUILTIN_WIREGUARD_GATEWAY_NOT_VERIFIED");
+    }
+    if plan.segmentation != "verified_isolated" {
+        missing.push("MANAGEMENT_LAST_HOP_ISOLATION_NOT_VERIFIED");
+    }
+    if plan.recovery != "console_restore_tested" {
+        missing.push("CONSOLE_RECOVERY_NOT_REHEARSED");
+    }
+    if plan.service_baseline != "approved_measured" {
+        missing.push("LIVE_DISTRIBUTION_BASELINE_NOT_APPROVED");
+    }
+    // Even with every synthetic value checked, real MFA, host identity,
+    // approved address plan, crypto, device privilege and maker/checker absent.
+    missing.extend([
+        "REAL_IDENTITY_AND_MFA_REQUIRED",
+        "REAL_NETWORK_PLAN_REVIEW_REQUIRED",
+        "INDEPENDENT_APPROVAL_REQUIRED",
+        "DEVICE_HOST_KEY_NOT_PINNED",
+    ]);
+    Ok((
+        super::private_lab_headers("application/json; charset=utf-8"),
+        Json(json!({
+            "lab_only":true,"synthetic_only":true,"preflight_status":"BLOCKED_PENDING_REAL_REVIEW",
+            "missing_evidence":missing,"config_generated":false,"secrets_accepted":false,
+            "tunnel_created":false,"network_actions":0,"worker_dispatch_enabled":false,
+            "device_adopted":false,"service_impact_measured":false
+        })),
+    ))
+}
+
 #[derive(Default)]
 struct DemoState {
     next: u32,
@@ -261,6 +323,10 @@ pub(super) fn router() -> Router {
         .route(
             "/lab/demo/connection-plan",
             axum::routing::post(preview_connection_plan),
+        )
+        .route(
+            "/lab/demo/tunnel-review",
+            axum::routing::post(preview_tunnel_review),
         )
         .route("/lab/demo/device-candidates", get(list_demo).post(add_demo))
         .route("/lab/demo/device-candidates/{id}", delete(remove_demo))
@@ -464,6 +530,71 @@ mod tests {
         assert_eq!(evidence["device_adopted"], false);
         assert_eq!(evidence["physical_read_test"], "NOT_RUN");
         assert_eq!(evidence["health"], "NOT_MEASURED");
+    }
+    const SYNTHETIC_WG: &str = r#"{"gateway":"routeros7_x86","segmentation":"same_shared_lan","recovery":"console_available_untested","service_baseline":"unmeasured"}"#;
+    #[tokio::test]
+    async fn synthetic_wireguard_wizard_never_accepts_secrets_or_activates() {
+        let app = router();
+        assert_eq!(
+            request(
+                app.clone(),
+                "POST",
+                "/lab/demo/tunnel-review",
+                SYNTHETIC_WG,
+                false
+            )
+            .await
+            .status(),
+            StatusCode::FORBIDDEN
+        );
+        let safe = request(
+            app.clone(),
+            "POST",
+            "/lab/demo/tunnel-review",
+            SYNTHETIC_WG,
+            true,
+        )
+        .await;
+        assert_eq!(safe.status(), StatusCode::OK);
+        let body: Value =
+            serde_json::from_slice(&to_bytes(safe.into_body(), 8192).await.unwrap()).unwrap();
+        assert_eq!(body["preflight_status"], "BLOCKED_PENDING_REAL_REVIEW");
+        for flag in [
+            "config_generated",
+            "secrets_accepted",
+            "tunnel_created",
+            "worker_dispatch_enabled",
+            "device_adopted",
+            "service_impact_measured",
+        ] {
+            assert_eq!(body[flag], false, "{flag}");
+        }
+        assert_eq!(body["network_actions"], 0);
+        assert!(body["missing_evidence"].as_array().unwrap().len() >= 5);
+        let ideal = r#"{"gateway":"routeros7_x86","segmentation":"verified_isolated","recovery":"console_restore_tested","service_baseline":"approved_measured"}"#;
+        let resp = request(app.clone(), "POST", "/lab/demo/tunnel-review", ideal, true).await;
+        let data: Value =
+            serde_json::from_slice(&to_bytes(resp.into_body(), 8192).await.unwrap()).unwrap();
+        assert_eq!(data["tunnel_created"], false);
+        assert_eq!(data["missing_evidence"].as_array().unwrap().len(), 4);
+        for injected in [
+            r#"{"gateway":"routeros7_x86","segmentation":"verified_isolated","recovery":"console_restore_tested","service_baseline":"approved_measured","private_key":"DO_NOT_ACCEPT"}"#,
+            r#"{"gateway":"routeros7_x86","segmentation":"verified_isolated","recovery":"console_restore_tested","service_baseline":"approved_measured","endpoint":"10.10.13.233"}"#,
+            r#"{"gateway":"routeros6","segmentation":"verified_isolated","recovery":"wrong","service_baseline":"approved_measured"}"#,
+        ] {
+            let denied = request(
+                app.clone(),
+                "POST",
+                "/lab/demo/tunnel-review",
+                injected,
+                true,
+            )
+            .await;
+            assert!(matches!(
+                denied.status(),
+                StatusCode::BAD_REQUEST | StatusCode::UNPROCESSABLE_ENTITY
+            ));
+        }
     }
     const LAB_PLAN: &str =
         r#"{"method":"wireguard","gateway":"routeros7","device_profile":"VIRTUAL-TELNET-ONLY"}"#;

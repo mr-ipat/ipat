@@ -3825,3 +3825,16 @@ unchanged. Safe nonroot rollback:
 No change to old :3000.
 This preview DOES NOT accept real VPN keys, OLT logins, provisioning
 or customer tenant data; physical DEV-01 remains NOT ADOPTED.
+
+## R9.12 synthetic dashboard WireGuard review implementation
+
+PR #112 R9.3–R9.11 MERGED into GitHub main SHA e4ab353 after
+independent feature CI 4/4 PASS; newest GitHub main CI should be
+separately verified before claiming main acceptance. Branch
+`feat/r912-wg-reviewed-dashboard-preflight` introduces one synthetic
+WireGuard wizard in existing lab Device Manager and private Rust
+fixed-enum zero-action review POST, with real Axum tests and
+static tests included in pre-existing CI R9.0 test discovery.
+Mac local combined lab 17/17 PASS, Node JS syntax PASS, diff clean.
+Real OLT authentication, tunnel configuration, live tenant MFA,
+worker private routing and physical adoption remain NOT DONE.
