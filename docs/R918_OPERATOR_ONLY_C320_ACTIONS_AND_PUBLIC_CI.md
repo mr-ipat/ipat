@@ -94,3 +94,18 @@ staged in `ci/github-actions.yml` and must be installed by repo owner
 with authorized GitHub UI action or refreshed `workflow` OAuth scope.
 Public repository source contains no real device credentials or
 actual site addressing by construction; its checks are synthetic.
+
+## Sanitized public source CI rehearsal on the actual VPS
+
+After the public synthetic source was published, a clean public Git
+bundle for exact source SHA `c281ac5` was separately cloned into
+another NONROOT owner VPS folder, not the private canonical source.
+Owner-only low-priority validation against that exact public snapshot
+PASSED: synthetic Python 45+25+13 tests, independent public secret
+and real site address guard, rustfmt pinned Rust1.98.1 and full
+`cargo test --workspace --locked --offline -j 1` (178 second total
+long Rust suite run). No actual OLT, real keys or real management
+addresses were included. The staged standard-runners GitHub Actions
+workflow remains unregistered because current OAuth cannot upload
+workflow files. The public repository has enabled secret scanning
+and push protection. Do not claim hosted Actions completed.

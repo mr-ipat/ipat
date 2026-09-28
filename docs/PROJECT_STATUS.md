@@ -4332,3 +4332,44 @@ a world-readable input were both rejected in genuine binary tests.
 Temporary synthetic captures were discarded, not sent to customers
 or stored in Git. No real OLT credentials, SSH login, model/firmware,
 ONT/PPPoE, or provisioning action were observed or changed.
+
+R9.18 operator SOP created as
+`docs/SOP_ZTE_C320_READONLY_ADOPTION.md`. It documents an actual
+DIRECT-PRIVATE + independently pinned SSH first-read sequence,
+pre/post live distribution baseline, exact abort triggers,
+owner-only local normalized evidence and phased permitted actions
+without claiming any actual DEV-01 model/firmware compatibility.
+Only `show card` and (after independent first-read review)
+`show version-running` are candidate initial functions; alarm,
+ONU optical and firmware operations remain restricted pending exact
+on-hardware firmware evidence and production worker authentication.
+Public `mr-ipat/ipat-open-ci` synthetic snapshot updated and verified
+PUBLIC at SHA `df49da8ec10d5877e0ab733d9ed6fbc2b0cd3ec5`; public
+secret scanning AND push protection were verified ENABLED. Latest
+sanitized source maps to protected code SHA `1a9c6d1`, with newly
+added olt-evidence CLI; public staged CI workflow was reduced to
+portable Rust locked + Python synthetic guards, but GitHub OAuth
+still lacks `workflow` scope, so Actions has NO actual workflow
+registered or hosted job result. Account owner needs one-time GitHub
+workflow authorization to activate it. Original production repo stays
+PRIVATE and PR #119 stays DRAFT on top of #118 (and #117), with
+protected operational network information unpublished.
+
+R9.18 SANITIZED MIRROR INDEPENDENT NONROOT VPS VALIDATION:
+`mr-ipat/ipat-open-ci` public source SHA
+`c281ac57ad60d5dabc0378422e4f926ce29d1cc6` was loaded via a
+separately checked Git bundle into a completely isolated actual
+nonroot owner-VPS public CI checkout (no production service changes).
+The sanitized Python R9.0/R9.17 45/45, R7.9/R9.13/R9.14 25/25 and
+R9.15 13/13 passed, synthetic leak-safety guard passed,
+`cargo fmt --all -- --check` PASSED, and full
+`cargo test --workspace --locked --offline -j 1` PASSED independently
+on the actual VPS against SANITIZED public source in 178 seconds.
+Full multi-job HOSTED GitHub Actions still NOT RUN (workflow needs
+separately authorized owner scope). The latest public HEAD
+df49da8 only adjusts the staged runner to the previously known
+Ubuntu24 baseline; no application code changed. This VPS proof is
+NOT equivalent to hosted Actions, disposable production PostgreSQL
+recovery, actual hardware interoperability or source-restricted
+branch CI. R9.18 real device adoption=FALSE and no real OLT
+commands were executed.
