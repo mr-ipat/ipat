@@ -10,8 +10,10 @@ REQUIRED = {'mode', 'site_a_endpoint', 'site_b_gateway', 'management_host',
             'private_path_verified', 'site_b_recovery_verified'}
 
 def ip(v):
+    if type(v) is not str or not 7 <= len(v) <= 15:
+        raise ValueError('canonical dotted IPv4 text required')
     a = ipaddress.ip_address(v)
-    if a.version != 4:
+    if str(a) != v or a.version != 4:
         raise ValueError('IPv4 only')
     return a
 
@@ -26,6 +28,9 @@ def review(data):
     if data['site_b_gateway'] not in ('routeros7', 'linux'):
         raise ValueError('unsupported site B platform')
     a, host = ip(data['site_a_endpoint']), ip(data['management_host'])
+    if (a.is_loopback or a.is_multicast or a.is_unspecified or a.is_link_local
+        or a.is_reserved):
+        raise ValueError('Site A must use an actual valid unicast endpoint')
     if not private(host):
         raise ValueError('site OLT address must be private IPv4')
     if type(data['private_path_verified']) is not bool or type(data['site_b_recovery_verified']) is not bool:
@@ -33,8 +38,10 @@ def review(data):
     nets = []
     for key in ('site_a_networks', 'site_b_networks'):
         v = data[key]
-        if type(v) is not list or not 1 <= len(v) <= 24:
-            raise ValueError('explicit current network lists required')
+        if (type(v) is not list or not 1 <= len(v) <= 24 or
+            any(type(item) is not str or len(item) > 32 for item in v)
+            or len(set(v)) != len(v)):
+            raise ValueError('explicit canonical nonduplicate network lists required')
         part = [ipaddress.ip_network(n, strict=True) for n in v]
         if any(n.version != 4 for n in part):
             raise ValueError('IPv4 networks only')
@@ -88,11 +95,22 @@ def main():
     path=args.local_reviewed_topology_json
     try:
         info=path.lstat()
-        if os.geteuid()==0 or not path.is_absolute() or not stat.S_ISREG(info.st_mode) \
-            or info.st_uid!=os.getuid() or info.st_nlink!=1 \
-            or stat.S_IMODE(info.st_mode)!=0o600 or info.st_size>8192:
-            raise ValueError('owner-only absolute regular topology file required')
-        result=review(json.loads(path.read_text()))
+        repo=Path(__file__).resolve().parents[4]
+        if (os.geteuid()==0 or not path.is_absolute()
+            or repo == path or repo in path.parents
+            or not stat.S_ISREG(info.st_mode)
+            or info.st_uid!=os.getuid() or info.st_nlink!=1
+            or stat.S_IMODE(info.st_mode)!=0o600 or not 1 <= info.st_size <= 8192):
+            raise ValueError('owner-only file outside repository required')
+        fd=os.open(path,os.O_RDONLY|getattr(os,'O_NOFOLLOW',0))
+        with os.fdopen(fd,'rb') as stream:
+            after=os.fstat(stream.fileno())
+            if (info.st_dev,info.st_ino)!=(after.st_dev,after.st_ino):
+                raise ValueError('topology file inode changed during open')
+            payload=stream.read(8193)
+        if len(payload)>8192:
+            raise ValueError('topology input exceeded limit')
+        result=review(json.loads(payload))
         print(json.dumps(result,sort_keys=True))
     except (ValueError,TypeError,KeyError,OSError):
         parser.exit(2,'DENIED: topology needs independent review; no configuration generated\n')

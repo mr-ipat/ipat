@@ -584,3 +584,11 @@ scope after real signed identity, maker/checker, recovery and narrow
 route approval. IPsec remains an alternative in future implementation,
 not feature-complete. R9.15 LAB-only design preflight is NOT deployment
 approval and carries no hardware-adoption privileges.
+
+ADR-046 implementation clarification: R9.15 may produce an OFFLINE
+nonexecuting, disabled=yes RouterOS7 Site B pairing preview only;
+Linux Site B package generation and IPsec remain future separately
+tested adapters. For separately proven existing bidirectional private
+management access, generate no redundant VPN package. No amount of
+synthetic CLI metadata, remote TCP SSH handshake or approved database
+metadata alone may authorize live device management.

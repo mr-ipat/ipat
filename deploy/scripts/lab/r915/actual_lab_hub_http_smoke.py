@@ -3,6 +3,7 @@
 No authentication, device traffic, live VPN or host config mutation.
 """
 import json
+import subprocess
 import os
 import sys
 from urllib.request import build_opener, ProxyHandler, Request
@@ -99,6 +100,10 @@ def main():
         assert call('/lab/demo/site-a-plan',injected)[0] in (400,422)
     assert call('/v1/devices/DEV-01')[0]==401
     assert call('/v1/tenant/overview')[0]==401
+    actual_listeners=subprocess.check_output(['ss','-lnt'],text=True)
+    assert '127.0.0.1:3002' in actual_listeners
+    assert '0.0.0.0:3002' not in actual_listeners
+    assert '[::]:3002' not in actual_listeners
     req=Request('http://127.0.0.1:3000/healthz')
     with OPENER.open(req,timeout=3) as old:
         assert old.status==200

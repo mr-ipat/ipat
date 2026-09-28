@@ -153,7 +153,7 @@ The renderer validates distinct canonical public keys, strictly
 restricted site identifier and safe UDP port; it rejects unsupported
 IPsec pairing instead of silently inventing implementation. For an
 independently verified direct-private network it generates **no VPN
-package at all**. Eleven pure offline R9.15 tests verify the no-push
+package at all**. Thirteen R9.15 offline contract tests verify the no-push
 rules, key boundaries and disabled output. The RouterOS snippet is
 still NOT reviewed against the actual site gateway/firmware and must
 NOT be applied to the live distribution router before separate
@@ -169,3 +169,80 @@ wide/default AllowedIPs; the IPAT template intentionally restricts
 this to narrow management tunnel hosts. Official references:
 https://help.mikrotik.com/docs/spaces/ROS/pages/69664792/WireGuard
 https://www.wireguard.com/quickstart/
+
+## Actual restricted nonroot IPAT VPS R9.15 preview deployment
+
+Exactly reviewed source SHA `7149b0bf62cd9da095798ec4df24976905bab973`
+was SHA256-bundle-verified in a NEW owner-only 0700 checkout at
+`/home/openai/.cache/ipat/r915-preview/src` without modifying
+canonical VPS main. A separately locked, low-priority single-job
+OFFLINE Rust 1.98.1 build from the same Rust sources produced binary
+SHA256 `a236e184e8c0e6abaa0feda9095dfb5c2d3e56fd00f343eef61e668d3c41eaa9`.
+
+Versioned user service:
+`deploy/scripts/lab/r915/ipat-r911-preview.service` SHA256
+`173342749889114bc32c40d75f365b9711036fab72200c65c8d18527bc9fe3df`.
+Versioned offline-only HTTP smoke runner:
+`deploy/scripts/lab/r915/actual_lab_hub_http_smoke.py` SHA256
+`5b599ae65c7bafd1430905f64ce89d3c75baf24b9a4a933d950ed3e90637ebaa`.
+The previous nonroot :3002 unit SHA256
+`2f9d254675c9080b94287035a0722e1e3c7b41f233fce679bfd50b11b52d72c1`
+was independently verified and backed up owner-only at
+`/home/openai/.cache/ipat/r915-preview/rollback-unit.service`.
+The upgrade used `deploy/scripts/lab/r915/deploy_private_preview.sh`
+with explicit opt-in, strict verified binary/unit/smoke hashes,
+user-session-only systemd restart, fail-closed actual HTTP smoke and
+a rollback trap; original :3000 lab stayed healthy HTTP200.
+
+Actual owner VPS smoke PASS: new :3002 Site A panel HTTP200, private
+LAB Rust topology POST classifies PUBLIC hub/external Site B and
+PRIVATE hub/independently-claimed internal Site B, both with zero
+network actions, no push or adoption. Unknown JSON secret/endpoint
+fields rejected, missing Origin HTTP403, real business API HTTP401;
+actual physical historical evidence correctly reports direct VPS
+private SSH transport observed but untrusted host/isolation and
+physical adoption FALSE. Verified loopback-only :3002 listener and
+nonroot service runtime: NoNewPrivileges=yes, ProtectSystem=strict,
+ProtectHome=read-only, MemoryMax=256MiB, CPUQuota=20%. Independent
+Mac SSH-forward also fetched actual :3002 dashboard and sent a
+successful synthetic Site A plan POST, then closed the local tunnel.
+No server firewall, UDP WireGuard listener, root account, K3s,
+router B, OLT, ONT, PPPoE, subscriber network or firmware changed.
+The existing systemd user manager has Linger=no, so do not claim
+availability after ALL user sessions end or production HA.
+
+Owner Mac access to this PRIVATE LAB, keep SSH tunnel terminal open:
+
+```sh
+ssh -N -L 3302:127.0.0.1:3002 ipat-lab
+# Mac browser: http://127.0.0.1:3302/lab/device-workbench
+```
+
+Rollback without modifying old :3000:
+
+```sh
+ssh ipat-lab
+cp -p /home/openai/.cache/ipat/r915-preview/rollback-unit.service \
+  ~/.config/systemd/user/ipat-r911-preview.service
+systemctl --user daemon-reload
+systemctl --user restart ipat-r911-preview.service
+```
+
+## R9.15 final reproducible source controls
+
+Reviewed owner VPS deployment script:
+`deploy/scripts/lab/r915/deploy_private_preview.sh`, requiring
+nonroot named owner, explicit opt-in, hash-pinned source SHA `7149b0b`,
+compiled Rust binary, existing and new user units, exact HTTP smoke,
+previous-unit backup and transactional rollback on failure. The
+source repo's initial 17 KiB HTML required increasing the one
+Rust static page test limit from 16 KiB to 64 KiB; the first CI SHA
+failed that test, while corrected app SHA `d8b9cb1` passed 4/4
+independent GitHub CI checks. R9.15 pairing renderer's final
+nonexecuting offline version refuses Linux site B commands until a
+separate verified adapter; only RouterOS7 produces DISABLED preview
+commands. Offline topology input file must be owner-only 0600,
+non-symlink and outside the repo. R9.15 combined local tests 31/31
+PASS, standalone 13/13 PASS. Any further final source CI result must
+be independently recorded and must NOT be conflated with actual OLT
+adoption, which remains blocked.

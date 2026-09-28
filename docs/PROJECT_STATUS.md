@@ -4053,3 +4053,49 @@ profile download, local Site A activation, actual gateway pairing and
 hardware adoption remain NOT DONE. Static VPS preview rollout R9.15
 should be checked independently after versioned source build and
 actual HTTP smoke.
+
+## R9.15 actual private Site A dashboard proven on VPS
+
+R9.15 immutable app source SHA `7149b0b` verified from hash-pinned
+Git bundle into separate nonroot VPS source checkout, original canonical
+VPS main remained untouched. Pinned low-priority offline Rust build
+SHA256 `a236e184e8c0e6abaa0feda9095dfb5c2d3e56fd00f343eef61e668d3c41eaa9`.
+Previous :3002 unit independently hashed and backed up to local
+rollback. R9.15 new user unit and exact HTTP smoke SHA independently
+matched Mac staging; restricted nonroot upgrade script passed. Actual
+VPS :3002 now serves Site A hub panel and Rust POST plan; public/
+private method simulation, denied secret fields/origin, fake real
+business API401, evidence actual direct VPS noauth SSH observed and
+NOT adopted all PASS. Original :3000 HTTP200 before/after.
+Independent actual Mac SSH tunnel fetched new page and issued server
+plan POST, returned PUBLIC_HUB_WG_SITE_B_INITIATES / no push; tunnel
+then closed. Runtime NoNewPrivileges=yes, read-only host filesystem,
+256MiB memory and 20% CPU ceilings. No root, firewall, WireGuard,
+site-router, OLT, ONT or PPPoE changes. Latest R9.15 source followup
+adds STATIC smoke/rollback checks and fixes Linux B bundle misuse;
+final independent CI before merge required, binary Rust source unchanged.
+
+## R9.15 final versioned safety/QA checkpoint
+
+Final source adds a reproducible owner-only nonroot actual-VPS :3002
+private preview deployment script with strict hardcoded app/unit/smoke
+hashes, explicit opt-in, existing unit checksum, prior unit backup,
+new HTTP fail-closed smoke and automatic rollback on failure. The
+script was hash-verified and EXECUTED successfully on the actual
+owner VPS; the app's own approved source SHA remains `7149b0b`.
+The on-login private LAB user service is ACTIVE and old :3000 remained
+HTTP200; independent Mac SSH local-forward fetched the new Site A
+panel and successfully exercised the server POST, with zero router
+push or device network actions. Hardened offline topology CLI now
+accepts owner-only 0600 nonsymlink JSON outside repo, rejects
+noncanonical IP, invalid link-local/multicast hub and duplicate
+network declarations. Separate disabled Site B bundle now REFUSES
+Linux gateway rendering until an independently reviewed Linux
+adapter exists. New R9.15 combined offline 31/31 PASS, R9.15
+standalone 13/13 PASS, existing R7.9/R9.13/R9.14 25/25 PASS,
+JS syntax, Rust rustfmt, Python compile and bash syntax PASS.
+Current latest branch needs its own GitHub CI rerun before merge.
+No privileged OLT login or actual WireGuard peer activation has
+occurred. OLT trusted-console RSA proof, segment isolation and
+restricted account remain the hardware critical path. Earlier
+router management SSH pin mismatch also remains unresolved.

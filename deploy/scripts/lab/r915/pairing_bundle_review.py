@@ -31,6 +31,8 @@ def render(topology, site_slug, site_a_public_key, site_b_public_key, port):
                 'remaining_evidence':plan['missing_independent_evidence']}
     if plan['link_mode'] != 'wireguard':
         raise ValueError('IPsec package remains unsupported')
+    if topology['site_b_gateway'] != 'routeros7':
+        raise ValueError('Linux Site B package requires a separate reviewed adapter')
     if not SITE.fullmatch(site_slug) or site_slug.startswith('wg-'):
         raise ValueError('safe unique site suffix required')
     if type(port) is not int or not 1024 <= port <= 65535:
