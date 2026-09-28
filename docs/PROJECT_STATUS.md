@@ -3864,3 +3864,21 @@ OLT access, firewall, routing, credentials, keys, ONTs or PPPoE changes.
 New reproducible unit and HTTP smoke script added to R9.12 codebase,
 new local combined offline preflight 18/18 PASS. Final latest commit
 requires own independent CI after documenting this checkpoint.
+
+## R9.13 actual VPS route negative evidence and strict legacy SSH
+
+Mac main includes merged R9.12 PR #113 SHA ea7b973; independent
+GitHub Actions MAIN run 36397588544 4/4 PASS. Actual VPS nonroot
+route-table-only inspection against the owner-provided private C320
+candidate classified DEFAULT_ROUTE_ONLY, no packets transmitted,
+so a real dedicated worker management path remains UNVERIFIED.
+R9.13 adds offline `r913/verify_restricted_private_route.py`,
+new explicit strict legacy SSH publickey-only RSA/CBC profile and
+blocks factory/privileged usernames in C320 first-read collector.
+Physical historical dashboard evidence now states actual worker
+route still DEFAULT_ROUTE_ONLY and refuses a positive adoption/health.
+Offline local R7.9+R9.13 14/14 PASS; R9.0+R9.11+R9.12 18/18 PASS;
+Node syntax and JSON parse PASS. No SSH authentication or C320
+command executed. First authenticated production-like adoption remains
+BLOCKED by OOB trusted fingerprint, isolated last hop, dedicated
+restricted account, real MFA, approved live baseline and worker VPN.

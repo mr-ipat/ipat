@@ -75,6 +75,8 @@ class DashboardEvidenceContract(unittest.TestCase):
         self.assertEqual(doc['olt_commands_executed'],0)
         self.assertEqual(doc['physical_read_test'],'NOT_RUN')
         self.assertEqual(doc['health'],'NOT_MEASURED')
+        self.assertEqual(doc['worker_route_observation'],'DEFAULT_ROUTE_ONLY')
+        self.assertEqual(doc['worker_route_check_packets_sent'],0)
         for key in ('out_of_band_host_key_verified',
                     'management_segment_isolation_verified',
                     'dedicated_readonly_account_verified',

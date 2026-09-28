@@ -418,3 +418,14 @@ R9.10 RSA SHA256 fingerprint. No authentication or CLI commands.
 This is stable identity-observation evidence ONLY across observations;
 it is not independent identity trust, verified exact model/firmware,
 validated last-hop safety or physical adoption. Physical read=NOT RUN.
+
+## R9.13 real worker path and candidate transport status
+
+Actual nonroot IPAT VPS route-table-only check to owner-reported
+private C320 endpoint returned DEFAULT_ROUTE_ONLY; network packets=0.
+Original Mac legacy SSH banner/RSA fingerprint observation remains
+UNTRUSTED until separately compared on actual trusted site console.
+R9.13 pinned legacy RSA/CBC SSH support is offline-only tested; no
+public-key restricted user login, C320 firmware or fixed `show`
+interop was physically verified. Real worker route=NOT VERIFIED,
+physical adoption=NOT RUN, health=NOT MEASURED.

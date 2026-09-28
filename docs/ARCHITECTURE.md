@@ -1067,3 +1067,12 @@ is separate from sealed tenant connection DB drafts and any privileged
 worker. It refuses endpoints, CIDRs, credentials and private keys,
 and always reports pending real independent review; neither browser
 nor HTTP can trigger live RouterOS script generation or device I/O.
+
+## R9.13 actual route gate and strictly pinned legacy SSH adapter
+
+The nonroot route-table checker distinguishes DEFAULT_ROUTE_ONLY
+from an unproven dedicated path without sending network traffic.
+Neither result grants adoption. The C320 collector's legacy RSA/CBC
+client profile is opt-in and inherits strict independent host key
+pinning and no-password public-key-only restrictions; default
+credentialed access is not a valid live-read transport.

@@ -223,12 +223,15 @@ async function showPhysicalEvidence() {
       || evidence.firmware_upgrade_enabled!==false
       || evidence.connectivity!=="UNKNOWN"
       || evidence.health!=="NOT_MEASURED"
+      || evidence.worker_route_observation!=="DEFAULT_ROUTE_ONLY"
+      || evidence.worker_route_check_packets_sent!==0
       || evidence.physical_read_test!=="NOT_RUN"
       || gated.some(([key])=>evidence[key]!==false)) {
       throw new Error("backend evidence overclaims physical readiness");
     }
     statusNode.textContent="DEV-01 · SSH privat pernah dijangkau tanpa autentikasi ("+
       evidence.observed_on+") · fingerprint TERAMATI, BELUM DIPERCAYA · " +
+      "rute VPS saat ini masih default, belum ada tunnel manajemen terverifikasi · " +
       "status perangkat UNKNOWN / NOT_MEASURED.";
     const items=document.createDocumentFragment();
     for(const [,title] of gated) {

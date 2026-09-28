@@ -20,5 +20,7 @@
   "health": "NOT_MEASURED",
   "connectivity": "UNKNOWN",
   "worker_dispatch_enabled": false,
-  "firmware_upgrade_enabled": false
+  "firmware_upgrade_enabled": false,
+  "worker_route_observation": "DEFAULT_ROUTE_ONLY",
+  "worker_route_check_packets_sent": 0
 }

@@ -78,6 +78,34 @@ class RemoteSSHNoL1(unittest.TestCase):
             self.assertNotIn(command," ".join(argv).lower())
         self.file("known_hosts","8.8.8.8 ssh-ed25519 AAAAC3\n")
         with self.assertRaises(M.Denied): M.packet(self.private)
+    def test_strict_legacy_c320_rsa_cbc_is_process_scoped_and_never_tofu(self):
+        plan=dict(PLAN,transport="ssh-strict-pinned-publickey-legacy-rsa-cbc",
+                  private_ipv4="10.10.13.233",ssh_port=321)
+        self.file("plan.json",json.dumps(plan))
+        self.file("known_hosts","[10.10.13.233]:321 ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQTESTONLY\n")
+        parsed,missing=M.packet(self.private)
+        self.assertEqual(parsed,plan)
+        self.assertEqual(missing,[])
+        args=M.command_argv(self.private,plan,"show card")
+        self.assertEqual(args[-1],"show card")
+        for flag in ("HostKeyAlgorithms=ssh-rsa","Ciphers=aes128-cbc",
+                     "StrictHostKeyChecking=yes","PasswordAuthentication=no",
+                     "BatchMode=yes","IdentitiesOnly=yes"):
+            self.assertIn(flag,args)
+        self.assertNotIn("ssh-dss"," ".join(args))
+        self.assertNotIn("StrictHostKeyChecking=no",args)
+        self.assertNotIn("UserKnownHostsFile=/dev/null",args)
+        self.file("known_hosts","[10.10.13.233]:321 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAAA\n")
+        with self.assertRaisesRegex(M.Denied,"pinned RSA"):
+            M.packet(self.private)
+
+    def test_factory_account_never_valid_for_live_readonly(self):
+        for user in ("zte","root","admin","administrator"):
+            with self.subTest(user=user):
+                with self.assertRaisesRegex(M.Denied,"factory or privileged"):
+                    M.validate(dict(PLAN,ssh_user=user))
+        self.assertEqual(M.validate(PLAN),[])
+
     def test_requires_owner_only_packet_not_symlink_hardlink(self):
         p=self.private/"id_readonly"
         p.chmod(0o644)
@@ -120,4 +148,13 @@ class RemoteSSHNoL1(unittest.TestCase):
                 with self.assertRaises(M.Denied):
                     M.collect(self.private,self.out,PLAN)
         self.assertEqual(list(self.out.iterdir()),[])
+def load_tests(loader, suite, pattern):
+    # R9.13 local no-packet route checks join the locked CI R7.9 stage.
+    path=HERE.parent / 'r913' / 'test_restricted_route.py'
+    spec=importlib.util.spec_from_file_location('r913_route_tests',path)
+    module=importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    suite.addTests(loader.loadTestsFromModule(module))
+    return suite
+
 if __name__=="__main__":unittest.main()

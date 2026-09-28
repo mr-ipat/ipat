@@ -525,6 +525,7 @@ mod tests {
         assert_eq!(evidence["out_of_band_host_key_verified"], false);
         assert_eq!(evidence["dedicated_readonly_account_verified"], false);
         assert_eq!(evidence["actual_worker_private_route_verified"], false);
+        assert_eq!(evidence["worker_route_observation"], "DEFAULT_ROUTE_ONLY");
         assert_eq!(evidence["credentials_sent"], false);
         assert_eq!(evidence["olt_commands_executed"], 0);
         assert_eq!(evidence["device_adopted"], false);
