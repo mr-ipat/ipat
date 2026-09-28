@@ -4448,3 +4448,24 @@ console/inventory inspection of SSH service, actual host RSA key,
 firmware support, last-hop ACL and baseline is now the next physical
 acceptance gate. Stored OOB C320 host-key proof file count was zero
 on authorized nonroot VPS. DEV-01 adoption/real CLI remain NOT RUN.
+
+## R9.20 trusted-console offline pin handoff and public CI recovery
+
+Public sanitized GitHub Actions workflow was ACTUALLY ACTIVATED
+through an authorized GitHub API write after the Git credential
+helper refused to upload workflow YAML; independent public run
+`36440412833` completed SUCCESS **2/2 jobs** (public synthetic
+security/JS and locked Rust workspace). This validates only the
+sanitized synthetic mirror, not private Postgres or real hardware.
+
+New protected R9.20 branch `feat/r920-c320-independent-console-pin`
+implements private offline trusted-console RSA public-key comparison
+and exact target `known_hosts` export (no SSH or OLT command) with
+no overwrite and missing independent source/reviewer/MFA/account
+still marked FALSE. Unit tests create disposable SYNTHETIC RSA key,
+verify exact-match private 0600 output, mismatch refusal without
+output, unacceptable permissions and public-address denial.
+Combined local R9.0/R9.20 suite 50/50 PASS; prior R9.14 independent
+RSA unit tests 4/4 PASS. Actual separately trusted physical C320
+console RSA public key remains NOT PROVIDED, source/ACL/baseline
+NOT VERIFIED. No real OLT login/adoption can be asserted.
