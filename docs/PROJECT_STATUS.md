@@ -3916,3 +3916,29 @@ lab evidence now marks the temporary relay OBSERVED AND CLOSED,
 NOT actual tenant device onboarding, identity or physical health.
 The actual worker default route still remains unacceptable for
 ongoing device polling or authenticated command transport.
+
+## R9.13 actual owner VPS constrained LAB physical candidate visible
+
+Actual final branch application source SHA `0d0af60` checked out in
+isolated owner VPS sandbox from independently hashed Git delta
+bundle SHA256
+`eb89a9d14e64a832a12b4018806c4d78a257c54f600366c9dbc6355504e8c99d`.
+Low-priority pinned offline Rust binary SHA256
+`672caf4e756853d0226e93b7cf712f8d229af170cc7450a348ae94b9ee86aeac`.
+Owner-only previous R9.12 unit backed up; versioned R9.13 nonroot
+systemd preview unit verified SHA256
+`2f9d254675c9080b94287035a0722e1e3c7b41f233fce679bfd50b11b52d72c1`,
+then restarted on private loopback :3002. Actual versioned VPS HTTP
+smoke PASS: physical C320 owner-reported DEV-01 displayed PENDING,
+Mac temporary reverse SSH relay appears OBSERVED AND CLOSED, long-
+lived VPS route still DEFAULT_ROUTE_ONLY/NOT VERIFIED, OLT host key
+and exact chassis UNVERIFIED, adoption FALSE, health NOT MEASURED.
+Fake real APIs HTTP401; original :3000 HTTP200 before/after.
+Independent Mac SSH local-forward also fetched same physical evidence
+and dashboard JS successfully; temporary local forward then closed.
+VPS constrained user service ACTIVE on loopback-only :3002, two
+loopback listeners :3000 and :3002, no leftover temporary reverse
+Unix relay sockets. No real OLT login, ONT/routing/PPPoE commands,
+firmware updates or firewall changes occurred. Current R9.13 CI
+for code SHA 0d0af60 is tracked in PR #114; docs-only final SHA
+requires separate independent CI before main merge.

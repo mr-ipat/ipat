@@ -122,3 +122,44 @@ while still reporting the actual long-lived VPS worker path as
 DEFAULT_ROUTE_ONLY, last-hop trust FALSE, physical adoption FALSE.
 For actual onboarding use a separately approved durable site tunnel,
 independently pinned OLT key and dedicated read-only account.
+
+## Actual owner VPS R9.13 private physical-pending dashboard rollout
+
+The reviewed final R9.13 source SHA `0d0af601ff2e0cea1723bf3caaf32cbbd3195679`
+was transferred as a verified SHA-256 Git delta bundle into a separate
+nonroot VPS checkout, WITHOUT modifying canonical VPS main.
+Its source-only delta bundle SHA256 is
+`eb89a9d14e64a832a12b4018806c4d78a257c54f600366c9dbc6355504e8c99d`.
+Pinned low-priority locked offline build produced binary SHA256
+`672caf4e756853d0226e93b7cf712f8d229af170cc7450a348ae94b9ee86aeac`.
+The R9.13 nonroot reviewed user unit is identical in safety controls
+to previous R9.12, but points only to the separately compiled R9.13
+binary; unit SHA256 is
+`2f9d254675c9080b94287035a0722e1e3c7b41f233fce679bfd50b11b52d72c1`.
+The prior running unit SHA was independently checked and backed up
+owner-only at `/home/openai/.cache/ipat/r913-preview/rollback-unit.service`.
+
+Actual on-VPS constrained loopback `127.0.0.1:3002` service restart and
+versioned HTTP smoke PASS: R9.12 synthetic tunnel POST remains safely
+BLOCKED, historical physical observation shows DEV-01 pending and
+owner-Mac temporary relay OBSERVED AND CLOSED, fake real business API
+HTTP401, original :3000 HTTP200 throughout. A separate fresh Mac SSH
+local-forward loaded actual dashboard HTML/JS and read the matching
+historical physical evidence without any OLT network operation.
+Only owner nonroot systemd user service changed; no SSH root policy,
+firewall, K3s, permanent VPN, customer router or OLT/ONT config changed.
+The user manager still has `Linger=no`; no HA/runtime-outliving-user
+claim applies to this private LAB preview. Operational rollback:
+
+```sh
+ssh ipat-lab
+cp -p /home/openai/.cache/ipat/r913-preview/rollback-unit.service \
+  ~/.config/systemd/user/ipat-r911-preview.service
+systemctl --user daemon-reload
+systemctl --user restart ipat-r911-preview.service
+```
+
+The next actual stage requires trusted out-of-band RSA fingerprint,
+restricted public-key account, explicit isolated site route and
+independently approved traffic/ONT baseline; neither optional legacy
+SSH compatibility nor ephemeral relay constitutes physical adoption.
