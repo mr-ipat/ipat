@@ -386,3 +386,14 @@ New disposable-only tenant method/gateway draft does not include
 private/public IP, credentials, exact device identity, management
 route, tunnel key or live probe. DEV-01 authentic physical TC-OLT-01
 remains NOT RUN. No performance/ONT impact measurements exist yet.
+
+## 2026-09-28 VPS owner-authorized passive DEV-01 repeat observation
+
+At 2026-09-28T06:19:51Z the actual authorized nonroot IPAT VPS
+performed ONE bounded public TCP/321 receive-only R9.0 check to the
+owner-provided numeric DEV-01 candidate endpoint. It returned TIMEOUT.
+Zero credential bytes were sent, no Telnet commands, login, site route
+or hardware changes occurred. Owner Mac's earlier credential-free
+TCP/Telnet handshake DOES NOT prove VPS reachability or device identity.
+Physical TC-OLT-01 remains NOT RUN; connectivity UNKNOWN,
+health NOT_MEASURED and exact model/firmware UNVERIFIED.

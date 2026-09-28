@@ -3661,3 +3661,34 @@ and pinned Linux rustfmt stream comparison PASS. Rust compile and
 real signed-session/PG R9.8 integration NOT YET independently proven.
 No keys, credentials, device traffic, gateway configuration or
 real C320 operation introduced by R9.8.
+
+## R9.8 actual IPAT VPS source-route recheck — 2026-09-28
+
+One explicitly bounded nonroot no-auth check from the real Ubuntu
+IPAT VPS to the exact owner-provided public DEV-01 TCP321 endpoint
+returned TIMEOUT (observed 2026-09-28T06:19:51Z), despite historical
+owner-Mac TCP/Telnet receipt. Zero client credential bytes,
+no OLT command, authentication, firewall/NAT/router modification,
+firmware or physical-adoption status changes. This is a source-
+dependent reachability blocker of UNDETERMINED cause. Public Telnet
+would STILL be unsuitable for credentials even if route were fixed.
+No provider firewall mutations are approved without independent
+recovery and per-VPS isolation; obtain controlled private site path.
+
+## R9.6–R9.8 independent GitHub acceptance — 2026-09-28
+
+Feature SHA `434e6b9144b05ef6a54dc46c4439c40ad0189d14`
+passed ALL 4/4 independent GitHub Actions jobs in run
+`36385828544` on PR #112: locked Rust/unit/static tests,
+real disposable PostgreSQL two-tenant R9.7 draft migration
+and exact own-POP policy tests, separate PostgreSQL physical
+recovery lab, and isolated Ubuntu26 K3s. CI does NOT imply
+real private OLT connectivity, real IdP/MFA or secure management.
+R9.8 original Rust session seam is UNMOUNTED and only static
+boundary plus compilation/unit code was exercised, not genuine
+joined live human IdP and separate real writer account.
+Owner-reported C320 must remain UNKNOWN/NOT_MEASURED. Current
+actual IPAT VPS recheck TIMEOUT is recorded above; do not
+attempt public Telnet credential-based adoption. Feature PR
+remains a development branch pending separate integration and
+release review; no customer production deploy performed.

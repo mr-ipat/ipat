@@ -108,3 +108,26 @@ handshake should source-constrained read-only route verification occur.
 Actual public Telnet port-forward closure is a distinct approved
 change with console-backed rollback. No live device authentication
 until verified last-hop isolation and all R9.1 evidence gates pass.
+
+## Nonintrusive live-distribution rollout option (R9.8 review only)
+
+Reported site is x86 RouterOS 7 in the same local network as C320,
+with operator physical/console recovery. BEFORE selecting this option
+in a future signed Tenant Admin wizard, inspect actual source/dest
+management subnets and confirm an isolated trusted final local hop.
+To avoid any static route/configuration change on a busy live C320,
+one candidate design is a narrowly scoped WG worker /32 destination
+route with source NAT ONLY for worker->one private C320 management
+host TCP/23, translated to the site's dedicated management gateway
+address. This is merely a PROPOSAL until real return path and existing
+NAT/firewall rule order have been independently reviewed. It is NOT
+safe to apply blindly on an unsegmented shared customer LAN.
+
+Stage with separate management-only interface/peer and explicit
+tenant+site audit; prohibit transit into subscriber VLANs and forbid
+C320/ONT write operations. Observe existing PPPoE/session baselines
+through independent network telemetry, confirm constrained handshake,
+review source ACL and confirm read-only account separately. Reserve an
+attended console rollback and independent encrypted router backup.
+No OLT default route, VLAN, board, ONT, firmware, PPPoE or firewall
+changes have been approved or performed by this documentation.

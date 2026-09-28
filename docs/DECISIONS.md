@@ -500,3 +500,17 @@ all real tenant rights, reviews and provisioning remain backend-only.
 R9.5 UI selector is a lab prototype, NOT deployed tunnel control.
 Supersedes any reading of R9.3/R9.4 that WireGuard is universally
 required; those earlier documents describe one candidate path only.
+
+## ADR-042 — PROPOSED, NOT APPROVED: live C320 no-change gateway return path
+
+For the owner-reported active distribution ZTE C320 with directly
+connected x86 RouterOS7, consider an independently scoped secure
+site VPN plus one-destination source NAT on its dedicated management
+hop to avoid a live OLT static-route change. THIS IS A PROPOSAL,
+not a customer-network change or proof the last hop is isolated.
+An alternate independently secured gateway/protocol may be selected.
+Requires verified real topology, management VLAN and return path,
+existing RouterOS filter/NAT order, owner console/recovery, approved
+worker identity, signed tenant review and observed no-impact baseline.
+Public Telnet credentials remain forbidden. No tunnel/gateway action
+or real C320 provisioning was performed by this ADR.
