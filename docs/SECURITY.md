@@ -1079,3 +1079,16 @@ SSH (`PermitRootLogin no`), while existing key-authenticated nonroot
 shell via interactive sudo is preferred to restoring direct root SSH.
 Do not switch `PermitRootLogin yes` or make emergency SSH/firewall
 edits before independent actual console login and rollback proof.
+
+## R9.10 legacy ZTE private SSH compatibility risk
+
+The observed private SSH server offers weak legacy ssh-rsa host-key
+signature and CBC cipher suites; no global OpenSSH policy downgrade,
+known-host verification bypass, SSH-DSS or public Telnet credential
+transport is authorized. A narrowly scoped per-process lab-only
+compatibility invocation negotiated to host-key verification, then
+stopped without credentials. Independently verify actual OLT RSA
+SHA256 fingerprint using trusted local console/site inventory and
+prove private last-hop trust BEFORE even the proposed temporary
+account can be used. Rotate user-shared factory credentials on a
+trusted channel before enrolling an actual read-only account.

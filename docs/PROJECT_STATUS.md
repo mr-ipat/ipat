@@ -3722,3 +3722,29 @@ software CI, NOT production physical OLT interoperability or
 human MFA. Next gated priority remains owner-controlled secure
 site gateway with dashboard-backed staged review and no-impact
 read-only C320 validation after verifying actual local isolation.
+
+## R9.10 DEV-01 private SSH: actual Mac handshake only (2026-09-28)
+
+Owner reported private SSH candidate `10.10.13.233:321` and
+OpenSSH failure with legacy host key offers. Per-owner-authorized
+Mac diagnostics established TCP and received `ZTE_SSH.1.0` SSHv2
+banner. Default client negotiation failed because offered host key
+algorithms were ssh-rsa and ssh-dss. Explicit per-process
+HostKeyAlgorithms=+ssh-rsa negotiated group16-sha512, then failed
+because server offered only older CBC cipher suites. A SECOND
+bounded diagnostic with per-process Ciphers=+aes128-cbc
+negotiated AES128-CBC / HMAC-SHA1, obtained an RSA host-key
+fingerprint (reported to owner for independent trusted-site
+verification), and STOPPED at `Host key verification failed`.
+No SSH login, passwords, stored known_host pin, shell commands,
+production gateway change, OLT/ONT config read or write occurred.
+The host banner and network reachability do NOT independently prove
+actual chassis serial/model/firmware or nonshared trusted last hop.
+No host-key verification bypass or global weak SSH config change
+was performed. Next gate: owner compares host-key fingerprint
+via independently trusted local OLT console or controlled site
+inventory, validates dedicated non-disruptive read-only account
+and local path isolation, then controls one session with audited
+bounded commands and measured operational impact. Newer SSH
+firmware/options should be evaluated vendor-specifically but
+firmware change remains separately gated on this LIVE OLT.

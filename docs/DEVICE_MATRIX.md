@@ -397,3 +397,14 @@ or hardware changes occurred. Owner Mac's earlier credential-free
 TCP/Telnet handshake DOES NOT prove VPS reachability or device identity.
 Physical TC-OLT-01 remains NOT RUN; connectivity UNKNOWN,
 health NOT_MEASURED and exact model/firmware UNVERIFIED.
+
+## R9.10 owner-provided private SSH endpoint (unauthenticated)
+
+At 2026-09-28 the actual owner Mac established TCP/SSH with the
+reported private candidate management address TCP321. Banner
+`ZTE_SSH.1.0`; peer offered ssh-rsa/ssh-dss and legacy CBC ciphers.
+Explicit per-process compatibility testing reached server
+RSA host key but stopped before authentication on strict host-key
+verification. Identity, chassis, exact firmware, read-only account,
+management segment isolation and worker/VPS private path remain
+UNVERIFIED. Physical read-only TC-OLT-01 NOT RUN. Health NOT_MEASURED.
