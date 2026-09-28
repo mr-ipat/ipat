@@ -970,3 +970,23 @@ or given real privileges before the
 confidential OIDC code flow, safe HTTPS,
 approved membership enrollment and
 audited real login are verified.
+
+
+## R9.0 first real OLT network contact: plaintext Telnet and spoofed banner
+
+Threats: public TCP321 is unencrypted; the endpoint might be
+NAT/port-forwarded, impersonated or an unexpected firmware/service.
+Neither an IAC negotiation nor an untrusted 'ZTE' text banner
+proves hardware model, host identity, account scope or health.
+An actual private VPS TCP TIMEOUT further prevents claiming
+the control-plane worker can reach this site.
+New tested operator-only preflight enforces exact numeric global
+IPv4, TCP321, nonroot explicit consent, exactly one socket,
+at most 512 inbound bytes and ZERO outbound application bytes.
+Output is sanitized to booleans/UNKNOWN; optional export is
+outside Git in owner 0700 directory and exclusive 0600 file.
+NO credential, raw banner, device API, CLI or secret store.
+No production/public dashboard is authorized by the observed
+public Telnet endpoint. Use independently validated encrypted
+site-management routing or actual authenticated vendor
+SSH/SNMPv3 if supported, plus MFA/approval, before real read.

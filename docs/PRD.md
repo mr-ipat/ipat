@@ -835,3 +835,22 @@ integration for this ORIGINAL Rust bridge.
 An unmounted software bridge does NOT fulfill
 the production dashboard, real MFA or live
 device interoperability acceptance criteria.
+
+
+## R9.0 actual site-link intake before physical OLT adoption
+
+MUST: track source-specific network reachability independently
+from verified physical device identity and trustworthy health.
+One owner-authorized public TCP321 endpoint replied to Mac
+but the actual VPS source timed out, so no true IPAT worker
+access or device adoption is accepted. Public plaintext Telnet
+MUST NOT transmit device credentials; support only one explicit
+no-auth, read-only initial transport observation and never
+convert an unverified vendor banner into compatibility.
+Next MUST: verified private encrypted management path or
+independently authenticated vendor secure protocol,
+actual MFA, tenant/POP mapping, maker-checker approval,
+and strictly read-only real model/firmware evidence.
+The visible Device Manager MUST label these R9.0 facts
+as time-limited historical transport observations,
+not live device connectivity/health.

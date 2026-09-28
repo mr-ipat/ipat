@@ -1,7 +1,7 @@
 # IPAT — Project Status
 
 **As-of:** 2026-09-28 Asia/Jakarta
-**Current milestone:** R8.9 VERIFIED: original signed-ID/access-pair→opaque BFF session→genuine restricted PostgreSQL tenant/POP-scoped device candidate bridge implemented UNMOUNTED, with independent two-company real disposable SQL integration; feature and post-code-main GitHub CI each 4/4 SUCCESS. R8.8 identity-only opaque session already verified. Actual independent real human MFA IdP, confidential HTTPS customer browser login, fully authorized real operational dashboard and physical device adoption are STILL OPEN; no public/device API enabled. See latest appended evidence.
+**Current milestone:** R9.0 ACTUAL NETWORK FIRST CONTACT: owner-authorized public TCP321 from Mac reachable and sent Telnet IAC; a separate untrusted ZTE banner was observed without login, but the actual IPAT VPS source TIMES OUT. Original strict ONE-TARGET, ZERO-SEND, no-login owner-private network preflight and dated non-live dashboard note implemented; local safety tests 7/7 PASS. Actual secure OLT identity, C320 model/firmware, approved worker route, real human MFA and authenticated physical adoption remain OPEN. GitHub feature CI is pending; see latest appended field evidence.
 **Historical R7.1 state (superseded by later entries):** R7.1 original Rust ZTE C320 strict offline read-only evidence parser, owner-private non-network importer, hard-disabled firmware and large RED unfulfilled-PRD warning across all three private dashboard previews FEATURE PR #71 MERGED at code SHA d452d1be6943bb4b3685b2136ad30b587e6af1e9. Both independent feature-PR GitHub CI 36249894205 and post-feature-main CI 36250108104 completed SUCCESS in all four independent jobs (locked Rust/security/UI/OLT offline, disposable Ubuntu26 K3s and two isolated synthetic PostgreSQL recovery jobs, none deployed live). Actual clean unchanged Ubuntu 26.04.1 VPS canonical source, private GitHub and owner FileVault Mac main synchronized at feature SHA; actual VPS rustfmt and 145/145 locked OFFLINE whole-workspace Rust tests, 5/5 synthetic offline CLI permission/data tests, 5/5 source PRD red warning + disabled firmware checks and 7/7 existing R6.8 Python dashboard tests PASS. Existing R6.8 synthetic Node DOM proof rerun on Mac Node v22.22, actual authorized Mac private dashboard served LARGE red PRD alert via real HTTP 200/no-store/CSS high contrast while 3 business APIs remained HTTP401. FileVault Mac encrypted exact merged-feature-source Restic snapshot 63c7c461 independently isolated SHA256 restored plus full encrypted pack read PASS; selected historical root-readable config separately restored, NOT full VPS or real PostgreSQL PITR. Clean main production readiness 8/8 automatic gates PASS, ALL 7/7 independent external safety gates BLOCKED, production NO_GO; live VPS K3s/PostgreSQL/nftables inactive. ZTE C320 actual model/boards/running firmware, authenticated private device route and owner recovery/maintenance approval still unavailable; TC-OLT-01 physical NOT RUN, no firmware update or device changes. Separate physical blocker Issue #72 and high-risk firmware Issue #73 OPEN. Final docs-only checkpoint independent CI, exact updated source synchronization and backup to be logged immutably after docs merge to avoid recursive SHA-changing commits. Developer Mr. iPat.
 
 ## 1. Source of truth and provenance
@@ -3251,3 +3251,68 @@ backend security and
 data-integration slice;
 the full commercial
 PRD is NOT COMPLETE.
+
+
+## R9.0 first genuine operator-authorized network contact — 2026-09-28
+
+**Source/authority:** product owner newly authorized attempting
+one exact public TCP321 ZTE C320-candidate endpoint.
+A physical TCP connection from the actual authorized owner Mac
+succeeded with ~87 ms first observation and 15 initial Telnet
+IAC bytes. A separate minimal protocol-only refusal exchange
+elicited an UNAUTHENTICATED server-side "ZTE" marker, which
+does NOT independently verify C320 chassis, service identity,
+serial, firmware, owner POP or compatibility. No real or fake
+account credentials, printable login, OLT CLI, PON read, or
+firmware command was transmitted.
+
+**First true IPAT worker network blocker:** the same exact
+endpoint from actual nonroot Ubuntu26 VPS timed out.
+No diagnosis of specific firewall, provider, source allowlist
+or NAT is claimed; a Mac-accessible port does NOT make the
+site reachable by IPAT production workers.
+
+**Original newly implemented protection:** source
+`deploy/scripts/lab/r90/olt-telnet-network-preflight.py`
+allows one exact owner-provided global IPv4 on only TCP321,
+one explicit nonroot opt-in, one TCP connect, maximum
+512 bytes read and ZERO application bytes sent.
+It has no login or raw banner output, no retries,
+no IPv4/range scans, no target/secret in Git or public
+frontend, no device mutations and no automatic health changes.
+Optional report is redacted JSON outside Git with owner 0700
+directory and O_EXCL mode-0600 new file. The actual new code
+was executed on owner Mac 2026-09-28T02:51:40Z:
+TCP reachable, Telnet IAC true, 15 inbound bytes, 0 outgoing;
+encrypted owner Mac FileVault-protected private evidence
+0700/0600 independently checked and sanitized. The same
+single-shot script ran as nonroot from the actual VPS at
+2026-09-28T02:52:40Z, returning one TIMEOUT and NO sends.
+The temporary candidate preflight script on VPS was cleaned up.
+
+**UI:** private Device Manager adds an explicitly timestamped
+HISTORICAL network-only panel that does not disclose the
+public endpoint and does NOT claim ongoing live telemetry.
+Real enrolled device count remains 0, connectivity UNKNOWN,
+health NOT_MEASURED and exact OLT physical interoperability
+NOT RUN. Existing public business APIs stay DENIED.
+**Local QA:** original offline network preflight unit cases
+7/7 PASS (one connection, zero sends, exact IPv4/port/opt-in,
+silence/timeout, private evidence, redacted dashboard and
+prohibition of outbound command methods). The new
+GitHub CI job runs ONLY local mocks, never the real site.
+**OPEN real physical/access gates:** public Telnet is plaintext
+and MUST NOT carry actual or "temporary" credentials. First
+establish an independently verified encrypted private
+management route or a proven secure management protocol,
+check that the actual IPAT worker can reach the site,
+independently verify exact peer model and firmware and
+its dedicated read-only authority, and retain real human
+MFA/POP/maker-checker approval before TC-OLT-01.
+The original R7.9 SSH candidate is NOT known supported
+on this exact firmware. No vendor support, live health,
+OLT/ONT adoption, firmware update, real production login,
+K3s on the live VPS or independent production disaster
+recovery is claimed. Release source SHA, independent
+GitHub CI and backup evidence must be appended
+only after independently observed success.

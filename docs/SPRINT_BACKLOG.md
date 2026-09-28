@@ -911,3 +911,25 @@ SHOULD next: trusted device
 read-only protocol profiles plus
 evidence freshness, separately
 from later firmware write approval.
+
+
+## R9.0 precise actual OLT management critical path
+
+MUST NOW: capture the owner's authorized single-endpoint no-login
+Mac and VPS network evidence independently, recognize public
+Telnet plaintext and source-specific timeout, preserve redacted
+owner-private proof and date-labeled historic preview state.
+MUST NEXT: establish independently VERIFIED secure private
+site-to-IPAT management routing; reproduce exact nonroot VPS
+source reachability, independently fingerprint the actual
+management peer, determine real C320 model/cards/firmware,
+then perform dedicated authorized read-only inventory
+with encrypted evidence and actual tenant/POP acceptance.
+Do NOT assume the old R7.9 SSH candidate works on actual
+firmware or reuse public Telnet with passwords.
+SEPARATE MUST: complete true human MFA/secure real browser
+BFF, audit/approval, durable authorized device registry
+and timestamped genuine health from real protocol evidence.
+LATER: narrowly approved firmware write only after
+actual backup, tested independent recovery and dual approval;
+production K3s/PG/DR external gates remain unchanged.
