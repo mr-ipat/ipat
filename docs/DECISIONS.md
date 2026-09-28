@@ -463,3 +463,24 @@ read_probe_eligible value is ONLY a prerequisite result and MUST NOT
 enqueue, claim or execute any network operation. A later durable
 read-probe intent/outbox and vendor adapter remain separate review
 milestones, and all firmware/write actions remain blocked.
+
+
+## ADR-040 — R9.2 APPROVED DEVELOPMENT-ONLY NONEXECUTABLE READ INTENT
+
+Implement a durable, per-tenant/candidate unique immutable read-probe
+request and same-transaction PRIVATE audit after R9.1's FOUR latest
+unexpired gates and maker-checker approval are independently checked
+again by a narrow PostgreSQL SECURITY DEFINER function. Only active
+own-tenant, exact-POP NOC can request; actual browser BFF mutation
+requires signed independent ID/access opaque identity, fresh SQL
+membership, trusted Host/Origin and correct CSRF. The dedicated NOLOGIN
+function owner, EXECUTE-only writer and separate restricted query reader
+are distinct. The sole possible state is awaiting_separate_execution_review;
+private audit published_at is permanently NULL. The function is
+UNMOUNTED and has no broker, worker, management transport, execution
+lease, credentials, firmware commands, physical traffic or power to
+authorize a subsequent network probe. A future worker MUST revalidate
+readiness again, use independent verified site route/device identity,
+per-device durable leases, explicit human approval and recovery before
+any actual device connection. Production release NOT approved.
+See docs/R92_IMMUTABLE_NONEXECUTABLE_READ_INTENT.md.

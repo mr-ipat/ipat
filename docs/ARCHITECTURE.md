@@ -995,3 +995,17 @@ eligible row to a queue or adapter. The next architecture slice is
 a durable read-probe intent/outbox consumed by a separately
 authorized vendor read-only worker, with per-device locking and
 fresh gate revalidation before claim.
+
+
+## R9.2 persisted read-only intent without executable transport
+
+Under the independently gated R9.1 four-gate SQL projection,
+the original application adds a separate NOLOGIN SECDEF
+per-candidate immutable request and same-transaction
+**non-published** private audit table; it deliberately does
+not connect to the older executable provisioning job/outbox,
+broker, transport adapter or vendor management. A future
+durable worker must make a SECOND fresh real approval/readiness
+and physical private-route decision; no intent grants any
+network permission. The BFF opaque CSRF mutation bridge
+is UNMOUNTED pending verified live human IdP/MFA and trusted TLS.

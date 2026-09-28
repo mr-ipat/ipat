@@ -1,7 +1,7 @@
 # IPAT — Project Status
 
 **As-of:** 2026-09-28 Asia/Jakarta
-**Current milestone:** R9.0 VERIFIED physical-network-only first contact: user-approved public TCP321 reachable from actual owner Mac with Telnet IAC and separate UNAUTHENTICATED ZTE banner; identical actual Ubuntu26 VPS source TIMES OUT. Original strict single-IP receive-only NO-CREDENTIAL preflight and dated redacted Device Manager historical panel implemented, Mac/VPS real source proofs recorded, actual real owner preview checked, feature AND independent post-code-merge main GitHub CI each 4/4 PASS. Secure private routed management, independently authenticated actual C320/firmware read, live customer MFA and real physical device adoption remain MUST/OPEN.
+**Current milestone:** R9.2 CANDIDATE — immutable, permanent, NONEXECUTABLE read-only probe intents following real R9.1 four-gate readiness (R9.1 main independently CI 4/4); R9.2 feature's disposable SQL/signed session CI verification PENDING. Actual authenticated physical OLT read, real customer IdP+MFA and full production DR remain OPEN.
 **Historical R7.1 state (superseded by later entries):** R7.1 original Rust ZTE C320 strict offline read-only evidence parser, owner-private non-network importer, hard-disabled firmware and large RED unfulfilled-PRD warning across all three private dashboard previews FEATURE PR #71 MERGED at code SHA d452d1be6943bb4b3685b2136ad30b587e6af1e9. Both independent feature-PR GitHub CI 36249894205 and post-feature-main CI 36250108104 completed SUCCESS in all four independent jobs (locked Rust/security/UI/OLT offline, disposable Ubuntu26 K3s and two isolated synthetic PostgreSQL recovery jobs, none deployed live). Actual clean unchanged Ubuntu 26.04.1 VPS canonical source, private GitHub and owner FileVault Mac main synchronized at feature SHA; actual VPS rustfmt and 145/145 locked OFFLINE whole-workspace Rust tests, 5/5 synthetic offline CLI permission/data tests, 5/5 source PRD red warning + disabled firmware checks and 7/7 existing R6.8 Python dashboard tests PASS. Existing R6.8 synthetic Node DOM proof rerun on Mac Node v22.22, actual authorized Mac private dashboard served LARGE red PRD alert via real HTTP 200/no-store/CSS high contrast while 3 business APIs remained HTTP401. FileVault Mac encrypted exact merged-feature-source Restic snapshot 63c7c461 independently isolated SHA256 restored plus full encrypted pack read PASS; selected historical root-readable config separately restored, NOT full VPS or real PostgreSQL PITR. Clean main production readiness 8/8 automatic gates PASS, ALL 7/7 independent external safety gates BLOCKED, production NO_GO; live VPS K3s/PostgreSQL/nftables inactive. ZTE C320 actual model/boards/running firmware, authenticated private device route and owner recovery/maintenance approval still unavailable; TC-OLT-01 physical NOT RUN, no firmware update or device changes. Separate physical blocker Issue #72 and high-risk firmware Issue #73 OPEN. Final docs-only checkpoint independent CI, exact updated source synchronization and backup to be logged immutably after docs merge to avoid recursive SHA-changing commits. Developer Mr. iPat.
 
 ## 1. Source of truth and provenance
@@ -3440,3 +3440,35 @@ RED PRD OPEN: actual human IdP/MFA/BFF, secure private device path,
 verified physical model/firmware identity, dedicated real read-only
 account, durable read-probe intent/worker, live vendor interoperability
 and full production DR remain mandatory.
+
+
+## R9.2 development checkpoint — 2026-09-28
+
+Prior code main R9.1 was independently
+verified in GitHub Actions run 36377736411:
+all four jobs SUCCESS at SHA
+b7a4812b3751f33e911b668fc6cafa655208b1de.
+Its migration 0008 stores four immutable
+separately attested physical readiness
+prerequisites and exposes an UNMOUNTED
+signed-opaque session read projection only.
+
+Following the requested priority sequence,
+R9.2 adds genuinely durable but explicitly
+nonexecutable per-candidate first-read intent
+in PostgreSQL migration 0009, unique
+idempotency and same-transaction audit,
+a separate NOLOGIN SECDEF+EXECUTE
+writer, restricted own POP read projection,
+and an UNMOUNTED original Rust
+opaque signed-identity+fresh SQL+
+trusted-origin+CSRF mutation bridge.
+No public HTTP mount, execution broker,
+device worker, transport, actual OLT/ONT
+connection or firmware write is added.
+Actual disposable PostgreSQL and CI
+integration must pass before merging;
+no claim of successful physical device
+adoption is made. See the detailed
+R9.2 runbook, ADR-040 and newest CI
+checkpoint at milestone close.

@@ -955,3 +955,26 @@ revalidates fresh R9.1 gates before claim. Adapter execution remains
 disabled until the actual private path, device fingerprint/model/
 firmware and dedicated real read-only credentials are independently
 verified.
+
+
+## R9.2 achieved source; future physical critical path
+
+MUST now: immutable audited per-candidate
+nonexecuting intent and exact active NOC POP
+and four-gate SQL rechecks with sealed roles;
+real disposable multi-company SQL and signed
+opaque-session CSRF integration are mandatory
+CI gates. MUST NEXT for physical OLT/ONT:
+actual confidential verified human MFA IdP
+HTTPS BFF, real site-to-worker encrypted
+management path and source allowlist
+(the actual Ubuntu VPS still timed out on
+the earlier public network observation),
+independent real C320 host identity/model/
+firmware and constrained read-only account,
+physical operator recovery; THEN separate
+audited durable worker execution approval
+and atomic per-device lease with fresh
+readiness rechecks. Firmware and writes
+stay disabled. Full independent production
+DR and public commercial SaaS remain open.
