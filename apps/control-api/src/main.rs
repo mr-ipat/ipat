@@ -8,6 +8,7 @@ mod device_workbench_lab;
 mod oidc_browser_lab;
 mod oidc_lab;
 mod site_a_pairing_lab;
+mod c320_actions_lab;
 mod tenant_membership_lab;
 
 use identity_core::PinnedIssuer;

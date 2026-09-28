@@ -4373,3 +4373,7 @@ NOT equivalent to hosted Actions, disposable production PostgreSQL
 recovery, actual hardware interoperability or source-restricted
 branch CI. R9.18 real device adoption=FALSE and no real OLT
 commands were executed.
+
+## R9.19 C320 readiness catalog under implementation
+
+Branch `feat/r919-c320-real-action-readiness` adds a Rust private LAB GET with 8 C320 capability classifications and unconditional HTTP403 POST handlers. Card/version parser was tested offline in R9.18 but exact DEV-01 firmware/real restricted login remain unknown. Browser displays only disabled catalog metadata; no real worker, device authentication or network action is enabled. Initial Mac safety static checks 47/47 passed; actual R9.19 Rust compile/deploy still pending. No physical OLT read/adoption has occurred.
