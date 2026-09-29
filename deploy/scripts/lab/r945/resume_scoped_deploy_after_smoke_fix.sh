@@ -36,7 +36,9 @@ rollback(){
     echo R945_SCOPED_RESUME_ROLLED_BACK_TO_R944_NO_SECRET_DISCLOSURE >&2
 }
 trap rollback ERR
-systemctl --user reset-failed ipat-r945-connector.service
+systemctl --user daemon-reload
+# A disabled/not-loaded service has no failed state; reset only if available.
+systemctl --user reset-failed ipat-r945-connector.service >/dev/null 2>&1 || true
 systemctl --user enable --now ipat-r945-connector.service
 ready=no
 for _ in $(seq 1 20);do
