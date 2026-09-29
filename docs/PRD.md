@@ -1088,3 +1088,7 @@ commercial collector. MUST independently pin true physical chassis
 RSA, validate restricted device account, tenant/POP and baseline
 before an authenticated first CLI read. Hardware ADOPTED and actual
 health are FALSE/NOT_MEASURED until genuine signed reviewer approval.
+
+## R9.44 operational GUI first acceptance scope (supplement to baseline, 29 September 2026)
+
+MUST provide an operator-first OLT overview and per-PON summary that can display genuine versioned/timestamped, read-only inventory and valid C320 card/firmware readings by authenticated fixed read APIs; lab frontend must never mark dated owner screenshots as live telemetry. Initially only physically verified ZTE C320 PON 1/1/1 and bounded three read operations; present disabled/unsupported states rather than invented capabilities. Current `R944_C320_OPERATOR_GUI_REFERENCE.md` has evidence and feature mapping from user-supplied public reference to a distinct IPAT GUI without copying vendor implementation. SHOULD add independently physically verified ONU row listing, optical/traffic, alarms and PON navigation under tenant-aware production identity. LATER add physical C-DATA/vendor-specific mapping, reusable PPPoE/VLAN profiles, multi-vendor firmware and multi-OLT/FTTH management after exact model/firmware support. All actual configuration writes require native vendor restore rehearsal, per-device restrictions, signed owner/MFA maker-checker audit and tested rollback; GUI-visible actions are not proof hardware compatibility.
