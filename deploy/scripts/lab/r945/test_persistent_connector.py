@@ -27,7 +27,7 @@ class PersistentC320Tests(unittest.TestCase):
                 agent.init()
                 token=(root/'bootstrap-token').read_text().strip()
                 fake=SimpleNamespace(run_three_reads=lambda m,p,a:{
-                     'cards_in_service':3} if a==b'CARDS\\n' else {})
+                     'cards_in_service':3} if a==b'CARDS\n' else {})
                 response=agent.verify_and_store(token,'TEST-ONLY-DEVICE-PASSWORD',fake,None)
                 self.assertTrue(response['enrolled_for_read'])
                 self.assertEqual(response['commercial_production_adopted'],False)
