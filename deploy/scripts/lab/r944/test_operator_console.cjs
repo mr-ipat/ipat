@@ -23,7 +23,7 @@ test('operational console is integrated with an actually served lab module',()=>
   }
 });
 test('GUI only enables previously implemented strictly scoped physical reads',()=>{
-  for(const route of ['c320-owner-agent-state','c320-owner-live-refresh',
+  for(const route of ['c320-owner-connection','c320-owner-live-refresh',
                       'c320-owner-live-cards','c320-owner-live-firmware']){
     assert.match(js,new RegExp('/lab/'+route));
   }
@@ -37,7 +37,7 @@ test('GUI only enables previously implemented strictly scoped physical reads',()
 });
 test('manual snapshot is not falsely presented as live evidence',()=>{
   assert.match(js,/snapshot_is_live !== false/);
-  assert.match(js,/owner-agent-state/);
+  assert.match(js,/owner-connection/);
   assert.match(js,/\!state.ready/);
   assert.match(js,/source !== 'VERIFIED_LOCAL_OWNER_AGENT_LAB_ONLY'/);
   assert.match(html,/TIDAK/);
