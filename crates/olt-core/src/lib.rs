@@ -1,5 +1,6 @@
 //! ZTE C320 PURE offline laboratory parser and firmware planning policy.
 //! Never connects, authenticates, uploads, upgrades or returns raw transcripts.
+pub mod ont_registration;
 pub const MAX_OUTPUT: usize = 32768;
 pub const READ_COMMANDS: [&str; 2] = ["show card", "show version-running"];
 pub const WRITE_ENABLED: bool = false;

@@ -903,3 +903,9 @@ The three independent owner historic card identities/statuses
 matched exactly. There was NO on-device config change/password
 persistence/unattended polling; owner-only private receipt confirms.
 No elevation to commercial ADOPTED or service identity is warranted.
+
+## ADR-066 — ONT registration requires separately accepted physical C320 adoption and exact vendor adapter
+
+Owner objective is immediate ONT registration after real OLT adoption. A functioning SSH card read and recovered off-host CLI transcript do not authorize ONT configuration. Add `olt-core::ont_registration` as a strict pure offline draft validator (bounded exact observed slot, field validation, collision checks) with `ONT_EXECUTION_ENABLED=false`. No executable generic CLI string template, transport or device secrets are exposed. Its syntax validation is not authoritative inventory freshness, availability or authorization.
+
+Before enabling even one physical registration, require R9.35 identity/native restore/limited account/POP/MFA/reviewer/worker evidence AND actual firmware-specific PON/ONT/profile interoperability, unique serial and ONU ID read-back, per-OLT/PON locks, immutable plan approval and bounded one-ONT rollback. Device registration, service provisioning and firmware upgrade are separate privileges and jobs. Current C320 remains NOT ADOPTED; no production action path may use synthetic/LAB signals as permission.
