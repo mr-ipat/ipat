@@ -29,7 +29,6 @@ TOKEN = ROOT / 'bootstrap-token'
 TOKEN_HASH = ROOT / 'bootstrap-sha256'
 KEY = ROOT / 'envelope-key'
 CREDENTIAL = ROOT / 'device.fernet'
-DEVICE_META = ROOT / 'device.json'
 MAX_REQUEST = 1024
 MAX_ATTEMPTS = 5
 WAIT_SECONDS = 900
@@ -123,7 +122,7 @@ def safe_response(payload):
     return (json.dumps(payload, separators=(',', ':'), sort_keys=True) + '\n').encode('ascii')
 
 
-def verify_and_store(token, password, reader, reader_module, device_name='ZTE C320 Lab'):
+def verify_and_store(token, password, reader, reader_module):
     now = time.monotonic()
     with LOCK:
         if STATE['blocked_until'] > now:
@@ -135,8 +134,6 @@ def verify_and_store(token, password, reader, reader_module, device_name='ZTE C3
         STATE['failures'] += 1
     if enrolled():
         raise ValueError('already enrolled; rotation requires separate owner-approved operation')
-    if not isinstance(device_name, str) or not device_name.strip() or len(device_name)>64 or any(ord(x)<32 for x in device_name):
-        raise ValueError('invalid device name')
     private_file(TOKEN_HASH)
     if not isinstance(token, str) or len(token) > 128 or \
        not hmac.compare_digest(hashlib.sha256(token.encode('utf-8')).digest(),
@@ -149,7 +146,6 @@ def verify_and_store(token, password, reader, reader_module, device_name='ZTE C3
     if result.get('cards_in_service', 0) < 1:
         raise ValueError('physical device card response unverified')
     private_file(KEY)
-    secret_write(DEVICE_META, safe_response({'name': device_name.strip(), 'device_type': 'olt', 'device_profile': 'zte_c320_lab'}))
     secret_write(CREDENTIAL, Fernet(KEY.read_bytes()).encrypt(password.encode('utf-8')))
     TOKEN.unlink(missing_ok=True)
     TOKEN_HASH.unlink(missing_ok=True)
@@ -162,7 +158,6 @@ def verify_and_store(token, password, reader, reader_module, device_name='ZTE C3
     return {'enrolled_for_read': True, 'physical_card_count': result['cards_in_service'],
             'verified_at_utc': STATE['last_verified'],
             'host_identity_level': 'NETWORK_OBSERVED_SSH_PIN',
-            'device_name': device_name.strip(),
             'commercial_production_adopted': False, 'physical_writes_enabled': False}
 
 
@@ -173,19 +168,12 @@ def status():
         last_kind = STATE['last_kind']
         recent = bool(last) and time.monotonic() - STATE['last_monotonic'] <= 360
         ever_verified = STATE['ever_verified']
-    label = 'ZTE C320 Lab'
-    if configured and DEVICE_META.exists():
-        private_file(DEVICE_META)
-        saved = json.loads(DEVICE_META.read_text('utf-8'))
-        if saved.get('device_profile') == 'zte_c320_lab' and isinstance(saved.get('name'), str) and 1 <= len(saved['name']) <= 64:
-            label = saved['name']
     return {'mode': MODE, 'agent_ready': configured,
             'read_in_progress': CLI_LOCK.locked(),
             'requests_left': 5 if configured else 0,
             'seconds_left': 900 if configured else 0,
             'persistent_connector': True,
             'credentials_enrolled': configured,
-            'device_name': label,
             'last_verified_at_utc': last,
             'last_verified_kind': last_kind,
             'host_identity_level': 'NETWORK_OBSERVED_SSH_PIN',
@@ -295,11 +283,11 @@ def serve():
                     try:
                         data = json.loads(raw[7:])
                         if type(data) is not dict or set(data) != {'bootstrap_code', 'password',
-                                                                  'device_profile', 'device_name'} or \
+                                                                  'device_profile'} or \
                                 data['device_profile'] != 'zte_c320_lab':
                             raise ValueError('invalid allowlisted target')
                         answer = verify_and_store(data['bootstrap_code'], data['password'],
-                                                  reader, reader_module, data['device_name'])
+                                                  reader, reader_module)
                     finally:
                         CLI_LOCK.release()
                 else:
