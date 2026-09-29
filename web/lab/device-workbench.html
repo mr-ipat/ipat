@@ -103,6 +103,14 @@
     <div id="ipat-device-diagnostic" class="ipat-connection-diagnostic" role="status" aria-live="polite">Network check will start automatically when the device is saved.</div>
     <p id="ipat-c320-enroll-result" role="status" aria-live="polite">Save creates a Pending device entry immediately. IPAT then checks the management route and connects when the required credentials and owner verification are available.</p>
   </section>
+  <section class="ipat-active-device-list" aria-labelledby="ipat-real-device-list-heading">
+    <div class="ipat-device-form-heading"><h3 id="ipat-real-device-list-heading">Device List</h3>
+      <span class="ipat-ops-disclosure">Saved devices remain visible even when SSH is offline or authentication is pending.</span></div>
+    <div class="table-scroll"><table aria-label="Saved physical devices">
+      <thead><tr><th>Device</th><th>Management</th><th>Adoption</th><th>Connection</th></tr></thead>
+      <tbody id="ipat-saved-physical-rows"><tr><td colspan="4">Loading saved devices...</td></tr></tbody>
+    </table></div>
+  </section>
   <p id="ipat-c320-signal-detail" class="ipat-ops-disclosure">Menunggu pemeriksaan koneksi C320...</p>
   <p id="ipat-c320-connectivity" role="status" aria-live="polite">Mengecek sesi agen OLT...</p>
   <div class="ipat-ops-tabs" aria-label="Kategori fungsi OLT">
