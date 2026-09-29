@@ -60,7 +60,7 @@ async function simulate({password='SYNTHETIC',ownerCode='',autoVerify=false}) {
        enroll++;
        const body=JSON.parse(init.body);
        assert.equal(body.password,'SYNTHETIC');
-       assert.equal(body.bootstrap_code,ownerCode);
+       assert.equal(body.bootstrap_code,autoVerify?'SYNTHETIC_OWNER_VERIFICATION_123456789012345':ownerCode);
        status.credentials_enrolled=true;
        status.device_status='CONNECTED';
        status.adoption_state='READ_ONLY_CONNECTED_LAB';
