@@ -93,3 +93,45 @@
     output.replaceChildren();status.textContent='Bukti historis gagal divalidasi; tidak ada klaim inventaris atau adopsi otomatis.';
   }
 })();
+
+// Real owner-supervised panel action. Never simulate a successful live refresh.
+(() => {
+  const button=document.getElementById('c320-read-live');
+  const status=document.getElementById('c320-read-live-status');
+  const summary=document.getElementById('c320-read-live-summary');
+  if(!button||!status||!summary)return;
+  button.addEventListener('click',async()=>{
+    button.disabled=true;
+    status.textContent='Menjalankan pembacaan fisik terbatas via agen pemilik…';
+    summary.replaceChildren();
+    try {
+      const res=await fetch('/lab/c320-owner-live-refresh',{
+        method:'POST',cache:'no-store',credentials:'omit',
+        headers:{'X-IPAT-Demo-Only':'1','Content-Type':'application/json'},
+        body:'{}'
+      });
+      if(!res.ok)throw new Error(res.status===404?'Backend privat belum memasang modul R9.40':
+        'Agen pemilik tidak aktif, batas waktu, atau pembacaan gagal ('+res.status+')');
+      const r=await res.json();
+      if(r.mode!=='OWNER_SUPERVISED_REAL_C320_READ_ONLY'
+        ||r.source!=='VERIFIED_LOCAL_OWNER_AGENT_LAB_ONLY'
+        ||r.physical_writes_enabled!==false||r.device_adopted!==false
+        ||r.serials_returned!==false||!Number.isInteger(r.unconfigured)
+        ||!Number.isInteger(r.configured)||!Number.isInteger(r.online)
+        ||!Number.isInteger(r.offline)||r.online+r.offline!==r.configured)
+        throw new Error('Kontrak pembacaan fisik tidak sah');
+      const values=[['PON',r.pon],['ONU terdaftar',String(r.configured)],
+        ['Online',String(r.online)],['Offline',String(r.offline)],
+        ['ONU belum terdaftar',String(r.unconfigured)]];
+      for(const [name,value] of values){
+        const line=document.createElement('div');line.className='physical-gate';
+        const label=document.createElement('span');label.textContent=name;
+        const result=document.createElement('strong');result.textContent=value;
+        line.append(label,result);summary.append(line);
+      }
+      status.textContent='LIVE TERBATAS · '+r.read_at_utc+' · pembacaan aktual selesai. Adopsi produksi dan perubahan konfigurasi tetap terkunci.';
+    } catch(e) {
+      status.textContent='BELUM ADA BACAAN LIVE: '+e.message+'. Data historis tidak diganti.';
+    } finally { button.disabled=false; }
+  });
+})();

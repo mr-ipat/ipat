@@ -4,6 +4,7 @@
 
 mod browser_session_lab;
 mod c320_actions_lab;
+mod c320_live_lab;
 mod device_review_lab;
 mod device_workbench_lab;
 mod oidc_browser_lab;
@@ -314,6 +315,15 @@ async fn main() {
             oidc_browser_lab::from_owner_environment()
                 .expect("unsafe or missing explicitly approved browser provider configuration"),
         ));
+    }
+    // Separate owner-opted ephemeral live read: mounted ONLY for the private
+    // loopback :3002 process, never for :3000/:3001/public K3s or production.
+    let owner_live_read = std::env::var("IPAT_R940_PRIVATE_OWNER_READ").as_deref() == Ok("YES");
+    if owner_live_read && !private_canary {
+        panic!("owner physical read bridge requires explicitly isolated private canary");
+    }
+    if owner_live_read {
+        app = app.merge(c320_live_lab::router());
     }
     axum::serve(listener, app).await.expect("serve API");
 }

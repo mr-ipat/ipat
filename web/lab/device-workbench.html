@@ -66,6 +66,15 @@
         <p id="c320-real-inventory-status" role="status" aria-live="polite">Memeriksa bukti privat, bukan polling perangkat...</p>
         <div id="c320-real-inventory" class="steps" aria-label="Tiga kartu fisik historis"></div>
       </section>
+      <section class="panel" id="c320-supervised-read" aria-labelledby="c320-supervised-read-title">
+        <div class="section-top"><div><span class="eyebrow">R9.40 · KONTROL OLT NYATA, BACA SAJA</span>
+          <h2 id="c320-supervised-read-title">ZTE C320 — pembacaan langsung dari panel</h2></div><span class="pill amber-pill">OWNER-SUPERVISED LAB</span></div>
+        <p>Setelah pemilik mengaktifkan agen sementara melalui terminal privat VPS, tombol ini akan menjalankan tiga perintah inventaris READ-ONLY ke C320 melalui SSH yang sudah dipin secara observasi jaringan. Tidak menerima serial, password atau perintah CLI di browser. Maksimal 5 kali pembacaan dalam 15 menit. Ini bukan otorisasi tenant SaaS ataupun adopsi produksi.</p>
+        <button id="c320-read-live" type="button" class="secondary">Baca status OLT sekarang</button>
+        <p id="c320-read-live-status" role="status" aria-live="polite">Agen pemilik perlu diaktifkan secara terpisah; data historis di atas bukan telemetri langsung.</p>
+        <div id="c320-read-live-summary" class="steps" aria-label="Hasil pembacaan C320 langsung dan tersanitasi"></div>
+        <div class="separation"><b>AKSI PERUBAHAN KONFIGURASI TETAP TERKUNCI</b><p>Registrasi ONT, VLAN, perubahan akun dan upgrade firmware memerlukan alur persetujuan serta pengujian pemulihan native. Jangan menganggap tombol pembacaan ini sebagai izin menulis perangkat.</p></div>
+      </section>
       <section class="panel" id="c320-operations" aria-labelledby="c320-operations-title">
         <div class="section-top"><div><span class="eyebrow">R9.33 / KATALOG AKSI OLT</span><h2 id="c320-operations-title">Fungsi OLT ZTE C320 — kesiapan sebenarnya</h2></div><span class="pill amber-pill">AKSI FISIK TERKUNCI</span></div>
         <p>OLT nyata telah dibaca melalui SSH terenkripsi. Parser Rust telah mengolah snapshot aktual kartu/versi; GTGHK versus GTXK dan MVR PRAM masih perlu verifikasi vendor. Backup CLI eksternal telah dipulihkan identik dari Restic. Aksi otomatis tetap terkunci sampai identitas, akun khusus terbatas, audit dan izin tenant tervalidasi.</p>
