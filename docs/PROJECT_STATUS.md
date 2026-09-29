@@ -4824,3 +4824,5 @@ Protected branch publication and hosted synthetic mirror CI are
 tracked separately from this private runtime success. Real physical
 adoption still blocked on independently verified physical chassis
 and dedicated restricted account/tenant POP controls.
+
+R9.28 latest PUBLIC synthetic GitHub Actions exact sanitized commit 2022eadf70b1a1ab847e18e030674dbea9b807f1 run 36514499014 independently finished SUCCESS both 2/2 hosted jobs (synthetic-static and locked Rust). Actual owner VPS private localhost :3002 R9.28 deployed and post-deploy independent HTTP smoke RE-RAN PASS after public publication; all 8 physical OLT actions remain 403, original :3000 healthy. Public synthetic CI is not physical Telnet identity or authentication proof. Actual first owner-VPS TCP323 passive negotiation (15 initial Telnet IAC bytes) and original R9.22 SSH userauth still only transport proof; no real credentials or physical CLI/config commands sent. Protected private PR #128 STACKED DRAFT remains pending independently trusted physical source, restricted account, live baseline and production tenant MFA/worker.
