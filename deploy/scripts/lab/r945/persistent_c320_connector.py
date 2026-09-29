@@ -10,6 +10,7 @@ import importlib.util
 import json
 import os
 import secrets
+import signal
 import socket
 import socketserver
 import stat
@@ -213,6 +214,31 @@ def background_read(stop, reader, reader_module):
             break
 
 
+def ensure_socket_available():
+    """Clean only a verifiably stale owner-private Unix socket after systemd stop.
+
+    Refuse symlinks, untrusted paths or an existing active listener.
+    """
+    if SOCKET.is_symlink():
+        raise ValueError('symlink socket refused')
+    if not SOCKET.exists():
+        return
+    info = SOCKET.lstat()
+    if not stat.S_ISSOCK(info.st_mode) or info.st_uid != os.getuid() or \
+            stat.S_IMODE(info.st_mode) != 0o600:
+        raise ValueError('foreign or unsafe socket')
+    probe = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    probe.settimeout(1)
+    try:
+        probe.connect(str(SOCKET))
+    except ConnectionRefusedError:
+        SOCKET.unlink()
+    else:
+        raise ValueError('another owner agent is actively serving')
+    finally:
+        probe.close()
+
+
 def serve():
     os.umask(0o077)
     if os.geteuid() == 0:
@@ -221,8 +247,9 @@ def serve():
     private_dir(PARENT)
     private_file(KEY)
     reader, reader_module = module()
-    if SOCKET.exists() or SOCKET.is_symlink():
-        raise ValueError('old temporary agent socket must be absent')
+    ensure_socket_available()
+    # SIGTERM from systemd must release the private Unix socket on normal stop.
+    signal.signal(signal.SIGTERM, lambda _sig, _frame: sys.exit(0))
     class Handler(socketserver.BaseRequestHandler):
         def handle(self):
             try:
