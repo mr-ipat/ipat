@@ -1161,3 +1161,7 @@ OpenSSH downgrade. R7.9 C320 `group14-sha256` compatibility is now
 actually proven through SSH authentication-method negotiation on
 owner VPS, but real authenticated read/firmware compatibility and
 signed production tenant/POP action worker remain unimplemented.
+
+## R9.45: direct-first management topology
+
+Authenticated tenant/POP Device Manager -> verified target, tenant and permitted management segment -> direct verified SSH/HTTPS/SNMPv3 route where available; otherwise tenant/POP-specific WireGuard or IPsec gateway -> same server-side encrypted one-time device enrollment -> bounded persistent read worker, per-device lease, fresh timestamp, and separately audited restricted change worker. Do not force tunnels when direct network reachability is already safe, and never make SSH/public Telnet an unrestricted cross-tenant command proxy. Private :3002 ZTE lab is an interim fixed-target prototype with preexisting network-observed SSH pin; it does NOT implement authenticated production tenancy, provider-agnostic new-device form or real WireGuard/IPsec provisioning.
