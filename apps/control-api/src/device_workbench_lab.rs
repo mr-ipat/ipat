@@ -17,6 +17,7 @@ const CSS: &str = include_str!("../../../web/lab/device-workbench.css");
 const JS: &str = include_str!("../../../web/lab/device-workbench.js");
 const C320_FIRST_REAL_JS: &str = include_str!("../../../web/lab/c320-first-real-inventory.js");
 const C320_OPERATOR_JS: &str = include_str!("../../../web/lab/c320-operator-console.js");
+const C320_CONNECT_JS: &str = include_str!("../../../web/lab/c320-connection-setup.js");
 const PHYSICAL_EVIDENCE: &str = include_str!("../../../web/lab/physical-intake-evidence.json");
 const MAX_DEMO_CANDIDATES: usize = 24;
 
@@ -447,6 +448,12 @@ async fn first_real_inventory_js() -> (HeaderMap, &'static str) {
         C320_FIRST_REAL_JS,
     )
 }
+async fn connection_setup_js() -> (HeaderMap, &'static str) {
+    (
+        super::private_lab_headers("text/javascript; charset=utf-8"),
+        C320_CONNECT_JS,
+    )
+}
 async fn operator_console_js() -> (HeaderMap, &'static str) {
     (
         super::private_lab_headers("text/javascript; charset=utf-8"),
@@ -470,6 +477,7 @@ pub(super) fn router() -> Router {
             get(first_real_inventory_js),
         )
         .route("/lab/c320-operator-console.js", get(operator_console_js))
+        .route("/lab/c320-connection-setup.js", get(connection_setup_js))
         .route("/lab/device-physical-evidence", get(physical_evidence))
         .route(
             "/lab/c320-action-readiness",
