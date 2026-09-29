@@ -4678,3 +4678,19 @@ contain credential terms, maintaining earlier security contracts;
 public-facing source remains strictly nonsecret method metadata.
 Separate pinned VPS Rust suite/latest public synthetic CI require
 verification before declaring this code deployed.
+
+R9.24 actual separate owner VPS exact protected app source SHA `c21ff86`
+combined 62/62 offline Python tests, Rust fmt, full pinned locked
+offline control-api test/build PASSED; binary SHA256
+`b894db4b79abcbf8befbaf62625b8e4ec49145699f79c5046bd466b02bf2d0e5`.
+Only the private R9.24 loopback :3002 user service was ACTUALLY
+updated via reviewed checksum-pinned nonroot script SHA256
+`2a888899f44faab732b768b4280b1e998f1c4d0f3c4a4a3257c8b346ecaad9d7`.
+The new actual Rust HTTP backend reports `password` as the observed
+one-time SSH test-user offer and NO publickey offer; actual independent
+HTTP smoke PASSED while all eight physical action POSTs remain 403,
+worker/adoption FALSE and original :3000 healthy HTTP200. Backup of
+previous user service exists in r924-release, no real OLT
+credential/command/config change was initiated by this milestone.
+Latest protected branch push/PR and independently hosted public
+synthetic CI remain required before declaring R9.24 project mergeable.

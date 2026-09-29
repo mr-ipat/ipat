@@ -68,3 +68,39 @@ never opens a socket or enables adoption. The private Rust lab
 capability GET similarly advertises the actual user-specific
 password-only result, with real login/worker/adoption FALSE and
 hardware action HTTP POST 403. This is not proof of actual login.
+
+## Actual private runtime verification
+
+Protected exact application source SHA
+`c21ff86f0abb3b7ab845ad2aa962798eacfc1c71` was independently
+cloned via verified Git bundle into a separate nonroot owner-VPS
+folder. Mac and actual VPS combined safety/unit suite 62/62 PASS;
+actual VPS Rust fmt, full `cargo test --locked --offline -p control-api`
+and locked offline build PASS. Built binary SHA256
+`b894db4b79abcbf8befbaf62625b8e4ec49145699f79c5046bd466b02bf2d0e5`.
+A checksum-pinned opt-in nonroot private user service upgrade of
+ONLY `127.0.0.1:3002` successfully deployed the observed test
+username `password`-only server offer as Rust readiness metadata;
+actual HTTP smoke PASSED, all eight physical action POSTs still
+return HTTP403, and original `127.0.0.1:3000/healthz` remained
+HTTP200. No real OLT password, CLI, SSH server configuration,
+firmware or ONT state was touched by the deployment. The former
+private user service is backed up under
+`/home/openai/.cache/ipat/r924-release/rollback-user-unit.service`.
+R9.24 deployment script
+`deploy/scripts/lab/r924/deploy_private_auth_method_preview.sh`
+SHA256 `2a888899f44faab732b768b4280b1e998f1c4d0f3c4a4a3257c8b346ecaad9d7`;
+unit SHA256 `7e51794041be571536562f7e7f407d5f9958b0fce21906a5aa4a3b88935c0b75`;
+actual HTTP smoke SHA256
+`f4cb63bbd28c824fb0b2f701d74084a0403acfe3e44840ec744913f54ef68b14`.
+
+Rollback only the PRIVATE owner user service if needed:
+
+```sh
+ssh ipat-lab
+cp -p /home/openai/.cache/ipat/r924-release/rollback-user-unit.service \
+  ~/.config/systemd/user/ipat-r911-preview.service
+systemctl --user daemon-reload
+systemctl --user reset-failed ipat-r911-preview.service
+systemctl --user restart ipat-r911-preview.service
+```
