@@ -10,6 +10,7 @@ const html=fs.readFileSync(path.join(base,'web/lab/device-workbench.html'),'utf8
 const js=fs.readFileSync(path.join(base,'web/lab/c320-operator-console.js'),'utf8');
 const api=fs.readFileSync(path.join(base,'apps/control-api/src/device_workbench_lab.rs'),'utf8');
 const physical=fs.readFileSync(path.join(base,'apps/control-api/src/c320_live_lab.rs'),'utf8');
+const snapshot=fs.readFileSync(path.join(base,'apps/control-api/src/c320_actions_lab.rs'),'utf8');
 
 test('operational console is integrated with an actually served lab module',()=>{
   assert.match(html, /id="ipat-c320-console"/);
@@ -40,4 +41,15 @@ test('manual snapshot is not falsely presented as live evidence',()=>{
   assert.match(js,/\!state.ready/);
   assert.match(js,/source !== 'VERIFIED_LOCAL_OWNER_AGENT_LAB_ONLY'/);
   assert.match(html,/TIDAK/);
+});
+test('dated 72-ONU table has no serial numbers or fabricated live per-ONU state',()=>{
+  assert.match(html,/id="ipat-c320-onu-rows"/);
+  assert.match(html,/id="ipat-c320-onu-search"/);
+  assert.match(js,/v\.manual_onu_ids/);
+  assert.match(js,/manual_onu_rows_are_live === false/);
+  assert.match(js,/Pembacaan total secara live TIDAK memperbarui status per baris/);
+  assert.match(snapshot,/"manual_onu_ids":\[/);
+  assert.match(snapshot,/"manual_onu_rows_are_live":false/);
+  assert.match(snapshot,/"serial_numbers_disclosed":false/);
+  assert.doesNotMatch(js,/ZTEGC[0-9A-F]{8}/);
 });
