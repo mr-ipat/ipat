@@ -741,3 +741,16 @@ conditional site change planner now classify both values as
 SSHV2_FIELD_AMBIGUOUS while retaining UNKNOWN physical chassis
 identity. Real first-read requires external trusted-console
 provenance, restricted user and explicit site risk controls.
+
+## ADR-058 — Physical acceptance cannot be synthesized from owner plan metadata
+
+Current real authorized owner Mac C320 private intake contains only
+`plan.json`; current VPS has no verified site console capture.
+Introduce strict separate R9.26 nonroot local assessment to name
+precise missing physical files and independent tenant/POP production
+authorization gates without disclosing raw CLI or accepting browser
+boolean attestations. Even a matching offline key+card/version capture
+is insufficient to mark device ADOPTED; trust provenance, actual
+restricted role, live baseline, tenant OIDC/MFA and dedicated audited
+non-demo production worker must be independently proven. Do not
+repeat uncredentialed SSH scans to substitute for these missing facts.

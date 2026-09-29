@@ -4754,3 +4754,35 @@ The working private R9.24 actual owner-VPS readiness app remains
 separate; this triage correction does not mount a physical executor.
 
 R9.25 PUBLIC CI independently GREEN: synthetic mirror SHA 740c9e86220c85973e1f11a386aa3d7d20e7e4cb, GitHub Actions run 36512130832 completed 2/2 SUCCESS (synthetic static/security and locked Rust workspace). These tests do NOT prove physical OLT authenticated login or adoption. Actual owner VPS offline 64/64 safety checks passed; external trusted chassis RSA and verified restricted account remain missing. Original private source remains protected in draft PR 126.
+
+## R9.26 actual owner file audit and offline physical acceptance intake
+
+Rechecked actual existing authorized owner Mac
+`~/.local/share/ipat/c320-private-packet`: EXACTLY `plan.json` exists.
+Nonroot VPS physical proof folder has no actual saved chassis key,
+restricted login/read capture or trustworthy site evidence. Private
+Lab C320 readiness backend :3002 returned HTTP200. Created strictly
+read-only nonroot tool `deploy/scripts/lab/r926/assess_site_packet.py`
+that checks 0700 owner-private canonical folders, only allowlisted
+0600 single-link bounded site files, true owner-supplied RSA public
+key matching vs existing historical NETWORK-ONLY observation, bounded
+legacy `show ssh` and card/version capture headers/hashes, without
+raw output or network communication. It independently leaves
+physical chassis identity, account/tenant MFA, worker and adoption
+FALSE even if syntactically valid captures exist. Actual owner Mac
+first execution reported ONLY plan.json present and EIGHT remaining
+site-evidence/production-authorization gaps, network actions ZERO.
+5 synthetic new tests PASSED including RSA-match STILL NOT ADOPTED,
+unsafe permission/control chars/symlink rejection and empty actual
+plan-only refusal; combined owner Mac safety suite 69/69 PASS.
+Site handoff: `docs/R926_C320_SITE_EVIDENCE_ACCEPTANCE.md`.
+The one outstanding real-world milestone is independently authenticated
+chassis/asset-source evidence + dedicated restricted account before
+one first authorized actual read; no C320 login/CLI/config changes
+were executed in R9.26.
+
+R9.26 independently tested on actual authorized owner VPS: exact protected source 0ef09f079fd93a62aed08906c2bee7228152e256 transferred via checksum-verified private Git delta into separate 0700 nonroot checkout, new local-only intake unit tests 5/5 and combined safety suite 69/69 PASS. No live OLT SSH/auth/CLI actions, no physical config or customer service changes. Actual Mac existing private site packet contained plan.json only; adoption remains NOT COMPLETE pending external independent trusted chassis source, restricted account and signed production authorization.
+
+R9.26 independent hosted public synthetic CI run 36513217286 for exact scrubbed public SHA 00edb5dc5996c5a80f023f8b53a3dda6bccabc3b finished SUCCESS 2/2 (synthetic-static and locked Rust workspace). Actual owner Mac private c320 plan.json was separately inspected: its stored boolean fields for independent console availability, independent host key verification, dedicated read-only account, management isolation, verified read-only commands and private backup are all FALSE; this is CURRENT STORED EVIDENCE STATE, not a claim that a new owner instruction in chat did not authorize exploration. Do not flip real admission bits without genuine site proof. Real C320 config commands/read/auth performed in R9.26: ZERO.
+
+R9.27 access recovery proof, September 29 2026: Remote Desktop Commander owner Mac ONLINE again; authorized nonroot owner VPS SSH ACTIVE. One single bounded explicit no-credential direct-private C320 SSH compatibility probe again received real network RSA server key and advertised password for the tested existing account under per-session rsa/aes128-cbc/group14-sha256. It sent NO password, user client key or OLT CLI/config commands. Existing private dashboard :3002 returned HTTP200. No real OOB physical-console RSA in owner VPS expected proof path, and owner Mac actual site packet still contains ONLY plan.json; real first protected authenticated session and safe non-factory account are still externally blocked. No on-device changes or true adoption should be claimed. Attempt to prepare a supervised password-only first-read script in owner remote workspace was DENIED by tool security; no script was written, deployed or tested. Do not bypass remote tool safety checks to produce an unreviewed live-account connector. Existing validated R9.26 branch/code and R9.25 operator handoff remain valid.
