@@ -680,3 +680,18 @@ measured slots and five version rows; vendor GTGHK/GTXK mapping
 unverified and PRAM MVR unreported. Separate PRIVATE LAB historical
 inventory endpoint makes exact verified rows visible without
 misrepresenting active telemetry or production adoption.
+
+## R9.34 real C320 first ONE-SHOT scripted operator SSH `show card`
+
+Source 3afe20b approved ephemeral operator LAB command tested on
+actual private C320 SSH from owner VPS: exactly ONE actual bounded
+read-only `show card` command returned three actual cards matching
+the independently recorded initial owner Telnet and SSH snapshots
+(1/1/1 GTGHK, 1/1/3 PRAM, 1/1/4 SMXA), all INSERVICE.
+Actual independently inspected protected offline Rust normalizer
+parsed 3/3; private file SHA256
+5dc6aebaa162de7899fdec974377e1b9631647bdbab3b2b1502e20ce6810a722.
+No device config writes, no persisted test password, active owner
+socket closed. This establishes a working software LAB read adapter,
+NOT unattended production adoption, safe limited role or certified
+firmware alias/ONT/health/upgrade compatibility.

@@ -5176,3 +5176,32 @@ credential. The R9.33 private :3002 historical proof continues to
 be accurate with production action 403. R9.34 synthetic safety tests
 and actual owner-VPS first CLI adapter run to be explicitly recorded
 only after they have been verified; never mislabel incomplete work.
+
+R9.34 ACTUAL hardware executed: exact protected source 3afe20b,
+SHA256-verified private Git delta cd230d0f...f58cb into distinct
+nonroot owner VPS. Approved human-interactive one-shot adapter with
+getpass invoked against REAL private C320; ACTUAL encrypted SSH
+login and single bounded `show card` SUCCEEDED. Protected real
+source-only cards plus Rust normalized three physical slots all
+INSERVICE (GTGHK 1/1/1, PRAM 1/1/3, SMXA 1/1/4). Separate
+actual owner VPS 0700 new folder holds owner-only 0600 actual
+cards/normalized/audit receipt. Independent real physical fresh
+CLI SHA256
+5dc6aebaa162de7899fdec974377e1b9631647bdbab3b2b1502e20ce6810a722;
+receipt UTC 2026-09-29T06:10:34+00:00; zero on-device CONFIG
+writes, test password NOT persisted, explicit production worker
+FALSE and commercial ADOPTED FALSE. Subsequent actual VPS socket
+inspection ZERO established target C320 connections. This proves
+IPAT LAB script CAN obtain real hardware card inventory via
+software, not just manual CLI/canned historical fixtures.
+
+New Rust PRIVATE readiness/historical inventory records that
+ONE real ephemeral scripted owner-LAB SSH read was actually done,
+without changing eight real device operation POST deny-policy or
+asserting production worker. Actual Mac+VPS R9.34 dedicated
+synthetic 5/5 and combined 96/96 Python preflight PASS. Rust
+workspace full tests and live :3002 private upgrade smoke recorded
+after independent execution, not presumed. Remaining native
+firmware restore, limited verified account, off-line independent
+chassis trust, POP last-hop, tenant MFA/reviewer, bounded real
+production read worker not solved by this ephemeral proof.

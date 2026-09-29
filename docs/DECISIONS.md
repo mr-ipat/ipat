@@ -894,3 +894,12 @@ or blanket privilege; never mount it on public HTTP/API, queue or
 K3s while current user remains privileged or identity unclear.
 A first accepted live read does not confer `ADOPTED_READ_ONLY` until
 all separately documented production gates have been genuinely met.
+
+R9.34 ADR-065 implementation evidence: The owner approved and ACTUAL
+nonroot owner-VPS ephemeral SSH lab adapter successfully performed
+one bounded `show card` against the physical C320 and ran the
+existing offline Rust card parser on its fresh private CLI response.
+The three independent owner historic card identities/statuses
+matched exactly. There was NO on-device config change/password
+persistence/unattended polling; owner-only private receipt confirms.
+No elevation to commercial ADOPTED or service identity is warranted.
