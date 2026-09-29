@@ -253,6 +253,11 @@ async fn agent_status(
 #[serde(deny_unknown_fields)]
 struct C320OwnerEnrollment {
     device_profile: String,
+    device_type: String,
+    device_name: String,
+    management_ip: String,
+    ssh_port: u16,
+    username: String,
     bootstrap_code: String,
     password: String,
 }
