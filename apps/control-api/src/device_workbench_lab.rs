@@ -472,6 +472,10 @@ pub(super) fn router() -> Router {
             get(super::c320_actions_lab::first_read),
         )
         .route(
+            "/lab/c320-ont-feature-readiness",
+            get(super::c320_actions_lab::ont_features),
+        )
+        .route(
             "/lab/c320-actions/{action}",
             axum::routing::post(super::c320_actions_lab::reject_execute),
         )

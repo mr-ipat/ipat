@@ -200,6 +200,38 @@ fn first_real_inventory() -> Value {
     })
 }
 
+/// Actual C320 ONT feature states remain explicit and DENIED until verified.
+/// No real serial/CLI inputs or live scans in this LAB endpoint.
+fn ont_feature_readiness() -> Value {
+    let report = readiness()["adoption_gate_report"].clone();
+    json!({"target":"DEV-01","mode":"PRIVATE_HISTORICAL_ONT_REVIEW_ONLY",
+       "adoption_gate_report":report,"real_hardware_adopted":false,
+       "actual_unconfigured_onu_discovery_verified":false,
+       "real_ont_model_firmware_verified":false,
+       "actual_pon_port_and_free_onu_id_verified":false,
+       "actual_vlan_tcont_gem_profiles_verified":false,
+       "real_tenant_provisioning_approval":false,
+       "available_offline_modules":["STRICT_UNCONFIGURED_ONU_OUTPUT_PARSER_SYNTHETIC",
+           "ONE_ONT_REGISTRATION_DRAFT_VALIDATOR_SYNTHETIC",
+           "BRIDGE_SERVICE_VLAN_PROFILE_REVIEW_SYNTHETIC"],
+       "unconfigured_onu_cli_compatibility":"NOT_TESTED_ON_REAL_C320",
+       "physical_ont_register_enabled":false,"physical_ont_config_enabled":false,
+       "physical_ont_rollback_verified":false,"network_actions":0
+    })
+}
+
+pub(super) async fn ont_features(
+    headers: HeaderMap,
+) -> Result<(HeaderMap, Json<Value>), (StatusCode, HeaderMap, Json<Value>)> {
+    if !super::device_workbench_lab::demo_csrf_read(&headers) {
+        return Err((StatusCode::FORBIDDEN,
+            super::private_lab_headers("application/json; charset=utf-8"),
+            Json(json!({"error":"PRIVATE_LOCAL_LAB_ONLY"}))));
+    }
+    Ok((super::private_lab_headers("application/json; charset=utf-8"),
+        Json(ont_feature_readiness())))
+}
+
 pub(super) async fn first_read(
     headers: HeaderMap,
 ) -> Result<(HeaderMap, Json<Value>), (StatusCode, HeaderMap, Json<Value>)> {
@@ -263,6 +295,18 @@ mod tests {
         assert_eq!(cards[0]["mvr_card_alias_verified"], false);
         assert_eq!(cards[1]["reported_mvr_version"], Value::Null);
         assert_eq!(cards[2]["mvr_card_alias_verified"], true);
+    }
+
+    #[test]
+    fn ont_register_and_service_config_remain_unmounted() {
+        let r = ont_feature_readiness();
+        assert_eq!(r["adoption_gate_report"]["verified_gate_count"], 2);
+        assert_eq!(r["physical_ont_register_enabled"], false);
+        assert_eq!(r["physical_ont_config_enabled"], false);
+        assert_eq!(r["physical_ont_rollback_verified"], false);
+        assert_eq!(r["actual_unconfigured_onu_discovery_verified"], false);
+        assert_eq!(r["real_tenant_provisioning_approval"], false);
+        assert_eq!(r["network_actions"], 0);
     }
 
     #[test]

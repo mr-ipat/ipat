@@ -52,6 +52,19 @@
       const gateLine=document.createElement('div');
       gateLine.textContent='ADOPSI DITAHAN ('+g.verified_gate_count+'/'+g.required_gate_count+'). Persyaratan belum terpenuhi: '+missing.join(', ')+'. Registrasi ONT nyata belum diizinkan.';
       status.append(gateLine);
+      const capabilities=await fetch('/lab/c320-ont-feature-readiness',{
+        cache:'no-store',credentials:'omit'
+      });
+      if(!capabilities.ok)throw new Error('ONT readiness unavailable');
+      const ont=await capabilities.json();
+      if(ont.mode!=='PRIVATE_HISTORICAL_ONT_REVIEW_ONLY'
+        ||ont.real_hardware_adopted!==false||ont.physical_ont_register_enabled!==false
+        ||ont.physical_ont_config_enabled!==false||ont.network_actions!==0
+        ||!Array.isArray(ont.available_offline_modules)||ont.available_offline_modules.length!==3)
+        throw new Error('invalid ONT capability state');
+      const ontLine=document.createElement('div');
+      ontLine.textContent='ONT: modul offline penemuan ONU, validasi registrasi satu ONT, dan pemeriksaan profil bridge/VLAN telah disiapkan. Perintah nyata dan interoperabilitas firmware BELUM diuji.';
+      status.append(ontLine);
     } catch {
       const gateLine=document.createElement('div');
       gateLine.textContent='Kesiapan adopsi tidak dapat diverifikasi. Semua aksi OLT/ONT tetap diblokir.';
