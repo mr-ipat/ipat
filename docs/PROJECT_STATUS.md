@@ -4786,3 +4786,23 @@ R9.26 independently tested on actual authorized owner VPS: exact protected sourc
 R9.26 independent hosted public synthetic CI run 36513217286 for exact scrubbed public SHA 00edb5dc5996c5a80f023f8b53a3dda6bccabc3b finished SUCCESS 2/2 (synthetic-static and locked Rust workspace). Actual owner Mac private c320 plan.json was separately inspected: its stored boolean fields for independent console availability, independent host key verification, dedicated read-only account, management isolation, verified read-only commands and private backup are all FALSE; this is CURRENT STORED EVIDENCE STATE, not a claim that a new owner instruction in chat did not authorize exploration. Do not flip real admission bits without genuine site proof. Real C320 config commands/read/auth performed in R9.26: ZERO.
 
 R9.27 access recovery proof, September 29 2026: Remote Desktop Commander owner Mac ONLINE again; authorized nonroot owner VPS SSH ACTIVE. One single bounded explicit no-credential direct-private C320 SSH compatibility probe again received real network RSA server key and advertised password for the tested existing account under per-session rsa/aes128-cbc/group14-sha256. It sent NO password, user client key or OLT CLI/config commands. Existing private dashboard :3002 returned HTTP200. No real OOB physical-console RSA in owner VPS expected proof path, and owner Mac actual site packet still contains ONLY plan.json; real first protected authenticated session and safe non-factory account are still externally blocked. No on-device changes or true adoption should be claimed. Attempt to prepare a supervised password-only first-read script in owner remote workspace was DENIED by tool security; no script was written, deployed or tested. Do not bypass remote tool safety checks to produce an unreviewed live-account connector. Existing validated R9.26 branch/code and R9.25 operator handoff remain valid.
+
+## R9.28 owner-directed temporary Telnet private port323 test
+
+Owner supplied exact alternate private ZTE C320 management target
+and Telnet port323 after R9.27 verified working SSH transport. One
+REAL nonroot owner-VPS single direct PRIVATE TCP323 passive read
+using existing production-tested R9.0 `probe()` ACTUALLY returned
+TCP reachable TRUE, Telnet IAC marker TRUE and 15 inbound bytes;
+ZERO transmitted Telnet options/credentials/CLI/config, NO device
+identity verification, actual firmware read or admission. No raw
+banner was logged. Developed explicit separate one-target R9.28
+passive nonroot noauth checker and synthetic tests, plus honest
+Rust PRIVATE LAB alternate transport readiness fields that keep
+all eight physical actions hard-denied, worker FALSE, device
+`OBSERVED_NOT_ADOPTED`. No Telnet password or auto-login capability
+is exposed; a production live OLT needs externally sourced
+independently trusted chassis/POP source and dedicated safe account
+before any approved temporary plaintext login. Combined Mac
+preflight suite 73/73 PASS; owner-VPS and hosted synthetic CI to
+be verified independently during release.

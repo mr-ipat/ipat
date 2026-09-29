@@ -605,3 +605,16 @@ VPS already received a server RSA host key. Real C320 model/firmware,
 on-device safe operator role and independent host identity still
 UNKNOWN. OLT physical configuration and authenticated read command
 count remain ZERO.
+
+## R9.28 actual private alternate C320 Telnet port 323
+
+Owner-approved owner-VPS ONE passive direct private port323 TCP probe
+actually SUCCEEDED: 15 bytes of initial Telnet IAC response with
+ZERO application writes, authentication data or OLT CLI commands.
+This proves Telnet protocol transport response on the specified
+route, NOT exact approved physical chassis provenance, real
+Telnet login, actual firmware `show card` interoperability, access
+role or production worker authorization. The previously proven
+private SSH group14-SHA256 transport still reaches password-method
+advertisement for the test account. Both paths remain unadopted
+pending independently verified hardware identity/role/POP gates.
