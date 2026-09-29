@@ -4694,3 +4694,23 @@ previous user service exists in r924-release, no real OLT
 credential/command/config change was initiated by this milestone.
 Latest protected branch push/PR and independently hosted public
 synthetic CI remain required before declaring R9.24 project mergeable.
+
+R9.24 latest public sanitized CI mirror commit
+`b249883191d5a92399be549cba03021b6ba41285` was actually
+published after sanitizing 9 operational address literals and 2
+historical observed RSA fingerprints, with local synthetic secret
+scan and 62/62 safety tests PASS. Public GitHub Actions run
+`36511075072` triggered on this exact SHA; its full hosted Rust
+job's success must be observed separately. Independently retested
+the ACTUAL owner VPS deployed private R9.24 HTTP smoke: PASS, `password`
+observed for previous credential-free test account, NO real hardware
+login/command or change and original :3000 still HTTP200. R9.24
+stacked protected source draft PR #125 exists on top of #124.
+
+The only honest physical next steps are independently trusted actual
+chassis RSA (or directly authenticated console out-of-band equivalent),
+real firmware-specific dedicated restricted account and observed
+per-user authorization method, measured site baseline/last-hop
+isolation, genuine tenant MFA and independent site reviewer. Do NOT
+pretend one old default account or existing private packet plan.json
+is an independently verified physical adoption proof.
