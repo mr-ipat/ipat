@@ -4631,3 +4631,12 @@ OLT status report; actual console read, on-device compatibility and
 authenticated read/adoption remain BLOCKED on site evidence.
 Command-by-command actual versus hypothetical ledger and operator
 handoff: `docs/R923_ZTE_C320_PHYSICAL_CONFIGURATION_CHANGE_LEDGER.md`.
+
+R9.23 real owner VPS source checkout SHA `fcb7c7c7aefb653f0d9f90a57712d892ecaff581`
+was transferred via independently verified Git delta into a NEW
+nonroot 0700 folder. The actual owner VPS ran R9.23 strict offline
+change-plan suite 4/4 and full combined safety suite 58/58, BOTH
+PASS. No private OLT credential, network connection or OLT CLI
+command was initiated by the new planner. This establishes the
+site-plan SOFTWARE tests only, not production adoption, approval,
+real chassis config state or hardware interoperability.
