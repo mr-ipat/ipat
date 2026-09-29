@@ -268,7 +268,7 @@ async fn enroll_c320(
     if !strict_private(&headers, true) {
         return Err(denied(StatusCode::FORBIDDEN, "OWNER_PRIVATE_PANEL_ONLY"));
     }
-    if input.device_type != "olt" || input.device_name.trim().is_empty() || input.ssh_port != 321 || input.username != "zte" || input.management_ip != "10.10.13.233" { return Err(denied(StatusCode::BAD_REQUEST, "TARGET_NOT_ALLOWLISTED")); }
+    if input.device_type != "olt" || input.device_name.trim().is_empty() || input.device_name.len() > 64 || input.device_name.chars().any(|c| c.is_control()) || input.ssh_port != 321 || input.username != "zte" || input.management_ip != "10.10.13.233" { return Err(denied(StatusCode::BAD_REQUEST, "TARGET_NOT_ALLOWLISTED")); }
     if input.device_profile != "zte_c320_lab"
         || !(32..=128).contains(&input.bootstrap_code.len())
         || !(1..=128).contains(&input.password.len())
