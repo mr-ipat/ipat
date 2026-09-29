@@ -141,22 +141,31 @@
   }
   async function refreshAgent() {
     try {
-      const v = await jsonResponse('/lab/c320-owner-agent-state');
-      if (v.device_adopted !== false || v.physical_writes_enabled !== false
-        || typeof v.agent_ready !== 'boolean') throw new Error('Kontrak status agen ditolak.');
-      state.ready = v.agent_ready === true && safeInteger(v.seconds_left)
-        && v.seconds_left > 0 && safeInteger(v.requests_left)
-        && v.requests_left > 0;
+      const v = await jsonResponse('/lab/c320-owner-connection');
+      if (v.target !== 'DEV-01' || v.vendor !== 'ZTE' || v.model !== 'C320'
+          || v.production_adopted !== false || v.physical_writes_enabled !== false
+          || typeof v.connector_online !== 'boolean'
+          || typeof v.credentials_enrolled !== 'boolean') {
+        throw new Error('Kontrak koneksi perangkat ditolak.');
+      }
+      // A persisted server-side enrolled credential permits initiating the
+      // FIRST physical read: do not circularly require CONNECTED beforehand.
+      state.ready = v.connector_online && v.credentials_enrolled;
       state.busyDevice = v.read_in_progress === true;
-      connectivity.textContent = !state.ready ? 'AGEN OFFLINE · aktifkan sesi privat'
-        : state.busyDevice ? 'AGEN SIBUK · pembacaan sedang berlangsung'
-        : 'AGEN SIAP · ' + v.requests_left + ' baca · ' + v.seconds_left + ' detik';
-      if (!state.ready && !state.busy) status.textContent =
-        'Jalankan agen pemilik pada terminal privat. Konektivitas OLT belum terbukti.';
+      connectivity.textContent = !v.connector_online
+        ? 'KONEKTOR SERVER OFFLINE'
+        : !v.credentials_enrolled
+          ? 'BELUM DIDAFTARKAN · masukkan password sekali pada formulir di atas'
+          : state.busyDevice ? 'PEMBACAAN SEDANG BERLANGSUNG'
+            : 'KONEKTOR PERSISTEN SIAP · status fisik '
+              + (v.device_status || 'belum diperiksa');
+      if (!state.ready && !state.busy) {
+        status.textContent = 'Daftarkan perangkat melalui dashboard untuk mengaktifkan tombol baca.';
+      }
     } catch (error) {
       state.ready = false;
       state.busyDevice = false;
-      connectivity.textContent = 'STATUS TIDAK TERVERIFIKASI';
+      connectivity.textContent = 'KONEKSI TIDAK TERVERIFIKASI';
       if (!state.busy) status.textContent = error.message;
     }
     disableIfNeeded();
@@ -223,5 +232,6 @@
     + 'API perangkat tetap menolak aksi berisiko tanpa izin dan pemulihan teruji.';
   refreshAgent();
   loadHistorical();
+  window.addEventListener('ipat-device-connection-changed', refreshAgent);
   setInterval(refreshAgent, 10000);
 })();
