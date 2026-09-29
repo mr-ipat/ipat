@@ -445,6 +445,7 @@ pub(super) fn router() -> Router {
             "/lab/c320-owner-connection",
             axum::routing::get(connection_status),
         )
+        .route("/lab/c320-owner-save-draft", post(save_draft))
         .route("/lab/c320-owner-live-refresh", post(refresh))
         .route("/lab/c320-owner-live-cards", post(cards))
         .route("/lab/c320-owner-live-firmware", post(firmware))
