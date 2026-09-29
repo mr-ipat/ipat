@@ -25,7 +25,7 @@ assert state['credentials_enrolled'] is False
 assert state['production_adopted'] is False
 assert state['physical_writes_enabled'] is False
 assert state['adoption_state']=='NOT_ENROLLED'
-request=Request(base+'/lab/c320-owner-enroll',data=b'{"device_profile":"zte_c320_lab"}',
+request=Request(base+'/lab/c320-owner-enroll',data=b'{"device_profile":"zte_c320_lab","bootstrap_code":"synthetic_1234567890123456789012345678","password":"placeholder"}',
     method='POST',headers={'Origin':'http://not-authorized.invalid',
                           'X-IPAT-Demo-Only':'1','Content-Type':'application/json'})
 try:opener.open(request,timeout=3)
