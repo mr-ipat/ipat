@@ -29,6 +29,7 @@ TOKEN = ROOT / 'bootstrap-token'
 TOKEN_HASH = ROOT / 'bootstrap-sha256'
 KEY = ROOT / 'envelope-key'
 CREDENTIAL = ROOT / 'device.fernet'
+DRAFT = ROOT / 'device-draft.json'
 MAX_REQUEST = 1024
 MAX_ATTEMPTS = 5
 WAIT_SECONDS = 900
@@ -101,6 +102,26 @@ def module():
     return reader, reader_module
 
 
+def load_draft():
+    if not DRAFT.exists():
+        return None
+    private_file(DRAFT)
+    result = json.loads(DRAFT.read_text('utf-8'))
+    if not isinstance(result, dict) or set(result) != {'device_name', 'device_profile'} or result['device_profile'] != 'zte_c320_lab' or not isinstance(result['device_name'], str) or not 1 <= len(result['device_name']) <= 64:
+        raise ValueError('invalid draft metadata')
+    return result
+
+
+def save_draft(name):
+    if not isinstance(name, str) or not 1 <= len(name.strip()) <= 64 or any(ord(c) < 32 or ord(c) == 127 for c in name):
+        raise ValueError('invalid draft label')
+    if enrolled():
+        raise ValueError('already enrolled: immutable initial lab target')
+    secret_write(DRAFT, safe_response({'device_name': name.strip(), 'device_profile': 'zte_c320_lab'}))
+    return {'draft_saved': True, 'target': 'DEV-01', 'device_name': name.strip(),
+            'adoption_state': 'DRAFT_SAVED_AWAITING_AUTH', 'physical_writes_enabled': False}
+
+
 def enrolled():
     try:
         private_file(CREDENTIAL)
@@ -163,6 +184,7 @@ def verify_and_store(token, password, reader, reader_module):
 
 def status():
     configured = enrolled()
+    draft = load_draft()
     with LOCK:
         last = STATE['last_verified']
         last_kind = STATE['last_kind']
@@ -174,6 +196,8 @@ def status():
             'seconds_left': 900 if configured else 0,
             'persistent_connector': True,
             'credentials_enrolled': configured,
+            'draft_saved': draft is not None,
+            'device_name': draft['device_name'] if draft else 'ZTE C320 Lab',
             'last_verified_at_utc': last,
             'last_verified_kind': last_kind,
             'host_identity_level': 'NETWORK_OBSERVED_SSH_PIN',
@@ -277,6 +301,11 @@ def serve():
                     answer = status()
                 elif raw in SAFE_ACTIONS:
                     answer = read(raw, reader, reader_module)
+                elif raw.startswith(b'DRAFT '):
+                    data = json.loads(raw[6:])
+                    if type(data) is not dict or set(data) != {'device_name', 'device_profile'} or data['device_profile'] != 'zte_c320_lab':
+                        raise ValueError('unsupported device draft')
+                    answer = save_draft(data['device_name'])
                 elif raw.startswith(b'ENROLL '):
                     if not CLI_LOCK.acquire(blocking=False):
                         raise ValueError('connection busy')
