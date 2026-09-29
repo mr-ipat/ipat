@@ -69,6 +69,64 @@
     display(fields.online, v.onu_online);
     display(fields.offline, v.onu_offline);
     display(fields.unconfigured, v.unconfigured_onus_reported);
+    // The owner supplied these exact PON indices in the dated manual output.
+    // Only IDs and previously observed offline status; NEVER serial numbers.
+    const table = el('ipat-c320-onu-rows');
+    const search = el('ipat-c320-onu-search');
+    const notice = el('ipat-c320-onu-table-notice');
+    const idList = v.manual_onu_ids;
+    const validIds = Array.isArray(idList) && idList.length === 72
+      && idList.every((id, i) => safeInteger(id) && id >= 1
+        && (i === 0 || id > idList[i - 1]));
+    if (table && search && notice && validIds && v.manual_onu_rows_are_live === false) {
+      const records = idList.map((id) => ({
+        id: '1/1/1:' + id, admin: 'enable', phase: 'OffLine',
+        model: v.registered_model_observed === 'ZTEG-F623' ? 'ZTEG-F623 (config)' : 'Tidak dipastikan'
+      }));
+      function renderRows() {
+        const query = search.value.trim().toLowerCase().slice(0, 32);
+        table.replaceChildren();
+        let found = 0;
+        for (const item of records) {
+          if (!item.id.toLowerCase().includes(query)) continue;
+          found++;
+          const tr = document.createElement('tr');
+          for (const value of [item.id, item.admin, item.phase, item.model,
+                               'MANUAL · ' + v.observation_date]) {
+            const td = document.createElement('td');
+            td.textContent = value;
+            tr.append(td);
+          }
+          table.append(tr);
+        }
+        if (!found) {
+          const tr = document.createElement('tr');
+          const td = document.createElement('td');
+          td.colSpan = 5;
+          td.textContent = 'Tidak ada ONU historis dengan ID tersebut.';
+          tr.append(td);
+          table.append(tr);
+        }
+      }
+      search.addEventListener('input', renderRows);
+      notice.textContent = records.length + ' ID ONU dari CLI manual tanggal '
+        + v.observation_date + ' (semua OFFLINE saat itu). '
+        + 'Pembacaan total secara live TIDAK memperbarui status per baris.';
+      renderRows();
+    } else {
+      if (notice) notice.textContent =
+        'Daftar per-ONU belum tersedia atau sumber manual tidak terverifikasi. '
+        + 'Tidak ada baris simulasi.';
+      if (table) {
+        table.replaceChildren();
+        const tr = document.createElement('tr');
+        const td = document.createElement('td');
+        td.colSpan = 5;
+        td.textContent = 'Bukti ID ONU tidak tersedia.';
+        tr.append(td);
+        table.append(tr);
+      }
+    }
     stamp.textContent = 'MANUAL · ' + v.observation_date + ' · bukan data terkini';
     record('Inventaris PON 1/1/1 historis dimuat dan tervalidasi.');
   }
