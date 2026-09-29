@@ -142,15 +142,37 @@
     busy=true;button.disabled=true;
     output.textContent='Connecting to ZTE C320 and verifying physical card inventory...';
     const credential=password.value,bootstrap=owner.value;
-    password.value='';owner.value='';
+    let draftSaved=false;
     try{
       const address=host.value.trim();
       const sshPort=Number(port.value);
       const login=username.value.trim();
       const displayName=name.value.trim();
       if(address!=='10.10.13.233'||sshPort!==321||login!=='zte'
-         || !displayName||displayName.length>64||!credential||!bootstrap)
-         throw Error('Check supported device profile and required fields.');
+         || !displayName||displayName.length>64)
+        throw Error('Unsupported device profile or management endpoint. Review Management IP, SSH Port and Username.');
+      const draft={device_profile:'zte_c320_lab',device_type:type.value,
+        device_name:displayName,management_ip:address,ssh_port:sshPort,username:login};
+      await saveDraft(draft);
+      draftSaved=true;
+      output.textContent='SAVED TO DEVICE LIST · Pending verification. Running management network diagnostic...';
+      const network=await probe();
+      if(!credential){
+        output.textContent='DEVICE SAVED · Pending credentials. Enter the SSH password. '+network;
+        password.focus();
+        return;
+      }
+      if(!bootstrap){
+        if(security)security.open=true;
+        output.textContent='DEVICE SAVED · Pending owner verification. This private lab requires the One-Time Owner Code in Advanced Security before sending SSH credentials. '+network;
+        owner.focus();
+        return;
+      }
+      if(!network.startsWith('TCP port reachable')){
+        output.textContent='DEVICE SAVED · Connection pending. '+network;
+        return;
+      }
+      password.value='';owner.value='';
       const controller=new AbortController();
       const timer=setTimeout(()=>controller.abort(),60000);
       let response;
@@ -166,9 +188,12 @@
           }),signal:controller.signal
         });
       }finally{clearTimeout(timer);}
-      if(!response.ok)throw Error(response.status===403
-        ? 'Owner verification or physical authentication failed. Confirm the device credentials.'
-        : 'Connection failed (HTTP '+response.status+').');
+      if(!response.ok){
+        const failure=await response.json().catch(()=>({}));
+        const stage=typeof failure.error==='string'?failure.error:'DEVICE_CONNECTION_FAILED';
+        throw Error((diagnostics[stage]||diagnostics.DEVICE_CONNECTION_FAILED)
+          +' (HTTP '+response.status+')');
+      }
       const verified=await response.json();
       if(verified.enrolled_for_read!==true||verified.production_adopted!==false
         || verified.physical_writes_enabled!==false
@@ -180,7 +205,8 @@
       await refresh();
       window.dispatchEvent(new Event('ipat-device-connection-changed'));
     }catch(error){
-      output.textContent='NOT CONNECTED · '+error.message;
+      output.textContent=(draftSaved?'DEVICE SAVED · Connection pending. ':'NOT SAVED · ')
+        +error.message;
     }finally{
       busy=false;
       await refresh();
