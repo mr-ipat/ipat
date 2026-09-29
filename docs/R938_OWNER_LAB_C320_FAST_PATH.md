@@ -25,3 +25,19 @@ Exact private path must be confirmed by actual deploy, not inferred. The owner t
 The full commercial automatic `ADOPTED` requirements remain recorded in R9.35, but they must not block owner-supervised verified READ-ONLY laboratory discovery. They *do* block unattended privileged management and high-impact ONT configuration until controls are actually present. One-ONT write acceptance is a separate high-risk stage, not implied by read-only success.
 
 STOP: R9.38 currently only ships the source-level bounded CLI collector and five synthetic/noninteractive safety tests; the owner's fresh actual read and operational ONT registration are NOT YET EXECUTED. Native restore, restricted service identity and independently verified physical console are still open prerequisites for persistent writes.
+
+## Owner reported real manual Telnet login and immediate read-only command sequence
+
+On 29 September 2026 owner showed a successful interactive connection to private C320 management Telnet port 323, ZTE `ZXAN product C320` banner and privileged `olt.backup#` prompt. **Owner-reported interactive evidence**, distinct from independently authenticated R9.34 SSH proof. Login showed a weak-password warning. Do not paste passwords/raw ONU serials into ChatGPT, log the full terminal publicly, change credentials yet or interpret Telnet as an approved unattended transport. This preexisting temporary Telnet is a LAB-only manual exception; final persistent collector must use separately pinned secure transport and scoped identity.
+
+Because the owner is already at an authenticated CLI, the fastest verified actual-discovery action is an owner-manual *read-only* sequence from that SAME prompt, with no second SSH login:
+
+```text
+olt.backup#show gpon onu uncfg
+olt.backup#show gpon onu state gpon-olt_1/1/1
+olt.backup#show run interface gpon-olt_1/1/1
+```
+
+Run sequentially, inspect one result before the next, and STOP if a command shows an unknown/paged response. CLI patterns are reported in older C320 documentation, NOT yet independently accepted for exact owner firmware. These commands are inventory-only; `configure terminal`, `onu N type`, profile, `save`, firmware and removal commands are OUT OF SCOPE. ONT raw SN and PON config must stay private. Share only sanitized per-command success/failure, count and any non-sensitive parser/header mismatch. The `uncfg` provisional `:N` suffix is not a proof that ONU ID `N` is free. Prior private 119980-byte historical running-config already contains 171 interface-scoped ONU declarations including 72 in gpon-olt_1/1/1, so treat all legacy configuration as potentially preserved despite owner's no-live-customer statement.
+
+The R9.38 owner-VPS tool remains a separate *SSH port321* operator-driven path and must not be described as the existing Telnet323 terminal. Do not claim that the new three-command physical read has run until sanitized success receipt or separately attested owner output is obtained.
