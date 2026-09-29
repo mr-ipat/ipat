@@ -4752,3 +4752,5 @@ security/preflight 64/64 PASS. All used synthetic input, absolutely
 no real device commands/credentials, no production services changed.
 The working private R9.24 actual owner-VPS readiness app remains
 separate; this triage correction does not mount a physical executor.
+
+R9.25 PUBLIC CI independently GREEN: synthetic mirror SHA 740c9e86220c85973e1f11a386aa3d7d20e7e4cb, GitHub Actions run 36512130832 completed 2/2 SUCCESS (synthetic static/security and locked Rust workspace). These tests do NOT prove physical OLT authenticated login or adoption. Actual owner VPS offline 64/64 safety checks passed; external trusted chassis RSA and verified restricted account remain missing. Original private source remains protected in draft PR 126.
