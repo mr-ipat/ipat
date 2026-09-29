@@ -97,6 +97,45 @@
     field.addEventListener('change',validateProfile);
     field.addEventListener('input',validateProfile);
   }
+  const security=form.querySelector('.ipat-device-security');
+  const diagnostics={
+    OWNER_VERIFICATION_FAILED:'Owner verification failed or rate-limited. Open Advanced Security and check your one-time owner code.',
+    SSH_HANDSHAKE_OR_AUTH_METHOD:'SSH handshake or authentication method is unsupported. Verify the SSH service and device crypto profile.',
+    SSH_AUTH_FAILED_OR_UNKNOWN_PROMPT:'SSH login was not verified. Check username/password and device CLI prompt. The password is not stored.',
+    DEVICE_CLI_RESPONSE_UNSUPPORTED:'SSH session opened, but the actual device CLI response does not match the tested adapter.',
+    ALREADY_ENROLLED:'Device credentials were already enrolled. Refresh Device List instead of creating a duplicate.',
+    DEVICE_CONNECTION_FAILED:'Device connection failed; check the network diagnostic and server connector.'
+  };
+  async function saveDraft(input){
+    const response=await fetch('/lab/c320-owner-save-draft',{
+      method:'POST',credentials:'omit',cache:'no-store',
+      headers:{'Content-Type':'application/json','X-IPAT-Demo-Only':'1'},
+      body:JSON.stringify(input)
+    });
+    const data=await response.json().catch(()=>({}));
+    if(!response.ok||data.saved!==true||data.adoption_state!=='DRAFT_SAVED_AWAITING_AUTH'){
+      throw Error('Failed to save pending device record (HTTP '+response.status+').');
+    }
+    window.dispatchEvent(new Event('ipat-device-connection-changed'));
+    return data;
+  }
+  async function probe(){
+    try{
+      const response=await fetch('/lab/c320-owner-network-probe',{
+        cache:'no-store',credentials:'omit'
+      });
+      if(!response.ok)throw Error('Network diagnostic unavailable (HTTP '+response.status+').');
+      const data=await response.json();
+      const messages={
+        TCP_REACHABLE_AUTH_NOT_TESTED:'TCP port reachable. SSH credentials and physical device identity have NOT been verified.',
+        SSH_PORT_REFUSED:'Connection refused: SSH service may be disabled or configured on a different port.',
+        NETWORK_UNREACHABLE:'Network unreachable: check routes, tunnel configuration and management ACL.',
+        NETWORK_OR_PORT_ERROR:'Network or management port error: inspect route, firewall and SSH listener.',
+        TCP_TIMEOUT_NETWORK_OR_PORT:'Connection timeout: management route, firewall and SSH port cannot be distinguished by TCP alone.'
+      };
+      return messages[data.probe_stage]||'Network diagnostic returned an unknown state.';
+    }catch{return 'Network diagnostic could not run; the device status remains Pending.';}
+  }
   form.addEventListener('submit',async(event)=>{
     event.preventDefault();
     if(busy||button.disabled||!exactProfile())return;
