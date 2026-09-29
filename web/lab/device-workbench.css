@@ -95,3 +95,11 @@ footer{border-top:1px solid #253e50;margin-top:24px;padding:20px 0;color:#83a1b3
 .ipat-device-security p{font-size:12px;color:#a8bac7;line-height:1.5}
 .ipat-device-security input{margin-top:7px}
 @media(max-width:700px){.ipat-device-form-grid{grid-template-columns:minmax(0,1fr)}}
+
+/* R9.49: distinct device-save, connection and network diagnostic stages */
+.ipat-connection-summary{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-top:16px;padding:12px 14px;background:#19343c;border:1px solid #507782;border-radius:9px}
+.ipat-connection-summary strong{color:#a7f3d0;font-size:13px}
+.ipat-connection-summary span{font-size:13px;color:#deebf2}
+.ipat-connection-diagnostic{margin-top:12px;line-height:1.6;white-space:normal;overflow-wrap:anywhere;padding:10px 12px;border-left:3px solid #eab96b;background:#20333d;color:#ffe7b2;font-size:12px}
+.ipat-device-security[open]{border-color:#eab96b;background:#273740}
+.ipat-device-security[open] summary{color:#ffdf9f}
