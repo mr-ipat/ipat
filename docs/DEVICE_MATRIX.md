@@ -699,3 +699,7 @@ firmware alias/ONT/health/upgrade compatibility.
 ## R9.36 C320 ONT registration adapter status — 29 September 2026
 
 Pure synthetic `olt-core::ont_registration` single-draft validation now exists and was covered by actual owner-VPS Rust unit tests. This module DOES NOT issue ONU/ONT registration commands or prove support for any ONT model, SN registration method, GPON profile, VLAN/service flow or physical firmware. The actual C320 only has independently repeated lab SSH scripted `show card` results on its known GTGHK slot 1/1/1; observed GTGHK↔GTXK file-type and missing PRAM MVR remain unresolved. OLT production ADOPTED = FALSE; ONT physical register/config test = NOT RUN; all physical action POST endpoints remain disabled.
+
+## R9.37 strict ONU/ONT parser and bridge/VLAN feature status (29 Sep 2026)
+
+C320 real physical `show gpon onu uncfg` response: **NOT OBSERVED by R9.37**. Public old C320 CLI documents describe a candidate syntax but are not firmware-matched proof. Rust synthetic parser for candidate unconfigured ONU table and offline bridge/VLAN/TCONT/GEM profile reviewer tested; **all physical ONU discovery, ONT registration, service profile activation, model/firmware and optical/traffic validation remain UNTESTED**. No real ONT serial, ONU ID, unconfigured inventory, VLAN or profile from actual C320 was ingested. Historical 1/1/1 GTGHK board observation cannot prove supported port occupancy or chosen ONT capability. Commercial physical adopt and ONT write state FALSE.
