@@ -25,6 +25,14 @@ class R938Safety(unittest.TestCase):
         self.assertEqual(M.classify(M.COMMANDS[1],state),{'shape':'ONU_STATE_TABLE','rows':1,'online':0,'offline':1})
         reg=b'Building configuration...\ninterface gpon-olt_1/1/1\n onu 1 type TEST sn ZTEGABCDEF12\nend\n'
         self.assertEqual(M.classify(M.COMMANDS[2],reg)['rows'],1)
+    def test_owner_firmware_seventy_two_row_state_synthetic_shape(self):
+        raw=b'OnuIndex   Admin State OMCC State Phase State Channel\n'
+        raw+=b'--------------------------------------------------\n'
+        raw+=b''.join(f'1/1/1:{i} enable disable OffLine 1(GPON)\n'.encode() for i in range(1,73))
+        raw+=b'ONU Number: 0/72\n'
+        actual_shape=M.classify(M.COMMANDS[1],M.bounded(raw,M.COMMANDS[1]))
+        self.assertEqual(actual_shape,{'shape':'ONU_STATE_TABLE','rows':72,'online':0,'offline':72})
+        self.assertNotIn('serial',str(actual_shape).lower())
     def test_remote_noninteractive_blocked(self):
         env=os.environ.copy();env[M.APPROVAL]='YES'
         p=subprocess.run([sys.executable,str(FILE),'--owner-interactive-read'],
