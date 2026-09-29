@@ -168,3 +168,9 @@ systemctl --user daemon-reload
 systemctl --user reset-failed ipat-r911-preview.service
 systemctl --user restart ipat-r911-preview.service
 ```
+
+Independent public SYNTHETIC-only GitHub Actions run 36530308144
+on sanitized public source 096dce8 completed SUCCESS 2/2 hosted
+jobs. Public target was rewritten to synthetic fixture; actual
+owner device captures, private evidence and credentials were excluded.
+This is software regression verification, not another hardware run.

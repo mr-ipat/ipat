@@ -5227,3 +5227,14 @@ No OLT configuration commands during scripted read or dashboard
 rollout. Full actual one-shot source private 700/600, external
 Restic readable reference still separately verified. Public CI
 R934 synthetic-only publication tracked separately.
+
+R9.34 hosted sanitized synthetic-only CI completed SUCCESS 2/2 on
+source 096dce8, GitHub Actions run 36530308144. Private actual device
+captures/credentials remain outside the public mirror. R9.34 private
+owner-VPS actual one-time SSH read was verified separately from public
+CI and the private UI was tested while keeping all physical actions
+403 and automated SaaS adoption disabled. Next verified needs: scoped
+account with negative config-command test, actual independent or
+owner-approved lab device identity and POP gate, vendor-native
+recovery procedure, real tenant MFA+reviewer and bounded production
+reader with immutable audit. Do not claim the latter are complete.
