@@ -5131,3 +5131,27 @@ Current test/build/owner-VPS deployed private HTTP verification
 reported separately after actually performed; no claim of final
 SaaS ADOPTED until firmware restore, account role, tenant MFA,
 physical trust/POP, signed reviewer and genuine bounded read worker.
+
+R9.33 actual protected core SHA
+`10061dff2d9d48656ca7419b6fb774a76437b2a3`,
+SHA256-verified private delta
+`9817b47131f07c0c8c7a8456e94addfc65765a061483dd3da6ef4e4074faa67b`.
+Actual separate owner-VPS nonroot pinned Rust1.98.1 full locked
+offline workspace **221/221 tests PASS, 40 test groups, zero
+failures**, binary SHA
+`13380ec652c2259bd721a497205e907b7e4a89f256479ab8e811c4c1a85cc12e`.
+Actual independent owner Mac+VPS combined Python preflight
+**91/91 PASS**, owner Mac Node.js frontend both scripts syntax PASS.
+ACTUALLY checksum-verified deployed R9.33 nonroot LOOPBACK-ONLY
+private Rust LAB :3002, replacing only preview user unit, keeping
+prior user unit in owner-only R9.33 rollback folder.
+ACTUAL live LOCALHOST HTTP smoke re-run PASS: current backup
+Restic external verified/recovered flags and actual 3 physical
+historical board rows shown via GET `/lab/c320-first-real-inventory`,
+no live telemetry or native vendor restore claims; all EIGHT
+physical OLT action POSTs stay HTTP403, worker FALSE, commercial
+`device_adopted` FALSE, old :3000 HTTP200. Actual owner VPS
+socket inspection zero established C320 management sessions.
+Original device unchanged; currently only the historical proof and
+private app/UI were advanced. Hosted sanitized-only public CI and
+protected PR publication must be independently verified next.

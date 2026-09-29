@@ -6,8 +6,11 @@ setara perangkat LIVE. Login nyata sekali melalui Telnet privat dan
 SSH terenkripsi SUDAH BERHASIL, dan 3 kartu/5 baris versi diamati
 secara manual; parser privat telah menerima snapshot fisik tersebut.
 **ADOPSI SAAS OTOMATIS MASIH TERTAHAN** karena akun khusus/host trust
-independen, backup+uji pemulihan, audit dan production worker belum
-selesai. Jangan mengklaim ada customer atau perangkat belum pernah
+independen, recovery NATIVE vendor belum diuji pada chassis dan audit
+serta production worker tenant belum selesai. Backup referensi konfigurasi
+CLI eksternal terenkripsi Restic SUDAH dipulihkan byte-identik oleh
+pemilik dan diverifikasi dari Mac. Ini BUKAN bukti file bisa diimpor
+ke firmware OLT. Lihat milestone R9.33 di `PROJECT_STATUS.md`. Jangan mengklaim ada customer atau perangkat belum pernah
 berhasil login. Lihat `docs/R930_C320_AUTHENTICATED_FIRST_REAL_LAB_READ.md`.
 
 **Jalur yang diprioritaskan:** VPS IPAT → IP privat OLT yang sudah
@@ -170,3 +173,19 @@ scoped signed production worker. Until then, eight dashboard device
 action POST routes are STILL 403 and no production writes allowed.
 Current source `r79` is key-only and is NOT a valid auto-login client
 for the observed temporary password-only SSH account.
+
+## Status R9.33 backup nyata dan akun LAB, 29 September 2026
+
+Backup yang sebelumnya BLOCKED kini **SELESAI** untuk cakupan
+referensi CLI: owner berhasil menjalankan Mac Restic off-VPS,
+independent snapshot lookup dan isolasi restore SHA-256 identik
+119980 byte lulus. Tetap **TERHALANG** vendor-native firmware
+import/recovery drill. Login owner-admin sementara menunjukkan
+level15; `show username` terbaru melaporkan dua akun level15,
+BUKAN akun service baca-saja. Firmware `show alarm crtv-active`
+menerima sintaks, tetapi format/semantik alarm aktual belum
+diuji. Katalog private localhost :3002 memperlihatkan backup
+yang nyata dan tiga kartu historis, delapan aksi otomatis masih
+HTTP403. Jangan menjalankan `username`, `write`, menghapus
+akses recovery atau mematikan Telnet hanya karena raw referensi
+CLI kini tersedia.

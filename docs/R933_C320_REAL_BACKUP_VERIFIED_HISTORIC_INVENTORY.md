@@ -114,3 +114,53 @@ the temporary default level15 password as service credential.
 5. Only then transition to production `ADOPTED_READ_ONLY`; do not
    let successful historic `show card` or the encrypted CLI backup
    falsely claim continuous current telemetry or firmware support.
+
+## ACTUAL R9.33 software verification and LIVE PRIVATE LAB preview upgrade
+
+Exact core source `10061dff2d9d48656ca7419b6fb774a76437b2a3`
+was transferred as checksum-verified private Git bundle
+`9817b47131f07c0c8c7a8456e94addfc65765a061483dd3da6ef4e4074faa67b`
+into a DISTINCT approved nonroot owner-VPS checkout. Actual
+owner VPS combined Python security suite **91/91 PASS**; Mac
+same 91/91 PASS and Node.js syntax PASS for both original
+workbench and NEW historic actual inventory script. Rust pinned
+1.98.1 workspace formatting PASS; ALL **221/221 locked offline
+Rust workspace tests passed across 40 groups**, with zero failures;
+actual protected Rust `control-api` binary SHA256
+`13380ec652c2259bd721a497205e907b7e4a89f256479ab8e811c4c1a85cc12e`.
+
+ACTUALLY checksum-pinned replaced ONLY nonroot owner localhost
+PRIVATE LAB :3002 `ipat-r911-preview.service` with R9.33 Rust binary
+and validated source. New private user service unit SHA256
+`5ab0d992328c68ad6c339f860fa03db325294b22c18489d06cdf5523e4456ede`,
+actual HTTP smoke SHA256
+`8e53d1cd7b25d4b88d984d4717433797602ba889b03425a02015dda03c6174d3`,
+checksum-pinned deploy script SHA256
+`11b881764ae8f52b7ce9c43559a68ea0c7a13220fb91b5e86e252f1270eaf2c2`.
+R9.33 ROLLBACK prior private unit saved before replacement at:
+`/home/openai/.cache/ipat/r933-release/rollback-user-unit.service`.
+The script explicitly rolls back ONLY the private LAB unit on any
+failure; it performs ZERO OLT commands, ZERO config writes and does
+not alter public firewall, K3s, original :3000 service or production
+PostgreSQL.
+
+ACTUAL independent after-deploy LOCALHOST :3002 HTTP smoke PASS,
+including new restricted historical GET and JavaScript asset,
+actual card/version metadata, actual user/backup flags, explicit
+FALSE independent physical identity/native recovery/worker adoption,
+all tested physical POST action routes HTTP403, original :3000
+HTTP200. The new frontend displays the three actual historical
+card slots; it does NOT perform live OLT polling. Actual owner-VPS
+socket inspection after all manual CLI work showed ZERO open
+established connections to target OLT.
+
+To revert ONLY the PRIVATE LAB preview user service:
+
+```sh
+ssh ipat-lab
+install -m 0600 /home/openai/.cache/ipat/r933-release/rollback-user-unit.service \
+  ~/.config/systemd/user/ipat-r911-preview.service
+systemctl --user daemon-reload
+systemctl --user reset-failed ipat-r911-preview.service
+systemctl --user restart ipat-r911-preview.service
+```
