@@ -19,7 +19,12 @@
   const owner=get('ipat-c320-bootstrap');
   const name=get('ipat-device-name');
   const notice=get('ipat-device-profile-notice');
+  const saveStage=get('ipat-device-save-stage');
+  const connectStage=get('ipat-device-connect-stage');
+  const diagnostic=get('ipat-device-diagnostic');
   let busy=false, connectorOnline=false, enrolled=false;
+  let waitingForOwner=false, networkChecked=false;
+  const showStage=(saved,connection)=>{if(saved)saveStage.textContent=saved;if(connection)connectStage.textContent=connection;};
   const models={
     olt:[
       ['zte_c320_lab','ZTE C320 (Lab Read-Only)',true],
@@ -71,12 +76,20 @@
     connectorOnline=v.connector_online;
     enrolled=v.credentials_enrolled;
     if(enrolled){
-      setState('CREDENTIALS SAVED');
+      setState(v.device_status==='CONNECTED'?'CONNECTED':'CREDENTIALS SAVED');
+      showStage('Saved to Device List',v.device_status==='CONNECTED'?'Connected · Read-only':'Credentials stored · Checking device');
       form.hidden=true;
-      output.textContent='Device credentials stored. Connection health is shown in the device status indicator. Use the read-only actions above to refresh inventory.';
+      if(v.device_status==='CONNECTED') output.textContent='Device connected. Use the read-only inventory and diagnostics panels.';
     }else{
       form.hidden=false;
       setState(connectorOnline?'READY TO CONNECT':'CONNECTOR OFFLINE');
+      if(v.draft_saved===true){
+        showStage('Saved to Device List',connectorOnline?'Pending · Authentication required':'Pending · Connector unavailable');
+        if(!networkChecked && connectorOnline){
+          networkChecked=true;
+          void probe().then(message=>{diagnostic.textContent=message;});
+        }
+      }else showStage('Not Saved',connectorOnline?'Awaiting device registration':'Connector unavailable');
       validateProfile();
     }
   }
@@ -88,7 +101,9 @@
     }catch{
       connectorOnline=false;
       setState('CONNECTION UNAVAILABLE');
-      if(!busy)output.textContent='The private device connector is unavailable; no connection or adoption status is assumed.';
+      showStage(null,'Unknown · Connector unavailable');
+      diagnostic.textContent='CONNECTOR_UNAVAILABLE: IPAT could not reach its private device worker. Check the server service, not the OLT password.';
+      if(!busy)output.textContent='Device connection is not verified. Any previously saved device remains in Device List.';
       validateProfile();
     }
   }
@@ -140,7 +155,8 @@
     event.preventDefault();
     if(busy||button.disabled||!exactProfile())return;
     busy=true;button.disabled=true;
-    output.textContent='Connecting to ZTE C320 and verifying physical card inventory...';
+    showStage('Saving device...','Waiting for network check');
+    output.textContent='Saving device to Device List before attempting a connection...';
     const credential=password.value,bootstrap=owner.value;
     let draftSaved=false;
     try{
@@ -155,23 +171,32 @@
         device_name:displayName,management_ip:address,ssh_port:sshPort,username:login};
       await saveDraft(draft);
       draftSaved=true;
-      output.textContent='SAVED TO DEVICE LIST · Pending verification. Running management network diagnostic...';
+      showStage('Saved to Device List','Pending · Checking management network');
+      diagnostic.textContent='NETWORK_PROBE_RUNNING: Checking the configured management endpoint...';
+      output.textContent='SAVED TO DEVICE LIST · Running management network diagnostic...';
       const network=await probe();
+      diagnostic.textContent=network;
       if(!credential){
-        output.textContent='DEVICE SAVED · Pending credentials. Enter the SSH password. '+network;
+        showStage(null,'Pending · SSH password required');
+        output.textContent='DEVICE SAVED · SSH password required before connection. '+network;
         password.focus();
         return;
       }
       if(!bootstrap){
+        waitingForOwner=true;
         if(security)security.open=true;
-        output.textContent='DEVICE SAVED · Pending owner verification. This private lab requires the One-Time Owner Code in Advanced Security before sending SSH credentials. '+network;
+        showStage(null,'Pending · One-time lab verification required');
+        output.textContent='DEVICE SAVED · Enter the One-Time Owner Code in the expanded Advanced Security field. Connection automatically resumes when the code is pasted; no Terminal agent is required. '+network;
         owner.focus();
         return;
       }
       if(!network.startsWith('TCP port reachable')){
+        showStage(null,'Pending · Management network / SSH service');
         output.textContent='DEVICE SAVED · Connection pending. '+network;
         return;
       }
+      waitingForOwner=false;
+      showStage(null,'Connecting · SSH authentication and physical read');
       password.value='';owner.value='';
       const controller=new AbortController();
       const timer=setTimeout(()=>controller.abort(),60000);
@@ -200,11 +225,15 @@
         || verified.adoption_state!=='READ_ONLY_CONNECTED_LAB'
         || !Number.isSafeInteger(verified.card_count)||verified.card_count<1)
         throw Error('Physical device verification failed.');
+      showStage('Saved to Device List','Connected · Read-only');
+      diagnostic.textContent='AUTHENTICATED_DEVICE_READ_OK: Physical card inventory verified successfully.';
       output.textContent='CONNECTED (READ-ONLY) · '+verified.card_count
         +' active cards verified at '+verified.verified_at_utc+'.';
       await refresh();
       window.dispatchEvent(new Event('ipat-device-connection-changed'));
     }catch(error){
+      showStage(draftSaved?'Saved to Device List':'Not Saved',draftSaved?'Pending · Connection attempt failed':'Save failed');
+      diagnostic.textContent=error.message;
       output.textContent=(draftSaved?'DEVICE SAVED · Connection pending. ':'NOT SAVED · ')
         +error.message;
     }finally{
@@ -213,6 +242,15 @@
       validateProfile();
     }
   });
+  // A saved draft waits for the missing lab-owner verification. Once the
+  // operator supplies it, resume the exact same fixed-device connection.
+  const resumeAfterVerification=()=>{
+    if(!waitingForOwner || busy || !password.value || owner.value.trim().length<32)return;
+    waitingForOwner=false;
+    form.requestSubmit();
+  };
+  owner.addEventListener('change',resumeAfterVerification);
+  owner.addEventListener('paste',()=>setTimeout(resumeAfterVerification,0));
   redrawModels();
   refresh();
   setInterval(refresh,15000);
