@@ -64,7 +64,9 @@ function draw() {
     physicalRow.appendChild(td("POP BELUM DIVERIFIKASI"));
     physicalRow.appendChild(el("td","","LAB AUTH READ · BELUM DIADOPSI"));
     const transport=el("td");
-    transport.appendChild(badge("SSH + TELNET LAB","unknown"));
+    const indicator=el("span","ipat-device-signal ipat-device-signal--unknown","Unknown");
+    indicator.setAttribute("data-ipat-device-status","DEV-01");
+    transport.appendChild(indicator);
     physicalRow.appendChild(transport);
     const health=el("td");
     health.appendChild(badge("BELUM DIUKUR","unknown"));
