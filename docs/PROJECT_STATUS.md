@@ -4531,3 +4531,75 @@ console transcript in IPAT. One safe actual `show ssh` inspection by
 a trusted physical-console operator remains the first unresolved
 real-world diagnostic; do NOT assume the historical example's
 server key state matches physical equipment.
+
+## R9.22 actual physical SSH compatibility breakthrough, 29 September 2026
+
+Owner supplied a genuine direct-private SSH client error reporting
+C320 remote host keys `ssh-rsa,ssh-dss`. One bounded actual authorized
+nonroot VPS noauth test with ONLY `ssh-rsa` enabled progressed to a
+second negotiation failure: observed remote legacy cipher offers
+`aes128-cbc,3des-cbc,blowfish-cbc`; normal modern defaults had no
+cipher overlap. One separately bounded RSA + aes128-CBC negotiation
+selected actual group16-SHA512 then TIMED OUT before host key.
+A single exact-device, credential-free PRIVATE owner-VPS test with
+RSA + aes128-CBC + explicitly group14-SHA256 then ACTUALLY
+SUCCEEDED: reached server RSA host-key and server-auth-method stage
+WITHOUT timeout, password, private key or OLT command. This is a
+real transport breakthrough; **NOT hardware identity or login**.
+
+New branch `feat/r922-c320-verified-group14-client-compat` adds this
+only as an explicit new process-scoped profile to the R7.9 first-read
+collector, preserving strict independently pinned host key, bounded
+one-command first-read mode, non-factory dedicated account and
+password/agent disabled. Expanded synthetic Mac collector tests passed;
+latest protected CI/public synthetic and actual isolated VPS test
+must independently pass before declaring R9.22 software complete.
+R9.19 loopback-only eight-action demo remains disabled for all real
+physical operations; no live C320 adoption or actual firmware read.
+
+R9.22 runtime milestone COMPLETED for PRIVATE LAB ONLY: exact protected
+app SHA `03dbdc3` passed actual owner-VPS rustfmt, combined Python
+R7.9 26/26 + R9.0 54/54, full locked offline Rust `control-api`
+suite/build. Actual compiled executable SHA256
+`a1b35218a26c88cdb49302ebdc3b1a7c8badca78ad77d74a508800e44ba37302`.
+Checksum-pinned nonroot upgrade script SHA256
+`05e45271ea0b047bcfaffd46434361f57ebf05d64b22886e0817921055048323`
+ACTUALLY upgraded only private loopback :3002 user service;
+actual R9.22 HTTP smoke PASSED full group14/hostkey/cipher proof
+flags from real deployed Rust, all 8 OLT actions DISABLED and
+POST action mutations HTTP403. Old original :3000 health HTTP200;
+no OLT login/password/commands or network changes. Versioned
+rollback copy is private in r922-release. Latest PUBLIC synthetic
+CI for R9.22 code and protected PR are still pending separately;
+physical DEV-01 remains OBSERVED_NOT_ADOPTED and health NOT_MEASURED.
+
+R9.22 additionally achieved an INDEPENDENT real owner-Mac temporary
+SSH loopback-forward GET of actual deployed protected PRIVATE RUST
+R9.22 Device Manager from the VPS: backend returned the genuinely
+observed exact `RSA_AES128CBC_GROUP14SHA256_ONLY` successful
+credential-free AUTH stage metadata, genuine host identity still
+FALSE, actual device login FALSE, eight real OLT action endpoints
+locked. Historical server evidence confirmed real auth-method stage
+reached without credentials. Mac temporary forwarding was closed
+and no production OLT connection/action occurred during this
+UI-to-backend test.
+
+R9.22 actual one more bounded nonroot VPS **NO-CREDENTIAL** group14
+handshake independently reached SSH authentication-method stage and
+temporary NETWORK-ONLY `known_hosts` RSA fingerprint MATCHED the
+historically independently observed network RSA key from prior
+owner Mac and VPS measurements. The temporary network-only file was
+deleted immediately and was NOT promoted to trusted OOB identity.
+Still NO live password/SSH client key/OLT command. This consistency
+reduces transient-network-key uncertainty but cannot establish
+physical chassis ownership or least-privilege permissions.
+
+R9.22 latest PUBLIC synthetic GitHub Actions run `36507915781` against
+sanitized public source SHA
+`3454f57df1033a63817860dcdbce8d2ea627c0f0` independently
+completed SUCCESS **2/2** jobs (`synthetic-static` and `rust-locked`).
+Private physical adoption is NOT inferred from synthetic public CI.
+The original `mr-ipat/ipat` remains PRIVATE, with protected R9.22
+PR #123 stacked/draft awaiting genuine production prerequisites.
+Actual R9.22 private :3002 operator dashboard code and older :3000
+API were left unchanged/healthy after all compatibility checks.

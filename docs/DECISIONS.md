@@ -681,3 +681,17 @@ key regeneration, repetitive password attempts or a forced VPN.
 IPAT's R9.21 helper analyzes a PRIVATE offline status transcript,
 marks real chassis trust FALSE and never authorizes OLT configuration.
 If the actual firmware differs, require exact vendor documentation.
+
+## ADR-054 — CONFIRMED per-device legacy SSH group14-SHA256 transport
+
+An actual single bounded PRIVATE owner-VPS C320 SSH probe established
+that `ssh-rsa` plus `aes128-cbc` plus specifically
+`diffie-hellman-group14-sha256` reaches server host-key and SSH
+userauth method negotiation with ZERO credentials or OLT commands.
+Earlier actual `diffie-hellman-group16-sha512` choice stalled before
+server key exchange. Introduce a PROCESS-SCOPED optional C320
+transport profile; never weaken server-global SSH, enable `ssh-dss`
+or infer physical chassis trust from a network-host-key handshake.
+Real trusted console RSA source, restricted account, isolated POP
+ACL and signed tenant approvals remain independently blocking gates
+for actual C320 `show card` and later device management.
