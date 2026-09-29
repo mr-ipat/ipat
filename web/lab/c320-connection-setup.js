@@ -187,7 +187,7 @@
         waitingForOwner=true;
         if(security)security.open=true;
         showStage(null,'Pending · One-time lab verification required');
-        output.textContent='DEVICE SAVED · Enter the One-Time Owner Code in the expanded Advanced Security field. Connection automatically resumes when the code is pasted; no Terminal agent is required. '+network;
+        output.textContent='DEVICE SAVED · LAB_SETUP_CODE_REQUIRED: Follow the instructions in the expanded Lab Setup Verification section. Paste the code there to resume the pending connection. '+network;
         owner.focus();
         return;
       }
