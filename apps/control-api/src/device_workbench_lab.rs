@@ -706,7 +706,10 @@ mod tests {
         assert!(html.contains("Tambah kandidat perangkat"));
         assert!(html.contains("Daftar kandidat"));
         assert!(html.contains("PERINGATAN PRD"));
-        // Two private enrollment fields are now permitted; legacy demo still cannot accept credentials.\n        assert_eq!(html.matches("type=\\\"password\\\"").count(), 2);\n        assert!(html.contains("id=\\\"ipat-c320-bootstrap\\\""));\n        assert!(html.contains("id=\\\"ipat-c320-device-password\\\""));
+        // Private device enrollment inputs are separate from legacy demo candidates.
+        assert_eq!(html.matches("type=\"password\"").count(), 2);
+        assert!(html.contains("id=\"ipat-c320-bootstrap\""));
+        assert!(html.contains("id=\"ipat-c320-device-password\""));
         assert!(!html.contains("10.0.0.2"));
     }
     #[tokio::test]
