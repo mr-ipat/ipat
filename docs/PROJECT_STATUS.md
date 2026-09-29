@@ -4603,3 +4603,54 @@ The original `mr-ipat/ipat` remains PRIVATE, with protected R9.22
 PR #123 stacked/draft awaiting genuine production prerequisites.
 Actual R9.22 private :3002 operator dashboard code and older :3000
 API were left unchanged/healthy after all compatibility checks.
+
+## R9.23 physical C320 config ledger and no-speculation decision
+
+The owner explicitly requested completing real C320 adoption and
+reporting ALL actual OLT config/CLI commands. The current actual
+host-key/cipher/group14-SHA256 compatibility already reaches
+SSH authentication methods without any real OLT config change.
+No independent chassis console RSA, exact firmware, production-safe
+restricted account, genuine signed tenant MFA, or live POP baseline
+is available in the authorized IPAT environment. DO NOT send the
+previous exposed factory password or modify management crypto on a
+subscriber-serving OLT on the strength of a network fingerprint.
+As of this checkpoint, actual OLT configuration commands executed 0,
+authenticated device-read commands 0, customer-impacting operations 0.
+
+R9.23 branch `feat/r923-c320-auditable-onsite-change-plan` adds a
+pure local offline no-network advisory planner for an eventual REAL
+owner-private trusted-console `show ssh` transcript. It explicitly
+prefers NO live OLT config change if SSHv2 enabled/host key usable,
+proposes an UNEXECUTED `ssh server enable` only if the real output
+shows disabled, or UNEXECUTED `ssh server version 2` only for reported
+SSHv1, with strict site-console review and no unsupported SSHv2
+server-key generation. 4/4 standalone synthetic tests PASS;
+combined local preflight 58/58 PASS. This is NOT a real physical
+OLT status report; actual console read, on-device compatibility and
+authenticated read/adoption remain BLOCKED on site evidence.
+Command-by-command actual versus hypothetical ledger and operator
+handoff: `docs/R923_ZTE_C320_PHYSICAL_CONFIGURATION_CHANGE_LEDGER.md`.
+
+R9.23 real owner VPS source checkout SHA `fcb7c7c7aefb653f0d9f90a57712d892ecaff581`
+was transferred via independently verified Git delta into a NEW
+nonroot 0700 folder. The actual owner VPS ran R9.23 strict offline
+change-plan suite 4/4 and full combined safety suite 58/58, BOTH
+PASS. No private OLT credential, network connection or OLT CLI
+command was initiated by the new planner. This establishes the
+site-plan SOFTWARE tests only, not production adoption, approval,
+real chassis config state or hardware interoperability.
+
+R9.23 latest public SYNTHETIC mirror SHA
+`25a75d66c7d8b90ce4924f60671f33133740716e` GitHub Actions
+run `36508704638` independently completed SUCCESS **2/2** jobs:
+`synthetic-static` and full locked Rust workspace `rust-locked`.
+Actual owner-VPS private current R9.22 user service is ACTIVE,
+`127.0.0.1:3002/lab/c320-action-readiness` HTTP200 and original
+`127.0.0.1:3000/healthz` HTTP200. R9.23 no-network site-review
+planner was tested on a separate actual VPS checkout; it was NOT
+deployed as any live device action executor and did NOT run any real
+OLT command or configuration change. Real operational adoption remains
+blocked on independently sourced physical chassis RSA, verified
+restricted account, POP site baseline/isolation and authentic tenant
+review approvals, not the client SSH algorithm negotiation.

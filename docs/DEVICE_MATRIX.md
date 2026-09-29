@@ -566,3 +566,18 @@ FOR REAL DEVICE LOGIN** without a separately sourced actual chassis
 console key and independent production account/site approvals.
 The temporary untrusted known_hosts observation was deleted.
 No OLT model/firmware/card output was collected.
+
+## R9.23 physical C320 operational status and change audit
+
+The user explicitly permits OLT adjustments if needed, but our
+actual bounded direct-private SSH group14/RSA/CBC handshake already
+reaches authentication methods; a device-side SSH change is NOT
+technically evidenced as necessary. Historical C320 vendor CLI
+references suggest `show ssh` status can distinguish enabled/disabled,
+SSHv1/SSHv2 and server-key initialization, but actual DEV-01 status,
+firmware, ACL and restricted account remain UNVERIFIED. Actual OLT
+configuration/authenticated read/write commands executed = 0;
+actual local-client credential-free negotiation succeeds only with
+the verified R9.22 parameters. All eight LAB physical actions stay
+disabled pending real trust and tenant authorization. R9.23 offline
+change planner cannot establish compatibility or mutate hardware.

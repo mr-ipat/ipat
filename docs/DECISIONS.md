@@ -695,3 +695,21 @@ or infer physical chassis trust from a network-host-key handshake.
 Real trusted console RSA source, restricted account, isolated POP
 ACL and signed tenant approvals remain independently blocking gates
 for actual C320 `show card` and later device management.
+
+## ADR-055 — R9.23 no speculative live OLT server config edits
+
+Owner authorizes operational adoption and conditional SSH changes,
+but current actual group14/RSA/aes128-CBC direct-private transport
+already reaches server authentication. The original privileged test
+account, a recurring network-only RSA key, and synthetic firmware
+CLI cannot independently prove the true active chassis/POP scope.
+An offline-only site change planner is introduced to classify a
+REAL trusted-console `show ssh` transcript without executing
+commands. Do NOT change or regenerate a working server key or enable
+SSH globally merely to work around a CLIENT-SIDE negotiation issue.
+Actual site changes require independently trusted hardware identity,
+exact firmware, secure restricted collector role, local console
+recovery, live baseline and independent approved maintenance;
+all actual OLT server configuration commands executed are ZERO at
+this milestone. Client-side exact-device group14 profile remains
+verified and scoped to a single SSH process.
