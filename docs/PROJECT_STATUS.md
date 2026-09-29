@@ -4743,3 +4743,12 @@ SSH server configuration has been executed as part of this fix.
 The user still needs genuine independently authenticated site
 console proof or equivalent approved trust source; the available
 owner Mac C320 packet has only plan.json. Do not set device ADOPTED.
+
+R9.25 verified actual independent owner nonroot VPS checkout
+`ba2daadcda89dc24e31d291d8dd4d2e7c760e6ce`, transferred by
+SHA256-checked private Git bundle: standalone offline ZTE show-ssh
+5/5, firmware-conditional no-network change-plan 5/5 and combined
+security/preflight 64/64 PASS. All used synthetic input, absolutely
+no real device commands/credentials, no production services changed.
+The working private R9.24 actual owner-VPS readiness app remains
+separate; this triage correction does not mount a physical executor.
