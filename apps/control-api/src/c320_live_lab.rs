@@ -208,20 +208,24 @@ async fn firmware(
 
 // Presence is NOT physical OLT connectivity: distinguish interactive agent
 // readiness from a successful independently timestamped physical CLI response.
-async fn agent_status(headers:HeaderMap) ->Result<(HeaderMap,Json<Value>),(StatusCode,HeaderMap,Json<Value>)> {
-    if !strict_private(&headers,false) {return Err(denied(StatusCode::FORBIDDEN,"OWNER_PRIVATE_PANEL_ONLY"));}
-    let empty=json!({"agent_ready":false,"seconds_left":0,"requests_left":0,
+async fn agent_status(
+    headers: HeaderMap,
+) -> Result<(HeaderMap, Json<Value>), (StatusCode, HeaderMap, Json<Value>)> {
+    if !strict_private(&headers, false) {
+        return Err(denied(StatusCode::FORBIDDEN, "OWNER_PRIVATE_PANEL_ONLY"));
+    }
+    let empty = json!({"agent_ready":false,"seconds_left":0,"requests_left":0,
       "actual_olt_connectivity_verified":false,"device_adopted":false,"physical_writes_enabled":false});
-    let query=async {
-        let mut stream=UnixStream::connect(SOCKET).await?;
+    let query = async {
+        let mut stream = UnixStream::connect(SOCKET).await?;
         stream.write_all(b"STATUS\n").await?;
-        let mut data=Vec::new();
+        let mut data = Vec::new();
         stream.take(513).read_to_end(&mut data).await?;
-        Ok::<Vec<u8>,std::io::Error>(data)
+        Ok::<Vec<u8>, std::io::Error>(data)
     };
-    let agent=match tokio::time::timeout(Duration::from_secs(2),query).await {
-        Ok(Ok(bytes)) if bytes.len()<=512 => serde_json::from_slice::<Value>(&bytes).ok(),
-        _=>None,
+    let agent = match tokio::time::timeout(Duration::from_secs(2), query).await {
+        Ok(Ok(bytes)) if bytes.len() <= 512 => serde_json::from_slice::<Value>(&bytes).ok(),
+        _ => None,
     };
     let result=agent.and_then(|v| {
         if v.get("mode")?.as_str()?!="OWNER_SUPERVISED_REAL_C320_READ_ONLY"
@@ -234,7 +238,10 @@ async fn agent_status(headers:HeaderMap) ->Result<(HeaderMap,Json<Value>),(Statu
         Some(json!({"agent_ready":ready,"seconds_left":left,"requests_left":quota,
           "actual_olt_connectivity_verified":false,"device_adopted":false,"physical_writes_enabled":false}))
     }).unwrap_or(empty);
-    Ok((super::private_lab_headers("application/json; charset=utf-8"),Json(result)))
+    Ok((
+        super::private_lab_headers("application/json; charset=utf-8"),
+        Json(result),
+    ))
 }
 
 pub(super) fn router() -> Router {
@@ -242,7 +249,10 @@ pub(super) fn router() -> Router {
         .route("/lab/c320-owner-live-refresh", post(refresh))
         .route("/lab/c320-owner-live-cards", post(cards))
         .route("/lab/c320-owner-live-firmware", post(firmware))
-        .route("/lab/c320-owner-agent-state", axum::routing::get(agent_status))
+        .route(
+            "/lab/c320-owner-agent-state",
+            axum::routing::get(agent_status),
+        )
 }
 
 #[cfg(test)]
@@ -292,17 +302,35 @@ mod tests {
     }
     #[tokio::test]
     async fn status_route_rejects_external_host_and_is_not_device_health() {
-        let unauthorized=router().oneshot(Request::builder().uri("/lab/c320-owner-agent-state")
-            .header("Host","public.invalid").body(Body::empty()).unwrap()).await.unwrap();
-        assert_eq!(unauthorized.status(),StatusCode::FORBIDDEN);
-        let private=router().oneshot(Request::builder().uri("/lab/c320-owner-agent-state")
-            .header("Host","127.0.0.1:3002").body(Body::empty()).unwrap()).await.unwrap();
-        assert_eq!(private.status(),StatusCode::OK);
-        let b=axum::body::to_bytes(private.into_body(),512).await.unwrap();
-        let d:Value=serde_json::from_slice(&b).unwrap();
-        assert_eq!(d["actual_olt_connectivity_verified"],false);
-        assert_eq!(d["device_adopted"],false);
-        assert_eq!(d["physical_writes_enabled"],false);
+        let unauthorized = router()
+            .oneshot(
+                Request::builder()
+                    .uri("/lab/c320-owner-agent-state")
+                    .header("Host", "public.invalid")
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(unauthorized.status(), StatusCode::FORBIDDEN);
+        let private = router()
+            .oneshot(
+                Request::builder()
+                    .uri("/lab/c320-owner-agent-state")
+                    .header("Host", "127.0.0.1:3002")
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(private.status(), StatusCode::OK);
+        let b = axum::body::to_bytes(private.into_body(), 512)
+            .await
+            .unwrap();
+        let d: Value = serde_json::from_slice(&b).unwrap();
+        assert_eq!(d["actual_olt_connectivity_verified"], false);
+        assert_eq!(d["device_adopted"], false);
+        assert_eq!(d["physical_writes_enabled"], false);
     }
     #[tokio::test]
     async fn extra_routes_deny_cross_origin() {
