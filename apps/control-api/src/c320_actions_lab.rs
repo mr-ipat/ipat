@@ -224,12 +224,16 @@ pub(super) async fn ont_features(
     headers: HeaderMap,
 ) -> Result<(HeaderMap, Json<Value>), (StatusCode, HeaderMap, Json<Value>)> {
     if !super::device_workbench_lab::demo_csrf_read(&headers) {
-        return Err((StatusCode::FORBIDDEN,
+        return Err((
+            StatusCode::FORBIDDEN,
             super::private_lab_headers("application/json; charset=utf-8"),
-            Json(json!({"error":"PRIVATE_LOCAL_LAB_ONLY"}))));
+            Json(json!({"error":"PRIVATE_LOCAL_LAB_ONLY"})),
+        ));
     }
-    Ok((super::private_lab_headers("application/json; charset=utf-8"),
-        Json(ont_feature_readiness())))
+    Ok((
+        super::private_lab_headers("application/json; charset=utf-8"),
+        Json(ont_feature_readiness()),
+    ))
 }
 
 pub(super) async fn first_read(
