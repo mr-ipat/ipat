@@ -86,6 +86,34 @@ function draw() {
   window.dispatchEvent(new Event("ipat-device-list-rendered"));
   node("candidate-count").textContent = String(candidates.length + (savedPhysical ? 1 : 0));
 }
+async function loadSavedPhysical() {
+  try {
+    const response=await fetch('/lab/c320-owner-connection',{
+      cache:'no-store',credentials:'omit'
+    });
+    if(!response.ok)throw Error('device record endpoint unavailable');
+    const v=await response.json();
+    if(v.target!=='DEV-01'||v.vendor!=='ZTE'||v.model!=='C320'
+       ||v.production_adopted!==false||v.physical_writes_enabled!==false)
+      throw Error('unexpected device record');
+    if(v.draft_saved===true||v.credentials_enrolled===true){
+      const verified=v.device_status==='CONNECTED'
+        && v.adoption_state==='READ_ONLY_CONNECTED_LAB';
+      savedPhysical={
+        name:typeof v.device_name==='string'&&v.device_name.length<=64
+          ?v.device_name:'ZTE C320 Lab',
+        adoption:verified?'READ-ONLY CONNECTED'
+          :v.credentials_enrolled===true?'WAITING FOR FRESH DEVICE READ'
+            :'PENDING · OWNER VERIFICATION',
+        status:v.device_status
+      };
+    }else savedPhysical=null;
+  }catch{
+    // Never present a stale saved device as online if the source fails.
+    savedPhysical=null;
+  }
+  draw();
+}
 async function refresh() {
   node("refresh").disabled = true;
   try {
@@ -108,6 +136,7 @@ async function refresh() {
     draw();
     status("Tidak berhasil memverifikasi backend privat. Jangan menganggap perangkat aktif.",true);
   } finally {
+    await loadSavedPhysical();
     node("refresh").disabled=false;
   }
 }
@@ -160,6 +189,7 @@ async function submit(event) {
     button.disabled=false;
   }
 }
+window.addEventListener("ipat-device-connection-changed",()=>{void loadSavedPhysical();});
 node("device-form").addEventListener("submit",event=>{void submit(event);});
 node("refresh").addEventListener("click",()=>{void refresh();});
 node("pop-filter").addEventListener("change",draw);
