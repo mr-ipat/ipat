@@ -4902,3 +4902,29 @@ Production tenant onboarding and immutable reviewed worker still
 OPEN. Full R9.30 source/test/preview deployment tracked separately.
 
 R9.30 first independent actual owner VPS full-workspace Rust attempt FAILED on 29 Sep: newly introduced first-real-vendor-shape tests exposed strict historical version timestamp parser requiring 2-digit HH; ACTUAL C320 returns 1-digit hour 0:53:14 and 9:53:13. Added narrow bounded vendor clock parser accepting only one/two-digit 0-23 hour and strict 2-digit 0-59 minutes/seconds, with negative invalid clock tests. These are software parser fixes, NO physical device configuration or command changes. Re-run pinned full locked offline Rust tests and record final results; do not claim first attempt passed.
+
+R9.30 owner-VPS first pinned Rust full-workspace run initially exposed
+ACTUAL-vendor-shaped 1-digit firmware BuildTime hours as a new parser
+failure; narrowly patched clock validation (0-23 h, 0-59 min/sec)
+with negative malformed-clock tests. Independently re-ran owner VPS
+pinned fmt, olt-core unit+fixtures including first-read reconciliation
+and full control-api tests plus locked offline binary builds PASS.
+Private Rust `control-api` binary SHA256
+`e507efdd3181dd79a6a24d1cb7e0b99c0ede980283879ff984a18fff5b9f17d4`.
+Checksum-pinned NONROOT real owner-VPS private localhost :3002
+read-only dashboard R9.30 upgrade ACTUALLY deployed with rollback;
+actual postdeploy HTTP smoke PASS: LAB authenticated SSH+Telnet
+sessions and three cards/five firmware records visible as historical
+manual observation, ALL eight automated OLT POST routes remain 403,
+no device worker and `device_adopted=false`, original :3000 HTTP200.
+Current R9.30 legacy RSA pin is OWNER-OBSERVED NETWORK ONLY (two-path
+same fingerprint), NOT physical-console cryptographic attestation.
+Signed production tenant authentication/independent reviewer, scoped
+read-only worker, trusted POP isolation, verified restricted account,
+secure backup+tested rollback and password rotation remain OPEN.
+
+Added strictly separate `olt-evidence --first-observation-partial-versions`
+offline mode for owner-only actual partial first C320 firmware captures,
+while preserving failure of default strict complete-firmware parse.
+Its real owner VPS source/test and live actual private capture
+normalization must be verified separately before declaring COMPLETE.

@@ -118,3 +118,34 @@ session is NOT a production worker identity. Telnet may be retired
 after restricted protected SSH is proven. No actual operator wrote
 OLT configurations, changed SSH settings, created a user, rotated a
 password or transferred firmware in this milestone.
+
+## Strict private CLI for the actual PARTIAL first firmware capture
+
+The original strict complete-firmware `olt-evidence --cards --versions`
+MUST continue rejecting this observed firmware tuple until exact
+firmware-specific vendor mapping has been proven. R9.30 therefore
+adds a deliberately separate `--first-observation-partial-versions`
+**OFFLINE OWNER-PRIVATE** mode to the same strict Rust parser. It
+reads separately captured owner-only 0600 card/version files from
+0700 non-Git folders, validates vendor clock format including real
+single-digit hours, validates that ALL version records belong to
+actual card slots and have one consistent per-slot FileType, then
+reports an `exact_mvr_slots`, `unresolved_mvr_filetype` and
+`no_mvr_reported_slots` structured summary. This does not whitelist
+`GTGHK -> GTXK` globally, invent PRAM firmware, log raw CLI, send
+packets or confer adoption/firmware-write rights.
+
+On the approved nonroot owner VPS, after independently reviewing the
+private transcribed capture provenance:
+
+```sh
+p="$HOME/.local/share/ipat/r930-real-read-20260929"
+b="${HOME}/.cache/ipat/r930-release/target/debug/olt-evidence"
+"$b" --first-observation-partial-versions \
+  --cards "$p/cards.txt" --versions "$p/versions.txt" \
+  --out "$p/normalized/actual-c320-partial-versions.json"
+```
+
+That private normalized output is a first-read acceptance input,
+NOT a signed asset/tenant verification. Never copy it into a public
+mirror or claim complete firmware equivalence from slot correlation.
