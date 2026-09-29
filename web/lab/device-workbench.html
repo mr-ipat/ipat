@@ -71,6 +71,8 @@
           <h2 id="c320-supervised-read-title">ZTE C320 — pembacaan langsung dari panel</h2></div><span class="pill amber-pill">OWNER-SUPERVISED LAB</span></div>
         <p>Setelah pemilik mengaktifkan agen sementara melalui terminal privat VPS, tombol ini akan menjalankan tiga perintah inventaris READ-ONLY ke C320 melalui SSH yang sudah dipin secara observasi jaringan. Tidak menerima serial, password atau perintah CLI di browser. Maksimal 5 kali pembacaan dalam 15 menit. Ini bukan otorisasi tenant SaaS ataupun adopsi produksi.</p>
         <button id="c320-read-live" type="button" class="secondary">Baca status OLT sekarang</button>
+        <button id="c320-read-cards" type="button" class="secondary">Baca kartu fisik sekarang</button>
+        <button id="c320-read-firmware" type="button" class="secondary">Baca versi firmware sekarang</button>
         <p id="c320-read-live-status" role="status" aria-live="polite">Agen pemilik perlu diaktifkan secara terpisah; data historis di atas bukan telemetri langsung.</p>
         <div id="c320-read-live-summary" class="steps" aria-label="Hasil pembacaan C320 langsung dan tersanitasi"></div>
         <div class="separation"><b>AKSI PERUBAHAN KONFIGURASI TETAP TERKUNCI</b><p>Registrasi ONT, VLAN, perubahan akun dan upgrade firmware memerlukan alur persetujuan serta pengujian pemulihan native. Jangan menganggap tombol pembacaan ini sebagai izin menulis perangkat.</p></div>

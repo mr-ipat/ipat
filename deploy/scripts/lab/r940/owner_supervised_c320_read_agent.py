@@ -31,7 +31,7 @@ def module():
     m=importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
     return m
 
-def run_three_reads(m,password):
+def run_three_reads(m,password,action=b'REFRESH\n'):
     import pexpect
     # No dynamic user-specified target, IP, port, command or host-key fallback.
     ssh=['ssh','-F','/dev/null','-tt','-p',str(m.PORT),
@@ -50,17 +50,46 @@ def run_three_reads(m,password):
         c.sendline(password.encode())
         if c.expect([m.PROMPT,pexpect.EOF,pexpect.TIMEOUT],timeout=10)!=0:
             raise Denied('authenticated C320 prompt missing')
+        if action==b'CARDS\n':
+            commands=('show card',)
+        elif action==b'FIRMWARE\n':
+            commands=('show version-running',)
+        elif action==b'REFRESH\n':
+            commands=m.COMMANDS
+        else:
+            raise Denied('unknown read action')
         results=[]
-        for i,command in enumerate(m.COMMANDS):
+        for i,command in enumerate(commands):
             c.sendline(command.encode())
             if c.expect([m.PROMPT,pexpect.EOF,pexpect.TIMEOUT],timeout=15)!=0:
                 raise Denied('fixed read timed out or session closed')
             raw=m.bounded(c.before,command)
+            if action==b'CARDS\n':
+                if not all(x in raw for x in (b'Rack',b'Shelf',b'Slot',b'INSERVICE')):
+                    raise Denied('card table unrecognized')
+                card_rows=[x.split() for x in raw.splitlines() if x.strip() and x.split()[-1:]==[b'INSERVICE']]
+                if not 1<=len(card_rows)<=22 or any(len(x)<9 or any(not item.isdigit() for item in x[:3]) for x in card_rows):
+                    raise Denied('card row shape rejected')
+                return {'mode':'OWNER_SUPERVISED_REAL_C320_READ_ONLY','read_kind':'CARDS',
+                    'cards_in_service':len(card_rows),'snapshot_is_live':True,
+                    'serials_returned':False,'device_adopted':False,
+                    'provisioning_enabled':False,'device_writes':0}
+            if action==b'FIRMWARE\n':
+                if not all(x in raw for x in (b'PhyLoc',b'FileType',b'VerType')):
+                    raise Denied('firmware table unrecognized')
+                import re
+                versions=[x.split() for x in raw.splitlines() if re.match(rb'^\s*1/1/\d+\s+',x)]
+                if not 1<=len(versions)<=66 or any(len(x)!=7 or x[2] not in (b'MVR',b'FW',b'BT') for x in versions):
+                    raise Denied('firmware row shape rejected')
+                return {'mode':'OWNER_SUPERVISED_REAL_C320_READ_ONLY','read_kind':'FIRMWARE',
+                    'firmware_rows':len(versions),'firmware_reconciled':False,
+                    'snapshot_is_live':True,'serials_returned':False,'device_adopted':False,
+                    'provisioning_enabled':False,'device_writes':0}
             results.append(m.classify(command,raw))
         if results[1]['rows']!=results[2]['rows']:
             raise Denied('state and config count discrepancy')
         return {'mode':'OWNER_SUPERVISED_REAL_C320_READ_ONLY',
-          'snapshot_is_live':True,'port':'1/1/1','unconfigured':results[0]['rows'],
+          'read_kind':'ONU_INVENTORY','snapshot_is_live':True,'port':'1/1/1','unconfigured':results[0]['rows'],
           'configured':results[1]['rows'],'online':results[1]['online'],
           'offline':results[1]['offline'],'configuration_rows':results[2]['rows'],
           'serials_returned':False,'device_adopted':False,'provisioning_enabled':False,
@@ -105,13 +134,14 @@ def main():
                 if uid!=os.getuid():raise Denied('foreign process denied')
                 self.request.settimeout(4)
                 request=self.request.recv(64)
-                if request!=b'REFRESH\n':raise Denied('unknown request denied')
+                if request not in (b'REFRESH\n',b'CARDS\n',b'FIRMWARE\n'):
+                    raise Denied('unknown request denied')
                 now=time.monotonic()
                 if now-started>SESSION_SECONDS or count>=MAX_REQUESTS or now-last<10:
                     raise Denied('session expired, quota or rate limited')
                 # Reserve BEFORE the physical connection to avoid free retries.
                 count+=1;last=now
-                payload=run_three_reads(m,password)
+                payload=run_three_reads(m,password,request)
                 from datetime import datetime, timezone
                 payload['read_at_utc']=datetime.now(timezone.utc).isoformat()
                 result=json.dumps(payload,separators=(',',':')).encode()

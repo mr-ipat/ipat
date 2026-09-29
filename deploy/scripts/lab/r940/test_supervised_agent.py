@@ -27,6 +27,13 @@ class OwnerReadBoundaryTests(unittest.TestCase):
         self.assertIn('socket.SO_PEERCRED',code)
         self.assertIn('password=getpass.getpass',code)
         self.assertNotIn('password=os.getenv',code)
+    def test_three_fixed_read_families_without_cli_from_client(self):
+        code=SCRIPT.read_text()
+        self.assertIn("commands=('show card',)",code)
+        self.assertIn("commands=('show version-running',)",code)
+        self.assertIn("commands=m.COMMANDS",code)
+        self.assertIn("if request not in (b'REFRESH\\n',b'CARDS\\n',b'FIRMWARE\\n'):",code)
+        self.assertIn('payload=run_three_reads(m,password,request)',code)
     def test_exact_owner_reader_fixed_command_list(self):
         p=Path(__file__).parents[1]/'r938'/'owner_c320_onu_first_inventory.py'
         src=p.read_text()

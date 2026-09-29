@@ -135,3 +135,41 @@
     } finally { button.disabled=false; }
   });
 })();
+
+// Two additional FIXED owner-supervised reads; no browser-defined CLI.
+(() => {
+  for(const config of [
+    {button:'c320-read-cards',path:'/lab/c320-owner-live-cards',
+      kind:'CARDS',name:'Kartu INSERVICE',field:'cards_in_service'},
+    {button:'c320-read-firmware',path:'/lab/c320-owner-live-firmware',
+      kind:'FIRMWARE',name:'Baris firmware terbaca (alias belum terverifikasi)',field:'firmware_rows'}
+  ]) {
+    const button=document.getElementById(config.button);
+    const status=document.getElementById('c320-read-live-status');
+    const summary=document.getElementById('c320-read-live-summary');
+    if(!button||!status||!summary)continue;
+    button.addEventListener('click',async()=>{
+      button.disabled=true;
+      status.textContent='Meminta pembacaan nyata '+config.name+' melalui agen terbatas…';
+      try {
+        const reply=await fetch(config.path,{method:'POST',cache:'no-store',
+          credentials:'omit',headers:{'X-IPAT-Demo-Only':'1',
+          'Content-Type':'application/json'},body:'{}'});
+        if(!reply.ok)throw new Error('Agen offline, kuota habis, atau hasil firmware ditolak ('+reply.status+')');
+        const result=await reply.json();
+        if(result.read_kind!==config.kind||result.snapshot_is_live!==true
+          ||result.device_adopted!==false||result.physical_writes_enabled!==false
+          ||!Number.isInteger(result[config.field])||result[config.field]<1)
+          throw new Error('Respons fisik tidak dapat diverifikasi');
+        summary.replaceChildren();
+        const line=document.createElement('div');line.className='physical-gate';
+        const k=document.createElement('span');k.textContent=config.name;
+        const v=document.createElement('strong');v.textContent=String(result[config.field]);
+        line.append(k,v);summary.append(line);
+        status.textContent='Pembacaan REAL '+result.read_at_utc+
+          ' · data redaksi, bukan izin upgrade atau registrasi.';
+      }catch(e){status.textContent='BELUM BERHASIL: '+e.message;}
+      finally{button.disabled=false;}
+    });
+  }
+})();

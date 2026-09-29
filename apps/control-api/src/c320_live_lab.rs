@@ -110,8 +110,74 @@ async fn refresh(
     ))
 }
 
+/// Only two additional verified read-command families; no arbitrary CLI.
+fn sanitize_extra(v: &Value, kind: &str) -> Option<Value> {
+    if v.get("mode")?.as_str()? != "OWNER_SUPERVISED_REAL_C320_READ_ONLY"
+        || v.get("read_kind")?.as_str()? != kind
+        || v.get("snapshot_is_live")?.as_bool() != Some(true)
+        || v.get("serials_returned")?.as_bool() != Some(false)
+        || v.get("device_adopted")?.as_bool() != Some(false)
+        || v.get("provisioning_enabled")?.as_bool() != Some(false)
+        || v.get("device_writes")?.as_u64() != Some(0)
+    { return None; }
+    let timestamp=v.get("read_at_utc")?.as_str()?;
+    if timestamp.len()<19 || timestamp.len()>40 || !timestamp.bytes()
+        .all(|x|x.is_ascii_digit() || b"-:TZ+.".contains(&x)) {return None;}
+    match kind {
+        "CARDS"=>{
+            let n=v.get("cards_in_service")?.as_u64()?;
+            if !(1..=22).contains(&n) {return None;}
+            Some(json!({"read_kind":"CARDS","cards_in_service":n,
+                "read_at_utc":timestamp,"snapshot_is_live":true,
+                "device_adopted":false,"physical_writes_enabled":false}))
+        },
+        "FIRMWARE"=>{
+            let n=v.get("firmware_rows")?.as_u64()?;
+            if !(1..=66).contains(&n) || v.get("firmware_reconciled")?.as_bool()!=Some(false) {return None;}
+            Some(json!({"read_kind":"FIRMWARE","firmware_rows":n,
+                "firmware_reconciled":false,"read_at_utc":timestamp,
+                "snapshot_is_live":true,"device_adopted":false,
+                "physical_writes_enabled":false}))
+        },
+        _=>None,
+    }
+}
+async fn extra_read(headers:HeaderMap, request:&'static [u8], kind:&'static str)
+    ->Result<(HeaderMap,Json<Value>),(StatusCode,HeaderMap,Json<Value>)> {
+    if !strict_private(&headers,true) {
+        return Err(denied(StatusCode::FORBIDDEN,"OWNER_PRIVATE_PANEL_ONLY"));
+    }
+    let attempt=async {
+        let mut stream=UnixStream::connect(SOCKET).await?;
+        stream.write_all(request).await?;
+        let mut data=Vec::new();
+        stream.take((MAX_REPLY+1) as u64).read_to_end(&mut data).await?;
+        Ok::<Vec<u8>,std::io::Error>(data)
+    };
+    let Ok(Ok(raw))=tokio::time::timeout(Duration::from_secs(58),attempt).await else {
+        return Err(denied(StatusCode::SERVICE_UNAVAILABLE,"OWNER_AGENT_OFFLINE_OR_TIMEOUT"));
+    };
+    if raw.len()>MAX_REPLY {return Err(denied(StatusCode::BAD_GATEWAY,"AGENT_REPLY_REJECTED"));}
+    let Ok(v)=serde_json::from_slice::<Value>(&raw) else {
+        return Err(denied(StatusCode::BAD_GATEWAY,"AGENT_REPLY_REJECTED"));
+    };
+    let Some(result)=sanitize_extra(&v,kind) else {
+        return Err(denied(StatusCode::SERVICE_UNAVAILABLE,"OWNER_READ_FAILED_OR_INVALID"));
+    };
+    Ok((super::private_lab_headers("application/json; charset=utf-8"),Json(result)))
+}
+async fn cards(headers:HeaderMap)->Result<(HeaderMap,Json<Value>),(StatusCode,HeaderMap,Json<Value>)> {
+    extra_read(headers,b"CARDS\n","CARDS").await
+}
+async fn firmware(headers:HeaderMap)->Result<(HeaderMap,Json<Value>),(StatusCode,HeaderMap,Json<Value>)> {
+    extra_read(headers,b"FIRMWARE\n","FIRMWARE").await
+}
+
 pub(super) fn router() -> Router {
-    Router::new().route("/lab/c320-owner-live-refresh", post(refresh))
+    Router::new()
+      .route("/lab/c320-owner-live-refresh", post(refresh))
+      .route("/lab/c320-owner-live-cards",post(cards))
+      .route("/lab/c320-owner-live-firmware",post(firmware))
 }
 
 #[cfg(test)]
@@ -134,6 +200,41 @@ mod tests {
         v["online"] = json!(0);
         v["device_writes"] = json!(1);
         assert_eq!(sanitize_agent(&v), None);
+    }
+    #[test]
+    fn extra_read_types_are_allowlisted_and_redacted() {
+        let mut v = json!({"mode":"OWNER_SUPERVISED_REAL_C320_READ_ONLY",
+           "read_kind":"CARDS","cards_in_service":3,
+           "snapshot_is_live":true,"serials_returned":false,
+           "device_adopted":false,"provisioning_enabled":false,
+           "device_writes":0,"read_at_utc":"2026-09-29T11:00:00+00:00",
+           "raw_password":"SYNTHETIC_SHOULD_NOT_RETURN"});
+        let clean=sanitize_extra(&v,"CARDS").unwrap();
+        assert_eq!(clean["cards_in_service"],3);
+        assert!(clean.get("raw_password").is_none());
+        assert_eq!(clean["device_adopted"],false);
+        assert!(sanitize_extra(&v,"FIRMWARE").is_none());
+        v["cards_in_service"]=json!(0);
+        assert!(sanitize_extra(&v,"CARDS").is_none());
+        v["read_kind"]=json!("FIRMWARE");
+        v["firmware_rows"]=json!(5);
+        v["firmware_reconciled"]=json!(false);
+        let fw=sanitize_extra(&v,"FIRMWARE").unwrap();
+        assert_eq!(fw["firmware_reconciled"],false);
+        assert!(fw.get("raw_password").is_none());
+        v["device_writes"]=json!(1);
+        assert!(sanitize_extra(&v,"FIRMWARE").is_none());
+    }
+    #[tokio::test]
+    async fn extra_routes_deny_cross_origin() {
+        for path in ["/lab/c320-owner-live-cards","/lab/c320-owner-live-firmware"] {
+            let r=router().oneshot(Request::builder().method("POST").uri(path)
+                .header("Host","127.0.0.1:3002")
+                .header("Origin","http://untrusted.invalid")
+                .header("X-IPAT-Demo-Only","1")
+                .body(Body::empty()).unwrap()).await.unwrap();
+            assert_eq!(r.status(),StatusCode::FORBIDDEN);
+        }
     }
     #[tokio::test]
     async fn denies_csrf_and_missing_supervised_agent() {
