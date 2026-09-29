@@ -412,6 +412,36 @@ mod tests {
         assert!(sanitize_extra(&v, "FIRMWARE").is_none());
     }
     #[tokio::test]
+    async fn persistent_enrollment_rejects_cross_origin_and_bad_device_target() {
+        let forged=router().oneshot(Request::builder()
+            .method("POST").uri("/lab/c320-owner-enroll")
+            .header("Host","127.0.0.1:3002")
+            .header("Origin","http://untrusted.invalid")
+            .header("X-IPAT-Demo-Only","1")
+            .header("Content-Type","application/json")
+            .body(Body::from(r#"{"device_profile":"zte_c320_lab","bootstrap_code":"synthetic_1234567890123456789012345678","password":"synthetic"}"#))
+            .unwrap()).await.unwrap();
+        assert_eq!(forged.status(),StatusCode::FORBIDDEN);
+        let bad=router().oneshot(Request::builder()
+            .method("POST").uri("/lab/c320-owner-enroll")
+            .header("Host","127.0.0.1:3002")
+            .header("Origin","http://127.0.0.1:3002")
+            .header("X-IPAT-Demo-Only","1")
+            .header("Content-Type","application/json")
+            .body(Body::from(r#"{"device_profile":"other_olt","bootstrap_code":"synthetic_1234567890123456789012345678","password":"synthetic"}"#))
+            .unwrap()).await.unwrap();
+        assert_eq!(bad.status(),StatusCode::BAD_REQUEST);
+        let read=router().oneshot(Request::builder()
+            .uri("/lab/c320-owner-connection")
+            .header("Host","127.0.0.1:3002")
+            .body(Body::empty()).unwrap()).await.unwrap();
+        assert_eq!(read.status(),StatusCode::OK);
+        let body=axum::body::to_bytes(read.into_body(),2048).await.unwrap();
+        let value:Value=serde_json::from_slice(&body).unwrap();
+        assert_eq!(value["production_adopted"],false);
+        assert_eq!(value["physical_writes_enabled"],false);
+    }
+    #[tokio::test]
     async fn status_route_rejects_external_host_and_is_not_device_health() {
         let unauthorized = router()
             .oneshot(
