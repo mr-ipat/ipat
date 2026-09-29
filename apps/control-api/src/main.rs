@@ -443,23 +443,35 @@ mod tests {
     async fn actual_manual_c320_onu_snapshot_is_private_sanitized_non_live() {
         let path = "/lab/c320-owner-manual-onu-snapshot";
         assert_eq!(get_path(app(), path).await.status(), StatusCode::NOT_FOUND);
-        let response=get_path(app_with_lab(true),path).await;
-        assert_eq!(response.status(),StatusCode::OK);
-        assert_eq!(response.headers()[header::CACHE_CONTROL],"no-store");
-        let body=axum::body::to_bytes(response.into_body(),8192).await.unwrap();
-        let evidence:serde_json::Value=serde_json::from_slice(&body).unwrap();
-        assert_eq!(evidence["source"],"OWNER_ATTESTED_ACTUAL_MANUAL_TELNET323_CLI");
-        assert_eq!(evidence["registered_onu_status_rows"],72);
-        assert_eq!(evidence["registered_onu_config_declarations"],72);
-        assert_eq!(evidence["unconfigured_onus_reported"],0);
-        assert_eq!(evidence["onu_online"],0);
-        assert_eq!(evidence["snapshot_is_live"],false);
-        assert_eq!(evidence["real_olt_adopted"],false);
+        let response = get_path(app_with_lab(true), path).await;
+        assert_eq!(response.status(), StatusCode::OK);
+        assert_eq!(response.headers()[header::CACHE_CONTROL], "no-store");
+        let body = axum::body::to_bytes(response.into_body(), 8192)
+            .await
+            .unwrap();
+        let evidence: serde_json::Value = serde_json::from_slice(&body).unwrap();
+        assert_eq!(
+            evidence["source"],
+            "OWNER_ATTESTED_ACTUAL_MANUAL_TELNET323_CLI"
+        );
+        assert_eq!(evidence["registered_onu_status_rows"], 72);
+        assert_eq!(evidence["registered_onu_config_declarations"], 72);
+        assert_eq!(evidence["unconfigured_onus_reported"], 0);
+        assert_eq!(evidence["onu_online"], 0);
+        assert_eq!(evidence["snapshot_is_live"], false);
+        assert_eq!(evidence["real_olt_adopted"], false);
         assert!(!String::from_utf8_lossy(&body).contains("ZTEGC969"));
-        let blocked=app_with_lab(true).oneshot(
-            Request::builder().method("POST").uri(path)
-                .body(Body::empty()).unwrap()).await.unwrap();
-        assert_eq!(blocked.status(),StatusCode::METHOD_NOT_ALLOWED);
+        let blocked = app_with_lab(true)
+            .oneshot(
+                Request::builder()
+                    .method("POST")
+                    .uri(path)
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(blocked.status(), StatusCode::METHOD_NOT_ALLOWED);
     }
 
     #[tokio::test]
