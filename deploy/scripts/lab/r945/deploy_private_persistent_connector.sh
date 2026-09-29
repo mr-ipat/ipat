@@ -17,7 +17,7 @@ previous=/home/openai/.cache/ipat/r944-release/control-api
 expected_source=12f2298035ce6212918a99ffe1da366e60466fec
 expected_old_unit=7d1bb967b59e61494f1fc44f437508106302f4b8f6aaaafaf6b631d1478156bb
 expected_old_binary=94e3544e62ce3b0405b96f0367bee6e8bd2a0fdd5b41e89b9b68fa91e7fe9a49
-expected_new_binary=REPLACE_VERIFIED_BUILD_HASH
+expected_new_binary=7d8861a889a60f6f332d18dac74f0b76b1032ddbe267bea806bca4b08ef9729c
 
 [[ "$(git -C "$source_dir" rev-parse HEAD)" == "$expected_source" ]] || exit 4
 # cargo fmt may change the release source tree (not functional semantics),
