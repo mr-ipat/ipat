@@ -361,6 +361,45 @@ async fn enroll_c320(
     ))
 }
 
+async fn save_draft(
+    headers: HeaderMap,
+    Json(input): Json<Value>,
+) -> Result<(HeaderMap, Json<Value>), (StatusCode, HeaderMap, Json<Value>)> {
+    if !strict_private(&headers, true) {
+        return Err(denied(StatusCode::FORBIDDEN, "PRIVATE_PANEL_ONLY"));
+    }
+    let name = input.get("device_name").and_then(Value::as_str).unwrap_or("");
+    if name.trim().is_empty() || name.len() > 64
+       || name.chars().any(|c| c.is_control())
+       || input.get("device_profile").and_then(Value::as_str) != Some("zte_c320_lab")
+       || input.get("device_type").and_then(Value::as_str) != Some("olt")
+       || input.get("management_ip").and_then(Value::as_str) != Some("10.10.13.233")
+       || input.get("ssh_port").and_then(Value::as_u64) != Some(321)
+       || input.get("username").and_then(Value::as_str) != Some("zte") {
+        return Err(denied(StatusCode::BAD_REQUEST, "UNSUPPORTED_DEVICE_PROFILE"));
+    }
+    let request = format!("DRAFT {}\\n", json!({"device_profile":"zte_c320_lab","device_name":name.trim()}));
+    let query = async {
+        let mut stream = UnixStream::connect(SOCKET).await?;
+        stream.write_all(request.as_bytes()).await?;
+        let mut raw = Vec::new();
+        stream.take(512).read_to_end(&mut raw).await?;
+        Ok::<Vec<u8>, std::io::Error>(raw)
+    };
+    let Ok(Ok(data)) = tokio::time::timeout(Duration::from_secs(4), query).await else {
+        return Err(denied(StatusCode::SERVICE_UNAVAILABLE, "DRAFT_STORAGE_UNAVAILABLE"));
+    };
+    let Ok(result) = serde_json::from_slice::<Value>(&data) else {
+        return Err(denied(StatusCode::BAD_GATEWAY, "INVALID_DRAFT_RESPONSE"));
+    };
+    if result.get("draft_saved").and_then(Value::as_bool) != Some(true) {
+        return Err(denied(StatusCode::CONFLICT, "DRAFT_REJECTED"));
+    }
+    Ok((super::private_lab_headers("application/json; charset=utf-8"),
+        Json(json!({"saved":true,"target":"DEV-01",
+           "adoption_state":"DRAFT_SAVED_AWAITING_AUTH","physical_writes_enabled":false}))))
+}
+
 async fn connection_status(
     headers: HeaderMap,
 ) -> Result<(HeaderMap, Json<Value>), (StatusCode, HeaderMap, Json<Value>)> {
