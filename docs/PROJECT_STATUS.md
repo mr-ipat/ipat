@@ -4852,3 +4852,112 @@ physical inventory capture; do NOT send known default credentials
 across cleartext Telnet to an unverified customer-serving device.
 No real OLT changes, no Kubernetes/firewall/network policy changes,
 no actual hardware adoption as a result of this investigation.
+
+## R9.30 NEW actual physical authenticated first LAB reads, owner-corrected site scope
+
+Owner confirmed THIS ZTE C320 TEST LAB has NO customer attachment,
+but all adoption/config operations MUST still be performed as LIVE.
+For one owner-authorized bounded interactive session, actual
+PRIVATE TCP323 Telnet owner-supplied temporary login SUCCESSFULLY
+reached physical ZXAN C320 CLI. REAL `show card` => THREE
+INSERVICE cards (GTGHK slot1, PRAM slot3, SMXA slot4). REAL
+`show version-running` => FIVE rows, 1/1/1 GTXK MVR+BT and 1/1/4
+SMXA MVR+BT+FW; GTGHK-vs-GTXK same-slot type association
+UNRESOLVED and PRAM running MVR UNREPORTED. REAL `show ssh`
+=> enabled ver2.0 local CHAP, key-init wording `not initialized`
+though a real network RSA key packet already works. One unsupported
+READ `show alarm active` was rejected; NO alarm conclusion.
+Telnet session closed; ONE new owner-protected PRIVATE SSH host
+key network-only TOFU obtained in 0700/0600 owner VPS directory;
+fingerprint matched earlier independent Mac/VPS NETWORK OBSERVATIONS
+(but NOT actual console/OOB chassis proof). Actual bounded
+strict-known_hosts group14-SHA256/aes128-CBC/ssh-rsa interactive
+SSH TEST login with temporary owner-supplied credential SUCCEEDED,
+actual read `show card` and `show version-running` corroborated
+ALL SAME OBSERVED THREE cards + FIVE version rows. SSH session
+explicitly exited. Actual OLT configuration/SSH server/user/ONT/
+firmware writes ZERO; login password was sent for owner-approved
+TEMPORARY LAB sessions only and NEVER saved in source, scripts,
+owner captures or public CI. Credential remains weak, rotate once
+restricted account + secure backup/recovery are ready.
+
+Created owner FileVault-private 0700 folder
+`~/.local/share/ipat/c320-real-read-20260929` with 0600
+MANUALLY TRANSCRIBED bounded first cards/versions/SSH status and
+explicit NOT byte-exact provenance JSON, no passwords/PII; copied
+these safely via authenticated Mac-VPS SSH to VPS separate nonroot
+0700 folder `~/.local/share/ipat/r930-real-read-20260929`.
+ACTUALLY compiled protected offline Rust `olt-evidence` and ran
+`--cards` against this REAL owner-supplied observed first-read
+snapshot on authorized VPS: normalization PASS 3 cards / all
+INSERVICE, separate private 0600 normalized output; independent
+chassis proof, production worker and `device_adopted` FALSE.
+Historical R9.24/R9.28 no-credential observations intentionally
+remain immutable; R9.30 is a NEW subsequent lab authentication
+event with explicit user-attested scope. Implementing narrow Rust
+partial firmware correlation without falsely equating board alias or
+fabricating PRAM running version, and improving private LAB real
+first-read UI while keeping all eight real device actions 403.
+Production tenant onboarding and immutable reviewed worker still
+OPEN. Full R9.30 source/test/preview deployment tracked separately.
+
+R9.30 first independent actual owner VPS full-workspace Rust attempt FAILED on 29 Sep: newly introduced first-real-vendor-shape tests exposed strict historical version timestamp parser requiring 2-digit HH; ACTUAL C320 returns 1-digit hour 0:53:14 and 9:53:13. Added narrow bounded vendor clock parser accepting only one/two-digit 0-23 hour and strict 2-digit 0-59 minutes/seconds, with negative invalid clock tests. These are software parser fixes, NO physical device configuration or command changes. Re-run pinned full locked offline Rust tests and record final results; do not claim first attempt passed.
+
+R9.30 owner-VPS first pinned Rust full-workspace run initially exposed
+ACTUAL-vendor-shaped 1-digit firmware BuildTime hours as a new parser
+failure; narrowly patched clock validation (0-23 h, 0-59 min/sec)
+with negative malformed-clock tests. Independently re-ran owner VPS
+pinned fmt, olt-core unit+fixtures including first-read reconciliation
+and full control-api tests plus locked offline binary builds PASS.
+Private Rust `control-api` binary SHA256
+`e507efdd3181dd79a6a24d1cb7e0b99c0ede980283879ff984a18fff5b9f17d4`.
+Checksum-pinned NONROOT real owner-VPS private localhost :3002
+read-only dashboard R9.30 upgrade ACTUALLY deployed with rollback;
+actual postdeploy HTTP smoke PASS: LAB authenticated SSH+Telnet
+sessions and three cards/five firmware records visible as historical
+manual observation, ALL eight automated OLT POST routes remain 403,
+no device worker and `device_adopted=false`, original :3000 HTTP200.
+Current R9.30 legacy RSA pin is OWNER-OBSERVED NETWORK ONLY (two-path
+same fingerprint), NOT physical-console cryptographic attestation.
+Signed production tenant authentication/independent reviewer, scoped
+read-only worker, trusted POP isolation, verified restricted account,
+secure backup+tested rollback and password rotation remain OPEN.
+
+Added strictly separate `olt-evidence --first-observation-partial-versions`
+offline mode for owner-only actual partial first C320 firmware captures,
+while preserving failure of default strict complete-firmware parse.
+Its real owner VPS source/test and live actual private capture
+normalization must be verified separately before declaring COMPLETE.
+
+R9.30 FINAL latest separate owner VPS strict partial CLI source
+`c5571907154296e0cb418b4474f8f703e67a6da3`, SHA-verified
+private delta and binary
+`17f14ecb15523125c7199a267b82e26ed93e877935a2d93aef3ed28bf8640333`:
+ACTUALLY normalized nonroot owner-only private first real manual
+captures using `olt-evidence --first-observation-partial-versions`.
+Output: 3 physical slots, 5 firmware rows, EXACT SMXA MVR slot1/1/4,
+GTGH/GTGHK card vs GTXK firmware file type at same slot1/1/1
+UNRESOLVED, PRAM slot1/1/3 running MVR UNREPORTED.
+Actual normalized output ONLY outside Git in 0700 owner VPS folder,
+0600 output; full firmware reconciliation FALSE, independent
+physical chassis proof FALSE and ADOPTED FALSE. Separate current
+owner Ubuntu 26 nonroot full pinned Rust1.98.1 fmt and
+`cargo test --workspace --locked --offline -q -j1`: SUCCESS
+**220/220 passed, zero failed, 40 test groups**. Owner Mac
+combined Python suite **76/76 PASS** plus JS syntax and whitespace.
+Previous initial Rust first-run failure on real one-digit clock is
+recorded above; corrected by narrowly validating vendor H:MM:SS.
+
+ACTUAL independent live localhost :3002 R9.30 HTTP smoke RERUN PASS:
+latest read metadata from proven manual LAB Telnet+SSH sessions,
+manual private card/partial firmware evidence accepted separately,
+all eight automatic physical command endpoints 403, worker FALSE,
+full production device_adopted FALSE, original :3000 HTTP200.
+No active SSH/Telnet privileged device session left open. Current
+private R9.30 app source release 53fd098 and separate offline partial
+normalizer source release c557190 are DISTINCT, reviewed separately;
+no production 3000/backend/OLT config changes in this milestone.
+Source PR and public sanitized synthetic hosted CI need final
+publication/independent verification after this docs checkpoint.
+
+R9.30 independent PUBLIC SANITIZED synthetic GitHub-hosted CI COMPLETED SUCCESS 2/2 for exact redacted public source SHA d066fc543c5e91aaa7e6c85c8bb87ec62d5f14c5, Actions run 36518704459: both synthetic-static/security and rust-locked jobs succeeded. No real IP/fingerprint/privileged password/raw CLI was published. This independent hosted synthetic run corroborates static security, JavaScript syntax and locked Rust tests, NOT actual C320 login (which was separately genuinely observed on owner VPS), firmware certification or production tenant readiness. Latest PRIVATE stacked protected draft PR #129 includes the exact real owner-authenticated first-read evidence source and guarded offline normalizer, private LB :3002 upgrade and site/runbook corrections. Old privileged laboratory test password remains TEMPORARY and should be rotated after restricted account+backup verification. No OLT config writes in R9.30.

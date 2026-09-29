@@ -1,8 +1,14 @@
 # SOP IPAT — Adopsi OLT ZTE C320 melalui jaringan manajemen yang sudah terhubung
 
-Status: prosedur siap ditinjau; pelaksanaan pertama pada DEV-01 masih
-**TERHALANG IDENTITAS PERANGKAT DAN AKUN TERBATAS**. Jangan menganggap
-contoh skrip, credential bawaan atau hasil banner sebagai adopsi.
+Status R9.30 (29 September 2026): pemilik menyatakan DEV-01 adalah
+LAB tanpa pelanggan, namun seluruh perubahan adopsi diperlakukan
+setara perangkat LIVE. Login nyata sekali melalui Telnet privat dan
+SSH terenkripsi SUDAH BERHASIL, dan 3 kartu/5 baris versi diamati
+secara manual; parser privat telah menerima snapshot fisik tersebut.
+**ADOPSI SAAS OTOMATIS MASIH TERTAHAN** karena akun khusus/host trust
+independen, backup+uji pemulihan, audit dan production worker belum
+selesai. Jangan mengklaim ada customer atau perangkat belum pernah
+berhasil login. Lihat `docs/R930_C320_AUTHENTICATED_FIRST_REAL_LAB_READ.md`.
 
 **Jalur yang diprioritaskan:** VPS IPAT → IP privat OLT yang sudah
 terjangkau → SSH dengan host-key RSA yang dipin secara independen.
@@ -13,7 +19,9 @@ pengganti universal CLI atau SNMPv3 ZTE.
 
 ## 1. Persyaratan pemilik lokasi dan keamanan sebelum LOGIN
 
-- Tentukan tenant/POP dan pemilik change; perangkat distribusi melayani
+- Tentukan tenant/POP dan pemilik change. DEV-01 sekarang DIKONFIRMASI
+  pemilik tidak tersambung pelanggan namun prosedur perubahan harus
+  memperlakukannya sama dengan OLT produksi. Untuk OLT lain, audit
   pelanggan nyata. Tentukan jendela baca-saja, pemantauan aktif,
   penanggung jawab teknis lokasi, dan mekanisme konsol pemulihan.
 - Ekspor **PUBLIC HOST RSA KEY** yang benar-benar berasal dari konsol
@@ -37,7 +45,7 @@ pengganti universal CLI atau SNMPv3 ZTE.
   tenant+POP, persetujuan pemilik lokasi dan reviewer independen,
   lease/lock DEV-01, audit append-only, serta rencana rollback.
 
-## 2. Satu pembacaan fisik pertama (hanya setelah semua bukti nyata)
+## 2. Pembacaan terotomasi produksi setelah semua bukti nyata
 
 Gunakan packet owner-only `r79/c320-ssh-readonly.py` dalam mode
 `--check-plan` sebelum `--first-read`. Seluruh bahan (plan, known
@@ -112,36 +120,23 @@ and noninteractive SSH `exec` support remain unverified; never add
 to bypass failure. Confirm the smallest safe read-only role and
 exact command support through approved console/inventory first.
 
-## Current first-connection physical diagnostic blocker
+## Historical R9.21/R9.22 SSH client negotiation: resolved in LAB
 
-The newest bounded credential-free noauth SSH handshake comparison
-on owner Mac and owner VPS both reached SSH2 algorithm selection but
-TIMED OUT before receiving a host key or authentication methods. Do
-not classify this as an invalid test account or automatically retry
-with passwords. Via trusted maintenance console, first inspect
-actual SSH service availability, CPU/alarm baseline, enabled legacy
-KEX/host-key algorithm support and the isolated management ACL/MTU
-path. Compare the real local console host RSA public key with the
-historically observed network key OUT OF BAND. No blind `telnet`,
-`StrictHostKeyChecking=no`, global weak SSH client settings or OLT
-SSH daemon restart should be used on active distribution merely to
-bypass this diagnostic.
+Historical DEFAULT SSH KEX group16-SHA512 timed out. R9.22 proved
+process-scoped group14-SHA256 with exact RSA/AES128-CBC. R9.30 then
+ACTUALLY authenticated via protected private SSH and executed safe
+`show card`/`show version-running` matching earlier actual Telnet
+readouts, with no OLT SSH server configuration changes. Do not keep
+repeating old noauth KEX scans or call first hardware read NOT RUN.
 
-## Preauthentication SSH KEX timeout: targeted `show ssh` console check
-
-Historical ZXA10 C320 vendor CLI guidance includes read-only
-`show ssh` for the actual server enable flag, SSH version and host
-key initialization status. The manual's *example* includes a not
-initialized server key; this is NOT proof of DEV-01's settings.
-Because both owner Mac and VPS KEX sessions timed out before obtaining
-a server host key, review actual `show ssh` through a TRUSTED site
-console (only if the exact firmware and current CLI role support it)
-BEFORE attempting another password login or changing weak algorithms.
-Use `deploy/scripts/lab/r921/inspect_show_ssh.py` locally on only the
-owner-private bounded capture. See `docs/R921_C320_SSH_PREAUTH_SITE_DIAGNOSTIC.md`.
-Do NOT initialize keys, alter management ACL/SSH protocol, or reboot
-the live subscriber-serving OLT without an independently reviewed
-maintenance window and reliable local recovery.
+R9.30 actual `show ssh` shows enabled SSH2 local CHAP and reported
+`SSH init server key : not initialized`, YET the physical endpoint
+presented a working RSA host key and accepted encrypted SSH login.
+This firmware status is AMBIGUOUS, NOT proof keys need regeneration.
+Never run device SSH server key generation or change firmware
+based solely on this field. Independent physical-console host key
+provenance remains a separate COMMERCIAL production gate, even if
+owner-accepted first-read LAB endpoint returned matching data.
 
 ## R9.22 confirmed client-side compatibility resolution (2026-09-29)
 
@@ -161,3 +156,17 @@ A successful no-credential network handshake DOES NOT supply any of
 these trust/authorization requirements; even the original shared
 privileged lab password should not be sent before independent OOB
 RSA verification on a customer-serving distribution device.
+
+## R9.30 operational LAB exception is not unattended adoption
+
+User-authorized temporary factory-like password was used in one
+bounded INTERACTIVE Telnet test and one separate pinned-network-RSA
+SSH session, both now closed. It is not persisted in Git, evidence
+or automatic worker. For future unattended adoption, create and
+verify a firmware-supported least-privileged user, rotate the weak
+test password, store a new secret in external vault, prove an
+owner-approved secure backup/restore, tenant MFA/reviewer and true
+scoped signed production worker. Until then, eight dashboard device
+action POST routes are STILL 403 and no production writes allowed.
+Current source `r79` is key-only and is NOT a valid auto-login client
+for the observed temporary password-only SSH account.
