@@ -4900,3 +4900,5 @@ fabricating PRAM running version, and improving private LAB real
 first-read UI while keeping all eight real device actions 403.
 Production tenant onboarding and immutable reviewed worker still
 OPEN. Full R9.30 source/test/preview deployment tracked separately.
+
+R9.30 first independent actual owner VPS full-workspace Rust attempt FAILED on 29 Sep: newly introduced first-real-vendor-shape tests exposed strict historical version timestamp parser requiring 2-digit HH; ACTUAL C320 returns 1-digit hour 0:53:14 and 9:53:13. Added narrow bounded vendor clock parser accepting only one/two-digit 0-23 hour and strict 2-digit 0-59 minutes/seconds, with negative invalid clock tests. These are software parser fixes, NO physical device configuration or command changes. Re-run pinned full locked offline Rust tests and record final results; do not claim first attempt passed.

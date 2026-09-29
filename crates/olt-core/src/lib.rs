@@ -104,6 +104,28 @@ pub fn parse_cards(input: &str) -> Result<Vec<Card>, EvidenceError> {
     }
     Ok(out)
 }
+// Some ACTUAL C320 builds print one-digit hours (e.g. 0:53:14) in
+// show version-running. Validate 0..23 / 00..59 / 00..59 exactly.
+fn valid_vendor_clock(text: &str) -> bool {
+    let parts: Vec<&str> = text.split(':').collect();
+    if parts.len() != 3
+        || !(1..=2).contains(&parts[0].len())
+        || parts[1].len() != 2
+        || parts[2].len() != 2
+        || parts.iter().any(|s| !s.bytes().all(|b| b.is_ascii_digit()))
+    {
+        return false;
+    }
+    matches!(
+        (
+            parts[0].parse::<u8>(),
+            parts[1].parse::<u8>(),
+            parts[2].parse::<u8>()
+        ),
+        (Ok(0..=23), Ok(0..=59), Ok(0..=59))
+    )
+}
+
 pub fn parse_running_versions(input: &str) -> Result<Vec<RunningVersion>, EvidenceError> {
     safe(input)?;
     let mut out: Vec<RunningVersion> = Vec::new();
@@ -129,8 +151,7 @@ pub fn parse_running_versions(input: &str) -> Result<Vec<RunningVersion>, Eviden
             || !ident(c[3])
             || !matches!(c[2], "MVR" | "FW" | "BT")
             || !c[4].bytes().all(|b| b.is_ascii_digit() || b == b'-')
-            || c[5].len() != 8
-            || !c[5].bytes().all(|b| b.is_ascii_digit() || b == b':')
+            || !valid_vendor_clock(c[5])
             || c[6].parse::<u64>().ok().filter(|n| *n > 0).is_none()
         {
             return Err(EvidenceError::Layout);

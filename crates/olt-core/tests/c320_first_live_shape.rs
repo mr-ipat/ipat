@@ -39,3 +39,12 @@ fn real_shaped_partial_read_fails_closed_on_nonexistent_slot_or_conflicting_type
         Err(EvidenceError::Layout)
     );
 }
+
+#[test]
+fn actual_vendor_single_digit_hour_is_supported_but_invalid_clock_rejected() {
+    assert!(parse_running_versions(VERS).is_ok());
+    for bad in ["44:53:14", "0:99:14", "0:53:99", "0:5:14", "0:53:x4"] {
+        let invalid = VERS.replace("0:53:14", bad);
+        assert_eq!(parse_running_versions(&invalid), Err(EvidenceError::Layout));
+    }
+}
