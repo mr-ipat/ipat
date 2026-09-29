@@ -12,6 +12,7 @@
   <script src="/lab/c320-first-real-inventory.js" defer></script>
   <script src="/lab/c320-operator-console.js" defer></script>
   <script src="/lab/c320-connection-setup.js" defer></script>
+  <script src="/lab/device-status-indicators.js" defer></script>
 </head>
 <body>
 <a href="#main" class="skip">Ke konten</a>
@@ -43,7 +44,8 @@
       </div>
       <section class="panel ipat-ops-console" id="ipat-c320-console" aria-labelledby="ipat-c320-console-heading">
   <div class="section-top"><div><span class="eyebrow">IPAT OLT OPERATIONS · LAB PRIVAT R9.44</span>
-  <h2 id="ipat-c320-console-heading">ZTE C320 · Konsol Operasional</h2></div><span class="pill amber-pill">PERUBAHAN FISIK TERKUNCI</span></div>
+  <h2 id="ipat-c320-console-heading">ZTE C320 · Konsol Operasional</h2>
+    <span class="ipat-device-signal ipat-device-signal--unknown" data-ipat-device-status="DEV-01" role="status" aria-live="polite">● Unknown</span></div><span class="pill amber-pill">PERUBAHAN FISIK TERKUNCI</span></div>
   <section class="ipat-c320-enrollment" aria-label="Koneksi perangkat pertama">
     <h3>Koneksi perangkat · ZTE C320</h3>
     <p class="ipat-ops-disclosure">Apabila server dapat menjangkau jaringan manajemen, gunakan SSH langsung. Tunnel hanya diperlukan untuk jaringan privat yang belum memiliki rute ke server. Kredensial dimasukkan sekali di panel privat dan disimpan terenkripsi di VPS; tidak ada lagi agen Terminal 15 menit.</p>
@@ -64,6 +66,7 @@
     </form>
     <p id="ipat-c320-enroll-result" role="status" aria-live="polite">Koneksi fisik hanya dinyatakan berhasil setelah perintah baca identitas/kartu dijawab oleh OLT. Penambahan konfigurasi dan firmware tetap memerlukan izin terpisah.</p>
   </section>
+  <p id="ipat-c320-signal-detail" class="ipat-ops-disclosure">Menunggu pemeriksaan koneksi C320...</p>
   <p id="ipat-c320-connectivity" role="status" aria-live="polite">Mengecek sesi agen OLT...</p>
   <div class="ipat-ops-tabs" aria-label="Kategori fungsi OLT">
     <span class="ipat-ops-tab active">Ringkasan & ONU</span>
