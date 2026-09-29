@@ -5238,3 +5238,15 @@ account with negative config-command test, actual independent or
 owner-approved lab device identity and POP gate, vendor-native
 recovery procedure, real tenant MFA+reviewer and bounded production
 reader with immutable audit. Do not claim the latter are complete.
+
+## R9.35 — C320 fail-closed adoption gate display (Mac source, not deployed)
+
+Started 29 September 2026 from R9.34 verified real scripted one-time SSH read and verified owner-executed off-VPS encrypted Restic reference restore. No new device login or on-device writes in this R9.35 source milestone.
+
+Changed `apps/control-api/src/c320_actions_lab.rs`: add deterministic historical private LAB `adoption_gate_report` with 10 explicit evidence gates and synthetic Rust regression cases for 2/10 current verified, all-synthetic-true handling, and missing/non-boolean denial. The report is not an approval authority and does not change HTTP403 action routes, enable a production worker or mark the device adopted. Add explicit `firmware_inventory_fully_reconciled:false` as the GTXK/GTGHK and PRAM evidence remain unresolved.
+
+New `docs/R935_C320_ADOPTION_GATES.md`: ordered hardware-as-live acceptance procedure for identity, native restore, restricted account/negative tests, firmware reconciliation, genuine MFA/reviewer and bounded worker. PRIVATE source only: no raw physical CLI or secrets in commit.
+
+Actual Mac `python3 -m unittest discover -s deploy/scripts/lab/r934 -p 'test_*.py' -v` PASS 5/5 and `git diff --check` PASS. New Rust gate-report tests have NOT RUN because Mac shell has no `cargo`; pinned Rust offline VPS build/test and deployment still required. No new physical test, no public CI, no source deployment claim. R9.34 private :3002 remains last verified deployed state.
+
+Next: run pinned Rust formatting+full tests in authorized nonroot offline environment with sanitized-only source; deploy private preview with checksum-pinned rollback after tests; independently prove chassis/POP and vendor-native device recovery before creating restricted account; then bounded authenticated worker and actual tenant approval workflow. Current real SaaS device_adopted FALSE.

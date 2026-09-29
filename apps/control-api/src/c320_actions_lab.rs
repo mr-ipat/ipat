@@ -16,6 +16,31 @@ fn high_impact(label: &'static str) -> Value {
        "enabled":false,"requires":"SEPARATE_FIRMWARE_SPECIFIC_TEST_BACKUP_RESTORE_MFA_MAKER_CHECKER_MAINTENANCE",
        "can_run_on_live_device":false,"writes":true})
 }
+/// Deterministic fail-closed historical gate display, not an authorization endpoint.
+/// Production adoption requires separately signed tenant-scoped evidence.
+fn lab_adoption_gate_report(evidence: &Value) -> Value {
+    const GATES: [(&str, &str); 10] = [
+        ("SCRIPTED_LAB_READ", "actual_ephemeral_scripted_owner_lab_ssh_show_card_verified"),
+        ("ENCRYPTED_OFF_HOST_REFERENCE_RESTORE", "verified_mac_restic_isolated_byte_identical_restore"),
+        ("DEVICE_NATIVE_RECOVERY", "vendor_native_startup_config_restore_tested"),
+        ("INDEPENDENT_CHASSIS_IDENTITY", "independent_oob_olt_host_key_verified"),
+        ("LIMITED_DEVICE_SERVICE_ACCOUNT", "dedicated_device_readonly_account_verified"),
+        ("ISOLATED_MANAGEMENT_LAST_HOP", "management_last_hop_isolated"),
+        ("FIRMWARE_RECONCILED", "firmware_inventory_fully_reconciled"),
+        ("TENANT_MFA", "genuine_tenant_admin_mfa_verified"),
+        ("INDEPENDENT_REVIEWER", "independent_reviewer_approved"),
+        ("BOUNDED_AUDITED_PRODUCTION_WORKER", "worker_enabled"),
+    ];
+    let gates: Vec<Value> = GATES.iter().map(|(name, key)| {
+        let verified = evidence.get(*key).and_then(Value::as_bool) == Some(true);
+        json!({"gate":name,"evidence_field":key,"verified":verified})
+    }).collect();
+    let verified = gates.iter().filter(|g| g["verified"] == true).count();
+    json!({"mode":"HISTORICAL_LAB_DISPLAY_NOT_AUTHORIZATION",
+        "verified_gate_count":verified,"required_gate_count":GATES.len(),
+        "all_gates_verified":verified == GATES.len(),"gates":gates})
+}
+
 fn readiness() -> Value {
     let mut catalog = json!({
       "target":"DEV-01",
@@ -46,6 +71,7 @@ fn readiness() -> Value {
       "dedicated_device_readonly_account_verified":false,
       "management_last_hop_isolated":false,
       "model_and_firmware_read_from_real_hardware":true,
+      "firmware_inventory_fully_reconciled":false,
       "live_distribution_baseline_approved":false,
       "genuine_tenant_admin_mfa_verified":false,
       "independent_reviewer_approved":false,
@@ -108,6 +134,8 @@ fn readiness() -> Value {
         .as_object_mut()
         .expect("known static catalog")
         .extend(lab.as_object().expect("known static evidence").clone());
+    let report = lab_adoption_gate_report(&catalog);
+    catalog["adoption_gate_report"] = report;
     catalog
 }
 /// Historical, SANITIZED source-backed first physical LAB C320 inventory.
@@ -214,6 +242,34 @@ mod tests {
         assert_eq!(cards[0]["mvr_card_alias_verified"], false);
         assert_eq!(cards[1]["reported_mvr_version"], Value::Null);
         assert_eq!(cards[2]["mvr_card_alias_verified"], true);
+    }
+
+    #[test]
+    fn actual_gate_matrix_is_closed_and_not_an_approval_token() {
+        let r = readiness();
+        let report = &r["adoption_gate_report"];
+        assert_eq!(report["mode"], "HISTORICAL_LAB_DISPLAY_NOT_AUTHORIZATION");
+        assert_eq!(report["required_gate_count"], 10);
+        assert_eq!(report["verified_gate_count"], 2);
+        assert_eq!(report["all_gates_verified"], false);
+        assert_eq!(r["device_adopted"], false);
+        assert_eq!(r["worker_enabled"], false);
+    }
+
+    #[test]
+    fn missing_and_non_boolean_gate_inputs_fail_closed() {
+        let r = readiness();
+        let mut synthetic = r.clone();
+        for item in r["adoption_gate_report"]["gates"].as_array().unwrap() {
+            let field = item["evidence_field"].as_str().unwrap();
+            synthetic[field] = json!(true);
+        }
+        assert_eq!(lab_adoption_gate_report(&synthetic)["all_gates_verified"], true);
+        synthetic["worker_enabled"] = json!("true");
+        assert_eq!(lab_adoption_gate_report(&synthetic)["all_gates_verified"], false);
+        synthetic.as_object_mut().unwrap().remove("worker_enabled");
+        assert_eq!(lab_adoption_gate_report(&synthetic)["all_gates_verified"], false);
+        assert_eq!(r["device_adopted"], false);
     }
 
     #[test]
