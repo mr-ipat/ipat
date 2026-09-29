@@ -234,8 +234,9 @@ async fn agent_status(
         let left=v.get("seconds_left")?.as_u64()?;
         let quota=v.get("requests_left")?.as_u64()?;
         let ready=v.get("agent_ready")?.as_bool()?;
+        let busy=v.get("read_in_progress")?.as_bool()?;
         if left>900||quota>5||ready!=(left>0&&quota>0) {return None;}
-        Some(json!({"agent_ready":ready,"seconds_left":left,"requests_left":quota,
+        Some(json!({"agent_ready":ready,"read_in_progress":busy,"seconds_left":left,"requests_left":quota,
           "actual_olt_connectivity_verified":false,"device_adopted":false,"physical_writes_enabled":false}))
     }).unwrap_or(empty);
     Ok((

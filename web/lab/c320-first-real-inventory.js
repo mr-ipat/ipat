@@ -194,7 +194,9 @@
       const ready=data.agent_ready===true&&Number.isInteger(data.seconds_left)
         &&data.seconds_left>0&&Number.isInteger(data.requests_left)
         &&data.requests_left>0;
-      if(!ready){
+      if(ready && data.read_in_progress===true){
+        status.textContent='AGEN SIBUK menjalankan pembacaan fisik. Tunggu hasil sebelum mengklik lagi.';
+      } else if(!ready){
         status.textContent='AGEN OLT TIDAK AKTIF / SESI BERAKHIR. Jalankan perintah aktivasi agen dari Terminal Mac, kemudian kembali ke halaman privat ini. Tombol dinonaktifkan.';
       } else {
         const minutes=Math.floor(data.seconds_left/60);
@@ -203,7 +205,7 @@
           +data.requests_left+' pembacaan tersisa. Agen aktif TIDAK membuktikan OLT online—klik satu tombol untuk menguji perangkat fisik.';
       }
       for(const button of actions){
-        if(!button.dataset.requestPending)button.disabled=!ready;
+        if(!button.dataset.requestPending)button.disabled=!ready||data.read_in_progress===true;
       }
     }catch(e){
       status.textContent='STATUS AGEN TIDAK DAPAT DIVERIFIKASI: '+e.message

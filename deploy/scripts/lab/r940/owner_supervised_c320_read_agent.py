@@ -11,6 +11,7 @@ import os
 import socket
 import socketserver
 import stat
+import threading
 import struct
 import sys
 import time
@@ -123,6 +124,8 @@ def main():
     started=time.monotonic()
     last=0.0
     count=0
+    guard=threading.Lock()
+    physical_read=threading.Lock()
     class Handler(socketserver.BaseRequestHandler):
         def handle(self):
             nonlocal last,count
@@ -138,31 +141,52 @@ def main():
                     raise Denied('unknown request denied')
                 now=time.monotonic()
                 if request==b'STATUS\n':
-                    left=max(0,int(SESSION_SECONDS-(now-started)))
-                    payload={'mode':'OWNER_SUPERVISED_REAL_C320_READ_ONLY',
-                      'agent_ready':left>0 and count<MAX_REQUESTS,
-                      'seconds_left':left,'requests_left':MAX_REQUESTS-count,
-                      'device_adopted':False,'device_writes':0}
-                    self.request.sendall(json.dumps(payload,separators=(',',':')).encode()+b'\n')
+                    with guard:
+                        left=max(0,int(SESSION_SECONDS-(now-started)))
+                        payload={'mode':'OWNER_SUPERVISED_REAL_C320_READ_ONLY',
+                          'agent_ready':left>0 and count<MAX_REQUESTS,
+                          'read_in_progress':physical_read.locked(),
+                          'seconds_left':left,'requests_left':MAX_REQUESTS-count,
+                          'device_adopted':False,'device_writes':0}
+                    try:
+                        self.request.sendall(json.dumps(payload,separators=(',',':')).encode()+b'\n')
+                    except (BrokenPipeError, ConnectionResetError):
+                        pass # browser status poll ended; never crash the agent
                     return
-                if now-started>SESSION_SECONDS or count>=MAX_REQUESTS or now-last<10:
-                    raise Denied('session expired, quota or rate limited')
-                # Reserve BEFORE the physical connection to avoid free retries.
-                count+=1;last=now
-                payload=run_three_reads(m,password,request)
+                if not physical_read.acquire(blocking=False):
+                    raise Denied('a physical read is already in progress')
+                try:
+                    with guard:
+                        if now-started>SESSION_SECONDS or count>=MAX_REQUESTS or now-last<10:
+                            raise Denied('session expired, quota or rate limited')
+                        # Reserve BEFORE the physical connection to avoid free retries.
+                        count+=1;last=now
+                    payload=run_three_reads(m,password,request)
+                finally:
+                    physical_read.release()
                 from datetime import datetime, timezone
                 payload['read_at_utc']=datetime.now(timezone.utc).isoformat()
                 result=json.dumps(payload,separators=(',',':')).encode()
             except Exception:
                 # Never expose exception details, CLI output, secrets or serials.
                 result=b'{"error":"OWNER_READ_FAIL_CLOSED"}'
-            self.request.sendall(result+b'\n')
+            try:
+                self.request.sendall(result+b'\n')
+            except (BrokenPipeError, ConnectionResetError):
+                pass # client timeout must never abort owner interactive session
+    class ConcurrentOwnerServer(socketserver.ThreadingMixIn,socketserver.UnixStreamServer):
+        daemon_threads=True
+        block_on_close=False
+        request_queue_size=8
     try:
-        with socketserver.UnixStreamServer(str(SOCKET),Handler) as server:
+        with ConcurrentOwnerServer(str(SOCKET),Handler) as server:
             SOCKET.chmod(0o600)
             print('OWNER_PRIVATE_READ_AGENT_ACTIVE; five bounded read refreshes maximum; Ctrl-C to stop')
             server.timeout=1
-            while time.monotonic()-started<SESSION_SECONDS and count<MAX_REQUESTS:
+            while time.monotonic()-started<SESSION_SECONDS:
+                with guard:
+                    done=count>=MAX_REQUESTS and not physical_read.locked()
+                if done:break
                 server.handle_request()
     finally:
         password=''
