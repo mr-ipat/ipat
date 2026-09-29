@@ -34,3 +34,31 @@ footer{border-top:1px solid #253e50;margin-top:24px;padding:20px 0;color:#83a1b3
 .physical-gate{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #2a4050;color:#bdd3df;font-size:11px}.physical-gate .flag{flex:none}
 /* R9.16 read-only public key / disabled preview; never render private keys. */
 .key-display{display:block;max-width:100%;overflow-wrap:anywhere;white-space:pre-wrap;padding:10px 12px;border:1px solid #37536b;border-radius:6px;color:#bce2e1}
+
+
+/* R9.44 device operator console; independent from legacy demo forms. */
+.ipat-ops-console{margin-bottom:18px;border-color:#287a83;background:linear-gradient(145deg,#132d3a,#111c2c)}
+.ipat-ops-console h3{font-size:13px;margin:16px 0 7px;color:#e6f6ff}
+.ipat-ops-tabs,.ipat-ops-actionbar{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:15px 0}
+.ipat-ops-tab{display:inline-flex;padding:8px 12px;border:1px solid #405768;border-radius:7px;color:#a4b9cc;font-size:11px}
+.ipat-ops-tab.active{border-color:#43c7bf;color:#dcfff9;background:#1a4749}
+.ipat-ops-tab.locked{border-style:dashed;color:#a8aab5}
+.ipat-ops-topology{display:grid;grid-template-columns:1fr 1.15fr 1.25fr;gap:13px;margin:15px 0}
+.ipat-ops-topology>div{padding:15px;border:1px solid #35566a;border-radius:9px;background:#0d202d;min-width:0}
+.ipat-ops-topology label{display:block;font-size:10px;color:#8fafbe;margin-bottom:8px}
+.ipat-ops-topology strong{font-size:12px;color:#e1f1fc;overflow-wrap:anywhere}
+.ipat-ops-topology select{min-width:0;font-size:11px}
+.ipat-ops-disclosure{font-size:11px;color:#a9bfd0;line-height:1.65}
+.ipat-ops-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:15px 0}
+.ipat-ops-metrics article{padding:16px;background:#0e202d;border:1px solid #345063;border-radius:9px;min-width:0}
+.ipat-ops-metrics small{display:block;font-size:10px;color:#9fbbcc;margin-bottom:8px}
+.ipat-ops-metrics strong{font-size:22px;color:#e9f9fd;overflow-wrap:anywhere}
+.ipat-ops-secondary{grid-template-columns:repeat(2,minmax(0,1fr))}
+.ipat-ops-secondary strong{font-size:14px}
+.ipat-ops-actionbar button{min-height:40px}
+.ipat-ops-events{margin:6px 0;padding:0 0 0 24px;max-height:155px;overflow:auto;font-size:11px;color:#9fc3d0}
+.ipat-ops-events li{padding:4px 0;overflow-wrap:anywhere}
+#ipat-c320-connectivity{display:inline-block;padding:8px 13px;color:#f4d9ac;background:#302b25;border:1px solid #927245;border-radius:7px}
+#ipat-c320-observation-stamp{font-size:11px}
+@media(max-width:900px){.ipat-ops-topology{grid-template-columns:1fr 1fr}.ipat-ops-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:580px){.ipat-ops-topology{grid-template-columns:1fr}.ipat-ops-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.ipat-ops-actionbar button{width:100%}}
