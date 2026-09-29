@@ -200,6 +200,40 @@ fn first_real_inventory() -> Value {
     })
 }
 
+/// Owner-provided real interactive C320 CLI on 29 Sep 2026, SANITIZED.
+/// This is a dated USER-ATTESTED manual snapshot, NEVER a live discovery feed.
+fn owner_manual_onu_snapshot() -> Value {
+    json!({
+      "target":"DEV-01","source":"OWNER_ATTESTED_ACTUAL_MANUAL_TELNET323_CLI",
+      "observation_date":"2026-09-29","snapshot_is_live":false,
+      "olt_c320_authenticated_owner_session_reported":true,
+      "pon":"1/1/1","unconfigured_onus_reported":0,
+      "unconfigured_command_result":"62310_NO_RELATED_INFORMATION",
+      "registered_onu_status_rows":72,"registered_onu_config_declarations":72,
+      "onu_online":0,"onu_offline":72,
+      "state_and_configuration_count_agree":true,
+      "state_and_configuration_ids_automatically_reconciled":false,
+      "serial_numbers_disclosed":false,"onu_id_reservation_verified":false,
+      "onu_registration_ready":false,"registered_model_observed":"ZTEG-F623",
+      "ont_firmware_verified":false,"optical_evidence_verified":false,
+      "current_live_subscriber_status_proven":false,
+      "real_olt_adopted":false,"production_worker_enabled":false,
+      "warning":"MANUAL_OWNER_SNAPSHOT_NOT_FRESH_AUTOMATED_ADOPTION"
+    })
+}
+
+pub(super) async fn owner_onu_snapshot(
+    headers: HeaderMap,
+) -> Result<(HeaderMap, Json<Value>), (StatusCode, HeaderMap, Json<Value>)> {
+    if !super::device_workbench_lab::demo_csrf_read(&headers) {
+        return Err((StatusCode::FORBIDDEN,
+            super::private_lab_headers("application/json; charset=utf-8"),
+            Json(json!({"error":"PRIVATE_LOCAL_LAB_ONLY"}))));
+    }
+    Ok((super::private_lab_headers("application/json; charset=utf-8"),
+        Json(owner_manual_onu_snapshot())))
+}
+
 /// Actual C320 ONT feature states remain explicit and DENIED until verified.
 /// No real serial/CLI inputs or live scans in this LAB endpoint.
 fn ont_feature_readiness() -> Value {
@@ -299,6 +333,23 @@ mod tests {
         assert_eq!(cards[0]["mvr_card_alias_verified"], false);
         assert_eq!(cards[1]["reported_mvr_version"], Value::Null);
         assert_eq!(cards[2]["mvr_card_alias_verified"], true);
+    }
+
+    #[test]
+    fn owner_reported_actual_onu_snapshot_is_sanitized_and_never_promotes_adoption() {
+        let r=owner_manual_onu_snapshot();
+        assert_eq!(r["registered_onu_status_rows"],72);
+        assert_eq!(r["registered_onu_config_declarations"],72);
+        assert_eq!(r["onu_online"],0);
+        assert_eq!(r["onu_offline"],72);
+        assert_eq!(r["unconfigured_onus_reported"],0);
+        assert_eq!(r["snapshot_is_live"],false);
+        assert_eq!(r["state_and_configuration_ids_automatically_reconciled"],false);
+        assert_eq!(r["onu_registration_ready"],false);
+        assert_eq!(r["real_olt_adopted"],false);
+        let s=r.to_string();
+        assert!(!s.contains("ZTEGC969"));
+        assert!(!s.contains("Password"));
     }
 
     #[test]

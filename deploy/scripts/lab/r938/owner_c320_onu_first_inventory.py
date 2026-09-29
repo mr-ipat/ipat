@@ -11,7 +11,7 @@ HOST='10.10.13.233'; PORT=321; USER='zte'
 PIN=Path('/home/openai/.local/share/ipat/r930-network-only-ssh-pin/network_observed_known_hosts')
 PARENT=Path('/home/openai/.local/share/ipat')
 APPROVAL='IPAT_R938_OWNER_ONE_TIME_DISCOVERY'
-COMMANDS=('show gpon onu uncfg','show gpon onu state','show run interface gpon-olt_1/1/1')
+COMMANDS=('show gpon onu uncfg','show gpon onu state gpon-olt_1/1/1','show run interface gpon-olt_1/1/1')
 PROMPT=re.compile(rb'(?m)^[-_.A-Za-z0-9]{1,32}#\s*$')
 class Denied(Exception): pass
 
@@ -28,16 +28,24 @@ def bounded(raw,command):
     return raw
 def classify(command,raw):
     if command==COMMANDS[0]:
-        if b'No related information to show' in raw: return {'shape':'NO_UNCONFIGURED_REPORTED','rows':0}
+        if b'%Code 62310-GPONSRV : No related information to show.' in raw and b'OnuIndex' not in raw:
+            return {'shape':'NO_UNCONFIGURED_REPORTED','rows':0}
         if not all(x in raw for x in (b'OnuIndex',b'Sn',b'State')):
             raise Denied('unconfigured ONU table unrecognized')
         lines=[x for x in raw.splitlines() if x.strip().startswith(b'gpon-onu_')]
         if not lines or len(lines)>128: raise Denied('unconfigured ONU rows not bounded')
         return {'shape':'ONU_UNCONFIGURED_TABLE','rows':len(lines)}
     if command==COMMANDS[1]:
-        if not all(x in raw for x in (b'OnuIndex',b'Admin State',b'OMCC State')):
+        if not all(x in raw for x in (b'OnuIndex',b'Admin State',b'OMCC State',b'Phase State',b'Channel',b'ONU Number:')):
             raise Denied('state output unsupported on actual firmware')
-        return {'shape':'ONU_STATE_TABLE','rows':sum(1 for x in raw.splitlines() if x.strip().startswith(b'gpon-onu_'))}
+        lines=[x.strip().split() for x in raw.splitlines() if re.match(rb'^\s*1/1/1:\d+\s+',x)]
+        if not lines or len(lines)>128 or any(len(x)!=5 or x[4]!=b'1(GPON)' for x in lines):
+            raise Denied('actual ONU state rows unrecognized')
+        count=re.search(rb'ONU Number:\s*(\d+)\s*/\s*(\d+)',raw)
+        online=sum(x[3]!=b'OffLine' for x in lines)
+        if not count or int(count[1])!=online or int(count[2])!=len(lines):
+            raise Denied('actual state totals inconsistent')
+        return {'shape':'ONU_STATE_TABLE','rows':len(lines),'online':online,'offline':len(lines)-online}
     if b'interface gpon-olt_1/1/1' not in raw or b'end' not in raw:
         raise Denied('bounded PON config response incomplete')
     return {'shape':'PON_REGISTERED_REFERENCE','rows':sum(1 for x in raw.splitlines() if re.match(rb'\s+onu\s+\d+\s+type\s+',x))}

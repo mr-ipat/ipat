@@ -476,6 +476,10 @@ pub(super) fn router() -> Router {
             get(super::c320_actions_lab::ont_features),
         )
         .route(
+            "/lab/c320-owner-manual-onu-snapshot",
+            get(super::c320_actions_lab::owner_onu_snapshot),
+        )
+        .route(
             "/lab/c320-actions/{action}",
             axum::routing::post(super::c320_actions_lab::reject_execute),
         )

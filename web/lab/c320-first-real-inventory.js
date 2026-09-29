@@ -65,6 +65,25 @@
       const ontLine=document.createElement('div');
       ontLine.textContent='ONT: modul offline penemuan ONU, validasi registrasi satu ONT, dan pemeriksaan profil bridge/VLAN telah disiapkan. Perintah nyata dan interoperabilitas firmware BELUM diuji.';
       status.append(ontLine);
+      const snapshotResponse=await fetch('/lab/c320-owner-manual-onu-snapshot',{
+        cache:'no-store',credentials:'omit'
+      });
+      if(!snapshotResponse.ok)throw new Error('manual ONU snapshot unavailable');
+      const inventory=await snapshotResponse.json();
+      if(inventory.source!=='OWNER_ATTESTED_ACTUAL_MANUAL_TELNET323_CLI'
+        ||inventory.snapshot_is_live!==false||inventory.registered_onu_status_rows!==72
+        ||inventory.onu_online!==0||inventory.onu_offline!==72
+        ||inventory.registered_onu_config_declarations!==72
+        ||inventory.unconfigured_onus_reported!==0||inventory.real_olt_adopted!==false)
+        throw new Error('owner manual snapshot mismatch');
+      const manual=document.createElement('div');
+      manual.textContent='Bukti nyata manual C320 ('+inventory.observation_date
+        +', BUKAN LIVE): PON '+inventory.pon+', konfigurasi ONU '
+        +inventory.registered_onu_config_declarations+', online '
+        +inventory.onu_online+', offline '+inventory.onu_offline
+        +', ONU baru terdeteksi '+inventory.unconfigured_onus_reported
+        +'. Pendaftaran ONT nyata TETAP DIBLOKIR.';
+      status.append(manual);
     } catch {
       const gateLine=document.createElement('div');
       gateLine.textContent='Kesiapan adopsi tidak dapat diverifikasi. Semua aksi OLT/ONT tetap diblokir.';

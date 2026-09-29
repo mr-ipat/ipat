@@ -1,5 +1,6 @@
 //! ZTE C320 PURE offline laboratory parser and firmware planning policy.
 //! Never connects, authenticates, uploads, upgrades or returns raw transcripts.
+pub mod c320_real_inventory;
 pub mod ont_registration;
 pub mod ont_service_plan;
 pub mod onu_discovery;
