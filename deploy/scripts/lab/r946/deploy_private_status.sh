@@ -106,7 +106,7 @@ with o.open(base+'/lab/device-workbench',timeout=4) as r:
     assert b'/lab/device-status-indicators.js' in html
 with o.open(base+'/lab/device-status-indicators.js',timeout=4) as r:
     script=r.read()
-    assert b'--connected' in script and b'--disconnected' in script
+    assert b'ipat-device-signal--' in script and b'CONNECTED' in script and b'DISCONNECTED' in script
 with o.open(base+'/lab/c320-owner-connection',timeout=4) as r:
     v=json.load(r)
     assert (v['device_status'],v['adoption_state'])==('PENDING','NOT_ENROLLED')
