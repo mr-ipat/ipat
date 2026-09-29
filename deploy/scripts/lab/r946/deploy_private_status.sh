@@ -18,7 +18,7 @@ expected_source=d0a605238b3cdcdb6e85a49e0e249a8724b1ab06
 expected_preview=fdab0505685fb2424f35e59268132f0ab949ffed31ba872b628cbe7e3899ffe7
 expected_collector=c5bf88f302a4eb04cf5091ace001f9848492b3cbfdeb034c2bb8daa40bc3be0e
 expected_old_binary=7d8861a889a60f6f332d18dac74f0b76b1032ddbe267bea806bca4b08ef9729c
-expected_new_binary=REPLACE_WITH_TESTED_BINARY_SHA
+expected_new_binary=1ad39f677a9bf05acdb0443d7793d42c319ea2d7ac27965b20d292028aa6c3f4
 
 [[ "$(git -C "$src" rev-parse HEAD)" == "$expected_source" ]] || exit 4
 [[ "$(sha256sum "$preview"|cut -d' ' -f1)" == "$expected_preview" ]] || exit 4
