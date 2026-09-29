@@ -211,6 +211,8 @@ fn owner_manual_onu_snapshot() -> Value {
       "unconfigured_command_result":"62310_NO_RELATED_INFORMATION",
       "registered_onu_status_rows":72,"registered_onu_config_declarations":72,
       "onu_online":0,"onu_offline":72,
+      "manual_onu_ids":[2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,32,33,34,35,37,38,39,42,44,45,47,48,49,50,56,57,58,63,64,65,66,68,69,70,71,75,76,77,78,79,80,83,84,85,86,87,88,89,91,92,93,95,96,97,98],
+      "manual_onu_rows_are_live":false,
       "state_and_configuration_count_agree":true,
       "state_and_configuration_ids_automatically_reconciled":false,
       "serial_numbers_disclosed":false,"onu_id_reservation_verified":false,
@@ -346,6 +348,10 @@ mod tests {
         assert_eq!(r["registered_onu_config_declarations"], 72);
         assert_eq!(r["onu_online"], 0);
         assert_eq!(r["onu_offline"], 72);
+        assert_eq!(r["manual_onu_ids"].as_array().unwrap().len(), 72);
+        assert_eq!(r["manual_onu_ids"][0], 2);
+        assert_eq!(r["manual_onu_ids"][71], 98);
+        assert_eq!(r["manual_onu_rows_are_live"], false);
         assert_eq!(r["unconfigured_onus_reported"], 0);
         assert_eq!(r["snapshot_is_live"], false);
         assert_eq!(
