@@ -215,3 +215,5 @@ parser work: PASS, real LAB observations reported, worker/adopted
 FALSE, all eight physical actions HTTP403, :3000 HTTP200. There
 is intentionally no OLT-side config rollback because R9.30
 performed **ZERO OLT config, firmware or account writes**.
+
+Hosted independent synthetic-only regression SUCCESS 2/2 (GitHub Actions run 36518704459, sanitized public SHA d066fc543c5e91aaa7e6c85c8bb87ec62d5f14c5). Actual physical login proofs and private owner captures were NEVER published; this CI is NOT production adoption.
