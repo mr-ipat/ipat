@@ -810,3 +810,25 @@ Validated on actual owner-VPS PRIVATE manually transcribed first
 snapshot (3 physical cards, 5 reported versions, 1 alias unresolved,
 PRAM running MVR unreported). All new code must preserve negative
 firmware tests on synthetic fixture and never include device secrets.
+
+## ADR-062 — R9.31 actual full offline-lab OLT config captured, no config changes before independent backup
+
+Owner-directed disconnected C320 lab was ACTUALLY authenticated through
+bounded SSH. `show privilege` reported privilege 15; vendor `show file
+cfg` showed on-device saved configuration files (112902 bytes each),
+`show system-group` reported software V2.1.0 and `show alarm counter`
+returned historical counters (NOT current active faults). Actual
+`show startup-config` syntax rejected. Session-only `terminal length
+0` then `show running-config` produced a COMPLETE 119980-byte raw
+configuration; the true returned CLI prompt and standalone config
+`end` were checked. It is kept exclusively inside a mode-0700
+nonroot owner-VPS folder with mode-0600 raw output and SHA-256 receipt
+`5b21f96b...e1989ba3`. This contains potentially secret
+configuration and must NEVER enter Git, CI, dashboard or chat.
+Remote Desktop Commander rejected direct guarded secret-bearing
+VPS→Mac SCP, so no off-host encrypted Restic snapshot or isolated
+restore may be claimed. Do not bypass tool controls. Add a strict
+LOCAL readonly digest/shape checker; retain all current hardware
+and privileged account settings until off-host encrypted backup,
+isolated restore, safe firmware-aware recovery, verified restricted
+account and separate tenant MFA/reviewer/worker are in place.
