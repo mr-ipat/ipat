@@ -77,6 +77,7 @@
       pollRunning = false;
     }
   }
+  window.addEventListener('ipat-device-connection-changed', poll);
   window.addEventListener('ipat-device-list-rendered', () => {
     // Keep the status of a newly re-rendered physical row consistent.
     show(previous,document.getElementById('ipat-c320-signal-detail')?.textContent || 'Menunggu pemeriksaan');
