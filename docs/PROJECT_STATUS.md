@@ -4826,3 +4826,29 @@ adoption still blocked on independently verified physical chassis
 and dedicated restricted account/tenant POP controls.
 
 R9.28 latest PUBLIC synthetic GitHub Actions exact sanitized commit 2022eadf70b1a1ab847e18e030674dbea9b807f1 run 36514499014 independently finished SUCCESS both 2/2 hosted jobs (synthetic-static and locked Rust). Actual owner VPS private localhost :3002 R9.28 deployed and post-deploy independent HTTP smoke RE-RAN PASS after public publication; all 8 physical OLT actions remain 403, original :3000 healthy. Public synthetic CI is not physical Telnet identity or authentication proof. Actual first owner-VPS TCP323 passive negotiation (15 initial Telnet IAC bytes) and original R9.22 SSH userauth still only transport proof; no real credentials or physical CLI/config commands sent. Protected private PR #128 STACKED DRAFT remains pending independently trusted physical source, restricted account, live baseline and production tenant MFA/worker.
+
+## R9.29 owner-supplied Telnet default credential, renewed actual transport assessment
+
+At user request, renewed one STRICT zero-write authorized nonroot
+owner-VPS TCP323 passive Telnet check at 2026-09-29T02:59:47Z:
+TCP connection succeeded, 15 inbound bytes, Telnet IAC negotiation
+observed; credentials transmitted ZERO, physical CLI/config commands
+ZERO and independently authenticated chassis identity FALSE. Owner
+supplied a widely known default privileged Telnet password in chat;
+never transcribe, log, commit, embed, auto-send or reuse it in any
+source/test configuration. VPS effective outbound route to the
+management address is via gateway 10.0.0.1 on eth0 from nonroot
+host 10.0.0.230, not independent proof of physically isolated POP
+last hop; no independently authenticated chassis inventory, verified
+restricted account or recent customer-impact baseline was found in
+actual owner device proof folders. Existing r916 site-a dev keys are
+LAB-only and MUST NOT be misrepresented as physical C320 host keys.
+No preexisting authenticated session was shown in current VPS TCP
+connection summary; owner Mac actual protected C320 intake remains
+plan.json only. Clear immediate unresolved next step is a genuine
+independent physical console/asset identity and actual dedicated
+restricted account proof, then one approved bounded read-only
+physical inventory capture; do NOT send known default credentials
+across cleartext Telnet to an unverified customer-serving device.
+No real OLT changes, no Kubernetes/firewall/network policy changes,
+no actual hardware adoption as a result of this investigation.
