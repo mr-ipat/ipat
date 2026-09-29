@@ -5029,3 +5029,45 @@ firmware-specific export plus isolated restoration is tested.
 Original authenticated SSH child was explicitly terminated after
 the read and the owner-VPS socket table independently showed ZERO
 ESTABLISHED sockets to the physical OLT.
+
+## R9.32 owner-operated protected off-VPS recovery procedure prepared, NOT executed on actual C320
+
+Confirmed latest actual owner Mac FileVault ON, current reviewed
+0700 Restic encrypted repository (config0400), preexisting macOS
+Keychain backup credential metadata, owner-only 0700 protected
+first-read folder, and existing authorized Mac↔VPS key-based SSH.
+ACTUAL direct sensitive R9.31 source remains ONLY on VPS in owner-only
+0700 folder: mode0600 119980-byte full running CLI reference,
+receipt SHA256 5b21f96b...e1989ba3, zero OLT configuration writes.
+No real off-VPS encrypted backup can be claimed after previous
+Remote Desktop Commander secret SCP refusal; no bypass attempted.
+
+New `deploy/scripts/lab/r932/owner_mac_restic_c320_snapshot.py`
+--requirements (offline), --local-readiness (safe metadata) and
+--backup-and-restore (interactive human OWNER Mac Terminal ONLY,
+NOT to be executed by ChatGPT remote access). Real owner Mac
+--requirements PASS and metadata-only --local-readiness PASS, both
+explicitly report that actual encrypted off-VPS capture + isolated
+restoration NOT performed by preflight. Actual separate disposable
+Restic SYNTHETIC-ONLY repository integration PASS: exact
+--stdin-from-command command snapshot, JSON snapshot path/tag and
+isolated recovered SYNTHETIC bytes match; zero actual device bytes.
+Seven R9.32 synthetic negative/zero-network tests PASS; aggregate
+full suite and owner VPS code transfer to be independently checked.
+Remaining real owner action is to PERSONALLY execute one reviewed
+`python3 deploy/scripts/lab/r932/owner_mac_restic_c320_snapshot.py --backup-and-restore`
+from owner Mac Terminal, with explicit interactive confirmation;
+never through ChatGPT's rejected remote secret-transfer tool. It
+will only record success if actual owner-operated encrypted capture,
+Restic pack read, isolated identical restore and cleanup SUCCEED;
+it will not mark native firmware-import compatibility or production
+`device_adopted`. Independently approved firmware-aware recovery,
+restricted device account, credential rotation, physical source
+trust/POP isolation, genuine tenant MFA/reviewer, auditable secured
+production SSH worker and actual tenant-scoped onboarding still OPEN.
+
+Nonsecret protected source inspection of REAL actual config found 16
+user-declaration lines, 2 with explicitly parseable level15, 14
+without a safe numeric privilege token. This does NOT certify a
+read-only user or establish a privilege default. Exact account
+identifiers, secret hashes and config lines were NEVER printed.
