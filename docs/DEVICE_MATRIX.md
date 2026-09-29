@@ -556,3 +556,13 @@ read, dedicated restricted user, operational action or customer
 baseline has been performed. New exact SSH adapter transport mode
 is a verified TRANSPORT PROFILE ONLY, not full vendor compatibility
 or adoption. `ssh-dss` was NOT enabled.
+
+Additional R9.22 **network-only** key-continuity check: a further
+explicitly bounded credential-free RSA/aes128-CBC/group14-SHA256
+owner-VPS handshake again reached SSH auth-method advertisement and
+the returned RSA public host fingerprint MATCHED the earlier
+owner-Mac and owner-VPS network observations. It remains **UNTRUSTED
+FOR REAL DEVICE LOGIN** without a separately sourced actual chassis
+console key and independent production account/site approvals.
+The temporary untrusted known_hosts observation was deleted.
+No OLT model/firmware/card output was collected.

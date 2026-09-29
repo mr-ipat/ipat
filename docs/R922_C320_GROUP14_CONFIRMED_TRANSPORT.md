@@ -121,3 +121,13 @@ Actual R9.22 physical result and exact release UI are LAB/private
 until real independent console key, dedicated least-privilege account,
 signed tenant admin MFA, POP isolation and live baseline permit a
 first authenticated read on an active subscriber distribution OLT.
+
+The repeat single bounded NO-CREDENTIAL group14-SHA256 owner-VPS
+handshake again reached SSH AUTH methods. A temporary, isolated
+NETWORK-ONLY known_hosts fingerprint was consistent with the prior
+independent owner-Mac/VPS network measurements; the temporary file
+was destroyed, never accepted as actual verified device provenance.
+Public synthetic GitHub Actions run `36507915781` independently
+passed BOTH 2/2 jobs at exact sanitized snapshot `3454f57`.
+This completes transport compatibility integration and public
+synthetic regression, **NOT genuine physical login or adoption**.

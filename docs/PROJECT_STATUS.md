@@ -4583,3 +4583,23 @@ locked. Historical server evidence confirmed real auth-method stage
 reached without credentials. Mac temporary forwarding was closed
 and no production OLT connection/action occurred during this
 UI-to-backend test.
+
+R9.22 actual one more bounded nonroot VPS **NO-CREDENTIAL** group14
+handshake independently reached SSH authentication-method stage and
+temporary NETWORK-ONLY `known_hosts` RSA fingerprint MATCHED the
+historically independently observed network RSA key from prior
+owner Mac and VPS measurements. The temporary network-only file was
+deleted immediately and was NOT promoted to trusted OOB identity.
+Still NO live password/SSH client key/OLT command. This consistency
+reduces transient-network-key uncertainty but cannot establish
+physical chassis ownership or least-privilege permissions.
+
+R9.22 latest PUBLIC synthetic GitHub Actions run `36507915781` against
+sanitized public source SHA
+`3454f57df1033a63817860dcdbce8d2ea627c0f0` independently
+completed SUCCESS **2/2** jobs (`synthetic-static` and `rust-locked`).
+Private physical adoption is NOT inferred from synthetic public CI.
+The original `mr-ipat/ipat` remains PRIVATE, with protected R9.22
+PR #123 stacked/draft awaiting genuine production prerequisites.
+Actual R9.22 private :3002 operator dashboard code and older :3000
+API were left unchanged/healthy after all compatibility checks.
