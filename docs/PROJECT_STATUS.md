@@ -4780,3 +4780,5 @@ The one outstanding real-world milestone is independently authenticated
 chassis/asset-source evidence + dedicated restricted account before
 one first authorized actual read; no C320 login/CLI/config changes
 were executed in R9.26.
+
+R9.26 independently tested on actual authorized owner VPS: exact protected source 0ef09f079fd93a62aed08906c2bee7228152e256 transferred via checksum-verified private Git delta into separate 0700 nonroot checkout, new local-only intake unit tests 5/5 and combined safety suite 69/69 PASS. No live OLT SSH/auth/CLI actions, no physical config or customer service changes. Actual Mac existing private site packet contained plan.json only; adoption remains NOT COMPLETE pending external independent trusted chassis source, restricted account and signed production authorization.
