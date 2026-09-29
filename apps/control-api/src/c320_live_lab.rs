@@ -505,7 +505,7 @@ mod tests {
             .header("Origin","http://untrusted.invalid")
             .header("X-IPAT-Demo-Only","1")
             .header("Content-Type","application/json")
-            .body(Body::from(r#"{"device_profile":"zte_c320_lab","bootstrap_code":"synthetic_1234567890123456789012345678","password":"synthetic"}"#))
+            .body(Body::from(r#"{"device_profile":"zte_c320_lab","device_type":"olt","device_name":"Synthetic Device","management_ip":"192.0.2.20","ssh_port":2222,"username":"synthetic","bootstrap_code":"synthetic_1234567890123456789012345678","password":"synthetic"}"#))
             .unwrap()).await.unwrap();
         assert_eq!(forged.status(), StatusCode::FORBIDDEN);
         let bad=router().oneshot(Request::builder()
