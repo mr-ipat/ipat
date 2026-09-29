@@ -425,6 +425,8 @@ async fn connection_status(
         "management_transport":"DIRECT_SSH_PINNED","pon_scope":"1/1/1",
         "connector_online":response.is_some(),"credentials_enrolled":configured,
         "device_status":status,
+        "draft_saved":response.as_ref().and_then(|v|v.get("draft_saved")).and_then(Value::as_bool)==Some(true),
+        "device_name":response.as_ref().and_then(|v|v.get("device_name")).and_then(Value::as_str).filter(|v|!v.is_empty()&&v.len()<=64).unwrap_or("ZTE C320 Lab"),
         "last_verified_at_utc":if configured {last} else {""},
         "adoption_state":if physically_fresh {"READ_ONLY_CONNECTED_LAB"}
             else if configured {"CONFIGURED_AWAITING_READ"} else {"NOT_ENROLLED"},
