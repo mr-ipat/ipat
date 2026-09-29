@@ -63,3 +63,42 @@ cannot replace those distinct identity and authorization proofs.
 **Actual physical OLT configuration commands executed in R9.28: 0.**
 **Authenticated physical CLI commands executed in R9.28: 0.**
 **Credentials sent in R9.28: 0.**
+
+## Actual restricted owner VPS software release result
+
+Exact protected compiled source SHA
+`8bac456c97899bbd27f9db79499565026cdeb1d0` transferred by
+SHA256-checked private Git bundle to a SEPARATE nonroot owner-VPS
+source and build tree (no production SSH/Telnet collector or POP
+firewall changes). Actual owner VPS one-target Telnet passive
+synthetic test suite 4/4, combined security tests 73/73, pinned
+Rust 1.98.1 fmt, locked offline full `control-api` test 43/43
+and locked offline build PASS. Binary SHA256:
+`b7f89ce39a0b392ee582d3818e990db74a7111c832761e5d019eb079cfd47245`.
+
+ACTUALLY upgraded only nonroot localhost private :3002 Rust LAB
+Device Manager readiness view using checksum-pinned owner-controlled
+service replacement; previous private service unit saved at
+`/home/openai/.cache/ipat/r928-release/rollback-user-unit.service`.
+Localhost live HTTP smoke PASS for actual Telnet323 evidence fields,
+previous verified SSH compatibility, OLT account password-only
+offer, physical admission FALSE, all EIGHT live OLT action POSTs
+403 and original :3000/healthz still HTTP200. No actual OLT
+Telnet login or CLI commands were introduced by this LAB release.
+
+Versioned deployment unit SHA256
+`9d1fe8ed0f9474b53a4e16e7f93eec4f0710f7f8345b57564301e4dbc569eb41`,
+HTTP smoke SHA256
+`83101eb7af053f682b4a0a89be806507ec42f7fedc0e578a4adf9ab819c2e9c4`,
+checksum-pinned deployment script SHA256
+`524f80a2d6f32d204808d262cf32bdc6ce99b860334005ca1a62b7d9f0237057`.
+Rollback (only PRIVATE LAB user unit, no OLT changes):
+
+```sh
+ssh ipat-lab
+cp -p /home/openai/.cache/ipat/r928-release/rollback-user-unit.service \
+  ~/.config/systemd/user/ipat-r911-preview.service
+systemctl --user daemon-reload
+systemctl --user reset-failed ipat-r911-preview.service
+systemctl --user restart ipat-r911-preview.service
+```

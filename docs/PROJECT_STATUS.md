@@ -4806,3 +4806,21 @@ independently trusted chassis/POP source and dedicated safe account
 before any approved temporary plaintext login. Combined Mac
 preflight suite 73/73 PASS; owner-VPS and hosted synthetic CI to
 be verified independently during release.
+
+R9.28 actual separate owner-VPS SHA256-verified protected app source
+`8bac456c97899bbd27f9db79499565026cdeb1d0` full locked offline
+Rust control-api 43/43 tests and binary build, fmt, dedicated Python
+4/4 plus combined 73/73 suite all PASS; binary SHA256
+`b7f89ce39a0b392ee582d3818e990db74a7111c832761e5d019eb079cfd47245`.
+Versioned checksum-pinned nonroot LAB script
+`524f80a2d6f32d204808d262cf32bdc6ce99b860334005ca1a62b7d9f0237057`
+ACTUALLY upgraded PRIVATE localhost :3002 Rust action catalog with
+real observed alternate Telnet323 TCP+IAC pass, no plaintext login
+allowed or ever performed, full independent actual HTTP smoke PASS,
+all 8 hardware POSTs still 403; original :3000 HTTP200. Previous
+LAB service unit saved private rollback file in r928-release;
+NO physical OLT commands/config/auth, router/firewall/K3s changes.
+Protected branch publication and hosted synthetic mirror CI are
+tracked separately from this private runtime success. Real physical
+adoption still blocked on independently verified physical chassis
+and dedicated restricted account/tenant POP controls.
