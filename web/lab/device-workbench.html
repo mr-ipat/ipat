@@ -46,25 +46,57 @@
   <div class="section-top"><div><span class="eyebrow">IPAT OLT OPERATIONS · LAB PRIVAT R9.44</span>
   <h2 id="ipat-c320-console-heading">ZTE C320 · Konsol Operasional</h2>
     <span class="ipat-device-signal ipat-device-signal--unknown" data-ipat-device-status="DEV-01" role="status" aria-live="polite">● Unknown</span></div><span class="pill amber-pill">PERUBAHAN FISIK TERKUNCI</span></div>
-  <section class="ipat-c320-enrollment" aria-label="Koneksi perangkat pertama">
-    <h3>Koneksi perangkat · ZTE C320</h3>
-    <p class="ipat-ops-disclosure">Apabila server dapat menjangkau jaringan manajemen, gunakan SSH langsung. Tunnel hanya diperlukan untuk jaringan privat yang belum memiliki rute ke server. Kredensial dimasukkan sekali di panel privat dan disimpan terenkripsi di VPS; tidak ada lagi agen Terminal 15 menit.</p>
-    <div class="ipat-ops-topology">
-      <div><small>Alamat perangkat laboratorium</small><strong>10.10.13.233:321 · SSH</strong></div>
-      <div><small>Metode</small><strong>Jaringan langsung · jaringan-observed SSH pin</strong></div>
-      <div><small>Status</small><strong id="ipat-c320-enroll-state">Memeriksa koneksi...</strong></div>
+  <section class="ipat-c320-enrollment" aria-labelledby="device-add-heading">
+    <div class="ipat-device-form-heading">
+      <div><span class="eyebrow">DEVICE MANAGER</span><h3 id="device-add-heading">Add Device</h3>
+      <p class="ipat-ops-disclosure">Enter management credentials once. IPAT connects directly when a secure management route exists. Use a site-to-site VPN only when direct access is unavailable.</p></div>
+      <strong id="ipat-c320-enroll-state" class="ipat-device-signal ipat-device-signal--unknown" role="status">Checking connector...</strong>
     </div>
     <form id="ipat-c320-enroll-form" autocomplete="off">
-      <div class="ipat-ops-topology">
-        <div><label for="ipat-c320-bootstrap">Kode pengaturan pemilik (sekali saja)</label>
-          <input id="ipat-c320-bootstrap" type="password" autocomplete="off" required minlength="32" maxlength="128"></div>
-        <div><label for="ipat-c320-device-password">Password SSH perangkat</label>
-          <input id="ipat-c320-device-password" type="password" autocomplete="new-password" required maxlength="128"></div>
-        <div><label>Jenis perangkat</label><strong>ZTE C320 · profil laboratorium teruji</strong></div>
+      <div class="ipat-device-form-grid">
+        <div class="ipat-field"><label for="ipat-device-name">Device Name</label>
+          <input id="ipat-device-name" type="text" required maxlength="64" value="ZTE C320 Lab" placeholder="e.g. Core OLT - POP 01" autocomplete="off"></div>
+        <div class="ipat-field"><label for="ipat-device-type">Device Type</label>
+          <select id="ipat-device-type" required>
+            <option value="olt">OLT</option>
+            <option value="ont">ONT / ONU</option>
+            <option value="router">Router</option>
+            <option value="other">Other Network Device</option>
+          </select></div>
+        <div class="ipat-field"><label for="ipat-device-model">Vendor / Model</label>
+          <select id="ipat-device-model" required>
+            <option value="zte_c320_lab">ZTE C320 (Lab Read-Only)</option>
+            <option value="zte_other">ZTE - Other Model (Coming Soon)</option>
+            <option value="cdata_olt">C-DATA OLT (Coming Soon)</option>
+          </select></div>
+        <div class="ipat-field"><label for="ipat-device-protocol">Management Protocol</label>
+          <select id="ipat-device-protocol">
+            <option value="ssh">SSH (Direct)</option>
+            <option value="wireguard" disabled>WireGuard (Not Configured)</option>
+            <option value="ipsec" disabled>IPsec (Not Configured)</option>
+          </select></div>
+        <div class="ipat-field"><label for="ipat-device-host">Management IP</label>
+          <input id="ipat-device-host" type="text" inputmode="decimal" maxlength="45" required value="10.10.13.233" placeholder="192.0.2.10" autocomplete="off" spellcheck="false"></div>
+        <div class="ipat-field"><label for="ipat-device-port">SSH Port</label>
+          <input id="ipat-device-port" type="number" min="1" max="65535" step="1" required value="321"></div>
+        <div class="ipat-field"><label for="ipat-device-username">Username</label>
+          <input id="ipat-device-username" type="text" required maxlength="64" value="zte" autocomplete="off" spellcheck="false"></div>
+        <div class="ipat-field"><label for="ipat-c320-device-password">Password</label>
+          <input id="ipat-c320-device-password" type="password" autocomplete="new-password" maxlength="128" required placeholder="Device SSH password"></div>
       </div>
-      <button type="submit" id="ipat-c320-enroll-button" class="secondary">Hubungkan dan simpan perangkat</button>
+      <div id="ipat-device-profile-notice" class="ipat-profile-info" role="status">ZTE C320: pinned SSH identity, read-only connection profile. Other models require their own verified adapters.</div>
+      <details class="ipat-device-security">
+        <summary>Advanced Security · Lab Owner Verification</summary>
+        <p>Temporary lab-only owner verification is required until authenticated administrator sessions are deployed. Never share this code or device passwords in chat or GitHub.</p>
+        <label for="ipat-c320-bootstrap">One-Time Owner Code</label>
+        <input id="ipat-c320-bootstrap" type="password" autocomplete="off" required minlength="32" maxlength="128" placeholder="Private owner verification code">
+      </details>
+      <div class="ipat-ops-actionbar">
+        <button type="submit" id="ipat-c320-enroll-button" class="secondary">Connect &amp; Save</button>
+        <span class="ipat-ops-disclosure">Only the verified C320 lab profile can connect in this release.</span>
+      </div>
     </form>
-    <p id="ipat-c320-enroll-result" role="status" aria-live="polite">Koneksi fisik hanya dinyatakan berhasil setelah perintah baca identitas/kartu dijawab oleh OLT. Penambahan konfigurasi dan firmware tetap memerlukan izin terpisah.</p>
+    <p id="ipat-c320-enroll-result" role="status" aria-live="polite">Select a supported profile and enter management credentials to connect. Live status appears only after authenticated device verification.</p>
   </section>
   <p id="ipat-c320-signal-detail" class="ipat-ops-disclosure">Menunggu pemeriksaan koneksi C320...</p>
   <p id="ipat-c320-connectivity" role="status" aria-live="polite">Mengecek sesi agen OLT...</p>
