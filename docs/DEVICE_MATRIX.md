@@ -695,3 +695,7 @@ No device config writes, no persisted test password, active owner
 socket closed. This establishes a working software LAB read adapter,
 NOT unattended production adoption, safe limited role or certified
 firmware alias/ONT/health/upgrade compatibility.
+
+## R9.36 C320 ONT registration adapter status — 29 September 2026
+
+Pure synthetic `olt-core::ont_registration` single-draft validation now exists and was covered by actual owner-VPS Rust unit tests. This module DOES NOT issue ONU/ONT registration commands or prove support for any ONT model, SN registration method, GPON profile, VLAN/service flow or physical firmware. The actual C320 only has independently repeated lab SSH scripted `show card` results on its known GTGHK slot 1/1/1; observed GTGHK↔GTXK file-type and missing PRAM MVR remain unresolved. OLT production ADOPTED = FALSE; ONT physical register/config test = NOT RUN; all physical action POST endpoints remain disabled.

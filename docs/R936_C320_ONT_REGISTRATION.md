@@ -1,4 +1,4 @@
-# R9.36 — C320 ONT registration path (offline source-only stage)
+# R9.36 — C320 ONT registration path (offline module + deployed private LAB preview)
 
 Owner objective: register/configure ONTs immediately after a genuinely accepted physical C320 adoption. Current actual status: physical `ADOPTED=false`, production ONT writes forbidden. Hardware-as-live rules apply even in zero-customer isolated lab.
 
@@ -18,3 +18,10 @@ The existing private dashboard hardware POST actions remain HTTP 403. No credent
 6. Prove one actual ONT (exact brand/model/firmware) registers successfully, has intended service config and passes optical and upstream connectivity checks. Keep other ONTs unvalidated until their separate physical acceptance.
 
 No vendor command shown in unrelated online manuals is automatically approved for this hardware. Registration and firmware update are separate high-impact change types.
+## Actual verification and private rollout (29 September 2026)
+
+Mac source release 9292e9057aba0f422a25372dbae1d92a43641013, checksum verified in an isolated nonroot owner-VPS source checkout. Pinned Rust1.98.1 `cargo fmt --all -- --check` PASS; full locked offline 227/227 synthetic/unit Rust tests PASS (all groups zero failure), followed by exact-source targeted 65/65 `olt-core`+`control-api` Rust tests PASS and actual backend build SHA256 `a03a0fb3a445f45c60d032f5f3ca789abd70d8bba42793f73d68f37519f4ff1b`. Node JS syntax and Python smoke syntax checks passed on owner Mac.
+
+Opt-in nonroot checksum-pinned `deploy/scripts/lab/r936/deploy_private_ont_pre_adoption_preview.sh` `--check` PASS and `--apply` actually replaced ONLY private localhost `:3002` user service, with preexisting verified R9.34 service unit in an owner-only rollback file. Actual live localhost R9.34 compatibility smoke PASS with all eight OLT action POSTs HTTP403; R9.36 smoke PASS proving gate count 2/10, device_adopted FALSE, worker FALSE and new JS blocks real ONT registration. Independent GET repeated same 2/10, original `:3000` health PASS, no established current C320 management sessions in VPS socket snapshot. No live device command was issued for R9.36.
+
+This proves deployed PRIVATE readiness UI and offline draft policy only: there is NO actual trusted device adoption, verified native import restore, real ONT registration, VLAN profile/optical test, production maker-checker or write worker. Rollback unit remains available privately; public CI status for this release is not claimed.
