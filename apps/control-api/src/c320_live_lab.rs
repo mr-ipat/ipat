@@ -325,6 +325,17 @@ async fn enroll_c320(
             "ENROLLMENT_RESPONSE_REJECTED",
         ));
     };
+    if let Some(stage) = v.get("error").and_then(Value::as_str) {
+        let safe = match stage {
+            "OWNER_VERIFICATION_FAILED" => "OWNER_VERIFICATION_FAILED",
+            "SSH_HANDSHAKE_OR_AUTH_METHOD" => "SSH_HANDSHAKE_OR_AUTH_METHOD",
+            "SSH_AUTH_FAILED_OR_UNKNOWN_PROMPT" => "SSH_AUTH_FAILED_OR_UNKNOWN_PROMPT",
+            "DEVICE_CLI_RESPONSE_UNSUPPORTED" => "DEVICE_CLI_RESPONSE_UNSUPPORTED",
+            "ALREADY_ENROLLED" => "ALREADY_ENROLLED",
+            _ => "DEVICE_CONNECTION_FAILED",
+        };
+        return Err(denied(StatusCode::CONFLICT, safe));
+    }
     if v.get("enrolled_for_read").and_then(Value::as_bool) != Some(true)
         || v.get("commercial_production_adopted")
             .and_then(Value::as_bool)
