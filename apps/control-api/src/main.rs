@@ -446,10 +446,15 @@ mod tests {
         let missing_host = get_path(app_with_lab(true), path).await;
         assert_eq!(missing_host.status(), StatusCode::FORBIDDEN);
         let response = app_with_lab(true)
-            .oneshot(Request::builder().uri(path)
-                .header(header::HOST, "127.0.0.1:3002")
-                .body(Body::empty()).unwrap())
-            .await.unwrap();
+            .oneshot(
+                Request::builder()
+                    .uri(path)
+                    .header(header::HOST, "127.0.0.1:3002")
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
         assert_eq!(response.status(), StatusCode::OK);
         assert_eq!(response.headers()[header::CACHE_CONTROL], "no-store");
         let body = axum::body::to_bytes(response.into_body(), 8192)
