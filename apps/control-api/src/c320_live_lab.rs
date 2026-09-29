@@ -379,6 +379,11 @@ async fn save_draft(
     if !strict_private(&headers, true) {
         return Err(denied(StatusCode::FORBIDDEN, "PRIVATE_PANEL_ONLY"));
     }
+    if !input.as_object().is_some_and(|m| m.len()==6
+        && ["device_profile","device_type","device_name",
+            "management_ip","ssh_port","username"].iter().all(|key|m.contains_key(*key))) {
+        return Err(denied(StatusCode::BAD_REQUEST,"DRAFT_METADATA_ONLY"));
+    }
     let name = input.get("device_name").and_then(Value::as_str).unwrap_or("");
     if name.trim().is_empty() || name.len() > 64
        || name.chars().any(|c| c.is_control())
@@ -521,7 +526,7 @@ pub(super) fn router() -> Router {
             "/lab/c320-owner-connection",
             axum::routing::get(connection_status),
         )
-        .route("/lab/c320-owner-save-draft", post(save_draft))
+        .route("/lab/c320-owner-save-draft", post(save_draft).layer(axum::extract::DefaultBodyLimit::max(512)))
         .route("/lab/c320-owner-network-probe", axum::routing::get(fixed_network_probe))
         .route("/lab/c320-owner-live-refresh", post(refresh))
         .route("/lab/c320-owner-live-cards", post(cards))
