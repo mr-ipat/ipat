@@ -5088,3 +5088,46 @@ Mac metadata-only --local-readiness rechecked PASS. Real operator
 so no actual off-host C320 encrypted restore claim.
 
 R9.32 immutable receipt reverify refinement exact protected HEAD dcd86068715aaa754bde746f5e3b2f6eb12df1ea independently SHA256 bundle-checked 544f51421724e9b10ffe5b2037b60a8dbe65a2dce0fe1e91e597b8c1fd4d29a1 onto authorized owner NONROOT VPS. Dedicated R932 synthetic safety 8/8 and combined full owner Mac+VPS Python suite 88/88 PASS. Actual true owner-VPS confidential R9.31 C320 snapshot verified IN PLACE again: 119980 bytes SHA256 5b21f96b7b81dc9a771cc24e6369bc55433748b637bf0e98a3fb0a03e1989ba3, independent off-VPS backup restoration FALSE and SaaS adopted FALSE. Owner-VPS full pinned Rust 220/220 from parent exact immutable workspace; this patch modified only Python/docs and no Rust. Actual Mac human-operated --backup-and-restore intentionally NOT run through refused remote secret-transfer tool; owner one command documented in R932 runbook. No on-device operations, no secret transfer, no privileged credential changes.
+
+## R9.33 real C320 separate encrypted backup PROVEN and physical read-only inventory reporting
+
+At 2026-09-29T05:49:58+00:00 the owner ACTUALLY executed R9.32
+human-only Mac Terminal backup+restore and reported successful
+completion. Reopened actual Mac 0600 immutable receipt and
+INDEPENDENTLY verified TRUE actual Restic-encrypted off-VPS snapshot,
+TRUE isolated restored byte-identical 119980-byte reference and
+TRUE deletion of temporary plaintext. Source digest matched actual
+owner VPS private R9.31 capture
+5b21f96b7b81dc9a771cc24e6369bc55433748b637bf0e98a3fb0a03e1989ba3.
+INDEPENDENTLY queried actual Mac Restic snapshots with existing
+Keychain command: exact receipt snapshot ID, tag and expected
+restorable reference path all match. R9.31 backup-blocked condition
+is NOW RESOLVED; BUT vendor-native firmware import restoration remains
+UNTESTED, second geographic recovery repository unverified.
+
+Another ACTUAL bounded owner-authorized private encrypted SSH login
+verified exact C320 real `show username`: TWO explicit level15
+entries in show table, no demonstrated restricted read service
+identity. `show file ?` exposed firmware file read help; safe `show
+alarm ?` exposed `crtv-active`, actual `show alarm crtv-active`
+command accepted but its alarm record semantics not independently
+validated. DO NOT infer active alarms healthy. No new
+configuration/user/firmware/server-key/POP/ONT writes, no automatic
+poll worker, no weak test password rotation. Any stray authorized
+privileged SSH child was terminated; actual owner-VPS socket table
+showed ZERO established target-device sessions afterward.
+
+NEW R9.33 protected private Rust :3002 LAB evidence includes
+FACTUAL off-VPS encrypted Restic success without claiming native
+restore, autonomous device adoption or privileged account safety.
+NEW private GET `/lab/c320-first-real-inventory` returns only safe
+historical exact three real card slots+status and explicitly
+unresolved GTXK/GTGHK alias+missing PRAM MVR, never live telemetry.
+Dedicated browser JS renders this separately from synthetic device
+inventory, preserves failure-as-no-claim and never triggers OLT
+network operations. Rewrote stale Sep28 noauth-only private UI text
+to factual Sep29 lab success and current blocked remaining gates.
+Current test/build/owner-VPS deployed private HTTP verification
+reported separately after actually performed; no claim of final
+SaaS ADOPTED until firmware restore, account role, tenant MFA,
+physical trust/POP, signed reviewer and genuine bounded read worker.

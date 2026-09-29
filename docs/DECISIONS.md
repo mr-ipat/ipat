@@ -854,3 +854,26 @@ file or a successful hardware configuration restore. R9.32 does
 not alter C320 settings, trust unknown local accounts, enable
 unattended privileged default credentials or release production
 physical-action gates.
+
+## ADR-064 — Verified owner-executed actual off-host encrypted reference restore enables R9.33 historic LAB inventory reporting, not production auto adoption
+
+The owner ACTUALLY executed the previously developed guarded one-time
+Mac Restic operator command. Independently inspected real Mac
+mode0600 completion receipt and actual existing encrypted Restic
+snapshot ID/path/tag via the prior local Keychain-held secret. The
+encrypted off-VPS reference backup and isolated byte-identical
+119980-byte recovered CLI output are therefore **VERIFIED**, replacing
+older R9.31/R9.32 backup-blocked status; previous states remain
+historical, not current. Original owner VPS source digest still
+matches. BUT raw CLI transcript includes vendor prompt and remains
+NOT vendor-native import/rehearsed on-device restore. The new
+non-secret facts may enter PRIVATE restricted :3002 LAB readiness,
+with explicit observed timestamp and historical three-card evidence,
+never enable the eight real OLT action POST routes. Actual read-only
+`show username` showed two explicit privilege15 accounts, no
+validated limited account. `show alarm crtv-active` syntax was
+accepted, output semantics not yet measured. Weak privileged test
+credentials remain break-glass until independent review/role-safe
+replacement and validated vendor-native recovery. No device writes
+in this milestone. Separate trust/POP/MFA/reviewer/audited worker
+remain mandatory before genuine automatic/production adoption.

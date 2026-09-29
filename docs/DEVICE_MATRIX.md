@@ -662,3 +662,21 @@ All persistent OLT CLI configuration changes, password rotation,
 privileged account creation, PON/ONT commands and firmware: ZERO.
 Production automatic adoption stays BLOCKED; the real lab manual
 read proof from R9.30 remains validated.
+
+## R9.33 actual off-VPS recovery accepted and new read-only CLI compatibility
+
+Owner Mac actual Restic encrypted off-VPS C320 manual CLI reference
+119980 bytes SHA256 matches owner VPS raw owner-private original;
+full isolated byte-identical encrypted-restic restore completed and
+local non-secret 0600 receipt verified. STILL NOT vendor-native
+import/export or rehearsed OLT device-side recovery. New bounded
+actual SSH `show username` returned TWO explicit privilege15 local
+user entries; no trusted limited-privilege service user discovered.
+Actual `show alarm ?` advertised `crtv-active`; that read-only
+command was accepted by firmware, but output NOT yet semantically
+validated or a certified current health metric. All hardware writes
+ZERO. Actual first cards/firmware still only the three previously
+measured slots and five version rows; vendor GTGHK/GTXK mapping
+unverified and PRAM MVR unreported. Separate PRIVATE LAB historical
+inventory endpoint makes exact verified rows visible without
+misrepresenting active telemetry or production adoption.
