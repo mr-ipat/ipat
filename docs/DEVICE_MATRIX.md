@@ -594,3 +594,14 @@ for different dedicated accounts remain UNKNOWN. No password or
 actual C320 command submitted, no physical adoption, no OLT
 configuration changes. Future first-read may require an attended
 restricted-account password session after independent site approval.
+
+## R9.25 no speculative SSHv2 key regeneration
+
+Earlier isolated offline status parser's `not initialized` wording
+overstated a legacy vendor example. R9.25 corrects SSHv2 statuses
+`not initialized` and `disable` to AMBIGUOUS because authenticated
+firmware-specific meaning has not been verified and the actual owner
+VPS already received a server RSA host key. Real C320 model/firmware,
+on-device safe operator role and independent host identity still
+UNKNOWN. OLT physical configuration and authenticated read command
+count remain ZERO.

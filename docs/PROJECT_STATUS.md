@@ -4723,3 +4723,23 @@ Do NOT confuse synthetic hosted CI + actual private LAB runtime with
 a first real password-authenticated SSH login or adoption of DEV-01;
 they remain FALSE. The original operational GitHub repository is
 still PRIVATE, with protected R9.24 stacked draft PR #125.
+
+## R9.25 SSHv2 key status triage correction and practical site handoff
+
+After reviewing historical ZTE C320 SSHv2 examples alongside ACTUAL
+previous owner-VPS group14 handshake that returned RSA host key and
+advertised PASSWORD for test username, corrected R9.21 offline
+parser and R9.23 site planner: both SSHv2 `not initialized` and
+`disable` server-key status are AMBIGUOUS, NOT proof of missing key or
+a reason to run server-side key generation. Added synthetic safety
+regressions for both variants; combined local suite 64/64 PASSED.
+Created precise protected site handoff in
+`docs/R925_C320_REAL_ADOPTION_SITE_HANDOFF.md`: trusted console
+read-only status and card/firmware capture, OOB identity, minimal
+privilege account test, protected SSH manual password-only first
+read if actual restricted account permits, and honest independent
+audit requirements. No actual physical device CLI command/login or
+SSH server configuration has been executed as part of this fix.
+The user still needs genuine independently authenticated site
+console proof or equivalent approved trust source; the available
+owner Mac C320 packet has only plan.json. Do not set device ADOPTED.
