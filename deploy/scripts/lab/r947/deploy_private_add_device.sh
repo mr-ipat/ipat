@@ -15,7 +15,7 @@ expected_source=aabebcaf61959512bcf7cd3c2dcd73e8482ce524
 expected_unit=f8168d55b93e5e48abb69adffe43ea1ec03baad07a767aa6df9664a3686bab4a
 expected_collector=0577ad145ff01b38f8423901f57ae6e515ddfcf63bfe80d4e10d0f74f61b55df
 expected_previous_binary=1ad39f677a9bf05acdb0443d7793d42c319ea2d7ac27965b20d292028aa6c3f4
-expected_new_binary=REPLACE_WITH_BUILT_BINARY_SHA256
+expected_new_binary=46717389d9104367bc89cc2c1bc373c137a1bba569fcadc0a651dcba8f1082d4
 
 [[ "$(git -C "$stage" rev-parse HEAD)" == "$expected_source" ]] || exit 4
 [[ -z "$(git -C "$stage" status --porcelain)" ]] || exit 4
