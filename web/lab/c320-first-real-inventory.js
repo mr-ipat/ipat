@@ -173,3 +173,50 @@
     });
   }
 })();
+
+// R9.42 actual owner-agent readiness; never pretend agent presence is OLT health.
+(() => {
+  const status=document.getElementById('c320-owner-agent-state');
+  const actions=['c320-read-live','c320-read-cards','c320-read-firmware']
+    .map(id=>document.getElementById(id)).filter(Boolean);
+  if(!status||actions.length!==3)return;
+  let activeRequest=false;
+  async function poll(){
+    if(activeRequest)return;
+    activeRequest=true;
+    try {
+      const response=await fetch('/lab/c320-owner-agent-state',{
+        cache:'no-store',credentials:'omit'});
+      if(!response.ok)throw new Error('endpoint agen tidak tersedia');
+      const data=await response.json();
+      if(data.device_adopted!==false||data.physical_writes_enabled!==false
+        ||typeof data.agent_ready!=='boolean')throw new Error('status agen tidak valid');
+      const ready=data.agent_ready===true&&Number.isInteger(data.seconds_left)
+        &&data.seconds_left>0&&Number.isInteger(data.requests_left)
+        &&data.requests_left>0;
+      if(!ready){
+        status.textContent='AGEN OLT TIDAK AKTIF / SESI BERAKHIR. Jalankan perintah aktivasi agen dari Terminal Mac, kemudian kembali ke halaman privat ini. Tombol dinonaktifkan.';
+      } else {
+        const minutes=Math.floor(data.seconds_left/60);
+        const seconds=data.seconds_left%60;
+        status.textContent='AGEN TERHUBUNG · sisa sesi '+minutes+'m '+seconds+'s; '
+          +data.requests_left+' pembacaan tersisa. Agen aktif TIDAK membuktikan OLT online—klik satu tombol untuk menguji perangkat fisik.';
+      }
+      for(const button of actions){
+        if(!button.dataset.requestPending)button.disabled=!ready;
+      }
+    }catch(e){
+      status.textContent='STATUS AGEN TIDAK DAPAT DIVERIFIKASI: '+e.message
+        +'. Pastikan alamat Mac http://127.0.0.1:3002/lab/device-workbench, bukan domain publik.';
+      for(const button of actions){if(!button.dataset.requestPending)button.disabled=true;}
+    }finally{activeRequest=false;}
+  }
+  for(const button of actions){
+    button.addEventListener('click',()=>{
+      button.dataset.requestPending='1';
+      setTimeout(()=>{delete button.dataset.requestPending;poll();},3000);
+    });
+  }
+  poll();
+  setInterval(poll,5000);
+})();

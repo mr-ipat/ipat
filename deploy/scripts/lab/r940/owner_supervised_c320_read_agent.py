@@ -134,9 +134,17 @@ def main():
                 if uid!=os.getuid():raise Denied('foreign process denied')
                 self.request.settimeout(4)
                 request=self.request.recv(64)
-                if request not in (b'REFRESH\n',b'CARDS\n',b'FIRMWARE\n'):
+                if request not in (b'STATUS\n',b'REFRESH\n',b'CARDS\n',b'FIRMWARE\n'):
                     raise Denied('unknown request denied')
                 now=time.monotonic()
+                if request==b'STATUS\n':
+                    left=max(0,int(SESSION_SECONDS-(now-started)))
+                    payload={'mode':'OWNER_SUPERVISED_REAL_C320_READ_ONLY',
+                      'agent_ready':left>0 and count<MAX_REQUESTS,
+                      'seconds_left':left,'requests_left':MAX_REQUESTS-count,
+                      'device_adopted':False,'device_writes':0}
+                    self.request.sendall(json.dumps(payload,separators=(',',':')).encode()+b'\n')
+                    return
                 if now-started>SESSION_SECONDS or count>=MAX_REQUESTS or now-last<10:
                     raise Denied('session expired, quota or rate limited')
                 # Reserve BEFORE the physical connection to avoid free retries.

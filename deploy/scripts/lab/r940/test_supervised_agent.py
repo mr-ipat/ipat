@@ -27,12 +27,19 @@ class OwnerReadBoundaryTests(unittest.TestCase):
         self.assertIn('socket.SO_PEERCRED',code)
         self.assertIn('password=getpass.getpass',code)
         self.assertNotIn('password=os.getenv',code)
+    def test_status_query_does_not_consume_read_quota(self):
+        code=SCRIPT.read_text()
+        self.assertIn("if request==b'STATUS\\n':",code)
+        status=code.split("if request==b'STATUS\\n':",1)[1].split("# Reserve BEFORE",1)[0]
+        self.assertNotIn('count+=1',status)
+        self.assertIn("'seconds_left':left",status)
+        self.assertIn("'requests_left':MAX_REQUESTS-count",status)
     def test_three_fixed_read_families_without_cli_from_client(self):
         code=SCRIPT.read_text()
         self.assertIn("commands=('show card',)",code)
         self.assertIn("commands=('show version-running',)",code)
         self.assertIn("commands=m.COMMANDS",code)
-        self.assertIn("if request not in (b'REFRESH\\n',b'CARDS\\n',b'FIRMWARE\\n'):",code)
+        self.assertIn("if request not in (b'STATUS\\n',b'REFRESH\\n',b'CARDS\\n',b'FIRMWARE\\n'):",code)
         self.assertIn('payload=run_three_reads(m,password,request)',code)
     def test_exact_owner_reader_fixed_command_list(self):
         p=Path(__file__).parents[1]/'r938'/'owner_c320_onu_first_inventory.py'
