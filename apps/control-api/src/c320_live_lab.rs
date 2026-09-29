@@ -245,8 +245,118 @@ async fn agent_status(
     ))
 }
 
+// R9.45 private one-time device credential enrollment.
+// This route is intentionally NOT a general SaaS tenancy/admin API.
+// A separate owner bootstrap code is verified by the persistent Unix daemon.
+// Browser origin is SSH-forwarded local 127.0.0.1:3002; no public enrollment.
+#[derive(serde::Deserialize)]
+#[serde(deny_unknown_fields)]
+struct C320OwnerEnrollment {
+    device_profile: String,
+    bootstrap_code: String,
+    password: String,
+}
+async fn enroll_c320(
+    headers: HeaderMap,
+    Json(input): Json<C320OwnerEnrollment>,
+) -> Result<(HeaderMap, Json<Value>), (StatusCode, HeaderMap, Json<Value>)> {
+    if !strict_private(&headers, true) {
+        return Err(denied(StatusCode::FORBIDDEN, "OWNER_PRIVATE_PANEL_ONLY"));
+    }
+    if input.device_profile != "zte_c320_lab"
+        || !(32..=128).contains(&input.bootstrap_code.len())
+        || !(1..=128).contains(&input.password.len())
+        || !input.bootstrap_code.bytes().all(|c| c.is_ascii_alphanumeric() || c == b'-' || c == b'_')
+        || input.password.bytes().any(|c| c == 0 || c == 10 || c == 13)
+    {
+        return Err(denied(StatusCode::BAD_REQUEST, "ENROLLMENT_INPUT_REJECTED"));
+    }
+    // Device address/port/username are fixed in this first physical C320
+    // adapter, not user-controlled SSRF/SSH targets. Secret is never logged.
+    let payload = json!({"device_profile":"zte_c320_lab",
+       "bootstrap_code":input.bootstrap_code,"password":input.password});
+    let request = format!("ENROLL {}\n",payload);
+    if request.len() > 1024 {
+        return Err(denied(StatusCode::BAD_REQUEST, "ENROLLMENT_INPUT_TOO_LARGE"));
+    }
+    let query = async {
+        let mut stream = UnixStream::connect(SOCKET).await?;
+        stream.write_all(request.as_bytes()).await?;
+        let mut data = Vec::new();
+        stream.take(1025).read_to_end(&mut data).await?;
+        Ok::<Vec<u8>,std::io::Error>(data)
+    };
+    let Ok(Ok(raw))=tokio::time::timeout(Duration::from_secs(58),query).await else {
+        return Err(denied(StatusCode::SERVICE_UNAVAILABLE,"ENROLLMENT_CONNECTOR_UNAVAILABLE"));
+    };
+    if raw.len()>1024 {
+        return Err(denied(StatusCode::BAD_GATEWAY,"ENROLLMENT_RESPONSE_REJECTED"));
+    }
+    let Ok(v)=serde_json::from_slice::<Value>(&raw) else {
+        return Err(denied(StatusCode::BAD_GATEWAY,"ENROLLMENT_RESPONSE_REJECTED"));
+    };
+    if v.get("enrolled_for_read").and_then(Value::as_bool)!=Some(true)
+        || v.get("commercial_production_adopted").and_then(Value::as_bool)!=Some(false)
+        || v.get("physical_writes_enabled").and_then(Value::as_bool)!=Some(false)
+    {
+        return Err(denied(StatusCode::FORBIDDEN,"ENROLLMENT_VERIFICATION_FAILED"));
+    }
+    let cards=v.get("physical_card_count").and_then(Value::as_u64)
+        .filter(|n| (1..=22).contains(n)).ok_or_else(||
+            denied(StatusCode::BAD_GATEWAY,"CARD_PROOF_REJECTED"))?;
+    let timestamp=v.get("verified_at_utc").and_then(Value::as_str)
+        .filter(|x| x.len()>=19 && x.len()<=40
+            && x.bytes().all(|c| c.is_ascii_digit() || b"-:TZ+.".contains(&c)))
+        .ok_or_else(||denied(StatusCode::BAD_GATEWAY,"TIMESTAMP_REJECTED"))?;
+    Ok((super::private_lab_headers("application/json; charset=utf-8"),
+        Json(json!({"enrolled_for_read":true,"card_count":cards,
+           "verified_at_utc":timestamp,"network_path":"DIRECT_SSH_PINNED",
+           "adoption_state":"READ_ONLY_CONNECTED_LAB",
+           "production_adopted":false,"physical_writes_enabled":false,
+           "host_identity_level":"NETWORK_OBSERVED_SSH_PIN"}))))
+}
+
+async fn connection_status(headers: HeaderMap)
+    -> Result<(HeaderMap, Json<Value>), (StatusCode, HeaderMap, Json<Value>)> {
+    if !strict_private(&headers,false) {
+        return Err(denied(StatusCode::FORBIDDEN,"OWNER_PRIVATE_PANEL_ONLY"));
+    }
+    let query=async {
+        let mut stream=UnixStream::connect(SOCKET).await?;
+        stream.write_all(b"STATUS\n").await?;
+        let mut data=Vec::new();
+        stream.take(513).read_to_end(&mut data).await?;
+        Ok::<Vec<u8>,std::io::Error>(data)
+    };
+    let response=match tokio::time::timeout(Duration::from_secs(3),query).await {
+        Ok(Ok(raw)) if raw.len()<=512 => serde_json::from_slice::<Value>(&raw).ok(),
+        _ => None,
+    };
+    let configured=response.as_ref().is_some_and(|v|
+        v.get("persistent_connector").and_then(Value::as_bool)==Some(true)
+        && v.get("credentials_enrolled").and_then(Value::as_bool)==Some(true)
+        && v.get("device_adopted").and_then(Value::as_bool)==Some(false)
+        && v.get("device_writes").and_then(Value::as_u64)==Some(0));
+    let last=response.as_ref().and_then(|v|v.get("last_verified_at_utc"))
+        .and_then(Value::as_str).filter(|s|
+            s.len()>=19 && s.len()<=40
+            && s.bytes().all(|c|c.is_ascii_digit()||b"-:TZ+.".contains(&c)))
+        .unwrap_or("");
+    Ok((super::private_lab_headers("application/json; charset=utf-8"),
+      Json(json!({"target":"DEV-01","vendor":"ZTE","model":"C320",
+        "management_transport":"DIRECT_SSH_PINNED","pon_scope":"1/1/1",
+        "connector_online":response.is_some(),"credentials_enrolled":configured,
+        "last_verified_at_utc":if configured {last} else {""},
+        "adoption_state":if configured && !last.is_empty() {"READ_ONLY_CONNECTED_LAB"}
+            else if configured {"CONFIGURED_AWAITING_READ"} else {"NOT_ENROLLED"},
+        "host_identity_level":"NETWORK_OBSERVED_SSH_PIN",
+        "production_adopted":false,"physical_writes_enabled":false}))))
+}
+
 pub(super) fn router() -> Router {
     Router::new()
+        .route("/lab/c320-owner-enroll", post(enroll_c320).layer(axum::extract::DefaultBodyLimit::max(512)))
+        .route("/lab/c320-owner-connection", axum::routing::get(connection_status))
         .route("/lab/c320-owner-live-refresh", post(refresh))
         .route("/lab/c320-owner-live-cards", post(cards))
         .route("/lab/c320-owner-live-firmware", post(firmware))
