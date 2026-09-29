@@ -4928,3 +4928,34 @@ offline mode for owner-only actual partial first C320 firmware captures,
 while preserving failure of default strict complete-firmware parse.
 Its real owner VPS source/test and live actual private capture
 normalization must be verified separately before declaring COMPLETE.
+
+R9.30 FINAL latest separate owner VPS strict partial CLI source
+`c5571907154296e0cb418b4474f8f703e67a6da3`, SHA-verified
+private delta and binary
+`17f14ecb15523125c7199a267b82e26ed93e877935a2d93aef3ed28bf8640333`:
+ACTUALLY normalized nonroot owner-only private first real manual
+captures using `olt-evidence --first-observation-partial-versions`.
+Output: 3 physical slots, 5 firmware rows, EXACT SMXA MVR slot1/1/4,
+GTGH/GTGHK card vs GTXK firmware file type at same slot1/1/1
+UNRESOLVED, PRAM slot1/1/3 running MVR UNREPORTED.
+Actual normalized output ONLY outside Git in 0700 owner VPS folder,
+0600 output; full firmware reconciliation FALSE, independent
+physical chassis proof FALSE and ADOPTED FALSE. Separate current
+owner Ubuntu 26 nonroot full pinned Rust1.98.1 fmt and
+`cargo test --workspace --locked --offline -q -j1`: SUCCESS
+**220/220 passed, zero failed, 40 test groups**. Owner Mac
+combined Python suite **76/76 PASS** plus JS syntax and whitespace.
+Previous initial Rust first-run failure on real one-digit clock is
+recorded above; corrected by narrowly validating vendor H:MM:SS.
+
+ACTUAL independent live localhost :3002 R9.30 HTTP smoke RERUN PASS:
+latest read metadata from proven manual LAB Telnet+SSH sessions,
+manual private card/partial firmware evidence accepted separately,
+all eight automatic physical command endpoints 403, worker FALSE,
+full production device_adopted FALSE, original :3000 HTTP200.
+No active SSH/Telnet privileged device session left open. Current
+private R9.30 app source release 53fd098 and separate offline partial
+normalizer source release c557190 are DISTINCT, reviewed separately;
+no production 3000/backend/OLT config changes in this milestone.
+Source PR and public sanitized synthetic hosted CI need final
+publication/independent verification after this docs checkpoint.

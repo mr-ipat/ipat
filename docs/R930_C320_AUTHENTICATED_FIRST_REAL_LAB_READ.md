@@ -149,3 +149,69 @@ b="${HOME}/.cache/ipat/r930-release/target/debug/olt-evidence"
 That private normalized output is a first-read acceptance input,
 NOT a signed asset/tenant verification. Never copy it into a public
 mirror or claim complete firmware equivalence from slot correlation.
+
+### Actually executed protected R9.30 real-private partial normalization
+
+On ACTUAL owner VPS, exact code-only Git bundle SHA256
+`f5ebb269679b519f116d7d5a2ca4af872fca3f88ea395afb17651014ba591e22`
+was verified and separately checked out at protected source
+`c5571907154296e0cb418b4474f8f703e67a6da3` into
+`/home/openai/.cache/ipat/r930-partial-cli`, without overwriting the
+already-running R9.30 private Rust LAB dashboard release. New strictly
+offline `olt-evidence` binary SHA256
+`17f14ecb15523125c7199a267b82e26ed93e877935a2d93aef3ed28bf8640333`.
+
+Executed the above CLI against the owner-VPS PRIVATE first real
+interactive-session-derived files; ACTUAL separate owner-only JSON
+`normalized/actual-c320-partial-versions.json` was created (NOT Git).
+It normalized **3 real-observed card slots and 5 actual-observed
+version rows**, with EXACT MVR slot `1/1/4`, UNRESOLVED board
+file-type `1/1/1:GTGH:GTGHK:GTXK`, and absent MVR `1/1/3`.
+Full-firmware trust FALSE, independent chassis trust FALSE,
+production device adopted FALSE; network actions in OFFLINE CLI ZERO.
+
+Actual full nonroot Ubuntu 26 owner-VPS pinned Rust 1.98.1 locked
+OFFLINE workspace verification subsequently PASSED **220/220** test
+cases across 40 Rust test groups (0 failed), including new strict
+negative firmware alias and vendor single-hour clock tests; full
+owner-Mac combined Python security suite **76/76 PASS**. The first
+workspace test attempt HAD exposed and FAILED on missing one-hour
+vendor clock support before correction. The failing first attempt
+is preserved in `docs/PROJECT_STATUS.md` as real regression evidence.
+
+### Deployed PRIVATE dashboard and rollback
+
+The NONROOT PRIVATE loopback-only LAB :3002 app was ACTUALLY upgraded
+from R9.28 using checksum-pinned script, leaving original :3000
+unchanged and ALL eight physical action POSTs HTTP403. Exact app
+binary SHA256
+`e507efdd3181dd79a6a24d1cb7e0b99c0ede980283879ff984a18fff5b9f17d4`
+was built from protected app source
+`53fd0987951d6beb5c630ee0e93285be55085eef`.
+R9.30 shell deployment script SHA256
+`54c926cc55eacbebd867376bf34bdee8872de1fb04592f461db692a9956ea3ba`,
+unit SHA256
+`0632b6fd0d08d94fffdd69118f783dc59317733ac3d4fb68cef1535bff0440c2`,
+independent actual HTTP smoke SHA256
+`172773a6a79ebec977018034820f87f95cb66df163da34c352ea912a1e0ba4c5`.
+
+Original private user service rollback was copied *before* changing
+LAB preview, to
+`/home/openai/.cache/ipat/r930-release/rollback-user-unit.service`.
+To roll back **only this private LAB preview**, not the OLT:
+
+```sh
+ssh ipat-lab
+install -m 0600 \
+  /home/openai/.cache/ipat/r930-release/rollback-user-unit.service \
+  ~/.config/systemd/user/ipat-r911-preview.service
+systemctl --user daemon-reload
+systemctl --user reset-failed ipat-r911-preview.service
+systemctl --user restart ipat-r911-preview.service
+```
+
+Actual on-VPS independent HTTP smoke was RERUN after the partial
+parser work: PASS, real LAB observations reported, worker/adopted
+FALSE, all eight physical actions HTTP403, :3000 HTTP200. There
+is intentionally no OLT-side config rollback because R9.30
+performed **ZERO OLT config, firmware or account writes**.

@@ -791,3 +791,22 @@ scoped credential/worker, baseline and independent authorization.
 R9.30 slot-only first-read partial version analysis MUST preserve
 unresolved GTGHK-vs-GTXK file-type identity and missing PRAM MVR;
 it may not loosen the existing complete-inventory validator.
+
+## ADR-061 — Separate strict actual-first-read PARTIAL firmware normalization
+
+A real manually captured interactive C320 lab `show version-running`
+contains one-digit clock hours, version `GTXK` on the SAME physical
+slot reported as `GTGHK` in `show card`, and NO running MVR for the
+observed PRAM. Harden version time parser to strictly accept vendor
+H:MM:SS or HH:MM:SS, without allowing impossible hours/minutes.
+Keep complete-firmware `olt-evidence` default DENY on unknown
+filetype or missing MVR. Add separate explicit owner-only CLI
+`--first-observation-partial-versions` that validates exact same
+physical slot with internally consistent FileType, outputs partial
+slot-by-slot uncertainty and unconditionally keeps actual independent
+chassis trust, full firmware and production adoption FALSE.
+This cannot grant OLT write authority or certify alias equivalence.
+Validated on actual owner-VPS PRIVATE manually transcribed first
+snapshot (3 physical cards, 5 reported versions, 1 alias unresolved,
+PRAM running MVR unreported). All new code must preserve negative
+firmware tests on synthetic fixture and never include device secrets.
