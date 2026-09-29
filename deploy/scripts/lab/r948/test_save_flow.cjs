@@ -5,7 +5,7 @@ const fs=require('node:fs');
 const path=require('node:path');
 const vm=require('node:vm');
 const source=fs.readFileSync(path.resolve(__dirname,'../../../../web/lab/c320-connection-setup.js'),'utf8');
-async function simulate({password='SYNTHETIC',ownerCode=''}) {
+async function simulate({password='SYNTHETIC',ownerCode='',autoVerify=false}) {
  const ids=['ipat-c320-enroll-form','ipat-c320-enroll-state','ipat-c320-enroll-result',
  'ipat-c320-enroll-button','ipat-device-type','ipat-device-model','ipat-device-protocol',
  'ipat-device-host','ipat-device-port','ipat-device-username',
@@ -19,6 +19,9 @@ async function simulate({password='SYNTHETIC',ownerCode=''}) {
    append(){},
    querySelector(){return security}
  }]));
+ elements['ipat-c320-enroll-form'].requestSubmit=function(){
+   this.lastSubmit=this.listeners.submit({preventDefault(){}});
+ };
  const security={open:false};
  Object.assign(elements['ipat-device-type'],{value:'olt'});
  Object.assign(elements['ipat-device-model'],{value:'zte_c320_lab'});
@@ -71,6 +74,12 @@ async function simulate({password='SYNTHETIC',ownerCode=''}) {
  for(let i=0;i<8;i++)await Promise.resolve();
  assert.equal(elements['ipat-c320-enroll-button'].disabled,false);
  await elements['ipat-c320-enroll-form'].listeners.submit({preventDefault(){}});
+ if(autoVerify){
+   elements['ipat-c320-bootstrap'].value='SYNTHETIC_OWNER_VERIFICATION_123456789012345';
+   elements['ipat-c320-bootstrap'].listeners.change();
+   assert.ok(elements['ipat-c320-enroll-form'].lastSubmit,'owner input did not resume pending SSH');
+   await elements['ipat-c320-enroll-form'].lastSubmit;
+ }
  return {elements,security,draft,enroll,network,events};
 }
 test('password with no hidden owner code persists draft, explains required step, never attempts SSH',async()=>{
@@ -93,4 +102,22 @@ test('full verified form persists draft first and then attempts exactly one devi
  assert.equal(out.enroll,1);
  assert.equal(out.elements['ipat-c320-device-password'].value,'');
  assert.equal(out.elements['ipat-c320-bootstrap'].value,'');
+});
+
+test('pending saved device resumes connection automatically after owner code input',async()=>{
+ const out=await simulate({autoVerify:true});
+ assert.equal(out.draft,2);
+ assert.equal(out.network,2);
+ assert.equal(out.enroll,1);
+ assert.equal(out.elements['ipat-c320-device-password'].value,'');
+ assert.equal(out.elements['ipat-device-save-stage'].textContent,'Saved to Device List');
+ assert.equal(out.elements['ipat-device-connect-stage'].textContent,'Connected · Read-only');
+});
+test('real saved device list stays above optional legacy diagnostics',()=>{
+ const html=fs.readFileSync(path.resolve(__dirname,'../../../../web/lab/device-workbench.html'),'utf8');
+ const list=fs.readFileSync(path.resolve(__dirname,'../../../../web/lab/device-workbench.js'),'utf8');
+ assert.ok(html.indexOf('id="ipat-saved-physical-rows"')>0);
+ assert.ok(html.indexOf('id="ipat-saved-physical-rows"')<html.indexOf('id="ipat-lab-diagnostics"'));
+ assert.match(list,/node\('ipat-saved-physical-rows'\)\.replaceChildren\(actual\)/);
+ assert.match(list,/if\(savedPhysical\)/);
 });
