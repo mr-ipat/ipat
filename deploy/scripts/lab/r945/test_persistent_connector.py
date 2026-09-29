@@ -78,6 +78,29 @@ class PersistentC320Tests(unittest.TestCase):
                 with self.assertRaises(ValueError):
                     agent.ensure_socket_available()
 
+    def test_pending_device_draft_is_persisted_without_password(self):
+        with tempfile.TemporaryDirectory() as t:
+            root=Path(t)/'private'
+            parent=Path(t)/'socket'
+            with patch.object(agent,'ROOT',root), patch.object(agent,'TOKEN',root/'bootstrap-token'), \
+                 patch.object(agent,'TOKEN_HASH',root/'bootstrap-sha256'), \
+                 patch.object(agent,'KEY',root/'envelope-key'), \
+                 patch.object(agent,'CREDENTIAL',root/'device.fernet'), \
+                 patch.object(agent,'DRAFT',root/'device-draft.json'), \
+                 patch.object(agent,'PARENT',parent),patch.object(agent,'SOCKET',parent/'live.sock'):
+                agent.init()
+                saved=agent.save_draft('Core OLT Lab')
+                self.assertTrue(saved['draft_saved'])
+                self.assertEqual(saved['adoption_state'],'DRAFT_SAVED_AWAITING_AUTH')
+                self.assertFalse(agent.enrolled())
+                self.assertFalse((root/'device.fernet').exists())
+                self.assertEqual(agent.load_draft()['device_name'],'Core OLT Lab')
+                self.assertEqual(agent.status()['device_name'],'Core OLT Lab')
+                self.assertTrue(agent.status()['draft_saved'])
+                self.assertEqual(oct((root/'device-draft.json').stat().st_mode & 0o777),'0o600')
+                with self.assertRaises(ValueError):
+                    agent.save_draft('a'+chr(10)+'b')
+
     def test_command_allowlist_and_fixed_transport(self):
         src=FILE.read_text()
         self.assertIn("SAFE_ACTIONS = {b'REFRESH",src)
