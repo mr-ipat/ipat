@@ -443,7 +443,13 @@ mod tests {
     async fn actual_manual_c320_onu_snapshot_is_private_sanitized_non_live() {
         let path = "/lab/c320-owner-manual-onu-snapshot";
         assert_eq!(get_path(app(), path).await.status(), StatusCode::NOT_FOUND);
-        let response = get_path(app_with_lab(true), path).await;
+        let missing_host = get_path(app_with_lab(true), path).await;
+        assert_eq!(missing_host.status(), StatusCode::FORBIDDEN);
+        let response = app_with_lab(true)
+            .oneshot(Request::builder().uri(path)
+                .header(header::HOST, "127.0.0.1:3002")
+                .body(Body::empty()).unwrap())
+            .await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
         assert_eq!(response.headers()[header::CACHE_CONTROL], "no-store");
         let body = axum::body::to_bytes(response.into_body(), 8192)
