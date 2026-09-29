@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="/lab/device-workbench.css">
   <script src="/lab/device-workbench.js" defer></script>
   <script src="/lab/c320-first-real-inventory.js" defer></script>
+  <script src="/lab/c320-operator-console.js" defer></script>
 </head>
 <body>
 <a href="#main" class="skip">Ke konten</a>
@@ -66,6 +67,46 @@
         <p id="c320-real-inventory-status" role="status" aria-live="polite">Memeriksa bukti privat, bukan polling perangkat...</p>
         <div id="c320-real-inventory" class="steps" aria-label="Tiga kartu fisik historis"></div>
       </section>
+      <section class="panel ipat-ops-console" id="ipat-c320-console" aria-labelledby="ipat-c320-console-heading">
+  <div class="section-top"><div><span class="eyebrow">IPAT OLT OPERATIONS · LAB PRIVAT R9.44</span>
+  <h2 id="ipat-c320-console-heading">ZTE C320 · Konsol Operasional</h2></div><span class="pill amber-pill">PERUBAHAN FISIK TERKUNCI</span></div>
+  <p id="ipat-c320-connectivity" role="status" aria-live="polite">Mengecek sesi agen OLT...</p>
+  <div class="ipat-ops-tabs" aria-label="Kategori fungsi OLT">
+    <span class="ipat-ops-tab active">Ringkasan & ONU</span>
+    <span class="ipat-ops-tab">Kartu perangkat</span>
+    <span class="ipat-ops-tab">Firmware</span>
+    <span class="ipat-ops-tab locked">Optik & traffic · berikutnya</span>
+  </div>
+  <div class="ipat-ops-topology">
+    <div><label for="ipat-c320-pon">Perangkat</label><strong>ZTE C320 · DEV-01</strong></div>
+    <div><label for="ipat-c320-pon">Port PON</label>
+      <select id="ipat-c320-pon" aria-describedby="ipat-c320-pon-disclosure">
+        <option value="1/1/1">PON 1/1/1 · pembacaan teruji</option>
+        <option value="other" disabled>PON lainnya · adapter fisik belum diuji</option>
+      </select></div>
+    <div><label>Pengamatan</label><strong id="ipat-c320-observation-stamp">Belum ada hasil terkini</strong></div>
+  </div>
+  <p id="ipat-c320-pon-disclosure" class="ipat-ops-disclosure">Pembacaan langsung hanya untuk PON 1/1/1. Ringkasan awal bersumber dari pemeriksaan manual pemilik tanggal 29 September 2026, bukan polling langsung.</p>
+  <div class="ipat-ops-metrics" aria-label="Ringkasan data ONU">
+    <article><small>ONU terkonfigurasi</small><strong id="ipat-c320-configured">—</strong></article>
+    <article><small>Online</small><strong id="ipat-c320-online">—</strong></article>
+    <article><small>Offline</small><strong id="ipat-c320-offline">—</strong></article>
+    <article><small>Belum terdaftar</small><strong id="ipat-c320-unconfigured">—</strong></article>
+  </div>
+  <div class="ipat-ops-actionbar" aria-label="Perintah baca-saja perangkat">
+    <button type="button" class="secondary" id="ipat-c320-read-onus" disabled>Baca ulang inventaris ONU</button>
+    <button type="button" class="secondary" id="ipat-c320-read-cards" disabled>Baca kartu fisik</button>
+    <button type="button" class="secondary" id="ipat-c320-read-firmware" disabled>Baca versi firmware</button>
+  </div>
+  <div class="ipat-ops-metrics ipat-ops-secondary">
+    <article><small>Kartu INSERVICE</small><strong id="ipat-c320-cards">Belum dibaca</strong></article>
+    <article><small>Inventaris firmware</small><strong id="ipat-c320-firmware">Belum dibaca</strong></article>
+  </div>
+  <p id="ipat-c320-console-status" role="status" aria-live="polite" class="form-notice">Agen pemilik harus aktif sebelum pembacaan nyata. Pengaktifan agen saja belum membuktikan OLT online.</p>
+  <h3>Aktivitas sesi lokal</h3><ol id="ipat-c320-events" class="ipat-ops-events" aria-label="Aktivitas pembacaan OLT"></ol>
+  <p id="ipat-c320-write-guard" class="separation"></p>
+  <p class="ipat-ops-disclosure">Kontrol ini hanya laboratorium privat; bukan produk SaaS multi-tenant yang telah selesai diadopsi. Pembacaan per-ONU, redaman, traffic, dan firmware detail memerlukan adapter khusus firmware yang belum dibuktikan.</p>
+</section>
       <section class="panel" id="c320-supervised-read" aria-labelledby="c320-supervised-read-title">
         <div class="section-top"><div><span class="eyebrow">R9.40 · KONTROL OLT NYATA, BACA SAJA</span>
           <h2 id="c320-supervised-read-title">ZTE C320 — pembacaan langsung dari panel</h2></div><span class="pill amber-pill">OWNER-SUPERVISED LAB</span></div>
