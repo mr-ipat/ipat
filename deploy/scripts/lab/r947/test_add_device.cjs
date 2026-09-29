@@ -68,3 +68,15 @@ test('network and SSH stages remain separate and include actionable nonsecret er
  assert.match(daemon,/SSH_AUTH_FAILED_OR_UNKNOWN_PROMPT/);
  assert.match(daemon,/DEVICE_CLI_RESPONSE_UNSUPPORTED/);
 });
+
+test('lab setup step clearly explains the one-time code and can copy instructions',()=>{
+  assert.match(html,/Why is this required\?/);
+  assert.match(html,/not<\/strong> the OLT password/);
+  assert.match(html,/One-Time Owner Code \(Lab Only\)/);
+  assert.match(html,/id="ipat-copy-owner-command"/);
+  assert.match(html,/id="ipat-owner-code-command"/);
+  assert.match(html,/\| pbcopy/);
+  assert.match(ui,/copyButton\.addEventListener\('click'/);
+  assert.match(ui,/navigator\.clipboard\.writeText\(source\.textContent\)/);
+  assert.match(ui,/LAB_SETUP_CODE_REQUIRED/);
+});
