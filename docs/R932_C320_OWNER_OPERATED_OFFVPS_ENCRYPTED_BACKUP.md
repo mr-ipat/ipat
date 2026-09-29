@@ -131,3 +131,5 @@ interface declarations; counts do not establish exact firmware
 role capability. Usernames/hashed passwords/ACL contents never
 entered documentation, CI or assistant response. Verify the exact
 firmware role syntax before attempting an actual privileged change.
+
+Independent nonroot owner-VPS software release verification: protected exact source 582ca2858a8973cb8227a7614537f04919b7698e, bundled protected checksum 148f7ebeef0531dc3ff8c2ec7dec26af618d94eebfadb6dad28152d98e5428dc, 7/7 new synthetic tests plus combined 87/87 Python safety, pinned complete Rust1.98.1 locked offline 220/220 PASS across 40 test groups. Real original owner-VPS encrypted-backup source receipt separately revalidated MATCH against actual private original SHA; owner Mac operator-sensitive --backup-and-restore explicitly NOT executed. This preserves the remote sensitive-transfer refusal.
