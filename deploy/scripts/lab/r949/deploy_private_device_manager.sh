@@ -13,7 +13,7 @@ binary="$src/target/debug/control-api"
 old_unit_sha=50023a6fbf9450abe9be35ef67011dde6b9585d46c579d8798b992bf273f5ab2
 old_bin_sha=3eeb6cb5fcffa8b6e3d10c4ad4af020eacd8c3f4c70fcc03be07b9cf6336c5c7
 expected_source=f2b48a0da7f4c2f40cda7697c8dd569ab85d59e7
-new_bin_sha=PIN_R949_BINARY_SHA256
+new_bin_sha=5c681377c0111fec02febb11396ff0fd965d44dad087321ddab8d9b26341119a
 [[ "$(git -C "$src" rev-parse HEAD)" == "$expected_source" ]] || exit 4
 [[ -z "$(git -C "$src" status --porcelain)" ]] || exit 4
 [[ "$(sha256sum "$unit"|cut -d' ' -f1)" == "$old_unit_sha" ]] || exit 4
