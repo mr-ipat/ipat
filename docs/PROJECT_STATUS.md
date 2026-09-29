@@ -4714,3 +4714,12 @@ per-user authorization method, measured site baseline/last-hop
 isolation, genuine tenant MFA and independent site reviewer. Do NOT
 pretend one old default account or existing private packet plan.json
 is an independently verified physical adoption proof.
+
+R9.24 independent public synthetic GitHub Actions run `36511075072`
+on exact sanitized public commit
+`b249883191d5a92399be549cba03021b6ba41285` finished
+SUCCESS **2/2** hosted jobs (`synthetic-static`, `rust-locked`).
+Do NOT confuse synthetic hosted CI + actual private LAB runtime with
+a first real password-authenticated SSH login or adoption of DEV-01;
+they remain FALSE. The original operational GitHub repository is
+still PRIVATE, with protected R9.24 stacked draft PR #125.
