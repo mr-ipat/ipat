@@ -84,7 +84,7 @@
       form.hidden=false;
       setState(connectorOnline?'READY TO CONNECT':'CONNECTOR OFFLINE');
       if(v.draft_saved===true){
-        showStage('Saved to Device List',connectorOnline?'Pending · Authentication required':'Pending · Connector unavailable');
+        if(!busy)showStage('Saved to Device List',waitingForOwner?'Pending · One-time lab verification required':connectorOnline?'Pending · Authentication required':'Pending · Connector unavailable');
         if(!networkChecked && connectorOnline){
           networkChecked=true;
           void probe().then(message=>{diagnostic.textContent=message;});
