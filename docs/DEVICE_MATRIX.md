@@ -539,3 +539,20 @@ of physical DEV-01. Both real authorized network paths still have
 only PREAUTH KEX evidence, never an actual `show ssh` capture.
 R9.21 parser classification is SYNTHETIC ONLY pending a real trusted
 console transcript. No actual hardware compatibility promotion.
+
+## R9.22 actual DEV-01 direct-private SSH negotiation (29 September 2026)
+
+Actual owner-reported C320 offers host keys `ssh-rsa,ssh-dss` and,
+on independent owner VPS private SSH tests, exactly the legacy
+cipher candidates `aes128-cbc,3des-cbc,blowfish-cbc`. Modern default
+SSH rejected hostkey/cipher negotiation. RSA + aes128-CBC with
+default group16-SHA512 KEX stalled BEFORE host-key; a separately
+bounded, actual VPS credential-free `diffie-hellman-group14-sha256`
+negotiation with pinned **ALGORITHMS ONLY** plus RSA/aes128-CBC
+SUCCEEDED reaching the server RSA host key and auth-method stage.
+Device identity remains UNTRUSTED (network-observed host key is not
+independently sourced); no password, actual chassis/card/firmware
+read, dedicated restricted user, operational action or customer
+baseline has been performed. New exact SSH adapter transport mode
+is a verified TRANSPORT PROFILE ONLY, not full vendor compatibility
+or adoption. `ssh-dss` was NOT enabled.

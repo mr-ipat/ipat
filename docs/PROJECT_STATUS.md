@@ -4531,3 +4531,28 @@ console transcript in IPAT. One safe actual `show ssh` inspection by
 a trusted physical-console operator remains the first unresolved
 real-world diagnostic; do NOT assume the historical example's
 server key state matches physical equipment.
+
+## R9.22 actual physical SSH compatibility breakthrough, 29 September 2026
+
+Owner supplied a genuine direct-private SSH client error reporting
+C320 remote host keys `ssh-rsa,ssh-dss`. One bounded actual authorized
+nonroot VPS noauth test with ONLY `ssh-rsa` enabled progressed to a
+second negotiation failure: observed remote legacy cipher offers
+`aes128-cbc,3des-cbc,blowfish-cbc`; normal modern defaults had no
+cipher overlap. One separately bounded RSA + aes128-CBC negotiation
+selected actual group16-SHA512 then TIMED OUT before host key.
+A single exact-device, credential-free PRIVATE owner-VPS test with
+RSA + aes128-CBC + explicitly group14-SHA256 then ACTUALLY
+SUCCEEDED: reached server RSA host-key and server-auth-method stage
+WITHOUT timeout, password, private key or OLT command. This is a
+real transport breakthrough; **NOT hardware identity or login**.
+
+New branch `feat/r922-c320-verified-group14-client-compat` adds this
+only as an explicit new process-scoped profile to the R7.9 first-read
+collector, preserving strict independently pinned host key, bounded
+one-command first-read mode, non-factory dedicated account and
+password/agent disabled. Expanded synthetic Mac collector tests passed;
+latest protected CI/public synthetic and actual isolated VPS test
+must independently pass before declaring R9.22 software complete.
+R9.19 loopback-only eight-action demo remains disabled for all real
+physical operations; no live C320 adoption or actual firmware read.
