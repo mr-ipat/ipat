@@ -36,7 +36,7 @@ MODE = 'OWNER_SUPERVISED_REAL_C320_READ_ONLY'
 SAFE_ACTIONS = {b'REFRESH\n', b'CARDS\n', b'FIRMWARE\n'}
 LOCK = threading.Lock()
 CLI_LOCK = threading.Lock()
-STATE = {'failures': 0, 'blocked_until': 0.0, 'last_verified': '', 'last_kind': '', 'poll_count': 0, 'last_monotonic': 0.0}
+STATE = {'failures': 0, 'blocked_until': 0.0, 'last_verified': '', 'last_kind': '', 'poll_count': 0, 'last_monotonic': 0.0, 'ever_verified': False}
 PARENT = SOCKET.parent
 
 
@@ -153,6 +153,7 @@ def verify_and_store(token, password, reader, reader_module):
         STATE['last_verified'] = datetime.now(timezone.utc).isoformat()
         STATE['last_kind'] = 'CARDS'
         STATE['last_monotonic'] = time.monotonic()
+        STATE['ever_verified'] = True
         STATE['failures'] = 0
     return {'enrolled_for_read': True, 'physical_card_count': result['cards_in_service'],
             'verified_at_utc': STATE['last_verified'],
@@ -166,6 +167,7 @@ def status():
         last = STATE['last_verified']
         last_kind = STATE['last_kind']
         recent = bool(last) and time.monotonic() - STATE['last_monotonic'] <= 360
+        ever_verified = STATE['ever_verified']
     return {'mode': MODE, 'agent_ready': configured,
             'read_in_progress': CLI_LOCK.locked(),
             'requests_left': 5 if configured else 0,
@@ -176,6 +178,7 @@ def status():
             'last_verified_kind': last_kind,
             'host_identity_level': 'NETWORK_OBSERVED_SSH_PIN',
             'actual_olt_connectivity_verified': recent,
+            'ever_verified_since_start': ever_verified,
             'device_adopted': False, 'device_writes': 0}
 
 
@@ -191,6 +194,7 @@ def read(request, reader, reader_module):
             STATE['last_kind'] = request.strip().decode('ascii')
             STATE['poll_count'] += 1
             STATE['last_monotonic'] = time.monotonic()
+        STATE['ever_verified'] = True
         result['read_at_utc'] = STATE['last_verified']
         # Existing Rust and GUI strict response contracts remain unchanged.
         return result
