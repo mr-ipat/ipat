@@ -16,7 +16,7 @@ expected_source=fc881425affdc1130fdc61905b05d6fcf1c87195
 expected_preview=47a981335a2a53b8ba8ebb1a40faf2755c0fa697589f67fb5b608688af2b40ab
 expected_collector=0577ad145ff01b38f8423901f57ae6e515ddfcf63bfe80d4e10d0f74f61b55df
 expected_old_binary=46717389d9104367bc89cc2c1bc373c137a1bba569fcadc0a651dcba8f1082d4
-expected_new_binary=REPLACE_WITH_R948_VERIFIED_BUILD_SHA256
+expected_new_binary=3eeb6cb5fcffa8b6e3d10c4ad4af020eacd8c3f4c70fcc03be07b9cf6336c5c7
 
 [[ "$(git -C "$source_dir" rev-parse HEAD)" == "$expected_source" ]] || exit 4
 [[ -z "$(git -C "$source_dir" status --porcelain)" ]] || exit 4
