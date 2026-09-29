@@ -39,3 +39,32 @@ test('one-time owner verification remains separate from main operator form',()=>
  assert.match(ui,/password\.value='';owner\.value='';/);
  assert.match(ui,/verified\.enrolled_for_read!==true/);
 });
+
+test('Save records a pending real device before one-time SSH verification',()=>{
+ const list=fs.readFileSync(path.join(base,'web/lab/device-workbench.js'),'utf8');
+ const daemon=fs.readFileSync(path.join(base,'deploy/scripts/lab/r945/persistent_c320_connector.py'),'utf8');
+ assert.match(ui,/await saveDraft\(draft\)/);
+ assert.match(ui,/if\(!bootstrap\)\{/);
+ assert.match(ui,/security\.open=true/);
+ assert.match(ui,/Pending owner verification/);
+ assert.match(list,/let savedPhysical = null/);
+ assert.match(list,/async function loadSavedPhysical\(\)/);
+ assert.match(list,/DRAFT_SAVED_AWAITING_AUTH|PENDING · OWNER VERIFICATION/);
+ assert.match(list,/ipat-device-connection-changed/);
+ assert.match(api,/async fn save_draft\(/);
+ assert.match(api,/DRAFT \{\}/);
+ assert.match(daemon,/DRAFT = ROOT/);
+ assert.match(daemon,/secret_write\(DRAFT/);
+ assert.doesNotMatch(ui,/localStorage|sessionStorage|innerHTML/);
+});
+test('network and SSH stages remain separate and include actionable nonsecret errors',()=>{
+ const daemon=fs.readFileSync(path.join(base,'deploy/scripts/lab/r945/persistent_c320_connector.py'),'utf8');
+ assert.match(ui,/c320-owner-network-probe/);
+ assert.match(ui,/SSH_PORT_REFUSED/);
+ assert.match(ui,/NETWORK_UNREACHABLE/);
+ assert.match(ui,/SSH_AUTH_FAILED_OR_UNKNOWN_PROMPT/);
+ assert.match(api,/async fn fixed_network_probe\(/);
+ assert.match(api,/TCP_REACHABLE_AUTH_NOT_TESTED/);
+ assert.match(daemon,/SSH_AUTH_FAILED_OR_UNKNOWN_PROMPT/);
+ assert.match(daemon,/DEVICE_CLI_RESPONSE_UNSUPPORTED/);
+});
