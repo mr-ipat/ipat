@@ -202,7 +202,7 @@ def background_read(stop, reader, reader_module):
     while not stop.is_set():
         if enrolled():
             try:
-                read(b'CARDS\\n', reader, reader_module)
+                read(b'CARDS\n', reader, reader_module)
             except (ValueError, OSError, InvalidToken):
                 with LOCK:
                     STATE['last_verified'] = ''
