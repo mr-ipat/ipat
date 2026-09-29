@@ -644,3 +644,21 @@ adoption. R9.30 branch contains narrow actual-shape Rust parser
 regression (synthetic fixture only in public mirror) and immutable
 private LAB readiness metadata. Physical automatic poll, alarms,
 ONT inventory, hardware config/firmware writes: NOT VERIFIED.
+
+## R9.31 actual lab C320 pre-change backup stage
+
+Using exact private owner-authorized bounded SSH, actually read
+privilege=15, available on-device startup cfg file listing, V2.1.0
+system-group and HISTORICAL alarm counter. No active alarm assessment.
+For this firmware `show startup-config` was rejected (historical
+other firmware docs do NOT establish compatibility). With nonpersistent
+`terminal length 0`, actual `show running-config` returned 119980
+bytes, complete vendor config end marker and original CLI prompt.
+Owner-private 0600 actual sensitive full snapshot and SHA256 receipt
+are kept on owner VPS outside Git. First independent off-host
+Restic encrypted backup+restorability TEST not yet possible: guarded
+sensitive transfer was rejected by tool; do not reroute covertly.
+All persistent OLT CLI configuration changes, password rotation,
+privileged account creation, PON/ONT commands and firmware: ZERO.
+Production automatic adoption stays BLOCKED; the real lab manual
+read proof from R9.30 remains validated.

@@ -4961,3 +4961,48 @@ Source PR and public sanitized synthetic hosted CI need final
 publication/independent verification after this docs checkpoint.
 
 R9.30 independent PUBLIC SANITIZED synthetic GitHub-hosted CI COMPLETED SUCCESS 2/2 for exact redacted public source SHA d066fc543c5e91aaa7e6c85c8bb87ec62d5f14c5, Actions run 36518704459: both synthetic-static/security and rust-locked jobs succeeded. No real IP/fingerprint/privileged password/raw CLI was published. This independent hosted synthetic run corroborates static security, JavaScript syntax and locked Rust tests, NOT actual C320 login (which was separately genuinely observed on owner VPS), firmware certification or production tenant readiness. Latest PRIVATE stacked protected draft PR #129 includes the exact real owner-authenticated first-read evidence source and guarded offline normalizer, private LB :3002 upgrade and site/runbook corrections. Old privileged laboratory test password remains TEMPORARY and should be rotated after restricted account+backup verification. No OLT config writes in R9.30.
+
+## R9.31 ACTUAL full private OLT running configuration acquisition and backup gate
+
+User requested completion under LIVE-SOP management while actual
+C320 is owner-attested no-customer TEST LAB. On actual authorized
+nonroot owner-VPS process-scoped known_network_RSA-pinned SSH,
+new bounded owner-approved temporary interactive TEST login SUCCEEDED.
+Current account `show privilege` confirmed MAX-LEVEL 15, NOT
+least-privilege. Actual `show file cfg` reported original saved
+`startrun.dat` and `startrun.sav` each 112902 bytes. Actual
+`show system-group` reported V2.1.0, uptime ~3 days (contact/location
+kept private). `show alarm counter` read historical counter
+alarmReport 68, alarmRecv 15; NO active-alarm claim.
+Real `show startup-config` rejected by THIS firmware, so no unsafe
+assumption about vendor guide. First filtered show running command
+was cancelled without persistent OLT effects; subsequently accepted
+session-only terminal pagination `terminal length 0` and actual full
+`show running-config` yielded 119980 bytes. Mode-0700 owner-only
+nonroot VPS directory r931-private-olt-backup now contains complete
+0600 full running capture, original private output-only terminal log
+and 0600 SHA256/provenance JSON receipt. Actual vendor start marker,
+standalone END, returned original CLI prompt, no pager/escape and
+NO password echo verified; SHA256
+`5b21f96b7b81dc9a771cc24e6369bc55433748b637bf0e98a3fb0a03e1989ba3`.
+A stuck post-read privileged SSH/PTY session was identified using
+actual VPS `ss`/`ps`, then the EXACT authorized SSH child process
+was terminated; subsequent `ss` confirmed ZERO ESTABLISHED sockets
+to target physical OLT. No device-side config/privilege/firmware/
+PON/ONT writes performed. Current full snapshot is SENSITIVE and
+ONLY on OWNER VPS, outside source and public mirror.
+
+Mac owner has FileVault ON, existing password-protected Restic repo
+0700, and Keychain-held recovery key; historical owner claimed escrow
+externally. Actual attempted guarded `scp` of NEW private device
+running config from VPS to Mac was REFUSED BY TOOL SECURITY. DO NOT
+attempt a covert alternative transfer/bypass or falsely claim an
+off-host encrypted backup/isolated restorable copy. Until authorized
+operator-controlled protected off-host transfer+independent restore,
+leave current device credentials and transport as-is and do not
+run `write`, create privileged users, disable Telnet, change server
+crypto/ACL, reboot or flash firmware. New code introduces strictly
+LOCAL offline nonroot `r931/verify_private_backup.py` with four
+synthetic negative/safety regressions, combined owner Mac preflight
+80/80 PASS. Separately test on actual VPS private receipt and
+publish source safely after documenting this milestone.
