@@ -15,7 +15,7 @@ test('Add Device exposes coherent international network-management fields',()=>{
    assert.match(ui,new RegExp("'"+id+"'"));
  }
  for(const label of ['Add Device','Device Name','Device Type','Vendor / Model',
-   'Management Protocol','Management IP','SSH Port','Username','Password','Connect &amp; Save'])
+   'Management Protocol','Management IP','SSH Port','Username','Password','Save Device &amp; Connect'])
    assert.ok(html.includes(label),label);
  assert.match(css,/\.ipat-device-form-grid\{/);
  assert.match(css,/@media\(max-width:700px\)/);
@@ -46,7 +46,7 @@ test('Save records a pending real device before one-time SSH verification',()=>{
  assert.match(ui,/await saveDraft\(draft\)/);
  assert.match(ui,/if\(!bootstrap\)\{/);
  assert.match(ui,/security\.open=true/);
- assert.match(ui,/Pending owner verification/);
+ assert.match(ui,/One-time lab verification required/);
  assert.match(list,/let savedPhysical = null/);
  assert.match(list,/async function loadSavedPhysical\(\)/);
  assert.match(list,/DRAFT_SAVED_AWAITING_AUTH|PENDING · OWNER VERIFICATION/);
