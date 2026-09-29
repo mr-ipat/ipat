@@ -754,3 +754,18 @@ is insufficient to mark device ADOPTED; trust provenance, actual
 restricted role, live baseline, tenant OIDC/MFA and dedicated audited
 non-demo production worker must be independently proven. Do not
 repeat uncredentialed SSH scans to substitute for these missing facts.
+
+## ADR-059 — Owner-authorized exact private TCP323 Telnet fallback as NOAUTH only
+
+An ACTUAL one-time authorized private owner-VPS passive TCP323
+connection received 15 bytes starting with Telnet IAC. Add exact
+per-device alternative transport evidence and a bounded single-socket
+noauth checker. This is *not* verified physical identity, approved
+plaintext login, credentialed remote command support or full
+vendor-compatible adoption. No default password over Telnet, no
+port323 public ingress, no auto-Telnet fallback on failed SSH and no
+loosening of strict production worker/tenant gates. User-requested
+Telnet is a site-approved isolated TEMPORARY alternative only after
+actual chassis/POP provenance, restricted role, baseline and
+independent reviewer/security approval. Keep SSH transport preferred
+for eventual production due to host-key verification and encryption.
