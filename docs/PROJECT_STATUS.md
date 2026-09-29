@@ -4754,3 +4754,29 @@ The working private R9.24 actual owner-VPS readiness app remains
 separate; this triage correction does not mount a physical executor.
 
 R9.25 PUBLIC CI independently GREEN: synthetic mirror SHA 740c9e86220c85973e1f11a386aa3d7d20e7e4cb, GitHub Actions run 36512130832 completed 2/2 SUCCESS (synthetic static/security and locked Rust workspace). These tests do NOT prove physical OLT authenticated login or adoption. Actual owner VPS offline 64/64 safety checks passed; external trusted chassis RSA and verified restricted account remain missing. Original private source remains protected in draft PR 126.
+
+## R9.26 actual owner file audit and offline physical acceptance intake
+
+Rechecked actual existing authorized owner Mac
+`~/.local/share/ipat/c320-private-packet`: EXACTLY `plan.json` exists.
+Nonroot VPS physical proof folder has no actual saved chassis key,
+restricted login/read capture or trustworthy site evidence. Private
+Lab C320 readiness backend :3002 returned HTTP200. Created strictly
+read-only nonroot tool `deploy/scripts/lab/r926/assess_site_packet.py`
+that checks 0700 owner-private canonical folders, only allowlisted
+0600 single-link bounded site files, true owner-supplied RSA public
+key matching vs existing historical NETWORK-ONLY observation, bounded
+legacy `show ssh` and card/version capture headers/hashes, without
+raw output or network communication. It independently leaves
+physical chassis identity, account/tenant MFA, worker and adoption
+FALSE even if syntactically valid captures exist. Actual owner Mac
+first execution reported ONLY plan.json present and EIGHT remaining
+site-evidence/production-authorization gaps, network actions ZERO.
+5 synthetic new tests PASSED including RSA-match STILL NOT ADOPTED,
+unsafe permission/control chars/symlink rejection and empty actual
+plan-only refusal; combined owner Mac safety suite 69/69 PASS.
+Site handoff: `docs/R926_C320_SITE_EVIDENCE_ACCEPTANCE.md`.
+The one outstanding real-world milestone is independently authenticated
+chassis/asset-source evidence + dedicated restricted account before
+one first authorized actual read; no C320 login/CLI/config changes
+were executed in R9.26.
