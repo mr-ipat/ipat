@@ -92,7 +92,7 @@ test('password with no hidden owner code persists draft, explains required step,
  assert.equal(out.security.open,true);
  assert.equal(out.elements['ipat-c320-bootstrap'].focused,true);
  assert.equal(out.elements['ipat-c320-device-password'].value,'SYNTHETIC');
- assert.match(out.elements['ipat-c320-enroll-result'].textContent,/One-Time Owner Code/);
+ assert.match(out.elements['ipat-c320-enroll-result'].textContent,/LAB_SETUP_CODE_REQUIRED/);
  assert.match(out.elements['ipat-device-connect-stage'].textContent,/One-time lab verification required/);
  assert.equal(out.elements['ipat-device-save-stage'].textContent,'Saved to Device List');
  assert.ok(out.events>=1);
