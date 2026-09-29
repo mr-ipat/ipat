@@ -505,7 +505,7 @@ mod tests {
             .header("Origin","http://127.0.0.1:3002")
             .header("X-IPAT-Demo-Only","1")
             .header("Content-Type","application/json")
-            .body(Body::from(r#"{"device_profile":"other_olt","bootstrap_code":"synthetic_1234567890123456789012345678","password":"synthetic"}"#))
+            .body(Body::from(r#"{"device_profile":"other_olt","device_type":"olt","device_name":"Synthetic Lab","management_ip":"192.0.2.30","ssh_port":2222,"username":"synthetic","bootstrap_code":"synthetic_1234567890123456789012345678","password":"synthetic"}"#))
             .unwrap()).await.unwrap();
         assert_eq!(bad.status(), StatusCode::BAD_REQUEST);
         let read = router()
