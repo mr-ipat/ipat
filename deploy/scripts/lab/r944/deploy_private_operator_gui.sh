@@ -16,7 +16,7 @@ old_bin=/home/openai/.cache/ipat/r943-release/control-api
 expected_source=9b4f5a1514fc6ed13ed842d6c0f496d98f48c396
 expected_old_unit=f50f58eeb340391a4768ff2038fcfe9e2655eff5ce6759b219b0b4f104022c83
 expected_old_binary=2f4e47d67bd063835dde8a69ca9149284fd121ddede91e97fe2285a0bccdb74c
-expected_new_binary=REPLACE_WITH_PINNED_BUILD_SHA256
+expected_new_binary=94e3544e62ce3b0405b96f0367bee6e8bd2a0fdd5b41e89b9b68fa91e7fe9a49
 
 [[ "$(git -C "$src" rev-parse HEAD)" == "$expected_source" ]] || exit 4
 [[ -z "$(git -C "$src" status --porcelain)" ]] || exit 4
