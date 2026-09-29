@@ -58,6 +58,26 @@ class PersistentC320Tests(unittest.TestCase):
                     agent.verify_and_store('invalid_token_value_which_is_long_but_fake',
                         'SYNTHETIC',None,None)
                 self.assertFalse(agent.enrolled())
+    def test_stale_socket_cleanup_rejects_an_active_listener(self):
+        import socket
+        with tempfile.TemporaryDirectory() as t:
+            root=Path(t)
+            path=root/'owner.sock'
+            server=socket.socket(socket.AF_UNIX,socket.SOCK_STREAM)
+            server.bind(str(path))
+            path.chmod(0o600)
+            server.listen(1)
+            with patch.object(agent,'SOCKET',path):
+                with self.assertRaises(ValueError):
+                    agent.ensure_socket_available()
+                self.assertTrue(path.exists())
+                server.close()
+                agent.ensure_socket_available()
+                self.assertFalse(path.exists())
+                path.symlink_to(root/'nonexistent')
+                with self.assertRaises(ValueError):
+                    agent.ensure_socket_available()
+
     def test_command_allowlist_and_fixed_transport(self):
         src=FILE.read_text()
         self.assertIn("SAFE_ACTIONS = {b'REFRESH",src)
