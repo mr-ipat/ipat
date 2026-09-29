@@ -82,6 +82,7 @@ function draw() {
     fragment.appendChild(row);
   }
   node("rows").replaceChildren(fragment);
+  window.dispatchEvent(new Event("ipat-device-list-rendered"));
   node("candidate-count").textContent = String(candidates.length);
 }
 async function refresh() {
