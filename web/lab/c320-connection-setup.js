@@ -80,6 +80,7 @@
         + value.card_count + ' kartu aktif diverifikasi, '+value.verified_at_utc
         + '. Anda sekarang dapat menggunakan tombol baca tanpa autentikasi Terminal.';
       await refresh();
+      window.dispatchEvent(new Event('ipat-device-connection-changed'));
     } catch (error) {
       result.textContent = 'BELUM TERHUBUNG: '+error.message
         +' Jangan menganggap perangkat adopted bila verifikasi gagal.';
