@@ -103,3 +103,9 @@ footer{border-top:1px solid #253e50;margin-top:24px;padding:20px 0;color:#83a1b3
 .ipat-connection-diagnostic{margin-top:12px;line-height:1.6;white-space:normal;overflow-wrap:anywhere;padding:10px 12px;border-left:3px solid #eab96b;background:#20333d;color:#ffe7b2;font-size:12px}
 .ipat-device-security[open]{border-color:#eab96b;background:#273740}
 .ipat-device-security[open] summary{color:#ffdf9f}
+
+/* R9.50: explicit temporary setup step that was previously undiscoverable */
+.ipat-owner-command{display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:12px;border:1px solid #52788b;border-radius:8px;background:#132934;margin:12px 0}
+.ipat-owner-command code{display:block;flex:1 1 300px;min-width:0;overflow-wrap:anywhere;user-select:all;font-size:12px;line-height:1.65;color:#d9f6ef}
+.ipat-owner-command button{flex:0 0 auto}
+#ipat-owner-command-feedback{font-size:12px;line-height:1.6;color:#d6e5ed}
