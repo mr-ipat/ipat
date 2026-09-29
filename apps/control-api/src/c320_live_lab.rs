@@ -503,7 +503,9 @@ async fn connection_status(
         "device_name":response.as_ref().and_then(|v|v.get("device_name")).and_then(Value::as_str).filter(|v|!v.is_empty()&&v.len()<=64).unwrap_or("ZTE C320 Lab"),
         "last_verified_at_utc":if configured {last} else {""},
         "adoption_state":if physically_fresh {"READ_ONLY_CONNECTED_LAB"}
-            else if configured {"CONFIGURED_AWAITING_READ"} else {"NOT_ENROLLED"},
+            else if configured {"CONFIGURED_AWAITING_READ"}
+            else if response.as_ref().and_then(|v|v.get("draft_saved")).and_then(Value::as_bool)==Some(true)
+                {"DRAFT_SAVED_AWAITING_AUTH"} else {"NOT_ENROLLED"},
         "host_identity_level":"NETWORK_OBSERVED_SSH_PIN",
         "production_adopted":false,"physical_writes_enabled":false})),
     ))
