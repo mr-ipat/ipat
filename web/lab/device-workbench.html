@@ -86,10 +86,17 @@
       </div>
       <div id="ipat-device-profile-notice" class="ipat-profile-info" role="status">ZTE C320: pinned SSH identity, read-only connection profile. Other models require their own verified adapters.</div>
       <details class="ipat-device-security">
-        <summary>Advanced Security · Lab Owner Verification</summary>
-        <p>This private lab requires a one-time owner code before it can authenticate to the OLT. Saving the device does not require this code. Production admin authentication will replace this temporary control.</p>
-        <label for="ipat-c320-bootstrap">One-Time Owner Code</label>
-        <input id="ipat-c320-bootstrap" type="password" autocomplete="off" minlength="32" maxlength="128" placeholder="Private owner verification code">
+        <summary>Lab Setup Verification · Required Once</summary>
+        <p><strong>Why is this required?</strong> This private lab preview is not yet protected by the production IPAT Admin login. This temporary code proves access to the owner VPS before IPAT sends your SSH password to the OLT. It is <strong>not</strong> the OLT password and is invalidated after the first successful device verification.</p>
+        <p><strong>Where do I get the code?</strong> On the Mac already connected to your IPAT lab, copy the command below, paste it into your own Terminal, then paste the resulting clipboard contents into this field. The code stays between your Mac and private VPS; do not send it through chat or GitHub.</p>
+        <div class="ipat-owner-command">
+          <code id="ipat-owner-code-command">ssh -o BatchMode=yes ipat-lab 'cat /home/openai/.local/share/ipat/r945-connection/bootstrap-token' | pbcopy</code>
+          <button type="button" id="ipat-copy-owner-command" class="secondary">Copy Command</button>
+        </div>
+        <p id="ipat-owner-command-feedback" role="status" aria-live="polite">This command copies the private code to your Mac clipboard without printing it in the chat. If your SSH alias differs, use your existing authorized VPS connection.</p>
+        <label for="ipat-c320-bootstrap">One-Time Owner Code (Lab Only)</label>
+        <input id="ipat-c320-bootstrap" type="password" autocomplete="off" minlength="32" maxlength="128" placeholder="Paste the private setup code here">
+        <p><strong>Future production flow:</strong> a verified IPAT Admin session with tenant permissions will replace this temporary lab-only step.</p>
       </details>
       <div class="ipat-ops-actionbar">
         <button type="submit" id="ipat-c320-enroll-button" class="secondary">Save Device &amp; Connect</button>
