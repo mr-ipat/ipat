@@ -581,3 +581,16 @@ actual local-client credential-free negotiation succeeds only with
 the verified R9.22 parameters. All eight LAB physical actions stay
 disabled pending real trust and tenant authorization. R9.23 offline
 change planner cannot establish compatibility or mutate hardware.
+
+## R9.24 real userauth evidence
+
+Actual authorized owner VPS bounded no-credential group14-CBC-RSA
+SSH method discovery advertised **`password` only** for the tested
+owner-reported account. Server network RSA key was received, still
+not independently trusted physical chassis provenance. Existing
+R7.9 key-only collector cannot authenticate against the tested
+account based on its observed offer; exact firmware and support
+for different dedicated accounts remain UNKNOWN. No password or
+actual C320 command submitted, no physical adoption, no OLT
+configuration changes. Future first-read may require an attended
+restricted-account password session after independent site approval.

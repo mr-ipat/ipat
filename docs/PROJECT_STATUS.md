@@ -4654,3 +4654,72 @@ OLT command or configuration change. Real operational adoption remains
 blocked on independently sourced physical chassis RSA, verified
 restricted account, POP site baseline/isolation and authentic tenant
 review approvals, not the client SSH algorithm negotiation.
+
+## R9.24 actual C320 userauth-method discovery
+
+On 29 September 2026 actual authorized nonroot owner VPS ONE bounded
+noauth SSH test (same owner-specified private device/port, exact
+verified compatible RSA/aes128-CBC/group14-SHA256) received the
+server authentication-method advertisement `password` ONLY for the
+tested owner-reported account, plus remote host RSA packet; NO
+password/private key or OLT command sent. This distinguishes physical
+server userauth compatibility from client KEX: R7.9's key-only
+collector cannot currently be assumed to login as this user. The
+current Mac protected owner-private C320 packet contains only
+`plan.json`, NOT independently sourced chassis RSA, dedicated
+restricted account or genuine tenant approval. Still no live OLT
+configuration changes and NO authenticated physical read/adoption.
+
+Added R9.24 tiny entirely offline actual-offer capability classifier,
+4 standalone tests PASS, updated private Rust LAB action metadata
+with observed password-only offer and continued adoption FALSE.
+Existing historical raw evidence JSON intentionally does NOT
+contain credential terms, maintaining earlier security contracts;
+public-facing source remains strictly nonsecret method metadata.
+Separate pinned VPS Rust suite/latest public synthetic CI require
+verification before declaring this code deployed.
+
+R9.24 actual separate owner VPS exact protected app source SHA `c21ff86`
+combined 62/62 offline Python tests, Rust fmt, full pinned locked
+offline control-api test/build PASSED; binary SHA256
+`b894db4b79abcbf8befbaf62625b8e4ec49145699f79c5046bd466b02bf2d0e5`.
+Only the private R9.24 loopback :3002 user service was ACTUALLY
+updated via reviewed checksum-pinned nonroot script SHA256
+`2a888899f44faab732b768b4280b1e998f1c4d0f3c4a4a3257c8b346ecaad9d7`.
+The new actual Rust HTTP backend reports `password` as the observed
+one-time SSH test-user offer and NO publickey offer; actual independent
+HTTP smoke PASSED while all eight physical action POSTs remain 403,
+worker/adoption FALSE and original :3000 healthy HTTP200. Backup of
+previous user service exists in r924-release, no real OLT
+credential/command/config change was initiated by this milestone.
+Latest protected branch push/PR and independently hosted public
+synthetic CI remain required before declaring R9.24 project mergeable.
+
+R9.24 latest public sanitized CI mirror commit
+`b249883191d5a92399be549cba03021b6ba41285` was actually
+published after sanitizing 9 operational address literals and 2
+historical observed RSA fingerprints, with local synthetic secret
+scan and 62/62 safety tests PASS. Public GitHub Actions run
+`36511075072` triggered on this exact SHA; its full hosted Rust
+job's success must be observed separately. Independently retested
+the ACTUAL owner VPS deployed private R9.24 HTTP smoke: PASS, `password`
+observed for previous credential-free test account, NO real hardware
+login/command or change and original :3000 still HTTP200. R9.24
+stacked protected source draft PR #125 exists on top of #124.
+
+The only honest physical next steps are independently trusted actual
+chassis RSA (or directly authenticated console out-of-band equivalent),
+real firmware-specific dedicated restricted account and observed
+per-user authorization method, measured site baseline/last-hop
+isolation, genuine tenant MFA and independent site reviewer. Do NOT
+pretend one old default account or existing private packet plan.json
+is an independently verified physical adoption proof.
+
+R9.24 independent public synthetic GitHub Actions run `36511075072`
+on exact sanitized public commit
+`b249883191d5a92399be549cba03021b6ba41285` finished
+SUCCESS **2/2** hosted jobs (`synthetic-static`, `rust-locked`).
+Do NOT confuse synthetic hosted CI + actual private LAB runtime with
+a first real password-authenticated SSH login or adoption of DEV-01;
+they remain FALSE. The original operational GitHub repository is
+still PRIVATE, with protected R9.24 stacked draft PR #125.
