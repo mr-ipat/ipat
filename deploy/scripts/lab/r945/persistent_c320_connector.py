@@ -194,7 +194,7 @@ def read(request, reader, reader_module):
             STATE['last_kind'] = request.strip().decode('ascii')
             STATE['poll_count'] += 1
             STATE['last_monotonic'] = time.monotonic()
-        STATE['ever_verified'] = True
+            STATE['ever_verified'] = True
         result['read_at_utc'] = STATE['last_verified']
         # Existing Rust and GUI strict response contracts remain unchanged.
         return result
