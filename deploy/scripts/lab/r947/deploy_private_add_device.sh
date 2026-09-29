@@ -11,14 +11,14 @@ release=/home/openai/.cache/ipat/r947-release
 unit=/home/openai/.config/systemd/user/ipat-r911-preview.service
 collector=/home/openai/.config/systemd/user/ipat-r945-connector.service
 new_binary="$stage/target/debug/control-api"
-expected_source=1c341daf36f2235c0192cb81551dda5a4f7d8a13
+expected_source=aabebcaf61959512bcf7cd3c2dcd73e8482ce524
 expected_unit=f8168d55b93e5e48abb69adffe43ea1ec03baad07a767aa6df9664a3686bab4a
 expected_collector=0577ad145ff01b38f8423901f57ae6e515ddfcf63bfe80d4e10d0f74f61b55df
 expected_previous_binary=1ad39f677a9bf05acdb0443d7793d42c319ea2d7ac27965b20d292028aa6c3f4
 expected_new_binary=REPLACE_WITH_BUILT_BINARY_SHA256
 
 [[ "$(git -C "$stage" rev-parse HEAD)" == "$expected_source" ]] || exit 4
-[[ "$(git -C "$stage" diff --name-only)" == apps/control-api/src/c320_live_lab.rs ]] || exit 4
+[[ -z "$(git -C "$stage" status --porcelain)" ]] || exit 4
 [[ "$(sha256sum "$unit"|cut -d' ' -f1)" == "$expected_unit" ]] || exit 4
 [[ "$(sha256sum "$collector"|cut -d' ' -f1)" == "$expected_collector" ]] || exit 4
 [[ "$(sha256sum /home/openai/.cache/ipat/r946-release/control-api|cut -d' ' -f1)" == "$expected_previous_binary" ]] || exit 4
