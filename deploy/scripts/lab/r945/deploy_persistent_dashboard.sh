@@ -16,7 +16,7 @@ smoke=/home/openai/.cache/ipat/r944-release/r945-private-adoption-smoke.py
 socket=/home/openai/.local/share/ipat/r940-live-agent/live.sock
 state=/home/openai/.local/share/ipat/r945-connection
 
-expected_source=847771f897d090f5f244f1250682ef9ee1685e14
+expected_source=8262b96bc2c9ac5247bfd6c9f5ea673cd6ffcef7
 expected_old_unit=7d1bb967b59e61494f1fc44f437508106302f4b8f6aaaafaf6b631d1478156bb
 expected_old_binary=94e3544e62ce3b0405b96f0367bee6e8bd2a0fdd5b41e89b9b68fa91e7fe9a49
 expected_new_binary=c529733f4cc1d822cc4670635dbcdc5fce596cc3faa7e69ab0244410bfed6408
