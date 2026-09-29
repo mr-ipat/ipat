@@ -4852,3 +4852,51 @@ physical inventory capture; do NOT send known default credentials
 across cleartext Telnet to an unverified customer-serving device.
 No real OLT changes, no Kubernetes/firewall/network policy changes,
 no actual hardware adoption as a result of this investigation.
+
+## R9.30 NEW actual physical authenticated first LAB reads, owner-corrected site scope
+
+Owner confirmed THIS ZTE C320 TEST LAB has NO customer attachment,
+but all adoption/config operations MUST still be performed as LIVE.
+For one owner-authorized bounded interactive session, actual
+PRIVATE TCP323 Telnet owner-supplied temporary login SUCCESSFULLY
+reached physical ZXAN C320 CLI. REAL `show card` => THREE
+INSERVICE cards (GTGHK slot1, PRAM slot3, SMXA slot4). REAL
+`show version-running` => FIVE rows, 1/1/1 GTXK MVR+BT and 1/1/4
+SMXA MVR+BT+FW; GTGHK-vs-GTXK same-slot type association
+UNRESOLVED and PRAM running MVR UNREPORTED. REAL `show ssh`
+=> enabled ver2.0 local CHAP, key-init wording `not initialized`
+though a real network RSA key packet already works. One unsupported
+READ `show alarm active` was rejected; NO alarm conclusion.
+Telnet session closed; ONE new owner-protected PRIVATE SSH host
+key network-only TOFU obtained in 0700/0600 owner VPS directory;
+fingerprint matched earlier independent Mac/VPS NETWORK OBSERVATIONS
+(but NOT actual console/OOB chassis proof). Actual bounded
+strict-known_hosts group14-SHA256/aes128-CBC/ssh-rsa interactive
+SSH TEST login with temporary owner-supplied credential SUCCEEDED,
+actual read `show card` and `show version-running` corroborated
+ALL SAME OBSERVED THREE cards + FIVE version rows. SSH session
+explicitly exited. Actual OLT configuration/SSH server/user/ONT/
+firmware writes ZERO; login password was sent for owner-approved
+TEMPORARY LAB sessions only and NEVER saved in source, scripts,
+owner captures or public CI. Credential remains weak, rotate once
+restricted account + secure backup/recovery are ready.
+
+Created owner FileVault-private 0700 folder
+`~/.local/share/ipat/c320-real-read-20260929` with 0600
+MANUALLY TRANSCRIBED bounded first cards/versions/SSH status and
+explicit NOT byte-exact provenance JSON, no passwords/PII; copied
+these safely via authenticated Mac-VPS SSH to VPS separate nonroot
+0700 folder `~/.local/share/ipat/r930-real-read-20260929`.
+ACTUALLY compiled protected offline Rust `olt-evidence` and ran
+`--cards` against this REAL owner-supplied observed first-read
+snapshot on authorized VPS: normalization PASS 3 cards / all
+INSERVICE, separate private 0600 normalized output; independent
+chassis proof, production worker and `device_adopted` FALSE.
+Historical R9.24/R9.28 no-credential observations intentionally
+remain immutable; R9.30 is a NEW subsequent lab authentication
+event with explicit user-attested scope. Implementing narrow Rust
+partial firmware correlation without falsely equating board alias or
+fabricating PRAM running version, and improving private LAB real
+first-read UI while keeping all eight real device actions 403.
+Production tenant onboarding and immutable reviewed worker still
+OPEN. Full R9.30 source/test/preview deployment tracked separately.

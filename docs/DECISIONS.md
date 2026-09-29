@@ -769,3 +769,25 @@ Telnet is a site-approved isolated TEMPORARY alternative only after
 actual chassis/POP provenance, restricted role, baseline and
 independent reviewer/security approval. Keep SSH transport preferred
 for eventual production due to host-key verification and encryption.
+
+## ADR-060 — R9.30 lab owner explicitly permits bounded default-account first READ, live change controls remain
+
+Owner corrected earlier DEV-01 site-impact assumption: this exact
+ZTE C320 is disconnected test-lab hardware with zero attached
+customers (owner attestation, not independent service survey), but
+MUST be treated with LIVE change discipline while adopted. A
+one-time owner-authorized interactive temporary account login was
+ACTUALLY successful on private Telnet323 and separately on private
+SSH with an existing repeat-observed network RSA pin. Only strictly
+bounded read-only `show card`, `show version-running`, `show ssh`
+commands were successful; no device-side changes. SSH is the
+preferred operational path, but the pinned RSA key remains
+network-observed and NOT independently sourced from the chassis.
+Treat this as `AUTHENTICATED_LAB_READ_OBSERVED_ADOPTION_PENDING`,
+not commercial ADOPTED or firmware-certification. No secret in Git,
+no unattended privileged factory account, no automatic Telnet
+fallback, no live config commands without secure tested backup,
+scoped credential/worker, baseline and independent authorization.
+R9.30 slot-only first-read partial version analysis MUST preserve
+unresolved GTGHK-vs-GTXK file-type identity and missing PRAM MVR;
+it may not loosen the existing complete-inventory validator.

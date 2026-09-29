@@ -168,6 +168,68 @@ pub fn consistent_inventory(cards: &[Card], versions: &[RunningVersion]) -> bool
         })
 }
 
+/// Partial first real capture: correlate only by exact SLOT; do NOT infer
+/// that mismatching firmware FileType is a vendor-approved card alias.
+#[derive(Debug, PartialEq, Eq)]
+pub struct FirstReadVersionCoverage {
+    pub exact_mvr_slots: Vec<String>,
+    pub unresolved_mvr_filetype: Vec<String>,
+    pub no_mvr_reported_slots: Vec<String>,
+}
+
+pub fn reconcile_first_read_versions(
+    cards: &[Card],
+    versions: &[RunningVersion],
+) -> Result<FirstReadVersionCoverage, EvidenceError> {
+    if cards.is_empty() || versions.is_empty() {
+        return Err(EvidenceError::Empty);
+    }
+    // A firmware record for a nonexistent physical slot is NOT a partial read.
+    for entry in versions {
+        let card = cards
+            .iter()
+            .find(|c| c.location == entry.location)
+            .ok_or(EvidenceError::Layout)?;
+        if entry.file_kind != "MVR" && entry.file_kind != "FW" && entry.file_kind != "BT" {
+            return Err(EvidenceError::Layout);
+        }
+        // Within the same slot the file type must be the same for all
+        // reported firmware/boot/file records. Otherwise fail closed.
+        if versions
+            .iter()
+            .any(|other| other.location == card.location && other.card_type != entry.card_type)
+        {
+            return Err(EvidenceError::Layout);
+        }
+    }
+    let mut result = FirstReadVersionCoverage {
+        exact_mvr_slots: Vec::new(),
+        unresolved_mvr_filetype: Vec::new(),
+        no_mvr_reported_slots: Vec::new(),
+    };
+    for card in cards {
+        let mvr: Vec<_> = versions
+            .iter()
+            .filter(|v| v.location == card.location && v.file_kind == "MVR")
+            .collect();
+        if mvr.is_empty() {
+            result.no_mvr_reported_slots.push(card.location.clone());
+        } else if mvr.len() != 1 {
+            return Err(EvidenceError::Duplicate);
+        } else if mvr[0].card_type == card.card_type || mvr[0].card_type == card.configured_type {
+            result.exact_mvr_slots.push(card.location.clone());
+        } else {
+            // The actual ZTE lab showed same slot but different board
+            // nomenclature. Preserve the unknown, do not silently map it.
+            result.unresolved_mvr_filetype.push(format!(
+                "{}:{}:{}:{}",
+                card.location, card.configured_type, card.card_type, mvr[0].card_type
+            ));
+        }
+    }
+    Ok(result)
+}
+
 /// Operator inputs are NOT trusted attestations; checks only make a document
 /// eligible for human review, never unlock firmware execution.
 #[derive(Default, Clone, Copy)]

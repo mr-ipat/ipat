@@ -618,3 +618,29 @@ role or production worker authorization. The previously proven
 private SSH group14-SHA256 transport still reaches password-method
 advertisement for the test account. Both paths remain unadopted
 pending independently verified hardware identity/role/POP gates.
+
+## R9.30 FIRST ACTUAL C320 authenticated LAB first READ — verified 29 September 2026
+
+The owner states this exact target is a disconnected zero-customer
+TEST LAB, with LIVE adoption change discipline. On ACTUAL private
+C320, the owner-authorized temporary Telnet323 and separately exact
+RSA/aes128-CBC/group14-SHA256 SSH interactive sessions BOTH
+successfully logged in and independently observed `show card` and
+`show version-running` without configuration edits. The real
+Telnet session also read `show ssh` confirming enabled ver2.0 local
+CHAP; one `show alarm active` probe returned syntax error and alarms
+remain UNTESTED. Three real observed physical cards:
+slot 1/1/1 GTGHK (configured GTGH), slot 1/1/3 PRAM, slot 1/1/4
+SMXA, all card-reported INSERVICE. Five real version records:
+slot 1/1/1 `GTXK` MVR V2.1.0/BT V4.0.16 (file-type alias vs
+GTGHK UNVERIFIED), slot 1/1/4 SMXA MVR V2.1.0/BT V4.0.13/FW
+V2.1.0. Slot 1/1/3 PRAM had NO MVR version row.
+
+Actual first manually transcribed no-secret card snapshot was
+accepted by protected owner-VPS offline Rust card-only normalizer
+(3 cards, 3 INSERVICE). Never imply raw byte-exact log, independent
+host key/chassis identity, verified firmware all slots or commercial
+adoption. R9.30 branch contains narrow actual-shape Rust parser
+regression (synthetic fixture only in public mirror) and immutable
+private LAB readiness metadata. Physical automatic poll, alarms,
+ONT inventory, hardware config/firmware writes: NOT VERIFIED.
