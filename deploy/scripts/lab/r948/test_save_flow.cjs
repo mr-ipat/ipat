@@ -10,7 +10,7 @@ async function simulate({password='SYNTHETIC',ownerCode=''}) {
  'ipat-c320-enroll-button','ipat-device-type','ipat-device-model','ipat-device-protocol',
  'ipat-device-host','ipat-device-port','ipat-device-username',
  'ipat-c320-device-password','ipat-c320-bootstrap','ipat-device-name',
- 'ipat-device-profile-notice'];
+ 'ipat-device-profile-notice','ipat-device-save-stage','ipat-device-connect-stage','ipat-device-diagnostic'];
  const elements=Object.fromEntries(ids.map(id=>[id,{
    id,value:'',textContent:'',disabled:false,hidden:false,style:{},
    listeners:{},addEventListener(kind,fn){this.listeners[kind]=fn},
@@ -31,7 +31,7 @@ async function simulate({password='SYNTHETIC',ownerCode=''}) {
  elements['ipat-c320-bootstrap'].value=ownerCode;
  let draft=0,enroll=0,network=0,events=0;
  const status={target:'DEV-01',model:'C320',production_adopted:false,
-   physical_writes_enabled:false,connector_online:true,credentials_enrolled:false};
+   physical_writes_enabled:false,connector_online:true,credentials_enrolled:false,draft_saved:false};
  const context={
    document:{getElementById(id){return elements[id]},createElement(){return {value:'',textContent:''}}},
    window:{dispatchEvent(){events++}},Event:class{constructor(name){this.name=name}},
@@ -41,6 +41,7 @@ async function simulate({password='SYNTHETIC',ownerCode=''}) {
      if(url.endsWith('/lab/c320-owner-connection'))return{ok:true,json:async()=>status};
      if(url.endsWith('/lab/c320-owner-save-draft')){
        draft++;
+       status.draft_saved=true;
        const saved=JSON.parse(init.body);
        assert.deepEqual(Object.keys(saved).sort(),
           ['device_name','device_profile','device_type','management_ip','ssh_port','username'].sort());
@@ -80,7 +81,9 @@ test('password with no hidden owner code persists draft, explains required step,
  assert.equal(out.security.open,true);
  assert.equal(out.elements['ipat-c320-bootstrap'].focused,true);
  assert.equal(out.elements['ipat-c320-device-password'].value,'SYNTHETIC');
- assert.match(out.elements['ipat-c320-enroll-result'].textContent,/Pending owner verification/);
+ assert.match(out.elements['ipat-c320-enroll-result'].textContent,/One-Time Owner Code/);
+ assert.match(out.elements['ipat-device-connect-stage'].textContent,/One-time lab verification required/);
+ assert.equal(out.elements['ipat-device-save-stage'].textContent,'Saved to Device List');
  assert.ok(out.events>=1);
 });
 test('full verified form persists draft first and then attempts exactly one device authentication',async()=>{
