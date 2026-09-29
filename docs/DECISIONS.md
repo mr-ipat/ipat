@@ -877,3 +877,20 @@ credentials remain break-glass until independent review/role-safe
 replacement and validated vendor-native recovery. No device writes
 in this milestone. Separate trust/POP/MFA/reviewer/audited worker
 remain mandatory before genuine automatic/production adoption.
+
+## ADR-065 — One operator-interactive EXACT LAB SSH first read separated from production service worker
+
+R9.33 actual Mac Restic off-VPS encrypted capture/isolated reference
+restore is verified. Production still has no dedicated physically
+proved restricted device identity, genuine tenant MFA/reviewer,
+independent chassis key or native firmware-import drill.
+Introduce only a stand-alone opt-in owner-lab SSH `show card` adapter
+with a single interactive short-lived password challenge for the
+already owner-approved TEST device/account, strict pinned previously
+observed network RSA and one vendor-validated read-only command,
+plus owner-only evidence normalization/audit. It is NOT an
+unattended default-credential controller, commercial tenant worker
+or blanket privilege; never mount it on public HTTP/API, queue or
+K3s while current user remains privileged or identity unclear.
+A first accepted live read does not confer `ADOPTED_READ_ONLY` until
+all separately documented production gates have been genuinely met.

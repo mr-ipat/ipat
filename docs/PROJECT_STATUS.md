@@ -5155,3 +5155,24 @@ socket inspection zero established C320 management sessions.
 Original device unchanged; currently only the historical proof and
 private app/UI were advanced. Hosted sanitized-only public CI and
 protected PR publication must be independently verified next.
+
+R9.33 independently hosted PUBLIC sanitized synthetic-only source
+`2f23b2c72440077ff85230ed3156168d37dacc77`, Actions
+run `36529369459`, COMPLETED SUCCESS 2/2 hosted jobs: static
+security/JS and pinned Rust workspace. Actual owner Restic snapshot
+ID, real private running-config/CLI, credentials and site-specific
+metadata NEVER entered the public mirror. This CI does not test
+actual ZTE native recovery or real privileged physical operations.
+
+## R9.34 pending actual controlled LAB adapter
+
+New `deploy/scripts/lab/r934/one_manual_c320_ssh_read.py` is
+EXPLICIT nonroot owner interactive exact C320+321, strict observed
+network-only RSA pin, one password-memory-only `show card`, zero
+config operations, owner-only 0700/0600 capture and existing offline
+Rust normalizer. This is NOT a commercial auto worker, cannot run
+noninteractively and never persists the weak privileged test
+credential. The R9.33 private :3002 historical proof continues to
+be accurate with production action 403. R9.34 synthetic safety tests
+and actual owner-VPS first CLI adapter run to be explicitly recorded
+only after they have been verified; never mislabel incomplete work.
