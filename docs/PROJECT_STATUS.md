@@ -5008,3 +5008,24 @@ synthetic negative/safety regressions, combined owner Mac preflight
 publish source safely after documenting this milestone.
 
 R9.31 independent owner-VPS source SHA 01b3d9be25c5a07d222eb53cad3ea635c2eb579e was SHA256-verified via private Git delta a293446983a918e60cd423752d8c5b43b7863237518871b8b9680bfaa0b7ad46 into separate nonroot checkout. Actual VPS private full 119980-byte sensitive C320 running-config snapshot RECEIPT was validated in situ by new strictly local read-only tool: SHA256 5b21f96b7b81dc9a771cc24e6369bc55433748b637bf0e98a3fb0a03e1989ba3 MATCHED, vendor start/end and owner 0700/file 0600 passed; device_adopted FALSE, full off-host encrypted backup NOT RESTORED. Dedicated 4/4 and combined 80/80 synthetic Python tests PASS on actual owner VPS and Mac. Owner VPS pinned Rust 1.98.1 full locked offline workspace 220/220 PASS across 40 test groups (source changes are strictly Python/docs); no OLT config writes. The direct protected VPS-to-Mac raw running-config transfer remains BLOCKED by Remote Desktop Commander safety policy; NO alternate bypass attempted. Private original actual config and receipt remain strictly outside Git at owner VPS. Root docs and developer screens show no raw config or secret.
+
+R9.31 hosted PUBLIC SYNTHETIC CI on redacted code-only SHA
+`6e1a5a8caf4aa5677b7585b81632418d0690a458` run
+`36523261243` completed SUCCESS 2/2 (synthetic security/static and
+locked Rust). This mirror deliberately EXCLUDED new R9.31 real
+operational backup docs, all actual full C320 config bytes,
+owner-private receipts, CLI terminal output, device secrets and
+vendor/customer-specific metadata. Public synthetic test success
+is not off-host backup completion or live production adoption.
+
+One additional source-integrity observation: real 119980-byte
+owner-private `show running-config` output-only file has a complete
+standalone vendor `end` record followed by one EXPECTED 11-byte CLI
+prompt (`olt.backup#`) from the controlled SSH session. This raw
+file is therefore a preserved sensitive CLI TRANSCRIPT SEGMENT,
+not a byte-identical vendor-native import file; NEVER claim that
+its bytes can safely be restored onto a chassis until a separate
+firmware-specific export plus isolated restoration is tested.
+Original authenticated SSH child was explicitly terminated after
+the read and the owner-VPS socket table independently showed ZERO
+ESTABLISHED sockets to the physical OLT.

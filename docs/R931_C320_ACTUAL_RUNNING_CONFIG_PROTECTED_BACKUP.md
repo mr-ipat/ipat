@@ -116,3 +116,17 @@ the current VPS, outside Git; an isolated off-host restore is OPEN.
 - Exact firmware minimum-privilege account/production worker: OPEN.
 - Independent physical host attestation/tenant MFA/reviewer: OPEN.
 - Automatic safe SaaS `ADOPTED`: FALSE.
+
+The protected 119980-byte evidence is a complete CLI **output
+transcript segment**: its complete standalone vendor `end` record
+is followed by one expected CLI prompt retained for forensic proof.
+It is NOT a byte-identical vendor-native configuration import
+artifact or demonstrated device-restore file. The separate encrypted
+backup and actual firmware-specific recovery remain mandatory
+before changing login paths.
+
+Independent hosted public synthetic Actions run `36523261243`
+completed SUCCESS 2/2 on redacted code-only commit
+`6e1a5a8caf4aa5677b7585b81632418d0690a458`; real operational
+docs/receipt/raw full device configuration were excluded from that
+PUBLIC mirror. Synthetic CI cannot authorize production adoption.
