@@ -357,7 +357,7 @@ async fn connection_status(headers: HeaderMap)
         "connector_online":response.is_some(),"credentials_enrolled":configured,
         "device_status":status,
         "last_verified_at_utc":if configured {last} else {""},
-        "adoption_state":if configured && !last.is_empty() {"READ_ONLY_CONNECTED_LAB"}
+        "adoption_state":if physically_fresh {"READ_ONLY_CONNECTED_LAB"}
             else if configured {"CONFIGURED_AWAITING_READ"} else {"NOT_ENROLLED"},
         "host_identity_level":"NETWORK_OBSERVED_SSH_PIN",
         "production_adopted":false,"physical_writes_enabled":false}))))
