@@ -226,12 +226,16 @@ pub(super) async fn owner_onu_snapshot(
     headers: HeaderMap,
 ) -> Result<(HeaderMap, Json<Value>), (StatusCode, HeaderMap, Json<Value>)> {
     if !super::device_workbench_lab::demo_csrf_read(&headers) {
-        return Err((StatusCode::FORBIDDEN,
+        return Err((
+            StatusCode::FORBIDDEN,
             super::private_lab_headers("application/json; charset=utf-8"),
-            Json(json!({"error":"PRIVATE_LOCAL_LAB_ONLY"}))));
+            Json(json!({"error":"PRIVATE_LOCAL_LAB_ONLY"})),
+        ));
     }
-    Ok((super::private_lab_headers("application/json; charset=utf-8"),
-        Json(owner_manual_onu_snapshot())))
+    Ok((
+        super::private_lab_headers("application/json; charset=utf-8"),
+        Json(owner_manual_onu_snapshot()),
+    ))
 }
 
 /// Actual C320 ONT feature states remain explicit and DENIED until verified.
@@ -337,17 +341,20 @@ mod tests {
 
     #[test]
     fn owner_reported_actual_onu_snapshot_is_sanitized_and_never_promotes_adoption() {
-        let r=owner_manual_onu_snapshot();
-        assert_eq!(r["registered_onu_status_rows"],72);
-        assert_eq!(r["registered_onu_config_declarations"],72);
-        assert_eq!(r["onu_online"],0);
-        assert_eq!(r["onu_offline"],72);
-        assert_eq!(r["unconfigured_onus_reported"],0);
-        assert_eq!(r["snapshot_is_live"],false);
-        assert_eq!(r["state_and_configuration_ids_automatically_reconciled"],false);
-        assert_eq!(r["onu_registration_ready"],false);
-        assert_eq!(r["real_olt_adopted"],false);
-        let s=r.to_string();
+        let r = owner_manual_onu_snapshot();
+        assert_eq!(r["registered_onu_status_rows"], 72);
+        assert_eq!(r["registered_onu_config_declarations"], 72);
+        assert_eq!(r["onu_online"], 0);
+        assert_eq!(r["onu_offline"], 72);
+        assert_eq!(r["unconfigured_onus_reported"], 0);
+        assert_eq!(r["snapshot_is_live"], false);
+        assert_eq!(
+            r["state_and_configuration_ids_automatically_reconciled"],
+            false
+        );
+        assert_eq!(r["onu_registration_ready"], false);
+        assert_eq!(r["real_olt_adopted"], false);
+        let s = r.to_string();
         assert!(!s.contains("ZTEGC969"));
         assert!(!s.contains("Password"));
     }
