@@ -4723,3 +4723,34 @@ Do NOT confuse synthetic hosted CI + actual private LAB runtime with
 a first real password-authenticated SSH login or adoption of DEV-01;
 they remain FALSE. The original operational GitHub repository is
 still PRIVATE, with protected R9.24 stacked draft PR #125.
+
+## R9.25 SSHv2 key status triage correction and practical site handoff
+
+After reviewing historical ZTE C320 SSHv2 examples alongside ACTUAL
+previous owner-VPS group14 handshake that returned RSA host key and
+advertised PASSWORD for test username, corrected R9.21 offline
+parser and R9.23 site planner: both SSHv2 `not initialized` and
+`disable` server-key status are AMBIGUOUS, NOT proof of missing key or
+a reason to run server-side key generation. Added synthetic safety
+regressions for both variants; combined local suite 64/64 PASSED.
+Created precise protected site handoff in
+`docs/R925_C320_REAL_ADOPTION_SITE_HANDOFF.md`: trusted console
+read-only status and card/firmware capture, OOB identity, minimal
+privilege account test, protected SSH manual password-only first
+read if actual restricted account permits, and honest independent
+audit requirements. No actual physical device CLI command/login or
+SSH server configuration has been executed as part of this fix.
+The user still needs genuine independently authenticated site
+console proof or equivalent approved trust source; the available
+owner Mac C320 packet has only plan.json. Do not set device ADOPTED.
+
+R9.25 verified actual independent owner nonroot VPS checkout
+`ba2daadcda89dc24e31d291d8dd4d2e7c760e6ce`, transferred by
+SHA256-checked private Git bundle: standalone offline ZTE show-ssh
+5/5, firmware-conditional no-network change-plan 5/5 and combined
+security/preflight 64/64 PASS. All used synthetic input, absolutely
+no real device commands/credentials, no production services changed.
+The working private R9.24 actual owner-VPS readiness app remains
+separate; this triage correction does not mount a physical executor.
+
+R9.25 PUBLIC CI independently GREEN: synthetic mirror SHA 740c9e86220c85973e1f11a386aa3d7d20e7e4cb, GitHub Actions run 36512130832 completed 2/2 SUCCESS (synthetic static/security and locked Rust workspace). These tests do NOT prove physical OLT authenticated login or adoption. Actual owner VPS offline 64/64 safety checks passed; external trusted chassis RSA and verified restricted account remain missing. Original private source remains protected in draft PR 126.

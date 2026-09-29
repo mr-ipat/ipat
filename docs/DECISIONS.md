@@ -728,3 +728,16 @@ supports password; commercial automation requires isolated credential
 vault, independent true MFA, POP scope/worker and audit not yet
 implemented. This observation is account/time-specific, not a
 universal vendor capability statement.
+
+## ADR-057 — SSHv2 server-key initialization status is ambiguous
+
+Actual C320 group14/RSA/AES128-CBC handshake already returns the RSA
+server host key and advertises test-user password authentication.
+Historical firmware manuals show `SSH init server key : not initialized`
+or `disable` even with SSHv2 enabled. These fields alone SHALL NOT
+indicate a defective SSHv2 RSA key or trigger regeneration, SSH
+daemon restart or live crypto changes. R9.25 offline triage and
+conditional site change planner now classify both values as
+SSHV2_FIELD_AMBIGUOUS while retaining UNKNOWN physical chassis
+identity. Real first-read requires external trusted-console
+provenance, restricted user and explicit site risk controls.
