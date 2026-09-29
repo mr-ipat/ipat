@@ -4654,3 +4654,27 @@ OLT command or configuration change. Real operational adoption remains
 blocked on independently sourced physical chassis RSA, verified
 restricted account, POP site baseline/isolation and authentic tenant
 review approvals, not the client SSH algorithm negotiation.
+
+## R9.24 actual C320 userauth-method discovery
+
+On 29 September 2026 actual authorized nonroot owner VPS ONE bounded
+noauth SSH test (same owner-specified private device/port, exact
+verified compatible RSA/aes128-CBC/group14-SHA256) received the
+server authentication-method advertisement `password` ONLY for the
+tested owner-reported account, plus remote host RSA packet; NO
+password/private key or OLT command sent. This distinguishes physical
+server userauth compatibility from client KEX: R7.9's key-only
+collector cannot currently be assumed to login as this user. The
+current Mac protected owner-private C320 packet contains only
+`plan.json`, NOT independently sourced chassis RSA, dedicated
+restricted account or genuine tenant approval. Still no live OLT
+configuration changes and NO authenticated physical read/adoption.
+
+Added R9.24 tiny entirely offline actual-offer capability classifier,
+4 standalone tests PASS, updated private Rust LAB action metadata
+with observed password-only offer and continued adoption FALSE.
+Existing historical raw evidence JSON intentionally does NOT
+contain credential terms, maintaining earlier security contracts;
+public-facing source remains strictly nonsecret method metadata.
+Separate pinned VPS Rust suite/latest public synthetic CI require
+verification before declaring this code deployed.

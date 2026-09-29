@@ -713,3 +713,18 @@ recovery, live baseline and independent approved maintenance;
 all actual OLT server configuration commands executed are ZERO at
 this milestone. Client-side exact-device group14 profile remains
 verified and scoped to a single SSH process.
+
+## ADR-056 — R9.24 observed `password`-only C320 test account
+
+An ACTUAL credential-free bounded C320 owner-VPS probe successfully
+reached userauth and received ONLY `password` for the owner-reported
+test username. The preexisting key-only R7.9 collector is INCOMPATIBLE
+with that observed account until independent dedicated user setup
+proves a real `publickey` offer. Do not infer an SSH server config
+defect or edit the OLT merely because the existing collector enforces
+keys. Support a separately approved, trusted-host, on-site operator
+ATTENDED first read if actual minimally privileged account only
+supports password; commercial automation requires isolated credential
+vault, independent true MFA, POP scope/worker and audit not yet
+implemented. This observation is account/time-specific, not a
+universal vendor capability statement.
