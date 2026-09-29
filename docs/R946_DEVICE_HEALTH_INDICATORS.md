@@ -1,0 +1,22 @@
+# R9.46 — Color-coded physical connection indicators and public CI policy
+
+## Operator behavior
+
+The user requested a color signal for **every connected device**. The first live implementation is for the one *actually wired* physical ZTE C320 (DEV-01): the OLT operator title and its corresponding device inventory row share the same polling source. Synthetic candidate rows remain grey UNKNOWN and are **never** inferred as live devices. The previous 72 dated ONU indices are explicitly manual/historical, so the application does **not** paint them current per-ONU online/offline without fresh per-ONU telemetry. Future C-DATA/VSOL/MikroTik device adapters must use the same status schema per tenant and device ID; do not reuse a single C320 signal across different device rows.
+
+Classification contract from strictly private `GET /lab/c320-owner-connection`: CONNECTED=server connector has verified credentials **and** accepted a **fresh real authenticated C320 read** within a bounded six-minute freshness TTL. DISCONNECTED=the previously verified C320 can no longer provide fresh authenticated observations within this running session; PENDING=connector available but device credential or initial physical read absent; UNKNOWN=no verified connector response/contract. TCP reachability, the status of a systemd process, a saved password, stale CLI transcripts and screenshot data do not qualify for GREEN. The client independently refuses green if timestamps are malformed, in the future or older than six minutes. Device indicator should never expose the device credential/serial.
+
+Client implementation: `web/lab/device-status-indicators.js` polls the private API every 10 seconds; `web/lab/device-workbench.html` presents an accessible four-state chip alongside DEV-01; `web/lab/device-workbench.js` attaches the same status target to its physical inventory row without changing synthetic candidate UNKNOWN behavior; responsive CSS uses green, red, amber and neutral-grey backgrounds. All backend assets are embedded by the existing private Axum lab workbench; no broad/public device-control interface is exposed. `web/lab/c320-operator-console.js` read buttons now follow **persistent server enrollment** rather than the old 15-minute Terminal agent; first read remains possible even before CONNECTED, avoiding circular readiness checks. A production generic /devices API, dynamic per-device statuses and router/ONT telemetry are separate deliverables, not claimed here.
+
+## Public CI mirror decision
+
+`mr-ipat/ipat-open-ci` is a dedicated public synthetic-only sanitized source mirror, NOT an additional network controller or deployment target. It excludes actual physical network addresses, keys, credentials, privileged operational runbooks and native device backups. At examination on 29 Sep 2026 the workflow `IPAT synthetic public verification` existed at `.github/workflows/ci.yml` and its three most recent visible runs completed SUCCESS at 2026-09-29 06:17Z, 06:06Z and 04:48Z. Thus it provides **useful, working supplemental synthetic CI**. Its PUBLIC_MIRROR_NOTICE is stale and mentions waiting to copy the workflow, which has already happened; update that historical statement before claiming it is an exact current private source mirror. The protected main `mr-ipat/ipat` source remains authoritative; do not publish unsanitized subsequent changes into the mirror.
+
+Protected GitHub Actions 4-job failures around R9.45 are separately explained by GitHub check-run annotation: an account Billing & Plans failed-payment or spending-limit block prevented runner startup. The public mirror's successful synthetic jobs do not prove protected production CI, actual network reachability or physical C320 compatibility.
+
+## Acceptance and remaining work
+
+- MUST: current DEV-01 indicator changes to GREEN only following an independently timestamped fresh physical read, AMBER before enrollment, RED for a previously verified lost session, GREY for unverified/offline connector; title and inventory agree.
+- MUST: conservative fail-closed behavior when API is unavailable; synthetics and manually observed ONUs do not gain invented live status.
+- SHOULD: extend normalized status and freshness to each authenticated tenant's OLT, ONU, distribution device and router after exact adapter and data-plane evidence is available.
+- LATER: trend historical transitions, bounded per-device heartbeat, alarms and topology-wide health aggregation with tenant RBAC and durable audit.
