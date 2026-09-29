@@ -83,6 +83,30 @@ function draw() {
     fragment.appendChild(row);
   }
   node("rows").replaceChildren(fragment);
+  // The real saved device list is visible at the top of Device Manager.
+  // The historical demo table below remains an optional lab-only detail.
+  const actual=document.createDocumentFragment();
+  if(savedPhysical){
+    const tr=el('tr');
+    const identity=el('td');
+    identity.append(el('strong','',savedPhysical.name),el('small','','DEV-01 · ZTE C320'));
+    tr.append(identity);
+    tr.append(td('SSH · Existing verified management profile'));
+    tr.append(td(savedPhysical.adoption));
+    const signalCell=el('td');
+    const signal=el('span','ipat-device-signal ipat-device-signal--unknown','● Unknown');
+    signal.setAttribute('data-ipat-device-status','DEV-01');
+    signalCell.append(signal);
+    tr.append(signalCell);
+    actual.append(tr);
+  }else{
+    const tr=el('tr');
+    const cell=el('td','','No saved physical device is currently available.');
+    cell.colSpan=4;
+    tr.append(cell);
+    actual.append(tr);
+  }
+  node('ipat-saved-physical-rows').replaceChildren(actual);
   window.dispatchEvent(new Event("ipat-device-list-rendered"));
   node("candidate-count").textContent = String(candidates.length + (savedPhysical ? 1 : 0));
 }
@@ -109,8 +133,10 @@ async function loadSavedPhysical() {
       };
     }else savedPhysical=null;
   }catch{
-    // Never present a stale saved device as online if the source fails.
-    savedPhysical=null;
+    // Preserve the previously loaded saved row during a transient API
+    // outage, but replace its status with UNKNOWN rather than false GREEN.
+    if(savedPhysical)savedPhysical={...savedPhysical,
+      adoption:'SAVED · STATUS UNAVAILABLE',status:'UNKNOWN'};
   }
   draw();
 }
