@@ -378,7 +378,7 @@ async fn save_draft(
        || input.get("username").and_then(Value::as_str) != Some("zte") {
         return Err(denied(StatusCode::BAD_REQUEST, "UNSUPPORTED_DEVICE_PROFILE"));
     }
-    let request = format!("DRAFT {}\\n", json!({"device_profile":"zte_c320_lab","device_name":name.trim()}));
+    let request = format!("DRAFT {}\n", json!({"device_profile":"zte_c320_lab","device_name":name.trim()}));
     let query = async {
         let mut stream = UnixStream::connect(SOCKET).await?;
         stream.write_all(request.as_bytes()).await?;
