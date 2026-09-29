@@ -20,21 +20,42 @@ fn high_impact(label: &'static str) -> Value {
 /// Production adoption requires separately signed tenant-scoped evidence.
 fn lab_adoption_gate_report(evidence: &Value) -> Value {
     const GATES: [(&str, &str); 10] = [
-        ("SCRIPTED_LAB_READ", "actual_ephemeral_scripted_owner_lab_ssh_show_card_verified"),
-        ("ENCRYPTED_OFF_HOST_REFERENCE_RESTORE", "verified_mac_restic_isolated_byte_identical_restore"),
-        ("DEVICE_NATIVE_RECOVERY", "vendor_native_startup_config_restore_tested"),
-        ("INDEPENDENT_CHASSIS_IDENTITY", "independent_oob_olt_host_key_verified"),
-        ("LIMITED_DEVICE_SERVICE_ACCOUNT", "dedicated_device_readonly_account_verified"),
-        ("ISOLATED_MANAGEMENT_LAST_HOP", "management_last_hop_isolated"),
+        (
+            "SCRIPTED_LAB_READ",
+            "actual_ephemeral_scripted_owner_lab_ssh_show_card_verified",
+        ),
+        (
+            "ENCRYPTED_OFF_HOST_REFERENCE_RESTORE",
+            "verified_mac_restic_isolated_byte_identical_restore",
+        ),
+        (
+            "DEVICE_NATIVE_RECOVERY",
+            "vendor_native_startup_config_restore_tested",
+        ),
+        (
+            "INDEPENDENT_CHASSIS_IDENTITY",
+            "independent_oob_olt_host_key_verified",
+        ),
+        (
+            "LIMITED_DEVICE_SERVICE_ACCOUNT",
+            "dedicated_device_readonly_account_verified",
+        ),
+        (
+            "ISOLATED_MANAGEMENT_LAST_HOP",
+            "management_last_hop_isolated",
+        ),
         ("FIRMWARE_RECONCILED", "firmware_inventory_fully_reconciled"),
         ("TENANT_MFA", "genuine_tenant_admin_mfa_verified"),
         ("INDEPENDENT_REVIEWER", "independent_reviewer_approved"),
         ("BOUNDED_AUDITED_PRODUCTION_WORKER", "worker_enabled"),
     ];
-    let gates: Vec<Value> = GATES.iter().map(|(name, key)| {
-        let verified = evidence.get(*key).and_then(Value::as_bool) == Some(true);
-        json!({"gate":name,"evidence_field":key,"verified":verified})
-    }).collect();
+    let gates: Vec<Value> = GATES
+        .iter()
+        .map(|(name, key)| {
+            let verified = evidence.get(*key).and_then(Value::as_bool) == Some(true);
+            json!({"gate":name,"evidence_field":key,"verified":verified})
+        })
+        .collect();
     let verified = gates.iter().filter(|g| g["verified"] == true).count();
     json!({"mode":"HISTORICAL_LAB_DISPLAY_NOT_AUTHORIZATION",
         "verified_gate_count":verified,"required_gate_count":GATES.len(),
@@ -264,11 +285,20 @@ mod tests {
             let field = item["evidence_field"].as_str().unwrap();
             synthetic[field] = json!(true);
         }
-        assert_eq!(lab_adoption_gate_report(&synthetic)["all_gates_verified"], true);
+        assert_eq!(
+            lab_adoption_gate_report(&synthetic)["all_gates_verified"],
+            true
+        );
         synthetic["worker_enabled"] = json!("true");
-        assert_eq!(lab_adoption_gate_report(&synthetic)["all_gates_verified"], false);
+        assert_eq!(
+            lab_adoption_gate_report(&synthetic)["all_gates_verified"],
+            false
+        );
         synthetic.as_object_mut().unwrap().remove("worker_enabled");
-        assert_eq!(lab_adoption_gate_report(&synthetic)["all_gates_verified"], false);
+        assert_eq!(
+            lab_adoption_gate_report(&synthetic)["all_gates_verified"],
+            false
+        );
         assert_eq!(r["device_adopted"], false);
     }
 

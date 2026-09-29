@@ -36,7 +36,27 @@
       }
       output.append(row);
     }
-    status.textContent='LAB 29 Sep: pembacaan SSH terprogram satu kali berhasil, 3 kartu nyata cocok. Backup Restic pulih identik. Ini BUKAN polling otomatis; impor vendor, akun terbatas dan worker produksi belum teruji.';
+    status.textContent='LAB 29 Sep: SSH satu kali berhasil, 3 kartu cocok, referensi Restic pulih identik. BUKAN polling otomatis atau adopsi.';
+    try {
+      const gateReply=await fetch('/lab/c320-action-readiness',{cache:'no-store',credentials:'omit'});
+      if(!gateReply.ok)throw new Error('gate report unavailable');
+      const gateData=await gateReply.json();
+      const g=gateData.adoption_gate_report;
+      if(!g||g.mode!=='HISTORICAL_LAB_DISPLAY_NOT_AUTHORIZATION'
+        ||g.required_gate_count!==10||g.verified_gate_count!==2
+        ||g.all_gates_verified!==false||gateData.device_adopted!==false
+        ||gateData.worker_enabled!==false||!Array.isArray(g.gates)||g.gates.length!==10)
+        throw new Error('gate report invalid');
+      const missing=g.gates.filter(item=>item.verified!==true).map(item=>item.gate);
+      if(missing.length!==8)throw new Error('unexpected physical gate state');
+      const gateLine=document.createElement('div');
+      gateLine.textContent='ADOPSI DITAHAN ('+g.verified_gate_count+'/'+g.required_gate_count+'). Persyaratan belum terpenuhi: '+missing.join(', ')+'. Registrasi ONT nyata belum diizinkan.';
+      status.append(gateLine);
+    } catch {
+      const gateLine=document.createElement('div');
+      gateLine.textContent='Kesiapan adopsi tidak dapat diverifikasi. Semua aksi OLT/ONT tetap diblokir.';
+      status.append(gateLine);
+    }
   }catch{
     output.replaceChildren();status.textContent='Bukti historis gagal divalidasi; tidak ada klaim inventaris atau adopsi otomatis.';
   }
