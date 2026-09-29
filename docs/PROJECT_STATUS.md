@@ -5205,3 +5205,25 @@ after independent execution, not presumed. Remaining native
 firmware restore, limited verified account, off-line independent
 chassis trust, POP last-hop, tenant MFA/reviewer, bounded real
 production read worker not solved by this ephemeral proof.
+
+R9.34 verified NEXT code release: protected 90663bc, sha256 verified
+private git delta 1511f248...093b7a, actual separate owner VPS
+Rust 1.98.1 pinned format PASS and complete 221/221 locked offline
+workspace PASS over 40 groups, actual rebuilt control-api binary
+SHA256 b422b6c66d1affbfde54a1afebd4cf98aee87f182e268376f0fd28de6dbbf057.
+Mac+VPS synthetic Python suite 96/96 PASS including R934 5/5,
+Mac Node syntax checks both workbench JS files PASS.
+ACTUALLY checksum-pinned upgraded ONLY NONROOT private loopback
+:3002 Rust LAB static historical C320 dashboard; saved last
+verified :3002 service unit privately for instant rollback.
+ACTUAL LIVE owner VPS independent localhost HTTP smoke PASS:
+scripted real physical one-shot owner-operator SHA-verified
+`show card` result flagged TRUE historic, 3 cards exact and
+not live telemetry; R932 real backup restored byte-identically
+TRUE but native import FALSE, default test login temporary and
+limited account NOT yet proved, entire eight REAL OLT action POSTs
+HTTP403, production worker FALSE/adopted FALSE, old :3000 HTTP200.
+No OLT configuration commands during scripted read or dashboard
+rollout. Full actual one-shot source private 700/600, external
+Restic readable reference still separately verified. Public CI
+R934 synthetic-only publication tracked separately.

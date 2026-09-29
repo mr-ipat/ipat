@@ -122,3 +122,49 @@ that status requires a real signed tenant+POP-scoped independently
 reviewed bounded worker with actual external secret manager and
 negative device role permission tests, none of which are made true
 by one manually approved script execution.
+
+## Actual owner-VPS R9.34 private Rust and UI deployment
+
+Final protected SOURCE compiled at
+`90663bcccfff0139c721a93b26ae5f224a8f0a4f`, verified by
+private SHA256 Git-bundle delta
+`1511f24824390d1e43906eacf90f0bf7a5dc0c5c83fd9fa01519b9f2cd093b7a`
+inside the separate protected nonroot owner-VPS checkout
+`/home/openai/.cache/ipat/r934-release/src`.
+Current Rust 1.98.1 pinned format PASS, whole workspace locked
+offline Rust **221/221 tests PASS over 40 groups**, actual
+built Rust `control-api` binary SHA256
+`b422b6c66d1affbfde54a1afebd4cf98aee87f182e268376f0fd28de6dbbf057`.
+Python dedicated R9.34 synthetic tests 5/5 and combined Mac+VPS
+full safety preflight **96/96 PASS**. Owner Mac JavaScript both
+legacy and new historical board asset syntax PASS.
+
+ACTUALLY checksum-pinned rolled out ONLY the NONROOT loopback-local
+PRIVATE LAB Rust :3002 viewer, using exact unit SHA256
+`10d45985ffaf9d2040cb02216752133230c9e497d14bf55db0f7ba0ff71a63de`,
+independent real HTTP smoke script SHA256
+`2dcde2216ba10251c110f0a258c7152091cbabeaacc9ecd9008ea444def9dfba`,
+and checksum-pinned deployment script SHA256
+`840c4bbef5cb99b9ba5581aebbdc41cbce3f4d06a75370e33be735979ae6c901`.
+Private source and unit are separated from prior verified release;
+previous current R9.33 unit backed up before activating new private
+service under
+`/home/openai/.cache/ipat/r934-release/rollback-user-unit.service`.
+
+ACTUAL independent owner-VPS localhost :3002 postdeploy HTTP
+smoke PASS: real owner-operator-scripted LAB card read evidence,
+actual prior Restic encrypted off-VPS backup+isolated reference
+restore success, sanitized historical 3 card slots and an explicit
+NON-autonomous scripted probe, ALL eight OLT action POSTs 403,
+production `worker_enabled=false`, `device_adopted=false` and
+original :3000 /healthz HTTP200. No C320 command was sent by the
+preview upgrade. To revert *only the private LAB viewer*:
+
+```sh
+ssh ipat-lab
+install -m 0600 /home/openai/.cache/ipat/r934-release/rollback-user-unit.service \
+  ~/.config/systemd/user/ipat-r911-preview.service
+systemctl --user daemon-reload
+systemctl --user reset-failed ipat-r911-preview.service
+systemctl --user restart ipat-r911-preview.service
+```
