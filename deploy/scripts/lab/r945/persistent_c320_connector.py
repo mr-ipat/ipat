@@ -203,7 +203,8 @@ def background_read(stop, reader, reader_module):
         if enrolled():
             try:
                 read(b'CARDS\n', reader, reader_module)
-            except (ValueError, OSError, InvalidToken):
+            except Exception:
+                # Vendor CLI/prompt/SSH failures from imported strict adapter also fail closed.
                 with LOCK:
                     STATE['last_verified'] = ''
                     STATE['last_kind'] = ''
@@ -261,7 +262,8 @@ def serve():
                 else:
                     raise ValueError('unknown request')
                 response = safe_response(answer)
-            except (ValueError, OSError, UnicodeError, InvalidToken, json.JSONDecodeError):
+            except Exception:
+                # Fail closed on vendor adapter exceptions as well; never print CLI or secret.
                 response = safe_response({'error':'CONNECTOR_REQUEST_FAILED_CLOSED',
                                           'physical_writes_enabled':False})
             try:
