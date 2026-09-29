@@ -98,7 +98,7 @@ terminal transcript or actual SSH private key to ChatGPT.
   repository with a random process-local test secret, synthetic
   fixture content, and isolated restore. Snapshot path, tag and
   round-trip bytes matched. This did NOT read a byte of the real OLT.
-- R9.32 7 synthetic local guard/negative tests PASSED, including
+- R9.32 8 synthetic local guard/negative tests PASSED, including
   non-TTY real backup refused, symlink/weak owner folder refusal,
   digest-before-output rule and guaranteed deletion of failed
   synthetic restore; combined full software regression results
@@ -133,3 +133,14 @@ entered documentation, CI or assistant response. Verify the exact
 firmware role syntax before attempting an actual privileged change.
 
 Independent nonroot owner-VPS software release verification: protected exact source 582ca2858a8973cb8227a7614537f04919b7698e, bundled protected checksum 148f7ebeef0531dc3ff8c2ec7dec26af618d94eebfadb6dad28152d98e5428dc, 7/7 new synthetic tests plus combined 87/87 Python safety, pinned complete Rust1.98.1 locked offline 220/220 PASS across 40 test groups. Real original owner-VPS encrypted-backup source receipt separately revalidated MATCH against actual private original SHA; owner Mac operator-sensitive --backup-and-restore explicitly NOT executed. This preserves the remote sensitive-transfer refusal.
+
+Repeat verification improvement: if an immutable mode-0600 receipt
+already exists, the explicit owner `--verify-only` mode can re-run
+`restic check --read-data` and a fresh isolated byte-identical
+restore, compare its new result to the previous receipt while
+ignoring only its original timestamp, and leave the original receipt
+byte-for-byte unchanged. A contradictory, linked or weak-permission
+receipt is denied. `--backup-and-restore` intentionally rejects
+unreviewed duplicate backup attempts if an immutable receipt exists.
+This improvement was tested only against synthetic JSON/fixture
+and never invoked on the sensitive real C320 backup.

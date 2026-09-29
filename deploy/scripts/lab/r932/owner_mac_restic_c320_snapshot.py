@@ -121,6 +121,15 @@ def verify_existing(repo,env,snap,receipt_dir):
       'dedicated_restricted_service_account_verified':False,
       'actual_auto_device_adopted':False}
 
+def reverify_existing_receipt(path,result):
+    s=path.lstat()
+    if not stat.S_ISREG(s.st_mode) or s.st_uid!=os.getuid() or s.st_nlink!=1 \
+       or stat.S_IMODE(s.st_mode)!=0o600 or not 1<=s.st_size<=4096:
+        raise Refused('previous backup receipt ownership/mode invalid')
+    previous=json.loads(path.read_text())
+    if any(previous.get(k)!=v for k,v in result.items() if k!='verified_utc'):
+        raise Refused('previous operator receipt contradicts fresh isolated restore')
+
 def run(mode):
     if mode=='--requirements':
         print(json.dumps({'mode':'HUMAN_OWNER_MAC_TERMINAL_ONLY',
@@ -136,8 +145,9 @@ def run(mode):
         print('OWNER_MAC_FILEVAULT_RESTIC_REPO_KEYCHAIN_METADATA_PRESENT')
         print('OFF_VPS_C320_ENCRYPTED_BACKUP_AND_RESTORE_NOT_PERFORMED_BY_READINESS')
         return
-    if (receipt_dir/'r932-verified-restic-snapshot-receipt.json').exists():
-        raise Refused('an existing immutable owner receipt must be independently reviewed first')
+    receipt=receipt_dir/'r932-verified-restic-snapshot-receipt.json'
+    if mode=='--backup-and-restore' and (receipt.exists() or receipt.is_symlink()):
+        raise Refused('existing immutable backup receipt; no duplicate silent backup')
     print('OFF-VPS encrypted backup of real SENSITIVE CLI transcript;')
     print('no device commands; still NOT vendor-native restore or production adoption.')
     confirmation=input('Type ENCRYPT_AND_TEST_OFF_VPS_LAB_CONFIG to authorize: ').strip()
@@ -166,11 +176,13 @@ def run(mode):
         raise Refused('unexpected encrypted repository snapshot identifier')
     result=verify_existing(repo,env,snap,receipt_dir)
     result['verified_utc']=datetime.now(timezone.utc).isoformat(timespec='seconds')
-    receipt=receipt_dir/'r932-verified-restic-snapshot-receipt.json'
-    fd=os.open(receipt,os.O_WRONLY|os.O_CREAT|os.O_EXCL|getattr(os,'O_NOFOLLOW',0),0o600)
-    with os.fdopen(fd,'w') as out:
-        json.dump(result,out,sort_keys=True,indent=2)
-        out.write('\n');out.flush();os.fsync(out.fileno())
+    if receipt.exists() or receipt.is_symlink():
+        reverify_existing_receipt(receipt,result)
+    else:
+        fd=os.open(receipt,os.O_WRONLY|os.O_CREAT|os.O_EXCL|getattr(os,'O_NOFOLLOW',0),0o600)
+        with os.fdopen(fd,'w') as out:
+            json.dump(result,out,sort_keys=True,indent=2)
+            out.write('\n');out.flush();os.fsync(out.fileno())
     print('OWNER_MAC_ENCRYPTED_OFF_VPS_C320_CAPTURE_ISOLATED_RESTORE_VERIFIED')
     print('PUBLIC_SAFE_BACKUP_STATE: RECOVERABLE_READABLE_REFERENCE_ONLY')
     print('DEVICE_NATIVE_RESTORE: NOT_TESTED, DEVICE_AUTO_ADOPTED: FALSE')

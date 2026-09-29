@@ -66,6 +66,17 @@ class OwnerOnlyBackupTests(unittest.TestCase):
    with patch.object(M.subprocess,'run',side_effect=fake_run):
     with self.assertRaises(M.Refused):M.verify_existing(root,{},'synthetic-id',root)
    self.assertEqual(sorted(x.name for x in root.iterdir()),[])
+ def test_repeat_independent_restore_checks_immutable_receipt_without_overwriting(self):
+  import stat
+  with tempfile.TemporaryDirectory(prefix='ipat-r932-receipt-') as tmp:
+   p=Path(tmp)/'existing.json'
+   trusted={'restic_snapshot_id':'a'*64,'sha256':'synthetic'}
+   p.write_text(json.dumps({**trusted,'verified_utc':'previous-day'}));p.chmod(0o600)
+   M.reverify_existing_receipt(p,{**trusted,'verified_utc':'today'})
+   self.assertEqual(json.loads(p.read_text())['verified_utc'],'previous-day')
+   with self.assertRaises(M.Refused):M.reverify_existing_receipt(p,{**trusted,'sha256':'tampered','verified_utc':'today'})
+   p.chmod(0o644)
+   with self.assertRaises(M.Refused):M.reverify_existing_receipt(p,trusted)
  def test_sensitive_real_files_never_enter_public_build(self):
   src=FILE.read_text()
   self.assertIn('NOT vendor-native',src)

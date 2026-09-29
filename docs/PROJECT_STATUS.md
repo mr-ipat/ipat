@@ -5073,3 +5073,16 @@ read-only user or establish a privilege default. Exact account
 identifiers, secret hashes and config lines were NEVER printed.
 
 R9.32 INDEPENDENT TEST VERIFICATION (29 Sept 2026): Exact protected source 582ca2858a8973cb8227a7614537f04919b7698e passed SHA256-verified private Git delta 148f7ebeef0531dc3ff8c2ec7dec26af618d94eebfadb6dad28152d98e5428dc and separate NONROOT owner-VPS checkout. Actual VPS executed only offline R932 --requirements, 7/7 dedicated synthetic negative tests, 87/87 combined Python safety suite, and revalidated the GENUINE untouched owner-private R9.31 119980-byte sensitive full running-config receipt with matching SHA256; result explicitly off-host encrypted backup restored FALSE, adopted FALSE, no network device actions. Independently ran pinned Rust 1.98.1 complete locked offline workspace cargo fmt and 220/220 Rust test cases across 40 groups PASS on exact R932 protected checkout. Owner Mac actual safe metadata-only --local-readiness PASS: FileVault ON, existing reviewed encrypted Restic local repository present and macOS Keychain record exists, but ACTUAL owner-only --backup-and-restore mode INTENTIONALLY NOT executed due prior explicit secret transfer guard. A separate disposable purely SYNTHETIC Restic repo created/verified actual --stdin-from-command snapshot path/tag and isolated restored equivalent fixture bytes; did NOT copy actual OLT. No sensitive config/public Git exports, owner accounts/OLT config changes, unattended read worker or authentic full SaaS adoption.
+
+
+R9.32 additional safety refinement: explicit owner Mac `--verify-only`
+now safely supports repeating full encrypted-pack checking and
+isolated byte-identical restore when an immutable prior owner-only
+0600 receipt exists, validating every result field except original
+verification timestamp and NEVER overwriting original evidence.
+`--backup-and-restore` still denies duplicate attempts if a prior
+receipt exists. Expanded dedicated pure-synthetic guard cases 8/8
+and combined full owner Mac Python safety suite 88/88 PASS; actual
+Mac metadata-only --local-readiness rechecked PASS. Real operator
+`--backup-and-restore` still NOT invoked through ChatGPT remote tools,
+so no actual off-host C320 encrypted restore claim.
