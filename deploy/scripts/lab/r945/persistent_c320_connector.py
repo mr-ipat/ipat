@@ -322,10 +322,23 @@ def serve():
                 else:
                     raise ValueError('unknown request')
                 response = safe_response(answer)
-            except Exception:
-                # Fail closed on vendor adapter exceptions as well; never print CLI or secret.
-                response = safe_response({'error':'CONNECTOR_REQUEST_FAILED_CLOSED',
-                                          'physical_writes_enabled':False})
+            except Exception as exc:
+                # Fixed diagnostic codes only; never return a raw SSH transcript,
+                # username, secret, address from an exception or subprocess.
+                detail = str(exc)
+                if detail == 'incorrect bootstrap code' or detail.startswith('enrollment temporarily limited'):
+                    stage = 'OWNER_VERIFICATION_FAILED'
+                elif detail == 'private SSH challenge missing':
+                    stage = 'SSH_HANDSHAKE_OR_AUTH_METHOD'
+                elif detail == 'authenticated C320 prompt missing':
+                    stage = 'SSH_AUTH_FAILED_OR_UNKNOWN_PROMPT'
+                elif detail in ('card table unrecognized', 'card row shape rejected'):
+                    stage = 'DEVICE_CLI_RESPONSE_UNSUPPORTED'
+                elif detail.startswith('already enrolled'):
+                    stage = 'ALREADY_ENROLLED'
+                else:
+                    stage = 'DEVICE_CONNECTION_FAILED_UNCLASSIFIED'
+                response = safe_response({'error':stage,'physical_writes_enabled':False})
             try:
                 self.request.sendall(response)
             except (BrokenPipeError, ConnectionResetError):
