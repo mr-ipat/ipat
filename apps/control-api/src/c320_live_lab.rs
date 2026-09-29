@@ -342,10 +342,20 @@ async fn connection_status(headers: HeaderMap)
             s.len()>=19 && s.len()<=40
             && s.bytes().all(|c|c.is_ascii_digit()||b"-:TZ+.".contains(&c)))
         .unwrap_or("");
+    let physically_fresh=configured && !last.is_empty() && response.as_ref()
+        .and_then(|v|v.get("actual_olt_connectivity_verified"))
+        .and_then(Value::as_bool)==Some(true);
+    let previously_verified=configured && response.as_ref()
+        .and_then(|v|v.get("ever_verified_since_start"))
+        .and_then(Value::as_bool)==Some(true);
+    let status=if response.is_none() {"UNKNOWN"} else if !configured {"PENDING"}
+        else if physically_fresh {"CONNECTED"}
+        else if previously_verified {"DISCONNECTED"} else {"PENDING"};
     Ok((super::private_lab_headers("application/json; charset=utf-8"),
       Json(json!({"target":"DEV-01","vendor":"ZTE","model":"C320",
         "management_transport":"DIRECT_SSH_PINNED","pon_scope":"1/1/1",
         "connector_online":response.is_some(),"credentials_enrolled":configured,
+        "device_status":status,
         "last_verified_at_utc":if configured {last} else {""},
         "adoption_state":if configured && !last.is_empty() {"READ_ONLY_CONNECTED_LAB"}
             else if configured {"CONFIGURED_AWAITING_READ"} else {"NOT_ENROLLED"},
