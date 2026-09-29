@@ -142,3 +142,22 @@ owner-private bounded capture. See `docs/R921_C320_SSH_PREAUTH_SITE_DIAGNOSTIC.m
 Do NOT initialize keys, alter management ACL/SSH protocol, or reboot
 the live subscriber-serving OLT without an independently reviewed
 maintenance window and reliable local recovery.
+
+## R9.22 confirmed client-side compatibility resolution (2026-09-29)
+
+The authorized owner VPS actually confirmed three necessary SSH
+parameters to reach the remote authentication-method stage without
+credentials: host key `ssh-rsa`, cipher `aes128-cbc`, and KEX
+`diffie-hellman-group14-sha256`. The earlier default group16-SHA512
+choice timed out before host key. This change MUST be PROCESS-SCOPED
+and exact-device only, never a global system SSH setting or
+nonconsensual OLT server modification.
+
+IPAT collector's new explicit profile is
+`ssh-strict-pinned-publickey-legacy-rsa-cbc-group14-sha256`, retaining
+its required independent owner console known_hosts, separate
+restricted key-based login and first-run fixed `show card` limit.
+A successful no-credential network handshake DOES NOT supply any of
+these trust/authorization requirements; even the original shared
+privileged lab password should not be sent before independent OOB
+RSA verification on a customer-serving distribution device.

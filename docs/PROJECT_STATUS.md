@@ -4556,3 +4556,30 @@ latest protected CI/public synthetic and actual isolated VPS test
 must independently pass before declaring R9.22 software complete.
 R9.19 loopback-only eight-action demo remains disabled for all real
 physical operations; no live C320 adoption or actual firmware read.
+
+R9.22 runtime milestone COMPLETED for PRIVATE LAB ONLY: exact protected
+app SHA `03dbdc3` passed actual owner-VPS rustfmt, combined Python
+R7.9 26/26 + R9.0 54/54, full locked offline Rust `control-api`
+suite/build. Actual compiled executable SHA256
+`a1b35218a26c88cdb49302ebdc3b1a7c8badca78ad77d74a508800e44ba37302`.
+Checksum-pinned nonroot upgrade script SHA256
+`05e45271ea0b047bcfaffd46434361f57ebf05d64b22886e0817921055048323`
+ACTUALLY upgraded only private loopback :3002 user service;
+actual R9.22 HTTP smoke PASSED full group14/hostkey/cipher proof
+flags from real deployed Rust, all 8 OLT actions DISABLED and
+POST action mutations HTTP403. Old original :3000 health HTTP200;
+no OLT login/password/commands or network changes. Versioned
+rollback copy is private in r922-release. Latest PUBLIC synthetic
+CI for R9.22 code and protected PR are still pending separately;
+physical DEV-01 remains OBSERVED_NOT_ADOPTED and health NOT_MEASURED.
+
+R9.22 additionally achieved an INDEPENDENT real owner-Mac temporary
+SSH loopback-forward GET of actual deployed protected PRIVATE RUST
+R9.22 Device Manager from the VPS: backend returned the genuinely
+observed exact `RSA_AES128CBC_GROUP14SHA256_ONLY` successful
+credential-free AUTH stage metadata, genuine host identity still
+FALSE, actual device login FALSE, eight real OLT action endpoints
+locked. Historical server evidence confirmed real auth-method stage
+reached without credentials. Mac temporary forwarding was closed
+and no production OLT connection/action occurred during this
+UI-to-backend test.

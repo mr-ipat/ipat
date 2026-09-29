@@ -74,3 +74,50 @@ For operator diagnostics, OpenSSH's official compatibility advice:
 https://www.openssh.org/legacy.html. Compatibility is an interim
 solution; upgrade or reconfigure obsolete crypto when vendor and
 real network maintenance acceptance allow it.
+
+## Actual restricted owner VPS R9.22 deployment proof
+
+Exact protected application source SHA
+`03dbdc3be00f17fd5072603b9d41588cddd210e6` was copied into a
+SEPARATE 0700 nonroot owner-VPS source/target directory with a
+verified Git delta and no edits to the original service code.
+On the actual owner VPS, `cargo fmt --all -- --check`, combined
+Python R7.9 safety suite 26/26, R9.0/R9.21 suite 54/54, full pinned
+locked offline `cargo test -p control-api` and `cargo build` PASSED.
+Binary SHA256:
+`a1b35218a26c88cdb49302ebdc3b1a7c8badca78ad77d74a508800e44ba37302`.
+
+Opt-in nonroot protected PRIVATE loopback `:3002` R9.22 preview
+actually upgraded successfully from previous R9.19 private user
+service. The new reviewed unit SHA256 is
+`1ffede0dda1de59be03ac47fd978167a14ed80b8b4ffa708a45440ff84374c58`;
+actual bound and no-secrets HTTP smoke SHA256 is
+`1ffa9c9a6e724d0e2bfd92714ea96409d5d23ad53bb06d1a3c6d05ee54800d47`;
+checksum-pinned rollback/deploy script SHA256
+`05e45271ea0b047bcfaffd46434361f57ebf05d64b22886e0817921055048323`.
+Actual PRIVATE Rust HTTP evidence reports observed group14-SHA256,
+server RSA host-key packet, SSH auth methods reached, and ZERO
+actual credentials/OLT commands, OOB identity FALSE, device adopted
+FALSE. All eight physical Device Manager actions remain locked:
+actual POST for even `READ_CARD_INVENTORY` and firmware mutation
+returns HTTP403. The older original `127.0.0.1:3000/healthz`
+returned HTTP200 unchanged; no firewall, route, K3s, live OLT or
+RouterOS configuration was changed. Prior private user unit was
+stored owner-only at
+`/home/openai/.cache/ipat/r922-release/rollback-user-unit.service`.
+
+Restricted nonroot operator rollback if private preview is unhealthy:
+
+```sh
+ssh ipat-lab
+cp -p /home/openai/.cache/ipat/r922-release/rollback-user-unit.service \
+  ~/.config/systemd/user/ipat-r911-preview.service
+systemctl --user daemon-reload
+systemctl --user reset-failed ipat-r911-preview.service
+systemctl --user restart ipat-r911-preview.service
+```
+
+Actual R9.22 physical result and exact release UI are LAB/private
+until real independent console key, dedicated least-privilege account,
+signed tenant admin MFA, POP isolation and live baseline permit a
+first authenticated read on an active subscriber distribution OLT.
