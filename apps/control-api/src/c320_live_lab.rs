@@ -400,6 +400,30 @@ async fn save_draft(
            "adoption_state":"DRAFT_SAVED_AWAITING_AUTH","physical_writes_enabled":false}))))
 }
 
+async fn fixed_network_probe(
+    headers: HeaderMap,
+) -> Result<(HeaderMap, Json<Value>), (StatusCode, HeaderMap, Json<Value>)> {
+    if !strict_private(&headers, false) {
+        return Err(denied(StatusCode::FORBIDDEN, "PRIVATE_PANEL_ONLY"));
+    }
+    // A deliberately fixed lab target, not a browser-controlled network scanner.
+    // A successful TCP handshake does NOT prove SSH login or physical adoption.
+    let stage = match tokio::time::timeout(
+        Duration::from_secs(3), tokio::net::TcpStream::connect("10.10.13.233:321"),
+    ).await {
+        Ok(Ok(_)) => "TCP_REACHABLE_AUTH_NOT_TESTED",
+        Ok(Err(e)) if e.kind() == std::io::ErrorKind::ConnectionRefused => "SSH_PORT_REFUSED",
+        Ok(Err(e)) if matches!(e.kind(), std::io::ErrorKind::HostUnreachable |
+            std::io::ErrorKind::NetworkUnreachable) => "NETWORK_UNREACHABLE",
+        Ok(Err(_)) => "NETWORK_OR_PORT_ERROR",
+        Err(_) => "TCP_TIMEOUT_NETWORK_OR_PORT",
+    };
+    Ok((super::private_lab_headers("application/json; charset=utf-8"),
+        Json(json!({"target":"DEV-01","probe_stage":stage,
+        "ssh_authentication_verified":false,"production_adopted":false,
+        "physical_writes_enabled":false}))))
+}
+
 async fn connection_status(
     headers: HeaderMap,
 ) -> Result<(HeaderMap, Json<Value>), (StatusCode, HeaderMap, Json<Value>)> {
@@ -485,6 +509,7 @@ pub(super) fn router() -> Router {
             axum::routing::get(connection_status),
         )
         .route("/lab/c320-owner-save-draft", post(save_draft))
+        .route("/lab/c320-owner-network-probe", axum::routing::get(fixed_network_probe))
         .route("/lab/c320-owner-live-refresh", post(refresh))
         .route("/lab/c320-owner-live-cards", post(cards))
         .route("/lab/c320-owner-live-firmware", post(firmware))
