@@ -171,6 +171,7 @@
         device_name:displayName,management_ip:address,ssh_port:sshPort,username:login};
       await saveDraft(draft);
       draftSaved=true;
+      networkChecked=true;
       showStage('Saved to Device List','Pending · Checking management network');
       diagnostic.textContent='NETWORK_PROBE_RUNNING: Checking the configured management endpoint...';
       output.textContent='SAVED TO DEVICE LIST · Running management network diagnostic...';
