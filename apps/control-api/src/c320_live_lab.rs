@@ -379,22 +379,43 @@ async fn save_draft(
     if !strict_private(&headers, true) {
         return Err(denied(StatusCode::FORBIDDEN, "PRIVATE_PANEL_ONLY"));
     }
-    if !input.as_object().is_some_and(|m| m.len()==6
-        && ["device_profile","device_type","device_name",
-            "management_ip","ssh_port","username"].iter().all(|key|m.contains_key(*key))) {
-        return Err(denied(StatusCode::BAD_REQUEST,"DRAFT_METADATA_ONLY"));
+    if !input.as_object().is_some_and(|m| {
+        m.len() == 6
+            && [
+                "device_profile",
+                "device_type",
+                "device_name",
+                "management_ip",
+                "ssh_port",
+                "username",
+            ]
+            .iter()
+            .all(|key| m.contains_key(*key))
+    }) {
+        return Err(denied(StatusCode::BAD_REQUEST, "DRAFT_METADATA_ONLY"));
     }
-    let name = input.get("device_name").and_then(Value::as_str).unwrap_or("");
-    if name.trim().is_empty() || name.len() > 64
-       || name.chars().any(|c| c.is_control())
-       || input.get("device_profile").and_then(Value::as_str) != Some("zte_c320_lab")
-       || input.get("device_type").and_then(Value::as_str) != Some("olt")
-       || input.get("management_ip").and_then(Value::as_str) != Some("10.10.13.233")
-       || input.get("ssh_port").and_then(Value::as_u64) != Some(321)
-       || input.get("username").and_then(Value::as_str) != Some("zte") {
-        return Err(denied(StatusCode::BAD_REQUEST, "UNSUPPORTED_DEVICE_PROFILE"));
+    let name = input
+        .get("device_name")
+        .and_then(Value::as_str)
+        .unwrap_or("");
+    if name.trim().is_empty()
+        || name.len() > 64
+        || name.chars().any(|c| c.is_control())
+        || input.get("device_profile").and_then(Value::as_str) != Some("zte_c320_lab")
+        || input.get("device_type").and_then(Value::as_str) != Some("olt")
+        || input.get("management_ip").and_then(Value::as_str) != Some("10.10.13.233")
+        || input.get("ssh_port").and_then(Value::as_u64) != Some(321)
+        || input.get("username").and_then(Value::as_str) != Some("zte")
+    {
+        return Err(denied(
+            StatusCode::BAD_REQUEST,
+            "UNSUPPORTED_DEVICE_PROFILE",
+        ));
     }
-    let request = format!("DRAFT {}\n", json!({"device_profile":"zte_c320_lab","device_name":name.trim()}));
+    let request = format!(
+        "DRAFT {}\n",
+        json!({"device_profile":"zte_c320_lab","device_name":name.trim()})
+    );
     let query = async {
         let mut stream = UnixStream::connect(SOCKET).await?;
         stream.write_all(request.as_bytes()).await?;
@@ -403,7 +424,10 @@ async fn save_draft(
         Ok::<Vec<u8>, std::io::Error>(raw)
     };
     let Ok(Ok(data)) = tokio::time::timeout(Duration::from_secs(4), query).await else {
-        return Err(denied(StatusCode::SERVICE_UNAVAILABLE, "DRAFT_STORAGE_UNAVAILABLE"));
+        return Err(denied(
+            StatusCode::SERVICE_UNAVAILABLE,
+            "DRAFT_STORAGE_UNAVAILABLE",
+        ));
     };
     let Ok(result) = serde_json::from_slice::<Value>(&data) else {
         return Err(denied(StatusCode::BAD_GATEWAY, "INVALID_DRAFT_RESPONSE"));
@@ -411,9 +435,11 @@ async fn save_draft(
     if result.get("draft_saved").and_then(Value::as_bool) != Some(true) {
         return Err(denied(StatusCode::CONFLICT, "DRAFT_REJECTED"));
     }
-    Ok((super::private_lab_headers("application/json; charset=utf-8"),
+    Ok((
+        super::private_lab_headers("application/json; charset=utf-8"),
         Json(json!({"saved":true,"target":"DEV-01",
-           "adoption_state":"DRAFT_SAVED_AWAITING_AUTH","physical_writes_enabled":false}))))
+           "adoption_state":"DRAFT_SAVED_AWAITING_AUTH","physical_writes_enabled":false})),
+    ))
 }
 
 async fn fixed_network_probe(
@@ -425,19 +451,30 @@ async fn fixed_network_probe(
     // A deliberately fixed lab target, not a browser-controlled network scanner.
     // A successful TCP handshake does NOT prove SSH login or physical adoption.
     let stage = match tokio::time::timeout(
-        Duration::from_secs(3), tokio::net::TcpStream::connect("10.10.13.233:321"),
-    ).await {
+        Duration::from_secs(3),
+        tokio::net::TcpStream::connect("10.10.13.233:321"),
+    )
+    .await
+    {
         Ok(Ok(_)) => "TCP_REACHABLE_AUTH_NOT_TESTED",
         Ok(Err(e)) if e.kind() == std::io::ErrorKind::ConnectionRefused => "SSH_PORT_REFUSED",
-        Ok(Err(e)) if matches!(e.kind(), std::io::ErrorKind::HostUnreachable |
-            std::io::ErrorKind::NetworkUnreachable) => "NETWORK_UNREACHABLE",
+        Ok(Err(e))
+            if matches!(
+                e.kind(),
+                std::io::ErrorKind::HostUnreachable | std::io::ErrorKind::NetworkUnreachable
+            ) =>
+        {
+            "NETWORK_UNREACHABLE"
+        }
         Ok(Err(_)) => "NETWORK_OR_PORT_ERROR",
         Err(_) => "TCP_TIMEOUT_NETWORK_OR_PORT",
     };
-    Ok((super::private_lab_headers("application/json; charset=utf-8"),
+    Ok((
+        super::private_lab_headers("application/json; charset=utf-8"),
         Json(json!({"target":"DEV-01","probe_stage":stage,
         "ssh_authentication_verified":false,"production_adopted":false,
-        "physical_writes_enabled":false}))))
+        "physical_writes_enabled":false})),
+    ))
 }
 
 async fn connection_status(
@@ -526,8 +563,14 @@ pub(super) fn router() -> Router {
             "/lab/c320-owner-connection",
             axum::routing::get(connection_status),
         )
-        .route("/lab/c320-owner-save-draft", post(save_draft).layer(axum::extract::DefaultBodyLimit::max(512)))
-        .route("/lab/c320-owner-network-probe", axum::routing::get(fixed_network_probe))
+        .route(
+            "/lab/c320-owner-save-draft",
+            post(save_draft).layer(axum::extract::DefaultBodyLimit::max(512)),
+        )
+        .route(
+            "/lab/c320-owner-network-probe",
+            axum::routing::get(fixed_network_probe),
+        )
         .route("/lab/c320-owner-live-refresh", post(refresh))
         .route("/lab/c320-owner-live-cards", post(cards))
         .route("/lab/c320-owner-live-firmware", post(firmware))
