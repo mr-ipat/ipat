@@ -113,6 +113,20 @@
     field.addEventListener('input',validateProfile);
   }
   const security=form.querySelector('.ipat-device-security');
+  const copyButton=get('ipat-copy-owner-command');
+  if(copyButton){
+    copyButton.addEventListener('click',async()=>{
+      const source=get('ipat-owner-code-command');
+      const feedback=get('ipat-owner-command-feedback');
+      if(!source||!feedback)return;
+      try{
+        await navigator.clipboard.writeText(source.textContent);
+        feedback.textContent='Command copied. Run it on the authorized Mac and paste the result in the field below.';
+      }catch{
+        feedback.textContent='Copy the displayed command manually, then run it in your authorized Mac Terminal.';
+      }
+    });
+  }
   const diagnostics={
     OWNER_VERIFICATION_FAILED:'Owner verification failed or rate-limited. Open Advanced Security and check your one-time owner code.',
     SSH_HANDSHAKE_OR_AUTH_METHOD:'SSH handshake or authentication method is unsupported. Verify the SSH service and device crypto profile.',
