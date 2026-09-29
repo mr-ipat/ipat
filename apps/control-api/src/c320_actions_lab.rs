@@ -17,7 +17,7 @@ fn high_impact(label: &'static str) -> Value {
        "can_run_on_live_device":false,"writes":true})
 }
 fn readiness() -> Value {
-    json!({
+    let mut catalog = json!({
       "target":"DEV-01",
       "mode":"PHYSICAL_C320_PRE_ADOPTION_ACTION_CATALOG",
       "adoption_state":"AUTHENTICATED_LAB_READ_OBSERVED_ADOPTION_PENDING",
@@ -48,21 +48,6 @@ fn readiness() -> Value {
       "live_distribution_baseline_approved":false,
       "genuine_tenant_admin_mfa_verified":false,
       "independent_reviewer_approved":false,
-      "observed_lab_telnet_password_session_authenticated":true,
-      "observed_lab_ssh_password_session_authenticated":true,
-      "owner_attests_no_customer_connections_in_test_lab":true,
-      "actual_cards_reported":3,
-      "actual_cards_reported_inservice":3,
-      "actual_version_rows_reported":5,
-      "actual_firmware_filetype_alias_unresolved":true,
-      "actual_pram_running_mvr_not_reported":true,
-      "first_live_observation_from_manually_transcribed_capture":true,
-      "observed_ssh_network_rsa_key_matches_historical_mac_and_vps":true,
-      "observed_ssh_network_rsa_is_not_independent_physical_attestation":true,
-      "temporary_default_test_credential_needs_rotation":true,
-      "lab_manual_successful_read_commands":5,
-      "lab_unsupported_read_command_rejected":1,
-      "production_auto_adoption_approved":false,
       "worker_enabled":false,
       "network_actions":0,
       "device_adopted":false,
@@ -82,7 +67,29 @@ fn readiness() -> Value {
         high_impact("REBOOT_OLT"),
         high_impact("UPGRADE_OLT_FIRMWARE"),
       ]
-    })
+    });
+    let lab = json!({
+      "observed_lab_telnet_password_session_authenticated":true,
+      "observed_lab_ssh_password_session_authenticated":true,
+      "owner_attests_no_customer_connections_in_test_lab":true,
+      "actual_cards_reported":3,
+      "actual_cards_reported_inservice":3,
+      "actual_version_rows_reported":5,
+      "actual_firmware_filetype_alias_unresolved":true,
+      "actual_pram_running_mvr_not_reported":true,
+      "first_live_observation_from_manually_transcribed_capture":true,
+      "observed_ssh_network_rsa_key_matches_historical_mac_and_vps":true,
+      "observed_ssh_network_rsa_is_not_independent_physical_attestation":true,
+      "temporary_default_test_credential_needs_rotation":true,
+      "lab_manual_successful_read_commands":5,
+      "lab_unsupported_read_command_rejected":1,
+      "production_auto_adoption_approved":false,
+    });
+    catalog
+        .as_object_mut()
+        .expect("known static catalog")
+        .extend(lab.as_object().expect("known static evidence").clone());
+    catalog
 }
 pub(super) async fn list(
     headers: HeaderMap,
