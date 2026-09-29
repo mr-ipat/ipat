@@ -53,3 +53,21 @@ test('dated 72-ONU table has no serial numbers or fabricated live per-ONU state'
   assert.match(snapshot,/"serial_numbers_disclosed":false/);
   assert.doesNotMatch(js,/ZTEGC[0-9A-F]{8}/);
 });
+
+test('one-time browser connection enrollment is wired to server-side fixed SSH adapter',()=>{
+  const connect=fs.readFileSync(path.join(base,'web/lab/c320-connection-setup.js'),'utf8');
+  const daemon=fs.readFileSync(path.join(base,'deploy/scripts/lab/r945/persistent_c320_connector.py'),'utf8');
+  assert.match(html,/id="ipat-c320-enroll-form"/);
+  assert.match(html,/script src="\/lab\/c320-connection-setup\.js" defer/);
+  assert.match(api,/C320_CONNECT_JS: &str = include_str!/);
+  assert.match(api,/\.route\("\/lab\/c320-connection-setup\.js", get\(connection_setup_js\)\)/);
+  assert.match(connect,/\/lab\/c320-owner-enroll/);
+  assert.match(connect,/\/lab\/c320-owner-connection/);
+  assert.doesNotMatch(connect,/localStorage|sessionStorage|innerHTML/);
+  assert.match(daemon,/Fernet\.generate_key\(\)/);
+  assert.match(daemon,/cryptography\.fernet/);
+  assert.match(daemon,/TOKEN_HASH/);
+  assert.match(daemon,/socket\.SO_PEERCRED/);
+  assert.doesNotMatch(daemon,/StrictHostKeyChecking=no|sshpass/);
+  assert.match(html,/<details class="ipat-lab-diagnostics"/);
+});
