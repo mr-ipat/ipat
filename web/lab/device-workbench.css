@@ -62,3 +62,12 @@ footer{border-top:1px solid #253e50;margin-top:24px;padding:20px 0;color:#83a1b3
 #ipat-c320-observation-stamp{font-size:11px}
 @media(max-width:900px){.ipat-ops-topology{grid-template-columns:1fr 1fr}.ipat-ops-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:580px){.ipat-ops-topology{grid-template-columns:1fr}.ipat-ops-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.ipat-ops-actionbar button{width:100%}}
+
+/* R9.45: one-time private device onboarding and optional legacy diagnostics */
+.ipat-c320-enrollment{border:1px solid #41787f;background:#0e2732;padding:15px;border-radius:10px;margin:12px 0 16px}
+.ipat-c320-enrollment h3{margin:0 0 8px;color:#dbfff8}
+.ipat-c320-enrollment input{width:100%;min-width:0;max-width:100%;box-sizing:border-box}
+.ipat-c320-enrollment #ipat-c320-enroll-result{font-size:12px;line-height:1.7;color:#d1e9ed}
+.ipat-lab-diagnostics{margin:16px 0;border:1px dashed #4b6475;border-radius:9px;padding:12px}
+.ipat-lab-diagnostics>summary{cursor:pointer;padding:9px 4px;font-size:12px;color:#a6bbca}
+.ipat-lab-diagnostics[open]>summary{margin-bottom:16px;border-bottom:1px solid #4b6475}
