@@ -62,6 +62,8 @@ async function simulate({password='SYNTHETIC',ownerCode='',autoVerify=false}) {
        assert.equal(body.password,'SYNTHETIC');
        assert.equal(body.bootstrap_code,ownerCode);
        status.credentials_enrolled=true;
+       status.device_status='CONNECTED';
+       status.adoption_state='READ_ONLY_CONNECTED_LAB';
        return {ok:true,json:async()=>({enrolled_for_read:true,
           production_adopted:false,physical_writes_enabled:false,
           adoption_state:'READ_ONLY_CONNECTED_LAB',card_count:3,
