@@ -5029,3 +5029,62 @@ firmware-specific export plus isolated restoration is tested.
 Original authenticated SSH child was explicitly terminated after
 the read and the owner-VPS socket table independently showed ZERO
 ESTABLISHED sockets to the physical OLT.
+
+## R9.32 owner-operated protected off-VPS recovery procedure prepared, NOT executed on actual C320
+
+Confirmed latest actual owner Mac FileVault ON, current reviewed
+0700 Restic encrypted repository (config0400), preexisting macOS
+Keychain backup credential metadata, owner-only 0700 protected
+first-read folder, and existing authorized Mac↔VPS key-based SSH.
+ACTUAL direct sensitive R9.31 source remains ONLY on VPS in owner-only
+0700 folder: mode0600 119980-byte full running CLI reference,
+receipt SHA256 5b21f96b...e1989ba3, zero OLT configuration writes.
+No real off-VPS encrypted backup can be claimed after previous
+Remote Desktop Commander secret SCP refusal; no bypass attempted.
+
+New `deploy/scripts/lab/r932/owner_mac_restic_c320_snapshot.py`
+--requirements (offline), --local-readiness (safe metadata) and
+--backup-and-restore (interactive human OWNER Mac Terminal ONLY,
+NOT to be executed by ChatGPT remote access). Real owner Mac
+--requirements PASS and metadata-only --local-readiness PASS, both
+explicitly report that actual encrypted off-VPS capture + isolated
+restoration NOT performed by preflight. Actual separate disposable
+Restic SYNTHETIC-ONLY repository integration PASS: exact
+--stdin-from-command command snapshot, JSON snapshot path/tag and
+isolated recovered SYNTHETIC bytes match; zero actual device bytes.
+Seven R9.32 synthetic negative/zero-network tests PASS; aggregate
+full suite and owner VPS code transfer to be independently checked.
+Remaining real owner action is to PERSONALLY execute one reviewed
+`python3 deploy/scripts/lab/r932/owner_mac_restic_c320_snapshot.py --backup-and-restore`
+from owner Mac Terminal, with explicit interactive confirmation;
+never through ChatGPT's rejected remote secret-transfer tool. It
+will only record success if actual owner-operated encrypted capture,
+Restic pack read, isolated identical restore and cleanup SUCCEED;
+it will not mark native firmware-import compatibility or production
+`device_adopted`. Independently approved firmware-aware recovery,
+restricted device account, credential rotation, physical source
+trust/POP isolation, genuine tenant MFA/reviewer, auditable secured
+production SSH worker and actual tenant-scoped onboarding still OPEN.
+
+Nonsecret protected source inspection of REAL actual config found 16
+user-declaration lines, 2 with explicitly parseable level15, 14
+without a safe numeric privilege token. This does NOT certify a
+read-only user or establish a privilege default. Exact account
+identifiers, secret hashes and config lines were NEVER printed.
+
+R9.32 INDEPENDENT TEST VERIFICATION (29 Sept 2026): Exact protected source 582ca2858a8973cb8227a7614537f04919b7698e passed SHA256-verified private Git delta 148f7ebeef0531dc3ff8c2ec7dec26af618d94eebfadb6dad28152d98e5428dc and separate NONROOT owner-VPS checkout. Actual VPS executed only offline R932 --requirements, 7/7 dedicated synthetic negative tests, 87/87 combined Python safety suite, and revalidated the GENUINE untouched owner-private R9.31 119980-byte sensitive full running-config receipt with matching SHA256; result explicitly off-host encrypted backup restored FALSE, adopted FALSE, no network device actions. Independently ran pinned Rust 1.98.1 complete locked offline workspace cargo fmt and 220/220 Rust test cases across 40 groups PASS on exact R932 protected checkout. Owner Mac actual safe metadata-only --local-readiness PASS: FileVault ON, existing reviewed encrypted Restic local repository present and macOS Keychain record exists, but ACTUAL owner-only --backup-and-restore mode INTENTIONALLY NOT executed due prior explicit secret transfer guard. A separate disposable purely SYNTHETIC Restic repo created/verified actual --stdin-from-command snapshot path/tag and isolated restored equivalent fixture bytes; did NOT copy actual OLT. No sensitive config/public Git exports, owner accounts/OLT config changes, unattended read worker or authentic full SaaS adoption.
+
+
+R9.32 additional safety refinement: explicit owner Mac `--verify-only`
+now safely supports repeating full encrypted-pack checking and
+isolated byte-identical restore when an immutable prior owner-only
+0600 receipt exists, validating every result field except original
+verification timestamp and NEVER overwriting original evidence.
+`--backup-and-restore` still denies duplicate attempts if a prior
+receipt exists. Expanded dedicated pure-synthetic guard cases 8/8
+and combined full owner Mac Python safety suite 88/88 PASS; actual
+Mac metadata-only --local-readiness rechecked PASS. Real operator
+`--backup-and-restore` still NOT invoked through ChatGPT remote tools,
+so no actual off-host C320 encrypted restore claim.
+
+R9.32 immutable receipt reverify refinement exact protected HEAD dcd86068715aaa754bde746f5e3b2f6eb12df1ea independently SHA256 bundle-checked 544f51421724e9b10ffe5b2037b60a8dbe65a2dce0fe1e91e597b8c1fd4d29a1 onto authorized owner NONROOT VPS. Dedicated R932 synthetic safety 8/8 and combined full owner Mac+VPS Python suite 88/88 PASS. Actual true owner-VPS confidential R9.31 C320 snapshot verified IN PLACE again: 119980 bytes SHA256 5b21f96b7b81dc9a771cc24e6369bc55433748b637bf0e98a3fb0a03e1989ba3, independent off-VPS backup restoration FALSE and SaaS adopted FALSE. Owner-VPS full pinned Rust 220/220 from parent exact immutable workspace; this patch modified only Python/docs and no Rust. Actual Mac human-operated --backup-and-restore intentionally NOT run through refused remote secret-transfer tool; owner one command documented in R932 runbook. No on-device operations, no secret transfer, no privileged credential changes.

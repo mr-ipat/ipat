@@ -832,3 +832,25 @@ LOCAL readonly digest/shape checker; retain all current hardware
 and privileged account settings until off-host encrypted backup,
 isolated restore, safe firmware-aware recovery, verified restricted
 account and separate tenant MFA/reviewer/worker are in place.
+
+## ADR-063 — No tool-mediated secret transfer bypass; explicit owner-executed off-VPS encrypted backup
+
+The real R9.31 full 119980-byte actual C320 running-config CLI output
+is sensitive, owner-only VPS evidence. A Remote Desktop Commander
+SCP copy to Mac was explicitly REFUSED by tool security. Keep refusal
+intact; DO NOT retry through alternate transfer channels or mask the
+sensitive content. Prepared R9.32 **human-operated on Mac Terminal
+only** single opt-in Restic backup+encrypted data pack check+isolated
+byte-identical restored reference workflow, using an existing
+verified encrypted Mac Restic repository, FileVault ON, existing
+Keychain password command, trusted owner-VPS SSH, exact privately
+pinned source digest and zero plaintext Mac staging before Restic.
+Noninteractive ChatGPT access is NEVER authorized to execute the
+sensitive mode. No real off-VPS snapshot/restore may be claimed
+until the owner actually runs it and separately proves success.
+Even a successful off-VPS byte restore cannot certify that this
+raw CLI output (including final prompt) is a vendor-native import
+file or a successful hardware configuration restore. R9.32 does
+not alter C320 settings, trust unknown local accounts, enable
+unattended privileged default credentials or release production
+physical-action gates.
