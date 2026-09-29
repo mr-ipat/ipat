@@ -4640,3 +4640,17 @@ PASS. No private OLT credential, network connection or OLT CLI
 command was initiated by the new planner. This establishes the
 site-plan SOFTWARE tests only, not production adoption, approval,
 real chassis config state or hardware interoperability.
+
+R9.23 latest public SYNTHETIC mirror SHA
+`25a75d66c7d8b90ce4924f60671f33133740716e` GitHub Actions
+run `36508704638` independently completed SUCCESS **2/2** jobs:
+`synthetic-static` and full locked Rust workspace `rust-locked`.
+Actual owner-VPS private current R9.22 user service is ACTIVE,
+`127.0.0.1:3002/lab/c320-action-readiness` HTTP200 and original
+`127.0.0.1:3000/healthz` HTTP200. R9.23 no-network site-review
+planner was tested on a separate actual VPS checkout; it was NOT
+deployed as any live device action executor and did NOT run any real
+OLT command or configuration change. Real operational adoption remains
+blocked on independently sourced physical chassis RSA, verified
+restricted account, POP site baseline/isolation and authentic tenant
+review approvals, not the client SSH algorithm negotiation.
