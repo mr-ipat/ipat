@@ -35,7 +35,7 @@ MODE = 'OWNER_SUPERVISED_REAL_C320_READ_ONLY'
 SAFE_ACTIONS = {b'REFRESH\n', b'CARDS\n', b'FIRMWARE\n'}
 LOCK = threading.Lock()
 CLI_LOCK = threading.Lock()
-STATE = {'failures': 0, 'blocked_until': 0.0, 'last_verified': '', 'last_kind': '', 'poll_count': 0}
+STATE = {'failures': 0, 'blocked_until': 0.0, 'last_verified': '', 'last_kind': '', 'poll_count': 0, 'last_monotonic': 0.0}
 PARENT = SOCKET.parent
 
 
@@ -151,6 +151,7 @@ def verify_and_store(token, password, reader, reader_module):
     with LOCK:
         STATE['last_verified'] = datetime.now(timezone.utc).isoformat()
         STATE['last_kind'] = 'CARDS'
+        STATE['last_monotonic'] = time.monotonic()
         STATE['failures'] = 0
     return {'enrolled_for_read': True, 'physical_card_count': result['cards_in_service'],
             'verified_at_utc': STATE['last_verified'],
@@ -163,6 +164,7 @@ def status():
     with LOCK:
         last = STATE['last_verified']
         last_kind = STATE['last_kind']
+        recent = bool(last) and time.monotonic() - STATE['last_monotonic'] <= 360
     return {'mode': MODE, 'agent_ready': configured,
             'read_in_progress': CLI_LOCK.locked(),
             'requests_left': 5 if configured else 0,
@@ -172,7 +174,7 @@ def status():
             'last_verified_at_utc': last,
             'last_verified_kind': last_kind,
             'host_identity_level': 'NETWORK_OBSERVED_SSH_PIN',
-            'actual_olt_connectivity_verified': bool(last),
+            'actual_olt_connectivity_verified': recent,
             'device_adopted': False, 'device_writes': 0}
 
 
@@ -187,11 +189,27 @@ def read(request, reader, reader_module):
             STATE['last_verified'] = datetime.now(timezone.utc).isoformat()
             STATE['last_kind'] = request.strip().decode('ascii')
             STATE['poll_count'] += 1
+            STATE['last_monotonic'] = time.monotonic()
         result['read_at_utc'] = STATE['last_verified']
         # Existing Rust and GUI strict response contracts remain unchanged.
         return result
     finally:
         CLI_LOCK.release()
+
+
+def background_read(stop, reader, reader_module):
+    """Periodic bounded read is informational only; never writes device."""
+    while not stop.is_set():
+        if enrolled():
+            try:
+                read(b'CARDS\\n', reader, reader_module)
+            except (ValueError, OSError, InvalidToken):
+                with LOCK:
+                    STATE['last_verified'] = ''
+                    STATE['last_kind'] = ''
+                    STATE['last_monotonic'] = 0.0
+        if stop.wait(300):
+            break
 
 
 def serve():
@@ -254,12 +272,19 @@ def serve():
         daemon_threads = True
         block_on_close = False
         request_queue_size = 8
+    stop = threading.Event()
+    monitor = threading.Thread(target=background_read,
+        args=(stop, reader, reader_module), daemon=True)
     try:
         with ThreadedServer(str(SOCKET), Handler) as server:
             SOCKET.chmod(0o600)
             print('R945_PERSISTENT_READ_CONNECTOR_STARTED_NO_RAW_CREDENTIALS', flush=True)
+            monitor.start()
             server.serve_forever(poll_interval=0.5)
     finally:
+        stop.set()
+        if monitor.is_alive():
+            monitor.join(timeout=2)
         if SOCKET.exists() and SOCKET.is_socket():
             SOCKET.unlink()
         print('R945_PERSISTENT_READ_CONNECTOR_STOPPED', flush=True)
