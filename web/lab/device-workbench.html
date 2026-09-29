@@ -11,6 +11,7 @@
   <script src="/lab/device-workbench.js" defer></script>
   <script src="/lab/c320-first-real-inventory.js" defer></script>
   <script src="/lab/c320-operator-console.js" defer></script>
+  <script src="/lab/c320-connection-setup.js" defer></script>
 </head>
 <body>
 <a href="#main" class="skip">Ke konten</a>
@@ -43,6 +44,26 @@
       <section class="panel ipat-ops-console" id="ipat-c320-console" aria-labelledby="ipat-c320-console-heading">
   <div class="section-top"><div><span class="eyebrow">IPAT OLT OPERATIONS · LAB PRIVAT R9.44</span>
   <h2 id="ipat-c320-console-heading">ZTE C320 · Konsol Operasional</h2></div><span class="pill amber-pill">PERUBAHAN FISIK TERKUNCI</span></div>
+  <section class="ipat-c320-enrollment" aria-label="Koneksi perangkat pertama">
+    <h3>Koneksi perangkat · ZTE C320</h3>
+    <p class="ipat-ops-disclosure">Apabila server dapat menjangkau jaringan manajemen, gunakan SSH langsung. Tunnel hanya diperlukan untuk jaringan privat yang belum memiliki rute ke server. Kredensial dimasukkan sekali di panel privat dan disimpan terenkripsi di VPS; tidak ada lagi agen Terminal 15 menit.</p>
+    <div class="ipat-ops-topology">
+      <div><small>Alamat perangkat laboratorium</small><strong>10.10.13.233:321 · SSH</strong></div>
+      <div><small>Metode</small><strong>Jaringan langsung · jaringan-observed SSH pin</strong></div>
+      <div><small>Status</small><strong id="ipat-c320-enroll-state">Memeriksa koneksi...</strong></div>
+    </div>
+    <form id="ipat-c320-enroll-form" autocomplete="off">
+      <div class="ipat-ops-topology">
+        <div><label for="ipat-c320-bootstrap">Kode pengaturan pemilik (sekali saja)</label>
+          <input id="ipat-c320-bootstrap" type="password" autocomplete="off" required minlength="32" maxlength="128"></div>
+        <div><label for="ipat-c320-device-password">Password SSH perangkat</label>
+          <input id="ipat-c320-device-password" type="password" autocomplete="new-password" required maxlength="128"></div>
+        <div><label>Jenis perangkat</label><strong>ZTE C320 · profil laboratorium teruji</strong></div>
+      </div>
+      <button type="submit" id="ipat-c320-enroll-button" class="secondary">Hubungkan dan simpan perangkat</button>
+    </form>
+    <p id="ipat-c320-enroll-result" role="status" aria-live="polite">Koneksi fisik hanya dinyatakan berhasil setelah perintah baca identitas/kartu dijawab oleh OLT. Penambahan konfigurasi dan firmware tetap memerlukan izin terpisah.</p>
+  </section>
   <p id="ipat-c320-connectivity" role="status" aria-live="polite">Mengecek sesi agen OLT...</p>
   <div class="ipat-ops-tabs" aria-label="Kategori fungsi OLT">
     <span class="ipat-ops-tab active">Ringkasan & ONU</span>
