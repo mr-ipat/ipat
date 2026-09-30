@@ -10,6 +10,7 @@ mod device_workbench_lab;
 mod oidc_browser_lab;
 mod oidc_lab;
 mod site_a_pairing_lab;
+mod tenant_domain;
 mod tenant_membership_lab;
 
 use identity_core::PinnedIssuer;
@@ -30,8 +31,9 @@ const LAB_DASHBOARD_CSS: &str = include_str!("../../../web/lab/dashboard-preview
 const LAB_DASHBOARD_JS: &str = include_str!("../../../web/lab/dashboard-preview.js");
 // Public project target taxonomy only. Not an enrollment record or real device data.
 const LAB_DEVICE_TARGETS: &str = include_str!("../../../web/lab/device-targets.json");
-// Product-owner approved rollout SEQUENCING, not a trusted entitlement or
-// authority for actual devices. Runtime never learns a tenant from Host.
+// Historical owner-lab rollout manifest only; it is not a trusted entitlement
+// and stays domain-disabled. Production hostname context is resolved separately
+// through tenant_domain and still never grants authorization by Host alone.
 const LAB_ROLLOUT_PHASE: &str = include_str!("../../../web/lab/rollout-phase.json");
 const LAB_STATUS: &str = r#"{"mode":"ssh-loopback-only","production_access":false,"authentication_enabled":false,"device_operations_enabled":false,"backend":"online"}"#;
 
@@ -298,6 +300,17 @@ async fn main() {
         .await
         .expect("bind isolated identity/dashboard lab listener");
     let mut app = app_with_lab_identity_and_store(lab_web_enabled, identity, store);
+    // R9.52 production-path hostname routing. Host selects only a verified
+    // tenant context; all business APIs still require independent identity,
+    // membership and policy authorization.
+    let domain_requested =
+        std::env::var("IPAT_TENANT_DOMAIN_ROUTING").as_deref() == Ok("YES");
+    if domain_requested {
+        app = app.merge(tenant_domain::router(
+            tenant_domain::from_environment()
+                .expect("invalid dedicated tenant-domain PostgreSQL resolver"),
+        ));
+    }
     if let Some(registry) = registry {
         app = app.merge(tenant_membership_lab::registry_router(registry));
     }
@@ -390,6 +403,12 @@ mod tests {
             .await
             .unwrap();
         assert_eq!(response.status(), StatusCode::UNAUTHORIZED);
+    }
+
+    #[tokio::test]
+    async fn tenant_domain_context_is_not_mounted_without_explicit_runtime_config() {
+        let response = get_path(app(), "/v1/tenant-context").await;
+        assert_eq!(response.status(), StatusCode::NOT_FOUND);
     }
 
     #[tokio::test]

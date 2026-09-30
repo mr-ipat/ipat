@@ -83,7 +83,7 @@ Semua FR memiliki `tenant_id`/otorisasi yang sesuai atau eksplisit `platform-sco
 | FR-001 | S1 | Buat minimal dua tenant sintetis yang terisolasi; query/command yang salah tenant ditolak di UI, API, service, job, search dan export. |
 | FR-002 | S1→C | Login OIDC dengan MFA untuk privileged users dan sesi tenant-scoped; user tenant lain tidak dapat memalsukan context via header/host/token. |
 | FR-003 | S1 | Policy RBAC + ABAC deny-by-default: action/resource/tenant/POP; menu tak berhak tidak dirender, API memberikan 403/404 sesuai kebijakan tanpa bocor metadata. |
-| FR-004 | C | Verifikasi kepemilikan subdomain/custom domain, TLS per domain, isolasi cookie/session/branding tenant, mapping domain↔tenant tervalidasi. |
+| FR-004 | S1→C | **Production-path sekarang:** platform subdomain atau custom domain disimpan pada registry PostgreSQL unik dan hanya status verified+TLS-ready yang boleh menyelesaikan `Host` menjadi konteks tenant. `Host` tidak pernah memberi authorization; identity+membership+RBAC/ABAC harus cocok dengan tenant hasil resolver. Platform-controlled `*.ipat.id` memakai verifikasi parent-domain; custom domain memakai proof kepemilikan (DNS TXT). Cookie host-only, callback OIDC allowlist, TLS dan negative cross-host tests wajib sebelum tenant data publik. |
 | FR-005 | S1→C | Antarmuka platform owner terpisah, tidak ada akses otomatis terhadap credential/data operasional tenant. |
 | FR-006 | S1→C | Audit siapa/kapan/aksi/tenant/resource/hasil/correlation-id tanpa secret; log akses lintas tenant ditolak juga dicatat. |
 | FR-007 | S1→C | Aksi berisiko memiliki klasifikasi, dry-run, approval *two-person* bila ditetapkan, expiry, reason, dan opsi emergency tercatat. |
@@ -166,7 +166,7 @@ Semua FR memiliki `tenant_id`/otorisasi yang sesuai atau eksplisit `platform-sco
 | AC-06 | S1 MUST | 3 skenario incident menghasilkan domain hipotesis berbeda, evidence/source/age dan disclaimer unknown; satu observasi CWMP missing tak memicu vonis fiber cut. |
 | AC-07 | S1 MUST | Backup PostgreSQL dan restore ke isolated instance dengan row counts/integrity sampel; hasil dicatat. |
 | AC-08 | S1 CONDITIONAL | Node kedua heterogen join dan menjalankan job eligible; tes gangguan/restart worker dan tidak ada duplicate side effect dalam skenario; jika node belum ada, ditandai BLOCKED. |
-| AC-09 | C | Customer custom domain tidak bisa mengambil tenant lain melalui host spoofing; TLS/session/domain ownership policy ditest. |
+| AC-09 | S1→C | Verified tenant hostname resolver gagal tertutup untuk unknown/pending/suspended/revoked/no-TLS domain; duplicate/forged Host dan `X-Forwarded-Host` tidak dapat memilih tenant lain. Sebelum public tenant data: ownership proof, certificate/TLS, host-only session cookie, OIDC callback allowlist dan cross-domain isolation diuji end-to-end. |
 | AC-10 | C | ACS interop per metode/firmware berdasarkan matriks, termasuk malformed XML, timeout, auth failures; tidak menggeneralisasi model lain. |
 | AC-11 | C | USP authenticated interoperability/conformance sesuai target fitur/amendment; setiap metode dan MTP punya evidence. |
 | AC-12 | C | OLT ZTE/C-DATA read-only dan aksi write yang diusulkan teruji per firmware dengan rollback/outage control terpisah. |
@@ -206,7 +206,7 @@ Frontend tenant + platform admin mengakses Axum API melalui verified domain ingr
 | M0 (hari ini) | PRD/architecture/security/device matrix/ADRs/backlog | Dokumen siap version control; pilihan PROPOSED tidak disalahsebut APPROVED |
 | S1 D1–D7 | Vertical slices MVP lab; baca `SPRINT_BACKLOG.md` | AC-01..07 dicatat, AC-08 jika node tersedia; demo & status akurat |
 | M1, setelah sprint | ACS/USP protocol completeness terprioritas, physical interop, adapter read-only, end-to-end authz | Test matrix meningkat **per kombinasi**; ketiadaan perangkat tetap blocker |
-| M2 | Batch provisioning controlled, diagnostics richer, UX tenant/custom-domain, operational hardening | Stage pilot tenant terisolasi + security review |
+| M2 | Batch provisioning controlled, diagnostics richer, advanced white-label/domain automation, operational hardening | Stage pilot tenant terisolasi + security review |
 | M3 | HA DB, production K3s, DR/backup, threat verification, load/fault injection, SLO budgeting | Commercial readiness review dengan bukti SLO/RPO/RTO dan pentest |
 | M4 | Paket/kuota, tenant onboarding self-service terbatas, observability/cost & scale tuning | Contract/compliance/support model disahkan sebelum penjualan luas |
 
@@ -1147,3 +1147,17 @@ Product direction: new functionality is built on the production path first; labo
 ### Acceptance cut-line
 
 The current owner-only `:3002` UI and one-time owner code are not the commercial product path. They remain validation artifacts until removed after the real authenticated production Device Manager is mounted. Production-path read-only adoption may ship before high-impact writes, but the login, tenant scoping, persistent inventory, adapter worker and health/error reporting are MUST before calling Device Manager usable.
+
+## R9.52 — Tenant subdomain/custom-domain is production-path NOW (30 Sep 2026)
+
+Owner direction supersedes the former R7.5/ADR-020 sequencing that deferred customer-domain work. Domain routing is now a MUST on the same production control API as login and Device Manager, not a later lab-to-production migration.
+
+**MUST:** a globally unique PostgreSQL tenant-domain registry stores tenant, canonical FQDN, domain kind, verification method, lifecycle state and TLS readiness. Only verified + tls_ready + active tenant may resolve. Platform-owned subdomains under a controlled IPAT parent may use parent-domain verification; externally owned custom domains require an explicit ownership proof such as DNS TXT before activation.
+
+**MUST:** HTTP Host is only a routing selector. It MUST NOT create membership, role, POP, device ownership or platform privilege. Authenticated requests must independently validate signed identity, current DB membership, RBAC+ABAC and resource tenant, then require that authorized tenant to equal the resolved hostname tenant. X-Forwarded-Host or user-supplied tenant headers are never standalone authority.
+
+**MUST:** unknown, duplicate, malformed, pending, suspended, revoked or non-TLS-ready hostnames fail closed. Public tenant data additionally requires certificate/TLS, host-only Secure HttpOnly session cookies, CSRF/origin protection and exact OIDC redirect/callback allowlists.
+
+**IMPLEMENTED IN R9.52 SOURCE:** migration `deploy/db/migrations/0012_tenant_domains.sql`, dedicated non-login resolver roles/function and Rust production route `GET /v1/tenant-context`. The route intentionally returns only a safe tenant slug/hostname plus `authentication_required=true`; it grants zero business access. The existing private `:3002` lab manifest remains domain-disabled because it is no longer the product path.
+
+**NOT YET CLAIMED LIVE:** public HTTPS customer dashboard, certificate issuance, actual DNS-TXT verification workflow, real tenant OIDC/MFA browser session and cross-host business API authorization must still be deployed/tested end-to-end. `ipat.fadly.id` is the owner-designated first custom-domain example; do not hardcode a tenant UUID or mark it public-live merely because DNS points to the VPS.

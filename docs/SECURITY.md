@@ -1275,3 +1275,11 @@ fingerprint. A successful key exchange MUST NOT be interpreted as
 independent device identity or permission to authenticate, even for
 the owner-provided laboratory account on a subscriber-serving OLT.
 Full physical, account, OIDC and change-control gates are unchanged.
+
+## R9.52 — Domain/tenant isolation controls
+
+The tenant hostname is an untrusted request selector until it matches a `verified` + TLS-ready platform registry row. Never infer tenant identity from DNS alone, browser headers or a JWT tenant claim. Protected handlers must compare three independently derived values: verified hostname tenant, verified identity membership tenant, and resource tenant. A mismatch denies before data access/job enqueue/export.
+
+Threat controls added in this milestone: exactly one bounded canonical Host; malformed/IP-literal/duplicate Host rejected; `X-Forwarded-Host` is not application authority; globally unique FQDN; custom-domain ownership challenge separated from TLS readiness; suspended/revoked/no-TLS domains fail closed; dedicated resolver role has no direct table mutation or operational-data rights; output excludes tenant UUID/secrets. Trusted ingress must strip attacker-supplied forwarded-host headers and use exact allowed hosts/certificates.
+
+Before a customer hostname is publicly usable, require HTTPS only, host-only `Secure; HttpOnly` session cookies, SameSite/CSRF/origin enforcement, exact OIDC redirect URI allowlist and cross-host negative tests. Do not set a parent-domain cookie such as `.ipat.id` for tenant sessions. Platform owner support access remains separately authorized and does not inherit tenant device credentials merely by visiting a tenant hostname.

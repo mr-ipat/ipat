@@ -308,6 +308,12 @@ jobs:
       - name: R9.2 separate sealed nonexecutable durable intent and immutable private audit (disposable ONLY)
         run: |
           python3 -m unittest discover deploy/db/tests -p test_read_probe_intent_integration.py -v
+      - name: R9.52 verified tenant-domain registry and fail-closed Host resolver (disposable ONLY)
+        run: |
+          python3 -m unittest discover deploy/db/tests -p test_tenant_domains_integration.py -v
+          rustup toolchain install 1.98.1 --profile minimal --component rustfmt
+          rustup default 1.98.1
+          cargo test --locked -p control-api tenant_domain::tests::r952_real_disposable_postgres_host_to_tenant_context_is_fail_closed -- --exact
       - name: R7.8 real signed JWT to isolated Postgres reader to private Axum menu (synthetic CI ONLY)
         run: |
           python3 deploy/db/tests/seed_private_http_identity_ci.py
