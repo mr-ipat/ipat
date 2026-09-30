@@ -7,8 +7,8 @@ mod device_review_lab;
 mod device_workbench_lab;
 mod oidc_browser_lab;
 mod oidc_lab;
-mod tenant_membership_lab;
 mod tenant_domain;
+mod tenant_membership_lab;
 
 use identity_core::PinnedIssuer;
 use std::sync::Arc;
@@ -299,8 +299,7 @@ async fn main() {
     // Production-shaped tenant-domain bootstrap may be enabled independently
     // of the old lab preview. It returns public routing context only and never
     // grants membership or business API access.
-    let domain_requested =
-        std::env::var("IPAT_TENANT_DOMAIN_RESOLVER").as_deref() == Ok("YES");
+    let domain_requested = std::env::var("IPAT_TENANT_DOMAIN_RESOLVER").as_deref() == Ok("YES");
     if domain_requested {
         app = app.merge(tenant_domain::router(
             tenant_domain::from_environment()
