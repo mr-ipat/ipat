@@ -1165,3 +1165,19 @@ signed production tenant/POP action worker remain unimplemented.
 ## R9.45: direct-first management topology
 
 Authenticated tenant/POP Device Manager -> verified target, tenant and permitted management segment -> direct verified SSH/HTTPS/SNMPv3 route where available; otherwise tenant/POP-specific WireGuard or IPsec gateway -> same server-side encrypted one-time device enrollment -> bounded persistent read worker, per-device lease, fresh timestamp, and separately audited restricted change worker. Do not force tunnels when direct network reachability is already safe, and never make SSH/public Telnet an unrestricted cross-tenant command proxy. Private :3002 ZTE lab is an interim fixed-target prototype with preexisting network-observed SSH pin; it does NOT implement authenticated production tenancy, provider-agnostic new-device form or real WireGuard/IPsec provisioning.
+
+
+## R9.51 — Unified production device platform
+
+The production path is:
+
+`Browser / custom tenant domain → Authenticated BFF/control-api → tenant/POP authorization → PostgreSQL device registry → secret reference → worker queue → vendor/protocol adapter → network device`.
+
+Adapters implement one normalized lifecycle:
+`validate_target → connect → authenticate → identify → discover_capabilities → read_inventory → health_poll`, with write methods separated into an independently authorized change executor. The UI never contains vendor CLI logic and never owns plaintext persisted secrets.
+
+Normalized connection states include at minimum: SAVED, CONNECTING, ROUTE_UNREACHABLE, PORT_REFUSED, IDENTITY_FAILED, AUTH_FAILED, UNSUPPORTED_RESPONSE, CONNECTED_READ_ONLY, DEGRADED and DISCONNECTED. Each state carries timestamp, adapter, transport and a safe operator-facing reason. Device records survive connectivity failures.
+
+Inbound CPE protocols are adapters to the same inventory rather than separate products. CWMP Inform and USP agent sessions resolve to tenant/device records, persist protocol session state and feed the same subscriber/topology/telemetry model. MikroTik API-SSL and OLT SSH/SNMP/vendor APIs are outbound worker adapters. Direct safe management routing is selected first; site-specific WireGuard/IPsec only supplies reachability and never bypasses device authentication or tenant authorization.
+
+The existing `:3002` C320 laboratory connector is no longer an architectural destination. Keep it only as a physical regression harness while extracting proven C320 parsing/compatibility into the generic production adapter. Do not add new normal product features exclusively to the lab route.
