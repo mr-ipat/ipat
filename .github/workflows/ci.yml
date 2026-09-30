@@ -188,6 +188,16 @@ jobs:
         run: |
           python3 -m unittest discover deploy/db/tests -p 'test_r80_inventory_contract.py' -v
           python3 -m py_compile deploy/db/tests/test_verified_device_inventory_integration.py
+      - name: R9.53 adaptive custom-domain source and UI contracts
+        run: |
+          python3 -m py_compile deploy/db/tests/test_tenant_domain_enrollment_integration.py
+          cargo test --locked -p control-api tenant_domain::tests::r953_dns_instruction_builder_is_domain_specific_and_non_authorizing -- --exact
+          cargo test --locked -p control-api tenant_domain::tests::r953_nameserver_profile_requires_real_authoritative_readiness_before_ready -- --exact
+          cargo test --locked -p control-api tenant_domain::tests::r953_instruction_endpoint_fails_closed_until_routing_target_is_ready -- --exact
+          cargo test --locked -p control-api tenant_domain::tests::r953_instruction_endpoint_returns_configured_record_when_ready -- --exact
+          grep -Fq '/v1/domains/instructions' web/lab/domain-settings.js
+          grep -Fq 'Domains & Branding' web/lab/domain-settings.html
+          grep -Fq 'disabled' web/lab/domain-settings.html
       - name: Verify formatting
         run: cargo fmt --all -- --check
       - name: Run locked unit tests
@@ -314,6 +324,9 @@ jobs:
           rustup toolchain install 1.98.1 --profile minimal --component rustfmt
           rustup default 1.98.1
           cargo test --locked -p control-api tenant_domain::tests::r952_real_disposable_postgres_host_to_tenant_context_is_fail_closed -- --exact
+      - name: R9.53 tenant-admin custom-domain enrollment preserves R9.52 isolation
+        run: |
+          python3 -m unittest discover deploy/db/tests -p test_tenant_domain_enrollment_integration.py -v
       - name: R7.8 real signed JWT to isolated Postgres reader to private Axum menu (synthetic CI ONLY)
         run: |
           python3 deploy/db/tests/seed_private_http_identity_ci.py
