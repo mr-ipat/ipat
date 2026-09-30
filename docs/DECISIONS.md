@@ -603,3 +603,12 @@ metadata alone may authorize live device management.
 **Authorization boundary.** Public DNS-instruction generation grants no tenant authority. Persisting, listing, or disabling a domain requires current `tenant_admin` membership for the exact tenant and goes through narrow `SECURITY DEFINER` functions; runtime roles have no direct table `SELECT/INSERT/UPDATE/DELETE`. Duplicate hostnames return no owning-tenant metadata.
 
 **Deployment reality.** A profile may describe an ingress target only after that target is actually intended for tenant traffic. R9.17 does not claim that the current VPS port 443, certificate automation, or authoritative nameservers are deployed merely because the dashboard/backend can generate instructions.
+
+
+## ADR-043 — APPROVED: DNS target visibility is separate from safe-to-point readiness — 2026-09-30
+
+**Decision.** IPAT may show the customer the DNS target derived from the active deployment profile as soon as the hostname is syntactically valid. The dashboard must separately expose whether the routing runtime is actually ready. A known A/AAAA/CNAME/NS target is not equivalent to an instruction to change production DNS.
+
+**Readiness rules.** `safe_to_point_now=true` requires the deployment to explicitly mark tenant routing ready. Nameserver mode additionally requires the authoritative IPAT DNS service to be explicitly ready. At least two unique nameservers remain mandatory. If these gates are false, the dashboard may show the intended values for planning but must state **JANGAN POINTING DULU**.
+
+**Reason.** This prevents an operator from pointing a customer domain to a VPS whose port 443/TLS/ingress is not ready, while still satisfying the product requirement that IPAT tells the customer exactly what DNS value will be required.
