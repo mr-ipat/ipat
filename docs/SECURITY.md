@@ -1206,3 +1206,10 @@ AllowedIPs exported by version-dependent RouterOS tooling.
 DNS routing instructions are public-safe metadata and explicitly return `authorization_granted=false`. They cannot create a tenant mapping or session. Custom-domain persistence is a separate privileged path: current `tenant_admin` membership is re-evaluated in PostgreSQL; the domain-admin login role owns no table privileges; cross-tenant duplicate hostname attempts disclose no owner; and disabled/pending domains cannot become bootstrap authority.
 
 Ownership proof uses a per-request TXT value. The TXT challenge is not treated as a secret, but it must be unpredictable at issuance and bound to the exact requested hostname. A later DNS verifier must record evidence before moving state to verified. TLS issuance must follow verified routing and must not automatically expand ingress host allowlists from untrusted Host headers.
+
+
+## R9.20 adaptive DNS instruction security
+
+Adaptive selection is configuration-driven and grants no authority. A public-safe instruction request cannot choose an arbitrary ingress IP, CNAME target or nameserver; all targets originate from deployment-owned configuration. Invalid configured nameserver sets fail closed, and auto CNAME is disabled unless explicitly enabled by deployment because zone-apex validity cannot be inferred safely from an arbitrary hostname string.
+
+The dashboard may copy/display DNS values but cannot mark ownership, routing, TLS or activation complete. Those state transitions remain restricted to authenticated tenant-admin enrollment and the separate verifier capability defined in R9.19/ADR-047.

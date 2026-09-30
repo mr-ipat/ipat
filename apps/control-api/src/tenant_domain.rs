@@ -126,6 +126,7 @@ pub(crate) fn from_environment() -> Result<Arc<DomainStore>, String> {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 enum DnsRoutingMode {
+    Auto,
     ARecord,
     Cname,
     Nameserver,
@@ -134,6 +135,7 @@ enum DnsRoutingMode {
 impl DnsRoutingMode {
     fn as_str(&self) -> &'static str {
         match self {
+            Self::Auto => "auto",
             Self::ARecord => "a_record",
             Self::Cname => "cname",
             Self::Nameserver => "nameserver",
@@ -148,6 +150,7 @@ pub(crate) struct DnsInstructionProfile {
     ipv6: Option<Ipv6Addr>,
     cname_target: Option<CanonicalHost>,
     nameservers: Vec<CanonicalHost>,
+    auto_allow_cname: bool,
     routing_ready: bool,
     authoritative_dns_ready: bool,
 }
@@ -157,6 +160,7 @@ pub(crate) fn dns_profile_from_environment() -> Result<Arc<DnsInstructionProfile
         .map_err(|_| "missing custom-domain DNS mode")?
         .as_str()
     {
+        "auto" => DnsRoutingMode::Auto,
         "a_record" => DnsRoutingMode::ARecord,
         "cname" => DnsRoutingMode::Cname,
         "nameserver" => DnsRoutingMode::Nameserver,
@@ -174,35 +178,55 @@ pub(crate) fn dns_profile_from_environment() -> Result<Arc<DnsInstructionProfile
         .map_err(|_| "invalid custom-domain IPv6 target")?;
     let cname_target = std::env::var("IPAT_CUSTOM_DOMAIN_CNAME_TARGET")
         .ok()
-        .and_then(|value| canonical_dns_name(&value));
+        .map(|value| canonical_dns_name(&value).ok_or("invalid custom-domain CNAME target"))
+        .transpose()?;
+    let nameservers_configured = std::env::var("IPAT_CUSTOM_DOMAIN_NAMESERVERS").is_ok();
     let nameservers = std::env::var("IPAT_CUSTOM_DOMAIN_NAMESERVERS")
         .ok()
         .map(|value| {
             value
                 .split(',')
-                .filter_map(canonical_dns_name)
-                .collect::<Vec<_>>()
+                .map(|name| {
+                    canonical_dns_name(name)
+                        .ok_or_else(|| "invalid custom-domain nameserver".to_string())
+                })
+                .collect::<Result<Vec<_>, _>>()
         })
+        .transpose()?
         .unwrap_or_default();
+    let auto_allow_cname =
+        std::env::var("IPAT_CUSTOM_DOMAIN_AUTO_ALLOW_CNAME").as_deref() == Ok("YES");
     let routing_ready = std::env::var("IPAT_CUSTOM_DOMAIN_ROUTING_READY").as_deref() == Ok("YES");
     let authoritative_dns_ready =
         std::env::var("IPAT_CUSTOM_DOMAIN_AUTHORITATIVE_DNS_READY").as_deref() == Ok("YES");
 
+    let unique_nameservers = nameservers
+        .iter()
+        .map(|n| n.as_str())
+        .collect::<HashSet<_>>();
+    if nameservers_configured
+        && (unique_nameservers.len() < 2 || unique_nameservers.len() != nameservers.len())
+    {
+        return Err("nameserver routing requires at least two unique nameservers".into());
+    }
+
     match mode {
+        DnsRoutingMode::Auto
+            if ipv4.is_none()
+                && ipv6.is_none()
+                && cname_target.is_none()
+                && nameservers.is_empty() =>
+        {
+            return Err("auto routing requires at least one usable DNS target".into());
+        }
         DnsRoutingMode::ARecord if ipv4.is_none() && ipv6.is_none() => {
             return Err("A/AAAA routing requires at least one IP target".into());
         }
         DnsRoutingMode::Cname if cname_target.is_none() => {
             return Err("CNAME routing requires canonical target".into());
         }
-        DnsRoutingMode::Nameserver => {
-            let unique = nameservers
-                .iter()
-                .map(|n| n.as_str())
-                .collect::<HashSet<_>>();
-            if unique.len() < 2 || unique.len() != nameservers.len() {
-                return Err("nameserver routing requires at least two unique nameservers".into());
-            }
+        DnsRoutingMode::Nameserver if unique_nameservers.len() < 2 => {
+            return Err("nameserver routing requires at least two unique nameservers".into());
         }
         _ => {}
     }
@@ -213,6 +237,7 @@ pub(crate) fn dns_profile_from_environment() -> Result<Arc<DnsInstructionProfile
         ipv6,
         cname_target,
         nameservers,
+        auto_allow_cname,
         routing_ready,
         authoritative_dns_ready,
     }))
@@ -235,6 +260,9 @@ struct DnsRecordInstruction {
 struct DomainInstructionResponse {
     hostname: String,
     routing_mode: &'static str,
+    available_routing_modes: Vec<&'static str>,
+    selection_reason: &'static str,
+    customer_action: &'static str,
     routing_records: Vec<DnsRecordInstruction>,
     routing_target_known: bool,
     routing_ready: bool,
@@ -247,6 +275,63 @@ struct DomainInstructionResponse {
     authorization_granted: bool,
 }
 
+fn available_routing_modes(
+    profile: &DnsInstructionProfile,
+    hostname: &CanonicalHost,
+) -> Vec<&'static str> {
+    let mut modes = Vec::new();
+    if profile.ipv4.is_some() || profile.ipv6.is_some() {
+        modes.push("a_record");
+    }
+    if profile.nameservers.len() >= 2 {
+        modes.push("nameserver");
+    }
+    if (profile.mode != DnsRoutingMode::Auto || profile.auto_allow_cname)
+        && profile
+            .cname_target
+            .as_ref()
+            .is_some_and(|target| target != hostname)
+    {
+        modes.push("cname");
+    }
+    modes
+}
+
+fn select_routing_mode(
+    profile: &DnsInstructionProfile,
+    hostname: &CanonicalHost,
+) -> Option<(DnsRoutingMode, &'static str)> {
+    match profile.mode {
+        DnsRoutingMode::ARecord => Some((DnsRoutingMode::ARecord, "DEPLOYMENT_FORCED_A_RECORD")),
+        DnsRoutingMode::Cname => {
+            let target = profile.cname_target.as_ref()?;
+            if target == hostname {
+                None
+            } else {
+                Some((DnsRoutingMode::Cname, "DEPLOYMENT_FORCED_CNAME"))
+            }
+        }
+        DnsRoutingMode::Nameserver => (profile.nameservers.len() >= 2)
+            .then_some((DnsRoutingMode::Nameserver, "DEPLOYMENT_FORCED_NAMESERVER")),
+        DnsRoutingMode::Auto => {
+            if profile.ipv4.is_some() || profile.ipv6.is_some() {
+                Some((DnsRoutingMode::ARecord, "AUTO_STABLE_INGRESS_ADDRESS"))
+            } else if profile.nameservers.len() >= 2 {
+                Some((DnsRoutingMode::Nameserver, "AUTO_AUTHORITATIVE_NAMESERVERS"))
+            } else if profile.auto_allow_cname
+                && profile
+                    .cname_target
+                    .as_ref()
+                    .is_some_and(|target| target != hostname)
+            {
+                Some((DnsRoutingMode::Cname, "AUTO_CANONICAL_INGRESS_HOSTNAME"))
+            } else {
+                None
+            }
+        }
+    }
+}
+
 fn build_dns_instructions(
     profile: &DnsInstructionProfile,
     hostname: CanonicalHost,
@@ -254,8 +339,16 @@ fn build_dns_instructions(
     if !valid_custom_domain(&hostname) {
         return None;
     }
+    let available_routing_modes = available_routing_modes(profile, &hostname);
+    let (selected_mode, selection_reason) = select_routing_mode(profile, &hostname)?;
+    let customer_action = match selected_mode {
+        DnsRoutingMode::ARecord => "CREATE_ADDRESS_RECORDS",
+        DnsRoutingMode::Cname => "CREATE_CNAME_RECORD",
+        DnsRoutingMode::Nameserver => "DELEGATE_NAMESERVERS",
+        DnsRoutingMode::Auto => return None,
+    };
     let mut routing_records = Vec::new();
-    match profile.mode {
+    match selected_mode {
         DnsRoutingMode::ARecord => {
             if let Some(ipv4) = profile.ipv4 {
                 routing_records.push(DnsRecordInstruction {
@@ -296,9 +389,10 @@ fn build_dns_instructions(
                 });
             }
         }
+        DnsRoutingMode::Auto => return None,
     }
 
-    let authoritative_dns_ready = match profile.mode {
+    let authoritative_dns_ready = match selected_mode {
         DnsRoutingMode::Nameserver => profile.authoritative_dns_ready,
         _ => true,
     };
@@ -307,7 +401,10 @@ fn build_dns_instructions(
     Some(DomainInstructionResponse {
         verification_record_name: format!("_ipat-verify.{}", hostname.as_str()),
         hostname: hostname.as_str().to_string(),
-        routing_mode: profile.mode.as_str(),
+        routing_mode: selected_mode.as_str(),
+        available_routing_modes,
+        selection_reason,
+        customer_action,
         routing_target_known: !routing_records.is_empty(),
         routing_records,
         routing_ready: profile.routing_ready,
@@ -464,9 +561,26 @@ mod tests {
             ipv6: None,
             cname_target: None,
             nameservers: Vec::new(),
+            auto_allow_cname: false,
             routing_ready: false,
             authoritative_dns_ready: false,
         })
+    }
+
+    fn profile_auto() -> DnsInstructionProfile {
+        DnsInstructionProfile {
+            mode: DnsRoutingMode::Auto,
+            ipv4: Some("203.0.113.20".parse().unwrap()),
+            ipv6: None,
+            cname_target: canonical_dns_name("edge.ipat.id"),
+            nameservers: vec![
+                canonical_dns_name("ns1.ipat.id").unwrap(),
+                canonical_dns_name("ns2.ipat.id").unwrap(),
+            ],
+            auto_allow_cname: true,
+            routing_ready: true,
+            authoritative_dns_ready: true,
+        }
     }
 
     #[test]
@@ -520,6 +634,56 @@ mod tests {
     }
 
     #[test]
+    fn auto_profile_prefers_stable_address_and_reports_all_available_methods() {
+        let profile = profile_auto();
+        let response =
+            build_dns_instructions(&profile, canonical_dns_name("portal.customer.id").unwrap())
+                .unwrap();
+        assert_eq!(response.routing_mode, "a_record");
+        assert_eq!(response.customer_action, "CREATE_ADDRESS_RECORDS");
+        assert_eq!(response.selection_reason, "AUTO_STABLE_INGRESS_ADDRESS");
+        assert_eq!(
+            response.available_routing_modes,
+            vec!["a_record", "nameserver", "cname"]
+        );
+        assert_eq!(response.routing_records[0].value, "203.0.113.20");
+        assert!(response.safe_to_point_now);
+    }
+
+    #[test]
+    fn auto_profile_prefers_nameservers_over_cname_when_address_is_unavailable() {
+        let mut profile = profile_auto();
+        profile.ipv4 = None;
+        let response =
+            build_dns_instructions(&profile, canonical_dns_name("customer.co.id").unwrap())
+                .unwrap();
+        assert_eq!(response.routing_mode, "nameserver");
+        assert_eq!(response.customer_action, "DELEGATE_NAMESERVERS");
+        assert_eq!(response.routing_records.len(), 2);
+        assert!(response.safe_to_point_now);
+    }
+
+    #[test]
+    fn auto_profile_uses_cname_only_when_deployment_explicitly_allows_it() {
+        let mut profile = profile_auto();
+        profile.ipv4 = None;
+        profile.nameservers.clear();
+        let response =
+            build_dns_instructions(&profile, canonical_dns_name("portal.customer.id").unwrap())
+                .unwrap();
+        assert_eq!(response.routing_mode, "cname");
+        assert_eq!(response.customer_action, "CREATE_CNAME_RECORD");
+        assert_eq!(response.routing_records[0].value, "edge.ipat.id");
+
+        profile.auto_allow_cname = false;
+        assert!(build_dns_instructions(
+            &profile,
+            canonical_dns_name("portal.customer.id").unwrap()
+        )
+        .is_none());
+    }
+
+    #[test]
     fn nameserver_profile_requires_two_unique_nameservers() {
         let profile = DnsInstructionProfile {
             mode: DnsRoutingMode::Nameserver,
@@ -530,6 +694,7 @@ mod tests {
                 canonical_dns_name("ns1.ipat.id").unwrap(),
                 canonical_dns_name("ns2.ipat.id").unwrap(),
             ],
+            auto_allow_cname: false,
             routing_ready: true,
             authoritative_dns_ready: true,
         };
@@ -557,6 +722,7 @@ mod tests {
                 canonical_dns_name("ns1.ipat.id").unwrap(),
                 canonical_dns_name("ns2.ipat.id").unwrap(),
             ],
+            auto_allow_cname: false,
             routing_ready: true,
             authoritative_dns_ready: false,
         };

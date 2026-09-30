@@ -623,3 +623,12 @@ metadata alone may authorize live device management.
 **DNS responsibility.** The routing profile remains deployment-driven. A/AAAA/CNAME targets may be shown before activation, but `safe_to_point_now` remains a separate runtime readiness signal. Nameserver delegation continues to require at least two distinct authoritative nameservers and explicit authoritative-DNS readiness.
 
 **Deployment boundary.** R9.19 implements the persistent lifecycle and BFF primitives but does not claim that the current VPS has public HTTPS, a real IdP/MFA session, PostgreSQL, certificate automation or authoritative DNS online.
+
+
+## ADR-048 — APPROVED: adaptive DNS routing is deployment-selected, not customer-selected — 2026-09-30
+
+**Decision.** Custom-domain onboarding accepts only the requested hostname from the customer-facing flow. IPAT derives the effective routing method from the active deployment profile and returns the exact DNS records plus a machine-readable customer action and selection reason. The browser must not hard-code ingress IPs, canonical hostnames, or nameservers.
+
+**Automatic selection.** In `auto` mode, a stable configured A/AAAA ingress target is preferred because it is valid for both apex and subdomain hostnames. If no address target exists, IPAT may select authoritative nameserver delegation when at least two unique NS targets are configured. Automatic CNAME fallback is disabled by default and requires an explicit deployment opt-in because a generic hostname string is insufficient to prove that CNAME is valid at that DNS zone location. Explicit deployment modes `a_record`, `cname`, and `nameserver` remain supported.
+
+**Readiness and authority.** Selection does not activate a domain. `safe_to_point_now` still requires routing readiness and, for NS mode, authoritative-DNS readiness. Ownership TXT verification, TLS readiness and activation remain ordered service-controlled states under ADR-047. No DNS instruction grants membership or tenant authorization.

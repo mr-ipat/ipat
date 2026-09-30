@@ -11,12 +11,44 @@ function row(record){
   name.textContent=record.name;
   const value=document.createElement("code");
   value.textContent=record.value;
+  const copy=document.createElement("button");
+  copy.type="button";
+  copy.className="copy-record";
+  copy.textContent="Copy value";
+  copy.addEventListener("click",async()=>{
+    try{
+      await navigator.clipboard.writeText(record.value);
+      copy.textContent="Copied";
+      setTimeout(()=>{copy.textContent="Copy value";},1200);
+    }catch{
+      byId("domain-status").textContent="Clipboard tidak tersedia; salin nilai DNS secara manual.";
+    }
+  });
   const stage=document.createElement("small");
   stage.textContent=record.stage==="after_ownership_verification"
     ?"Terapkan setelah ownership verification"
     :record.stage;
-  item.append(type,name,value,stage);
+  item.append(type,name,value,copy,stage);
   return item;
+}
+
+function customerActionLabel(action){
+  return ({
+    CREATE_ADDRESS_RECORDS:"Buat record A/AAAA ke IP ingress yang ditampilkan",
+    CREATE_CNAME_RECORD:"Buat record CNAME ke hostname ingress yang ditampilkan",
+    DELEGATE_NAMESERVERS:"Ubah nameserver/delegasi ke NS IPAT yang ditampilkan"
+  })[action]||"Ikuti record DNS yang ditampilkan";
+}
+
+function selectionReasonLabel(reason){
+  return ({
+    AUTO_STABLE_INGRESS_ADDRESS:"IP ingress stabil tersedia; A/AAAA diprioritaskan.",
+    AUTO_CANONICAL_INGRESS_HOSTNAME:"IP langsung tidak tersedia; canonical ingress hostname digunakan.",
+    AUTO_AUTHORITATIVE_NAMESERVERS:"Target A/CNAME tidak tersedia; authoritative DNS IPAT digunakan.",
+    DEPLOYMENT_FORCED_A_RECORD:"Profil deployment menetapkan A/AAAA.",
+    DEPLOYMENT_FORCED_CNAME:"Profil deployment menetapkan CNAME.",
+    DEPLOYMENT_FORCED_NAMESERVER:"Profil deployment menetapkan delegasi nameserver."
+  })[reason]||reason||"—";
 }
 
 async function showInstructions(){
@@ -42,11 +74,18 @@ async function showInstructions(){
       || data.routing_target_known!==true
       || typeof data.routing_ready!=="boolean"
       || typeof data.safe_to_point_now!=="boolean"
+      || !Array.isArray(data.available_routing_modes)
+      || typeof data.selection_reason!=="string"
+      || typeof data.customer_action!=="string"
       || !Array.isArray(data.routing_records) || !data.routing_records.length){
       throw new Error("INVALID_BACKEND_RESPONSE");
     }
     byId("routing-mode").textContent=data.routing_mode.replaceAll("_"," ").toUpperCase();
     byId("routing-mode").className="pill";
+    byId("customer-action").textContent=customerActionLabel(data.customer_action);
+    byId("available-methods").textContent=data.available_routing_modes
+      .map(value=>value.replaceAll("_"," ").toUpperCase()).join(" / ");
+    byId("selection-reason").textContent=selectionReasonLabel(data.selection_reason);
     byId("verify-name").textContent=data.verification_record_name;
     byId("verify-value").textContent=data.verification_value_issued_after_save
       ?"Dibuat setelah Save oleh backend tenant-admin"
@@ -57,9 +96,16 @@ async function showInstructions(){
     status.textContent=data.safe_to_point_now
       ?"Target DNS tersedia dan runtime routing siap. Tetap selesaikan ownership verification sebelum aktivasi."
       :"Target DNS sudah diketahui, tetapi JANGAN POINTING DULU: ingress/TLS/authoritative DNS belum dinyatakan siap oleh deployment IPAT.";
+    lastInstruction={hostname:data.hostname,routing_mode:data.routing_mode};
+    setSaveCapability(domainWriteCapability);
   }catch(error){
+    lastInstruction=null;
+    setSaveCapability(domainWriteCapability);
     byId("routing-mode").textContent="BELUM TERSEDIA";
     byId("routing-mode").className="pill muted";
+    byId("customer-action").textContent="Menunggu domain";
+    byId("available-methods").textContent="—";
+    byId("selection-reason").textContent="—";
     byId("verify-name").textContent="_ipat-verify.<domain>";
     byId("verify-value").textContent="Dibuat setelah Save";
     const p=document.createElement("p");
@@ -180,26 +226,6 @@ async function saveDomain(){
     setSaveCapability(domainWriteCapability);
   }
 }
-
-const originalShow=showInstructions;
-showInstructions=async function(){
-  lastInstruction=null;
-  setSaveCapability(domainWriteCapability);
-  await originalShow();
-  const hostname=byId("domain-hostname").value.trim();
-  try{
-    const response=await fetch("/v1/domains/instructions",{
-      method:"POST",cache:"no-store",credentials:"omit",
-      headers:{"content-type":"application/json"},
-      body:JSON.stringify({hostname})
-    });
-    const data=await response.json();
-    if(response.ok && data.routing_target_known===true){
-      lastInstruction={hostname:data.hostname,routing_mode:data.routing_mode};
-    }
-  }catch{}
-  setSaveCapability(domainWriteCapability);
-};
 
 byId("save-domain").addEventListener("click",()=>void saveDomain());
 byId("refresh-domains").addEventListener("click",()=>void refreshDomains());

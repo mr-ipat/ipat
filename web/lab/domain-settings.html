@@ -67,10 +67,15 @@
           <div><span class="eyebrow">02 / DNS ROUTING</span><h2 id="dns-title">Instruksi DNS dari IPAT</h2></div>
           <span id="routing-mode" class="pill muted">BELUM TERSEDIA</span>
         </div>
+        <div class="routing-summary">
+          <div><small>AKSI CUSTOMER</small><strong id="customer-action">Menunggu domain</strong></div>
+          <div><small>METODE TERSEDIA</small><strong id="available-methods">—</strong></div>
+          <div><small>ALASAN PEMILIHAN</small><strong id="selection-reason">—</strong></div>
+        </div>
         <div id="dns-records" class="records">
           <p class="empty">Masukkan domain untuk melihat record yang harus dibuat customer.</p>
         </div>
-        <p class="notice"><strong>Aturan operasional:</strong> record dapat ditampilkan ketika target sudah diketahui, tetapi customer hanya boleh melakukan pointing jika backend menyatakan runtime routing siap. Untuk mode NS, authoritative DNS IPAT juga wajib siap.</p>
+        <p class="notice"><strong>Aturan operasional:</strong> IPAT memilih metode dari profil deployment aktif. Customer cukup mengikuti record yang ditampilkan; tidak perlu memilih arsitektur A/CNAME/NS sendiri. Record dapat ditampilkan ketika target sudah diketahui, tetapi customer hanya boleh melakukan pointing jika backend menyatakan runtime routing siap. Untuk mode NS, authoritative DNS IPAT juga wajib siap.</p>
       </section>
 
       <section class="panel">

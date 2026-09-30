@@ -1112,3 +1112,10 @@ cannot configure either endpoint or replace real signed MFA.
 The tenant-domain control plane now has two distinct surfaces. A public-safe instruction engine accepts a canonical hostname and emits routing records from an explicit deployment profile (`a_record`, `cname`, or `nameserver`). It does not read tenant data, issue membership, or activate a domain. The privileged enrollment path persists pending custom domains through exact tenant-admin membership checks and narrow database functions; direct table access remains denied.
 
 DNS onboarding state is intentionally separate from tenant authorization. The expected lifecycle is request → TXT ownership proof → routing record/delegation → TLS readiness → verified/active bootstrap mapping. The frontend never embeds an IP or NS set; deployment configuration supplies those values. Authoritative NS mode is only valid when at least two configured nameservers and the corresponding DNS service exist.
+
+
+## R9.20 adaptive custom-domain routing
+
+The domain instruction engine supports a deployment-level `auto` strategy in addition to explicit A/AAAA, CNAME and NS modes. Auto selection prefers configured stable ingress addresses, then authoritative NS delegation when available. CNAME is not selected automatically unless deployment configuration explicitly enables that fallback; this avoids pretending the platform can infer DNS zone-apex semantics from a hostname alone.
+
+The API returns the selected `routing_mode`, every currently available routing mode, a bounded `selection_reason`, a `customer_action`, exact records and independent readiness flags. The tenant dashboard translates those fields into customer-facing instructions and copyable values. Persisted enrollment still stores only the selected effective routing mode and remains subject to current tenant-admin membership and the R9.19 activation lifecycle.
