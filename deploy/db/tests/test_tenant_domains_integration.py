@@ -26,6 +26,7 @@ class TenantDomainIntegration(unittest.TestCase):
             )
         run_psql("DROP FUNCTION IF EXISTS ipat_platform.resolve_active_tenant_domain(text); "
                   "DROP TABLE IF EXISTS ipat_platform.tenant_domains CASCADE; "
+                  "DROP ROLE IF EXISTS ipat_domain_reader_login; "
                   "DROP ROLE IF EXISTS ipat_domain_reader;")
         subprocess.run(
             ["psql", "-X", "-v", "ON_ERROR_STOP=1", "-f", str(M12)],
@@ -49,7 +50,7 @@ class TenantDomainIntegration(unittest.TestCase):
 
     def test_verified_active_domain_resolves_exactly_one_tenant(self):
         out = run_psql("""
-          SET ROLE ipat_domain_reader;
+          SET ROLE ipat_domain_reader_login;
           SELECT tenant_slug||'|'||hostname||'|'||domain_type
           FROM ipat_platform.resolve_active_tenant_domain('ipat.fadly.id');
         """).stdout.splitlines()
@@ -59,7 +60,7 @@ class TenantDomainIntegration(unittest.TestCase):
     def test_pending_unknown_and_suspended_domains_fail_closed(self):
         for host in ("nengnet.ipat.id", "unknown.ipat.id", "suspended.ipat.id"):
             out = run_psql(f"""
-              SET ROLE ipat_domain_reader;
+              SET ROLE ipat_domain_reader_login;
               SELECT count(*) FROM ipat_platform.resolve_active_tenant_domain('{host}');
             """).stdout.splitlines()
             rows = [x for x in out if x and x != "SET"]
@@ -67,15 +68,23 @@ class TenantDomainIntegration(unittest.TestCase):
 
     def test_reader_cannot_select_registry_table(self):
         p = run_psql("""
-          SET ROLE ipat_domain_reader;
+          SET ROLE ipat_domain_reader_login;
           SELECT hostname FROM ipat_platform.tenant_domains;
         """, check=False)
         self.assertNotEqual(p.returncode, 0)
         self.assertIn("permission denied", p.stderr.lower())
 
+    def test_runtime_login_is_nonsuperuser_and_has_no_stored_password(self):
+        out = run_psql("""
+          SELECT rolcanlogin::text||'|'||rolsuper::text||'|'||
+                 (rolpassword IS NULL)::text
+          FROM pg_authid WHERE rolname='ipat_domain_reader_login';
+        """).stdout.strip()
+        self.assertEqual(out, "true|false|true")
+
     def test_noncanonical_host_is_not_silently_normalized_in_database(self):
         out = run_psql("""
-          SET ROLE ipat_domain_reader;
+          SET ROLE ipat_domain_reader_login;
           SELECT count(*) FROM ipat_platform.resolve_active_tenant_domain('IPAT.FADLY.ID');
         """).stdout.splitlines()
         rows = [x for x in out if x and x != "SET"]
