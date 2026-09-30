@@ -1,9 +1,9 @@
-# IPAT — Product Requirements Document (PRD) v0.4
+# IPAT — Product Requirements Document (PRD) v0.5
 
 | Metadata | Nilai |
 |---|---|
 | Produk | IPAT (`IP@`) — Integrated Provisioning, Automation & Telemetry |
-| Versi/tanggal | v0.4 / 2026-09-30 (Asia/Jakarta) |
+| Versi/tanggal | v0.5 / 2026-09-30 (Asia/Jakarta) |
 | Status | **Baseline persyaratan untuk implementasi; validasi dan persetujuan akhir product owner masih diperlukan** |
 | Cakupan | Platform SaaS multi-tenant untuk provisioning, manajemen, telemetri, diagnostik, dan otomasi ISP |
 | Sumber primer | `IPAT_PROJECT_BRIEF.md`, approved design baseline; project instructions |
@@ -83,7 +83,7 @@ Semua FR memiliki `tenant_id`/otorisasi yang sesuai atau eksplisit `platform-sco
 | FR-001 | S1 | Buat minimal dua tenant sintetis yang terisolasi; query/command yang salah tenant ditolak di UI, API, service, job, search dan export. |
 | FR-002 | S1→C | Login OIDC dengan MFA untuk privileged users dan sesi tenant-scoped; user tenant lain tidak dapat memalsukan context via header/host/token. |
 | FR-003 | S1 | Policy RBAC + ABAC deny-by-default: action/resource/tenant/POP; menu tak berhak tidak dirender, API memberikan 403/404 sesuai kebijakan tanpa bocor metadata. |
-| FR-004 | S1→C | **Production-path sekarang:** Tenant Admin memasukkan hostname custom domain dari dashboard; IPAT menentukan instruksi DNS dari deployment profile aktif—A/AAAA ke ingress IP, CNAME ke canonical ingress hostname, atau delegasi NS hanya bila authoritative DNS IPAT benar-benar tersedia. Mode `auto` memilih server-side: A/AAAA bila ingress IP stabil tersedia, kemudian NS bila authoritative DNS siap; CNAME otomatis hanya bila deployment mengaktifkan opt-in eksplisit karena hostname saja tidak membuktikan bahwa lokasi DNS bukan zone apex. Target tidak boleh hard-code di frontend. Request disimpan tenant-scoped sebagai `pending`, hostname unik lintas platform, dan lifecycle harus berurutan TXT ownership → routing ready → TLS ready → `verified/active`; verifier tidak boleh melompati tahap. `Host` tidak pernah memberi authorization; identity+membership+RBAC/ABAC tetap harus cocok dengan tenant hasil resolver. |
+| FR-004 | S1→C | **Production-path sekarang:** Tenant Admin memasukkan hostname custom domain dari dashboard; IPAT menentukan instruksi DNS dari deployment profile aktif—A/AAAA ke ingress IP, CNAME ke canonical ingress hostname, atau delegasi NS hanya bila authoritative DNS IPAT benar-benar tersedia. Mode `auto` memilih server-side: A/AAAA bila ingress IP stabil tersedia, kemudian NS bila authoritative DNS siap; CNAME otomatis hanya bila deployment mengaktifkan opt-in eksplisit karena hostname saja tidak membuktikan bahwa lokasi DNS bukan zone apex. Target tidak boleh hard-code di frontend. Request disimpan tenant-scoped sebagai `pending`, hostname unik lintas platform, lalu worker verifier secara periodik membaca challenge TXT publik `_ipat-verify.<fqdn>` dan hanya exact-match challenge yang dapat memajukan **ownership_verified**; mismatch/lookup failure dicatat tanpa promosi. Lifecycle tetap berurutan ownership → routing ready → TLS ready → `verified/active`; browser/Tenant Admin tidak boleh menandai tahap tersebut selesai sendiri. `Host` dan DNS evidence tidak pernah memberi authorization; identity+membership+RBAC/ABAC tetap harus cocok dengan tenant hasil resolver. |
 | FR-005 | S1→C | Antarmuka platform owner terpisah, tidak ada akses otomatis terhadap credential/data operasional tenant. |
 | FR-006 | S1→C | Audit siapa/kapan/aksi/tenant/resource/hasil/correlation-id tanpa secret; log akses lintas tenant ditolak juga dicatat. |
 | FR-007 | S1→C | Aksi berisiko memiliki klasifikasi, dry-run, approval *two-person* bila ditetapkan, expiry, reason, dan opsi emergency tercatat. |
