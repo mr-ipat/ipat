@@ -1,10 +1,13 @@
 {
-  "schema": 1,
-  "phase": "private_single_endpoint_device_lab",
-  "source": "ADR-020 / docs/PRD.md FR-004 commercial",
-  "domain_verification_deferred": true,
-  "custom_domains_enabled": false,
+  "schema": 2,
+  "phase": "private_production_shaped_control_plane",
+  "source": "ADR-041 / ADR-047 / ADR-048 / docs/PRD.md FR-004",
+  "domain_control_plane_available": true,
+  "custom_domain_instructions_enabled": true,
+  "custom_domain_persistence_requires_authenticated_bff": true,
+  "custom_domain_write_enabled": false,
   "public_tenant_hostnames_enabled": false,
+  "public_https_ready": false,
   "private_loopback_transport_only": true,
   "tenant_isolation_mandatory": true,
   "tenant_isolation_end_to_end_verified": false,
@@ -12,5 +15,5 @@
   "physical_device_connected": false,
   "device_reads_approved": false,
   "firmware_updates_enabled": false,
-  "gate_for_next_step": "owner_reviewed_isolated_C320_exact_identity_and_first_read"
+  "gate_for_next_step": "real_oidc_mfa_postgresql_https_ingress"
 }

@@ -4166,3 +4166,16 @@ This feature does NOT claim that current public DNS should already be changed. `
 Exact application head `ddd011d97b8af6c274849e012ae5644db2b59890` passed GitHub Actions run `36683465158` **SUCCESS 4/4**: pinned Rust 1.98.1 targeted adaptive-domain tests plus full locked workspace and rustfmt, disposable PostgreSQL RLS/domain integration, disposable PostgreSQL physical recovery, and disposable Ubuntu 26 K3s smoke. The R9.20 domain test step passed 12/12.
 
 Earlier failures are retained as engineering evidence: initial run `36682558380` had the Rust R9.20 tests pass but the CI source contract failed because the intended R9.20 deployment documentation had not actually been appended due a helper-marker bug; the missing docs were then committed. Run `36682934134` had the R9.20 step pass but failed only pinned rustfmt; the formatter diff was applied without behavior changes. No public DNS mutation, certificate issuance, PostgreSQL production deployment, IdP login, or customer-domain activation is inferred from this CI evidence.
+
+
+## R9.21 dashboard domain-state reconciliation — 2026-10-01 (feature branch)
+
+Product owner reiterated that domain onboarding must adapt from the dashboard: operator/customer provides the requested domain and IPAT returns the required A/AAAA, CNAME, or nameserver instructions from the active deployment profile. R9.20 already implements and verifies this backend/UI flow. Runtime verification on the current private VPS preview returned HTTP 200 for `/lab/domain-settings` and, for `portal.customer.co.id`, returned A → `202.162.204.121` with `routing_target_known=true` and `safe_to_point_now=false`; this correctly exposes the target while refusing to tell the customer to point before public HTTPS/routing readiness.
+
+R9.21 fixes stale R6.8/R7.5 dashboard rollout messaging that still claimed custom domains were deferred/disabled. The rollout manifest is advanced to schema 2 and now distinguishes: domain control-plane available, DNS instructions enabled, persistence requiring authenticated BFF, write disabled in the current no-login preview, public tenant hostnames disabled, and public HTTPS not ready. Platform/Tenant preview cards now link directly to Domains & Branding and describe implemented control-plane behavior without claiming public activation.
+
+Acceptance coverage is updated across Rust route assertions, static Python UI contracts, synthetic Node DOM behavior, and disposable real localhost HTTP smoke. No DNS records, TLS certificates, PostgreSQL production state, or public listener are mutated by this milestone.
+
+### R9.21 feature acceptance evidence — 2026-10-01
+
+Exact feature head `99bc6613108059cd93f845572a7c05668f1e0d22` passed GitHub Actions run `36757369885` **SUCCESS 4/4**: unit/Rust and dashboard contracts, disposable PostgreSQL RLS suite, disposable PostgreSQL physical recovery, and disposable Ubuntu 26 K3s smoke. This verifies the rollout-manifest/dashboard reconciliation and keeps public activation fail-closed; it does not claim live public HTTPS or authenticated domain persistence.
