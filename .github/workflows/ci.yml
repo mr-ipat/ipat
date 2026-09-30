@@ -184,6 +184,10 @@ jobs:
         run: |
           python3 -m unittest discover deploy/db/tests -p 'test_private_menu_contract.py' -v
           python3 -m py_compile deploy/db/tests/seed_private_http_identity_ci.py
+      - name: R9.16 tenant-domain resolver schema and Rust host canonicalization
+        run: |
+          python3 -m py_compile deploy/db/tests/test_tenant_domains_integration.py
+          cargo test --locked -p control-api tenant_domain::tests
       - name: R8.0 private restricted PostgreSQL inventory router/static SQL policy contract
         run: |
           python3 -m unittest discover deploy/db/tests -p 'test_r80_inventory_contract.py' -v
@@ -296,6 +300,9 @@ jobs:
       - name: R8.0 restricted live disposable PostgreSQL tenant POP inventory SQL policy tests
         run: |
           python3 -m unittest discover deploy/db/tests -p 'test_verified_device_inventory_integration.py' -v
+      - name: R9.16 verified tenant-domain registry resolves only active verified hosts
+        run: |
+          python3 -m unittest discover deploy/db/tests -p test_tenant_domains_integration.py -v
       - name: R8.3 real disposable PostgreSQL pending adoption and separate admin registration/POP read privilege tests
         run: |
           python3 -m unittest discover deploy/db/tests -p test_device_candidates_integration.py -v
