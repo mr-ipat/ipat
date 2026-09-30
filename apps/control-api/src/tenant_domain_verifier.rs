@@ -249,8 +249,8 @@ mod tests {
     #[test]
     fn r955_txt_chunks_are_joined_before_exact_comparison() {
         let txt = TXT::new(vec![
-            b"ipat-domain=95555555-2222-4333-".to_vec(),
-            b"8444-555555555555".to_vec(),
+            "ipat-domain=95555555-2222-4333-".to_string(),
+            "8444-555555555555".to_string(),
         ]);
         assert!(txt_record_matches(
             &txt,
