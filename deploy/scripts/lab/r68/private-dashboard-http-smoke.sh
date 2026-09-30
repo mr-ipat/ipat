@@ -80,9 +80,13 @@ phase_code,phase_headers,phase_body=request("/lab/rollout-phase")
 assert phase_code==200 and phase_headers["content-type"]=="application/json; charset=utf-8"
 assert "no-store" in phase_headers["cache-control"]
 phase=json.loads(phase_body)
-assert phase["domain_verification_deferred"] is True
-assert phase["custom_domains_enabled"] is False
+assert phase["schema"] == 2
+assert phase["domain_control_plane_available"] is True
+assert phase["custom_domain_instructions_enabled"] is True
+assert phase["custom_domain_persistence_requires_authenticated_bff"] is True
+assert phase["custom_domain_write_enabled"] is False
 assert phase["public_tenant_hostnames_enabled"] is False
+assert phase["public_https_ready"] is False
 assert phase["tenant_isolation_mandatory"] is True
 assert phase["tenant_isolation_end_to_end_verified"] is False
 assert phase["authenticated_tenant_data_apis_enabled"] is False
@@ -92,6 +96,9 @@ assert phase["firmware_updates_enabled"] is False
 for method in ("POST","PUT","DELETE"):
     assert request("/lab/rollout-phase",method)[0]==405
 assert "ISOLASI DATA TENANT TIDAK BOLEH DITUNDA" in html
+assert "CONTROL-PLANE DOMAIN AKTIF" in html
+assert "Atur domain customer" in html
+assert "CUSTOM DOMAIN DITUNDA" not in html
 state=request("/lab/status")
 assert state[0]==200
 payload=json.loads(state[2])
