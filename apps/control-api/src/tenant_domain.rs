@@ -184,8 +184,7 @@ pub(crate) fn dns_profile_from_environment() -> Result<Arc<DnsInstructionProfile
                 .collect::<Vec<_>>()
         })
         .unwrap_or_default();
-    let routing_ready =
-        std::env::var("IPAT_CUSTOM_DOMAIN_ROUTING_READY").as_deref() == Ok("YES");
+    let routing_ready = std::env::var("IPAT_CUSTOM_DOMAIN_ROUTING_READY").as_deref() == Ok("YES");
     let authoritative_dns_ready =
         std::env::var("IPAT_CUSTOM_DOMAIN_AUTHORITATIVE_DNS_READY").as_deref() == Ok("YES");
 
