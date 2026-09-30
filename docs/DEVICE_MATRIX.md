@@ -469,3 +469,264 @@ via an upstream route. Real dedicated management last-hop isolation,
 OOB fingerprint proof, restricted account and firmware UNKNOWN.
 Prefer direct-private as a candidate, NOT as an approved/validated
 physical adoption path. No firmware, chassis serial or health measured.
+
+## R9.16 actual Site A local cryptography versus hardware interoperability
+
+Owner VPS X25519 key generation/0600 custody and CLI readback were
+actually exercised. A real developer Site A PUBLIC key successfully
+produced a disabled RouterOS7 B review combined with a SYNTHETIC
+throwaway B public key and documentation IP examples. Actual RouterOS
+7 peer import/handshake, actual site B identity, real B public key,
+OLT SSH authenticated read and true firmware/model are UNTESTED.
+Never classify this as actual hardware WireGuard compatibility.
+
+## R9.17 exact actual direct transport versus unverified API claims
+
+DEV-01 owner-reported ZTE C320 at owner-given private IP: earlier
+actual VPS credential-free SSH private session returned untrusted
+`ZTE_SSH.1.0` banner, no authenticated inventory or exact firmware.
+Single actual VPS TCP/443 noauth strict TLS check returned TCP NOT
+REACHABLE, credentials/application HTTP requests=0, no device action.
+ZTE C320 RouterOS-style API-SSL is NOT an acceptable inferred
+protocol; SSH pinned and SNMPv3 are firmware-specific candidates.
+Port443 negative result is source/time-specific, not proof of all
+HTTPS service ports. Physical identity=UNVERIFIED, site last hop=
+UNVERIFIED, actual read-only login=NOT RUN, adoption=FALSE,
+health=NOT MEASURED.
+
+## R9.19 C320 action availability evidence
+
+Owner-reported physical DEV-01 ZTE C320 is a known candidate, not an
+adopted or verified device. Reconfirmed private SSH banner transport
+on owner VPS, but no physical firmware/model/read-only login output.
+Offline parser `show card` and `show version-running` validated only
+with SYNTHETIC fixtures. Proprietary historical ZXA10 C300/C320
+command references describe both CLI commands but require a suitable
+operator CLI mode (not necessarily initial low-privilege user prompt).
+Exact command layout, privilege mode, noninteractive SSH execution and
+firmware on this physical chassis are UNKNOWN until the independent
+one-command restricted test. Active alarms, ONT listing/optics and
+all writes remain untested or blocked as classified in R9.19.
+
+## R9.19 newest independent network handshake comparison
+
+Actual authorized owner Mac AND worker VPS each observed the private
+SSH target TCP transport and SSH2 KEXINIT/selected KEX, but both
+preauthentication sessions timed out before the SSH server host-key
+exchange, NEWKEYS and listed authentication methods. No password was
+sent and no real `show card` command executed. Device identity,
+firmware/CLI adapter functionality, SSH authenticated login and
+actual health remain UNVERIFIED. This is not a failed ZTE account
+password test. Avoid forced firmware/cryptographic changes or blind
+retries on production distribution. Require trusted device-side
+console/network investigation first.
+
+## R9.20 physical ZTE C320 remains blocked before SSH host-key exchange
+
+Actual owner Mac and VPS credential-free preauthentication attempts
+both reached SSH KEX selection but timed out prior to receipt of
+SSH server host key and NEWKEYS. No independently sourced actual
+physical DEV-01 RSA public host key is yet available. R9.20 offline
+pin creation has SYNTHETIC test coverage only; no real OLT CLI
+read, chassis/firmware identification or adoption has occurred.
+
+## R9.21 targeted C320 SSH server-state diagnostic
+
+C320 model/firmware are still OWNER-REPORTED, not authenticated.
+2013-era ZTE C320 CLI documentation depicts `show ssh` status output
+including `SSH init server key`; that example is not the configuration
+of physical DEV-01. Both real authorized network paths still have
+only PREAUTH KEX evidence, never an actual `show ssh` capture.
+R9.21 parser classification is SYNTHETIC ONLY pending a real trusted
+console transcript. No actual hardware compatibility promotion.
+
+## R9.22 actual DEV-01 direct-private SSH negotiation (29 September 2026)
+
+Actual owner-reported C320 offers host keys `ssh-rsa,ssh-dss` and,
+on independent owner VPS private SSH tests, exactly the legacy
+cipher candidates `aes128-cbc,3des-cbc,blowfish-cbc`. Modern default
+SSH rejected hostkey/cipher negotiation. RSA + aes128-CBC with
+default group16-SHA512 KEX stalled BEFORE host-key; a separately
+bounded, actual VPS credential-free `diffie-hellman-group14-sha256`
+negotiation with pinned **ALGORITHMS ONLY** plus RSA/aes128-CBC
+SUCCEEDED reaching the server RSA host key and auth-method stage.
+Device identity remains UNTRUSTED (network-observed host key is not
+independently sourced); no password, actual chassis/card/firmware
+read, dedicated restricted user, operational action or customer
+baseline has been performed. New exact SSH adapter transport mode
+is a verified TRANSPORT PROFILE ONLY, not full vendor compatibility
+or adoption. `ssh-dss` was NOT enabled.
+
+Additional R9.22 **network-only** key-continuity check: a further
+explicitly bounded credential-free RSA/aes128-CBC/group14-SHA256
+owner-VPS handshake again reached SSH auth-method advertisement and
+the returned RSA public host fingerprint MATCHED the earlier
+owner-Mac and owner-VPS network observations. It remains **UNTRUSTED
+FOR REAL DEVICE LOGIN** without a separately sourced actual chassis
+console key and independent production account/site approvals.
+The temporary untrusted known_hosts observation was deleted.
+No OLT model/firmware/card output was collected.
+
+## R9.23 physical C320 operational status and change audit
+
+The user explicitly permits OLT adjustments if needed, but our
+actual bounded direct-private SSH group14/RSA/CBC handshake already
+reaches authentication methods; a device-side SSH change is NOT
+technically evidenced as necessary. Historical C320 vendor CLI
+references suggest `show ssh` status can distinguish enabled/disabled,
+SSHv1/SSHv2 and server-key initialization, but actual DEV-01 status,
+firmware, ACL and restricted account remain UNVERIFIED. Actual OLT
+configuration/authenticated read/write commands executed = 0;
+actual local-client credential-free negotiation succeeds only with
+the verified R9.22 parameters. All eight LAB physical actions stay
+disabled pending real trust and tenant authorization. R9.23 offline
+change planner cannot establish compatibility or mutate hardware.
+
+## R9.24 real userauth evidence
+
+Actual authorized owner VPS bounded no-credential group14-CBC-RSA
+SSH method discovery advertised **`password` only** for the tested
+owner-reported account. Server network RSA key was received, still
+not independently trusted physical chassis provenance. Existing
+R7.9 key-only collector cannot authenticate against the tested
+account based on its observed offer; exact firmware and support
+for different dedicated accounts remain UNKNOWN. No password or
+actual C320 command submitted, no physical adoption, no OLT
+configuration changes. Future first-read may require an attended
+restricted-account password session after independent site approval.
+
+## R9.25 no speculative SSHv2 key regeneration
+
+Earlier isolated offline status parser's `not initialized` wording
+overstated a legacy vendor example. R9.25 corrects SSHv2 statuses
+`not initialized` and `disable` to AMBIGUOUS because authenticated
+firmware-specific meaning has not been verified and the actual owner
+VPS already received a server RSA host key. Real C320 model/firmware,
+on-device safe operator role and independent host identity still
+UNKNOWN. OLT physical configuration and authenticated read command
+count remain ZERO.
+
+## R9.28 actual private alternate C320 Telnet port 323
+
+Owner-approved owner-VPS ONE passive direct private port323 TCP probe
+actually SUCCEEDED: 15 bytes of initial Telnet IAC response with
+ZERO application writes, authentication data or OLT CLI commands.
+This proves Telnet protocol transport response on the specified
+route, NOT exact approved physical chassis provenance, real
+Telnet login, actual firmware `show card` interoperability, access
+role or production worker authorization. The previously proven
+private SSH group14-SHA256 transport still reaches password-method
+advertisement for the test account. Both paths remain unadopted
+pending independently verified hardware identity/role/POP gates.
+
+## R9.30 FIRST ACTUAL C320 authenticated LAB first READ — verified 29 September 2026
+
+The owner states this exact target is a disconnected zero-customer
+TEST LAB, with LIVE adoption change discipline. On ACTUAL private
+C320, the owner-authorized temporary Telnet323 and separately exact
+RSA/aes128-CBC/group14-SHA256 SSH interactive sessions BOTH
+successfully logged in and independently observed `show card` and
+`show version-running` without configuration edits. The real
+Telnet session also read `show ssh` confirming enabled ver2.0 local
+CHAP; one `show alarm active` probe returned syntax error and alarms
+remain UNTESTED. Three real observed physical cards:
+slot 1/1/1 GTGHK (configured GTGH), slot 1/1/3 PRAM, slot 1/1/4
+SMXA, all card-reported INSERVICE. Five real version records:
+slot 1/1/1 `GTXK` MVR V2.1.0/BT V4.0.16 (file-type alias vs
+GTGHK UNVERIFIED), slot 1/1/4 SMXA MVR V2.1.0/BT V4.0.13/FW
+V2.1.0. Slot 1/1/3 PRAM had NO MVR version row.
+
+Actual first manually transcribed no-secret card snapshot was
+accepted by protected owner-VPS offline Rust card-only normalizer
+(3 cards, 3 INSERVICE). Never imply raw byte-exact log, independent
+host key/chassis identity, verified firmware all slots or commercial
+adoption. R9.30 branch contains narrow actual-shape Rust parser
+regression (synthetic fixture only in public mirror) and immutable
+private LAB readiness metadata. Physical automatic poll, alarms,
+ONT inventory, hardware config/firmware writes: NOT VERIFIED.
+
+## R9.31 actual lab C320 pre-change backup stage
+
+Using exact private owner-authorized bounded SSH, actually read
+privilege=15, available on-device startup cfg file listing, V2.1.0
+system-group and HISTORICAL alarm counter. No active alarm assessment.
+For this firmware `show startup-config` was rejected (historical
+other firmware docs do NOT establish compatibility). With nonpersistent
+`terminal length 0`, actual `show running-config` returned 119980
+bytes, complete vendor config end marker and original CLI prompt.
+Owner-private 0600 actual sensitive full snapshot and SHA256 receipt
+are kept on owner VPS outside Git. First independent off-host
+Restic encrypted backup+restorability TEST not yet possible: guarded
+sensitive transfer was rejected by tool; do not reroute covertly.
+All persistent OLT CLI configuration changes, password rotation,
+privileged account creation, PON/ONT commands and firmware: ZERO.
+Production automatic adoption stays BLOCKED; the real lab manual
+read proof from R9.30 remains validated.
+
+## R9.33 actual off-VPS recovery accepted and new read-only CLI compatibility
+
+Owner Mac actual Restic encrypted off-VPS C320 manual CLI reference
+119980 bytes SHA256 matches owner VPS raw owner-private original;
+full isolated byte-identical encrypted-restic restore completed and
+local non-secret 0600 receipt verified. STILL NOT vendor-native
+import/export or rehearsed OLT device-side recovery. New bounded
+actual SSH `show username` returned TWO explicit privilege15 local
+user entries; no trusted limited-privilege service user discovered.
+Actual `show alarm ?` advertised `crtv-active`; that read-only
+command was accepted by firmware, but output NOT yet semantically
+validated or a certified current health metric. All hardware writes
+ZERO. Actual first cards/firmware still only the three previously
+measured slots and five version rows; vendor GTGHK/GTXK mapping
+unverified and PRAM MVR unreported. Separate PRIVATE LAB historical
+inventory endpoint makes exact verified rows visible without
+misrepresenting active telemetry or production adoption.
+
+## R9.34 real C320 first ONE-SHOT scripted operator SSH `show card`
+
+Source 3afe20b approved ephemeral operator LAB command tested on
+actual private C320 SSH from owner VPS: exactly ONE actual bounded
+read-only `show card` command returned three actual cards matching
+the independently recorded initial owner Telnet and SSH snapshots
+(1/1/1 GTGHK, 1/1/3 PRAM, 1/1/4 SMXA), all INSERVICE.
+Actual independently inspected protected offline Rust normalizer
+parsed 3/3; private file SHA256
+5dc6aebaa162de7899fdec974377e1b9631647bdbab3b2b1502e20ce6810a722.
+No device config writes, no persisted test password, active owner
+socket closed. This establishes a working software LAB read adapter,
+NOT unattended production adoption, safe limited role or certified
+firmware alias/ONT/health/upgrade compatibility.
+
+## R9.36 C320 ONT registration adapter status — 29 September 2026
+
+Pure synthetic `olt-core::ont_registration` single-draft validation now exists and was covered by actual owner-VPS Rust unit tests. This module DOES NOT issue ONU/ONT registration commands or prove support for any ONT model, SN registration method, GPON profile, VLAN/service flow or physical firmware. The actual C320 only has independently repeated lab SSH scripted `show card` results on its known GTGHK slot 1/1/1; observed GTGHK↔GTXK file-type and missing PRAM MVR remain unresolved. OLT production ADOPTED = FALSE; ONT physical register/config test = NOT RUN; all physical action POST endpoints remain disabled.
+
+## R9.37 strict ONU/ONT parser and bridge/VLAN feature status (29 Sep 2026)
+
+C320 real physical `show gpon onu uncfg` response: **NOT OBSERVED by R9.37**. Public old C320 CLI documents describe a candidate syntax but are not firmware-matched proof. Rust synthetic parser for candidate unconfigured ONU table and offline bridge/VLAN/TCONT/GEM profile reviewer tested; **all physical ONU discovery, ONT registration, service profile activation, model/firmware and optical/traffic validation remain UNTESTED**. No real ONT serial, ONU ID, unconfigured inventory, VLAN or profile from actual C320 was ingested. Historical 1/1/1 GTGHK board observation cannot prove supported port occupancy or chosen ONT capability. Commercial physical adopt and ONT write state FALSE.
+
+## R9.38 owner-lab fresh ONU inventory staging and historical real configuration counters
+
+Protected actual R9.31 complete C320 running-config owner-VPS transcript (119980 bytes; owner-only 0600, NOT exported) independently parsed locally for sanitized counters: 171 `onu N type` declarations within five `gpon-olt` configuration sections; 72 declarations in historical `gpon-olt_1/1/1`. This does NOT establish these ONUs physically present, operational, or still configured today. An earlier generic lstrip count found 174 ONU-prefix lines across *all* config contexts; use 171 as the narrower interface-scoped count, not interchangeable totals. Fresh exact-firmware `show gpon onu uncfg`, `show gpon onu state` and `show run interface gpon-olt_1/1/1` owner-interactive capture is prepared but not yet actually executed or certified. Physical ONU registration remains UNTESTED; no free ID may be allocated based on historical counts.
+
+## R9.39 — Owner-attested real ZTE C320 CLI response on PON 1/1/1, 29 September 2026
+
+**Actual manual commands supported by this physical firmware in owner-provided interactive Telnet LAB output**: `show gpon onu uncfg` returned `%Code 62310-GPONSRV : No related information to show.` (zero reported unconfigured at the specific snapshot); `show gpon onu state gpon-olt_1/1/1` returned 72 configured status rows and footer `ONU Number: 0/72` (all were `enable`, `OMCC disable`, `OffLine`, GPON channel); `show run interface gpon-olt_1/1/1` returned 72 matching-count configured ONU declarations, each with configured type label `ZTEG-F623`. Registered ONU serials were included in owner chat transcript and MUST NOT be recopied to docs/Git/frontend/logs or used as enrollment inputs from chat. This is dated **manual owner-attested** real observation, not unattended worker evidence or automatically verified ID-by-ID equality. Configured type labels alone do not certify connected model/firmware or multi-vendor support. Zero unconfigured NOW does not prove optical port fault without a test ONT connected.
+
+Real C320 command-specific offline strict Rust response parser added in `crates/olt-core/src/c320_real_inventory.rs`; R9.38 one-time owner SSH reader corrected to exact scoped command and observed C320 response shape. Actual scheduled operator-executed SSH reread via newly corrected script, native restore, signed production adoption and actual physical ONT provisioning remain NOT VERIFIED; maintain `device_adopted=false` and physical ONT writes HTTP403.
+
+## R9.40 actual private dashboard control boundary (29 Sep 2026)
+
+C320 exact proven owner-manual read command shapes now have a deployed private owner-supervised panel button/SSH read IPC bridge, not just synthetic CLI parsing. The separately authorized owner-only interactive agent is NOT YET activated and the new button has NOT YET produced a fresh physical C320 result; actual private HTTP offline/positive synthetic IPC tests passed separately. Bound per-activation to five read-only cycles within 15 minutes, no CLI writes, no serials returned. Last real physical owner-manual 1/1/1 evidence remains 72 configured, zero online, zero unconfigured. Unsupported optical, firmware normalization, native restore, actual ONT registration/provisioning and production adoption remain UNTESTED/NOT ENABLED.
+
+## R9.41 C320 panel controlled-read expansion
+
+Private LAB dashboard now offers authenticated owner-supervised *candidate real* READ-ONLY `show card`, `show version-running` and the already owner-manually verified three PON inventory commands under temporary owner SSH activation; device model is owner-attested ZTE C320 and GTGHK/GTXK MVR discrepancy remains unresolved. Two new fixed cards/firmware panel routes were deployed and synthetic IPC/HTTP tests passed; **fresh physical result THROUGH THESE NEW BUTTONS HAS NOT BEEN EXECUTED** because owner-local TTY temporary credential still must be supplied. Do not label C-DATA, VSOL, additional ZTE ONTs, ZTE firmware upgrades, OLT write operations or final production adoption as supported from this result.
+
+
+## R9.45 actual direct-connect path evidence (29 Sep 2026)
+
+**ZTE C320 initial owner lab management target**: owner-VPS nonroot process independently established **TCP connection** to previously observed device SSH endpoint `10.10.13.233:321`, so a WireGuard or IPsec tunnel is NOT required for this currently routed test path. This is only L3/L4 reachability, **not authenticated SSH access**, current firmware/ONU status or an approved production identity. Existing privately pinned RSA SSH host key is **network-observed**, not independently chassis-console attested. R9.45 private `127.0.0.1:3002` GUI supports one-time bootstrapped direct C320 SSH enrollment and ongoing server-based fixed read commands. At verified VPS rollout time the GUI explicitly returned `NOT_ENROLLED`, `credentials_enrolled=false`; owner still needs to submit credentials ONCE in the browser and obtain actual physical card read before `READ_ONLY_CONNECTED_LAB` is achieved. No WAN/public Telnet credential enrollment, generic C-DATA/VSOL/MikroTik device adapter, generalized IP input, live per-ONU optical/traffic, native firmware upgrade/rollback, production `ADOPTED_MANAGED` or real tunnel provisioning has been demonstrated by this deployment.
+
+## R9.45: C320 direct route evidence
+
+Actual owner-VPS management route to owner-supplied ZTE C320 at 10.10.13.233:321 is present and bounded TCP connection succeeded on 29 September 2026. Private R9.45 read-only connector and Axum UI are active and enabled across user-systemd restarts, but endpoint status still reports connector_online=true, credentials_enrolled=false and adoption_state=NOT_ENROLLED. Only previously firmware-observed fixed card, running version and PON 1/1/1 ONU command families are permitted. A previous network-observed SSH key is pinned but has no independent out-of-band attestation. Optical data, actual ONT provisioning, firmware upgrade, native restore, C-DATA and other models remain blocked/unverified.

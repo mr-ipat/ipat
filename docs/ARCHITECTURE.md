@@ -1105,3 +1105,89 @@ peer; B's local OLT routing and secure reply path must be verified,
 not silently modified. IPsec is a separate pending adapter.
 Current R9.15 Rust private LAB endpoint and offline address review
 cannot configure either endpoint or replace real signed MFA.
+
+## R9.16 Site A key custody and B self-applied import (dev milestone)
+
+Only Site A locally generates and retains Site A private X25519 key.
+Only B locally generates and retains B private key. IPAT consumes B
+PUBLIC key and creates an independent disabled RouterOS7 review for
+B operator, never SSH/RouterOS API config push. Site A pub-read API
+and B review API are private LAB-only and do not persist tenant/site
+state. Direct-private means no unnecessary tunnel. Full production
+hub/peer provisioner awaits real signed tenant BFF and encrypted
+versioned key vault + separated worker and network change controls.
+
+## R9.17 per-device direct management / optional centralized tunnel
+
+Selection order: already routed verified secure management path FIRST;
+then exact per-device adapter/protocol with separately verified
+identity, rights and service impact. Optional centralized management
+VPN only when independently justified (site access, isolation or
+cross-network requirements); local gateway remains self-managed
+without forced router configuration push. MikroTik API-SSL/HTTPS,
+OLT SSH/SNMPv3/vendor-specific verified HTTPS, and ONT CWMP/USP
+are separate adapters. All REAL worker authorization is deny-by-default
+until signed human identity, tenant/POP grants, backend role, audited
+approval and independent device identity gates pass. A no-auth port
+probe never upgrades physical inventory or marks telemetry healthy.
+
+## R9.19 — Katalog aksi bukan worker fisik
+
+`c320_actions_lab` menyajikan delapan fitur dengan `enabled=false`
+dan endpoint mutasi yang selalu menolak. Parser `olt-core` menerima
+hasil CLI owner-only secara offline; tidak terkoneksi ke OLT. Aksi
+fisik nanti harus melewati BFF identitas asli dan worker khusus
+berbasis bukti perangkat, isolasi tenant/POP dan izin firmware yang
+terukur. Rute localhost laboratorium tidak boleh menjadi backend
+operasional melalui perubahan satu flag.
+
+## R9.20 detached OOB pin-provenance validation
+
+Offline owner-only Python pin generator compares one site-console RSA
+public key with historical observation and emits an exact restricted
+host-key pin outside Git. It deliberately does not import or export
+private SSH credentials, open network connections, or mount a
+production worker. Future signed evidence provenance and genuine
+Tenant Admin BFF must independently validate the pin source and
+all other physical gates before any real read action is dispatched.
+
+## R9.22 actual device-specific SSH crypto capability detection
+
+Transport compatibility and device identity/authorization are
+SEPARATE axes. Record exact observed KEX/hostkey/cipher from a
+credential-free bounded lab probe and select a dedicated, audited
+adapter profile only for that individual candidate; no universal
+OpenSSH downgrade. R7.9 C320 `group14-sha256` compatibility is now
+actually proven through SSH authentication-method negotiation on
+owner VPS, but real authenticated read/firmware compatibility and
+signed production tenant/POP action worker remain unimplemented.
+
+## R9.45: direct-first management topology
+
+Authenticated tenant/POP Device Manager -> verified target, tenant and permitted management segment -> direct verified SSH/HTTPS/SNMPv3 route where available; otherwise tenant/POP-specific WireGuard or IPsec gateway -> same server-side encrypted one-time device enrollment -> bounded persistent read worker, per-device lease, fresh timestamp, and separately audited restricted change worker. Do not force tunnels when direct network reachability is already safe, and never make SSH/public Telnet an unrestricted cross-tenant command proxy. Private :3002 ZTE lab is an interim fixed-target prototype with preexisting network-observed SSH pin; it does NOT implement authenticated production tenancy, provider-agnostic new-device form or real WireGuard/IPsec provisioning.
+
+
+## R9.51 — Unified production device platform
+
+The production path is:
+
+`Browser / custom tenant domain → Authenticated BFF/control-api → tenant/POP authorization → PostgreSQL device registry → secret reference → worker queue → vendor/protocol adapter → network device`.
+
+Adapters implement one normalized lifecycle:
+`validate_target → connect → authenticate → identify → discover_capabilities → read_inventory → health_poll`, with write methods separated into an independently authorized change executor. The UI never contains vendor CLI logic and never owns plaintext persisted secrets.
+
+Normalized connection states include at minimum: SAVED, CONNECTING, ROUTE_UNREACHABLE, PORT_REFUSED, IDENTITY_FAILED, AUTH_FAILED, UNSUPPORTED_RESPONSE, CONNECTED_READ_ONLY, DEGRADED and DISCONNECTED. Each state carries timestamp, adapter, transport and a safe operator-facing reason. Device records survive connectivity failures.
+
+Inbound CPE protocols are adapters to the same inventory rather than separate products. CWMP Inform and USP agent sessions resolve to tenant/device records, persist protocol session state and feed the same subscriber/topology/telemetry model. MikroTik API-SSL and OLT SSH/SNMP/vendor APIs are outbound worker adapters. Direct safe management routing is selected first; site-specific WireGuard/IPsec only supplies reachability and never bypasses device authentication or tenant authorization.
+
+The existing `:3002` C320 laboratory connector is no longer an architectural destination. Keep it only as a physical regression harness while extracting proven C320 parsing/compatibility into the generic production adapter. Do not add new normal product features exclusively to the lab route.
+
+## R9.52 — Production tenant hostname data flow
+
+The production edge resolves company hostnames before protected business routing, but hostname resolution is intentionally weaker than authorization. Request flow is: trusted ingress/TLS -> one canonical `Host` -> `tenant_domains` resolver -> signed browser identity/session -> current PostgreSQL membership + POP -> RBAC+ABAC/resource check -> tenant-scoped API/RLS/worker. The request is denied whenever the identity-authorized tenant does not equal the hostname-resolved tenant.
+
+`ipat_platform.tenant_domains` is platform metadata, globally unique by FQDN and isolated from normal application-table access. A dedicated NOLOGIN function owner may read only tenant/domain metadata through RLS; a separate runtime login inherits only the EXECUTE-only `ipat_domain_query` role. The Rust resolver receives no arbitrary SQL role or tenant ID from HTTP. Its public-safe response exposes only the resolved slug/hostname and explicitly states that authentication is still required and business access is disabled.
+
+Platform-managed `<tenant>.ipat.id` and externally owned custom domains share this runtime path. Their verification differs: parent-domain control may verify the former; DNS TXT challenge verifies the latter. TLS readiness is an independent activation condition. A domain lifecycle change to suspended/revoked, tenant suspension, or certificate-readiness loss immediately makes hostname resolution fail closed on the next request.
+
+The old `web/lab/rollout-phase.json` remains domain-disabled because the owner-only loopback lab is no longer the product entrypoint. Production domain behavior must not be demonstrated by weakening that lab manifest. Public deployment still requires ingress certificate automation, canonical Host forwarding, OIDC callback registration and host-only session cookies; those are deployment components layered on this same resolver, not a separate product implementation.

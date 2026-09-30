@@ -1199,3 +1199,87 @@ Site B RouterOS review commands are disabled; a site owner must
 explicitly apply changes on B, under independently reviewed rollback.
 Never capture Site B's WireGuard private key or accept default/wide
 AllowedIPs exported by version-dependent RouterOS tooling.
+
+## R9.16 DEV-only Site A X25519 public key and no-push peer review
+
+Actual owner VPS generated a dev-only nonroot X25519 keypair entirely
+inside owner-only 0700 outside-repository folder (key files 0600).
+The private key never enters browser, chat, repo or B peer package.
+No production secrets backup/vault is verified, so this dev key is
+NOT acceptable for active live-tenant WireGuard pairing. The lab
+Rust public endpoint opens only a fixed `public.key` filename with
+no-follow/owner/mode constraints. Matching backend accepts strictly
+PUBLIC B key, canonical IPv4 narrow routes and no unknown fields,
+returning disabled manual B review only. Public key exchange is NOT
+identity authentication; independently verified B identity, signed
+Tenant Admin MFA, true site reachability, approved firewall policy,
+audit/rollback and OLT key isolation remain mandatory.
+
+R9.16 actual restricted deployment evidence: current nonroot private
+preview reads ONLY DEV Site A public key from an owner 0700 folder,
+actual `private.key` file stays 0600 and never reaches browser, Git,
+B peer package or logs. The Rust preview and dev key owner are the
+SAME operating-system principal for lab simplicity. This is NOT
+production-grade key isolation: future commercial hub must separate
+key-vault/privileged network-worker identity from web/BFF identity,
+with independently tested encrypted backups and scoped secret release.
+Actual UDP port 51820 had NO listener at latest local inspection.
+The DEV-only panel cannot provision real WireGuard or claim a safe
+last hop from an address matching RFC1918 text alone.
+
+## R9.17 no compulsory VPN; direct protocol requires proof
+
+A direct private/public management address MUST NOT be treated as
+trusted from routability or RFC1918 alone. Validate actual adapter,
+firmware, independent host key/TLS certificate or SNMPv3 authPriv
+identity, restricted source and dedicated read-only account, live
+baseline and audited signed MFA before active worker dispatch. Never
+fallback to unverified HTTPS, `-k`, plaintext public Telnet or
+factory/default privileged credentials. Optional WireGuard/IPsec
+remains a separate reviewed network control, never a condition for
+EVERY device connection. One actual owner-VPS TLS443 noauth preflight
+failed TCP connection without credentials or HTTP requests; existing
+private SSH banner remains UNTRUSTED device-identity evidence.
+
+## R9.19 — Penolakan fungsi fisik sampai seluruh kontrol nyata tersedia
+
+GET private lab C320 action catalog memisahkan hasil parser offline,
+fitur firmware yang belum teruji dan perubahan berdampak tinggi.
+Setiap POST action ke private LAB mengembalikan HTTP403, termasuk
+pembacaan. Browser tidak dapat menaikkan hak atau menyatakan status
+adopsi; tidak ada alamat OLT/kredensial diterima oleh endpoint ini.
+Worker produksi yang akan datang harus memverifikasi identitas host
+melalui konsol tepercaya, role baca-saja, jalur manajemen terisolasi,
+MFA signed, persetujuan independen, lease per-device, batas laju dan
+audit dengan bukti dari DB terisolasi tenant, bukan nilai boolean UI.
+
+## R9.20 owner-only independent RSA key handoff
+
+The private offline console-key verifier MAY create an exact
+`known_hosts` file but SHALL never mark hardware identity as
+cryptographically proven from an owner assertion, enable login,
+open the OLT management network, or store a private key. Reject
+symlinks, hardlinks, world-readable files, mismatches and Git-based
+input/output. Require signed external provenance, genuine MFA and
+independent reviewer before using the result for live operations.
+
+## R9.22 exact live C320 process-scoped legacy SSH interop
+
+Real no-credential VPS interoperability reaches actual C320 auth
+methods only when using RSA host key + aes128-CBC cipher +
+`diffie-hellman-group14-sha256`. Explicit compatibility is restricted
+to a single device and bounded command process. No global SSH
+weakening, ssh-dss, TLS bypass, public Telnet, SSH agent, factory
+password in scripts or automatic acceptance of an untrusted host
+fingerprint. A successful key exchange MUST NOT be interpreted as
+independent device identity or permission to authenticate, even for
+the owner-provided laboratory account on a subscriber-serving OLT.
+Full physical, account, OIDC and change-control gates are unchanged.
+
+## R9.52 — Domain/tenant isolation controls
+
+The tenant hostname is an untrusted request selector until it matches a `verified` + TLS-ready platform registry row. Never infer tenant identity from DNS alone, browser headers or a JWT tenant claim. Protected handlers must compare three independently derived values: verified hostname tenant, verified identity membership tenant, and resource tenant. A mismatch denies before data access/job enqueue/export.
+
+Threat controls added in this milestone: exactly one bounded canonical Host; malformed/IP-literal/duplicate Host rejected; `X-Forwarded-Host` is not application authority; globally unique FQDN; custom-domain ownership challenge separated from TLS readiness; suspended/revoked/no-TLS domains fail closed; dedicated resolver role has no direct table mutation or operational-data rights; output excludes tenant UUID/secrets. Trusted ingress must strip attacker-supplied forwarded-host headers and use exact allowed hosts/certificates.
+
+Before a customer hostname is publicly usable, require HTTPS only, host-only `Secure; HttpOnly` session cookies, SameSite/CSRF/origin enforcement, exact OIDC redirect URI allowlist and cross-host negative tests. Do not set a parent-domain cookie such as `.ipat.id` for tenant sessions. Platform owner support access remains separately authorized and does not inherit tenant device credentials merely by visiting a tenant hostname.

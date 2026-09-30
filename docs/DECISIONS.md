@@ -17,12 +17,12 @@
 | ADR-011 | APPROVED_BASELINE | Diagnostics are evidence-based fault-domain hypotheses; no fiber cut inferred from missing CWMP alone | Prevent unsafe wrong remediation | 3 synthetic rules S1 then calibrated field evidence |
 | ADR-012 | APPROVED_BASELINE | Pilot target list ZTE C320/C-DATA OLT, VSOL/ZTE ONT, MikroTik x86/CCR/RB distribution + customer RB; VSOL GPON OLT not physically confirmed | Prevent unsupported claims | Capture model/firmware and per-feature outcomes |
 | ADR-013 | APPROVED_BASELINE | Pilot provisional node 16 vCPU/64 GiB-class/~1 TB NVMe, Ubuntu 26.04; higher variant 16/128/~2 TB for heavier all-in-one pilot | Source approved brief supersedes any alternative conversational sizing | Collect ONT/tenant/retention/inform/job load. 16/32/250 only constrained experiment, not committed baseline |
-| ADR-014 | OPEN | Custom-domain verification strategy, tenant OIDC realm/client topology, session cookie handling | Multi-domain security | Threat/test design; legal ownership/registered IPAT domain evidence; choose IdP mapping |
+| ADR-014 | SUPERSEDED_BY_ADR-081 | Earlier custom-domain/OIDC/session strategy remained open. R9.52 fixes hostname registry/trust semantics now; remaining IdP product selection details stay under ADR-006/081 validation. | Multi-domain security | Preserve historical context; execute ADR-081 and its tests. |
 | ADR-015 | OPEN | RLS/tenant quotas, encryption boundaries, tenant deletion and raw backup restore strategy | Commercial isolation/privacy | Contract and disaster-recovery test design |
 | ADR-016 | OPEN | Specific supported CWMP/USP RPC feature set and data models on exact physical firmware | Availability varies by device/firmware | Device inventory and lab execution before support claims |
 | ADR-017 | OPEN | Selected cloud/VPS, network overlay, Kubernetes datastore/control-plane design and storage classes | Mixed VPS/bare metal constraints | Network/NAT/IO cost and capacity assessment |
 | ADR-018 | PROPOSED | Optional IPAT-native host firewall control plane using a narrowly privileged Ubuntu nftables agent, source-scoped dual-stack policy drafts and audit/approval; **no external hosting-provider firewall integration** | Portable tenant-aware operations without requiring vendor-specific APIs; preserve CNI ownership and rescue access | Validate real nftables/iptables-nft/CNI coexistence on disposable node, independent console recovery, root config restore, signed approval matrix, timed rollback and fresh IPv4/IPv6 tests before any apply |
-| ADR-020 | APPROVED_SEQUENCE | Product owner defers FR-004 customer subdomain/custom-domain verification and domain-specific session isolation to M2 AFTER a working private integrated laboratory; the prototype remains strictly SSH-loopback-only until separate verified identity, tenant/POP scope and release gates pass. No public multi-tenant entrypoint or relaxation of FR-001/002/003, AC-01/02 is authorized. | Prioritize original ACS/USP/device lab and authentication/authorization without premature public DNS complexity. FR-004/AC-09 stay mandatory before domain-based customer onboarding. | Execute R7.5 locked single private lab endpoint and denial tests. ADR-014 technical domain/OIDC/cookie design stays OPEN until M2 with security review; physical OLT read and real dashboard authentication remain separate incomplete work. |
+| ADR-020 | SUPERSEDED_BY_ADR-081 | Historical R7.5 sequence deferred customer domains to M2. Product owner explicitly reversed that sequencing on 2026-09-30: tenant subdomain/custom-domain routing is production-path NOW. The old private lab endpoint remains a regression harness only. | Avoid a second lab→production migration and make company-specific dashboards first-class from the production path. | Do not re-enable lab-only domain shortcuts; use ADR-081 verified DB mapping + independent authz. |
 
 ## 1. Decision questions with suggested owner / due gate
 
@@ -592,3 +592,414 @@ tested adapters. For separately proven existing bidirectional private
 management access, generate no redundant VPN package. No amount of
 synthetic CLI metadata, remote TCP SSH handshake or approved database
 metadata alone may authorize live device management.
+
+## ADR-047 — Site A development key staging is NOT production tunnel
+
+R9.16 development IPAT Site A locally generates original X25519 key
+material (0700 owner folder, separate 0600 public/private files), and
+provides only its public key for Site B operator's MANUAL disabled
+review. B returns only its independently generated public key, not a
+private key; IPAT never pushes config to B. Production activation
+REQUIRES a real encrypted, recoverable central vault, genuinely
+signed MFA and scoped tenant/site authority, independent B approval,
+verified network route and change-controlled listener/rollback.
+Dev-only keys may not silently be promoted to tenant production keys.
+
+## ADR-048 — APPROVED direct-first per-device protocol + Indonesian UI terms
+
+Owner corrects earlier metaphor: operational UI uses *Server Pusat
+IPAT*, *Gateway Lokasi*, *Jaringan Manajemen* instead of Site A/B.
+These are locally chosen terminology, not a claim of a formal SNI
+mandate. Real connections first use an independently verified existing
+routed network and manufacturer/firmware-specific secure protocol;
+WireGuard and other tunnels are optional, not forced for every
+OLT/ONT/router. RouterOS API-SSL/REST HTTPS are MikroTik-specific;
+never infer C320 HTTPS/API compatibility from network reachability.
+Site gateway config remains self-applied after operator review if a
+tunnel is selected. The existing `site_a/site_b` internal lab JSON
+names remain temporarily for compatibility; replace under a separate
+versioned production BFF contract, NOT as new dashboard language.
+Authenticated physical DEV-01 adoption still REQUIRES independent
+console host RSA identity, restricted account, last-hop isolation,
+actual read-only command and live baseline/MFA approval before RUN.
+
+## ADR-049 — Public synthetic CI MIRROR, private operational original
+
+Never set the existing operational `mr-ipat/ipat` PRIVATE Git history
+public merely to bypass hosted CI quota: it contains active device
+management addresses and historical network audit evidence. User's
+request for free public CI is satisfied through a NEW clean-source,
+synthetic-only PUBLIC mirror `mr-ipat/ipat-open-ci`; no original Git
+history or previous CI logs are included. Every mirror refresh must
+independently sanitize IP/domain/fingerprint fixtures and scan for
+secrets, with synthetic CI result provenance mapped to exact private
+source SHA. GitHub workflow installation remains blocked until owner
+updates OAuth `workflow` scope or installs checked-in staged YAML via
+GitHub UI. Public GitHub-hosted STANDARD runner minutes may be free;
+this never makes production deployment or physical device tests free
+of separate review. Preserve original private source and live evidence.
+
+## ADR-050 — Owner-only offline C320 capture parser before operational adoption
+
+The first genuine C320 action pipeline retains only two strictly
+allowlisted read-only commands (`show card`, then optionally
+`show version-running`) AFTER independently pinned SSH host identity,
+restriction of the device account, reviewed POP last-hop and live
+impact baseline. The new olt-core offline CLI only parses PRIVATE
+owner-supplied evidence after such a read: it NEVER opens a network
+socket or executes OLT commands, rejects unsafe input/output
+permissions and overwrites, stores only bounded normalized owner-only
+JSON and hashes, and NEVER marks actual physical device adopted.
+More read-only commands (alarm/ONU optical power/ONT inventory) require
+exact firmware-specific vendor support and independent device tests.
+Any write operation remains maker/checker-controlled and production
+role-gated; test default/admin login does not certify least privilege.
+
+## ADR-051 C320 individual action catalog is evidence-based
+
+Do not equate an offline parser test or historic SSH banner with real OLT interoperability. All live actions stay disabled until actual identity, scoped restricted login, firmware and tenant controls are independently proven. High-impact actions additionally need separately approved maintenance and rollback. Keep private LAB readiness metadata separate from a future real tenant-authorized worker.
+
+## ADR-052 — Trustworthy physical host key cannot be derived from network SSH
+
+R9.20 makes the independently trusted chassis console RSA public-key
+handoff a separate offline, owner-only operation. A same-fingerprint
+match between owner-asserted console key and previous network
+observations is necessary but INSUFFICIENT for an active OLT login;
+source provenance, independent reviewer, bounded production access,
+nonprivileged account, POP isolation and baseline remain independent
+hard gates. Never retry legacy SSH with password or disable pinning
+to work around a preauthentication KEX stall.
+
+## ADR-053 — Read existing SSH daemon state via trusted chassis console
+
+The actual dual-path C320 SSH sessions timed out between KEX selection
+and receipt of a host key, before credentials. A historical vendor
+manual describes `show ssh` including server-key initialization.
+A single site operator-approved trusted-console STATUS read is the
+next diagnosis, not automatic legacy cipher downgrade, public Telnet,
+key regeneration, repetitive password attempts or a forced VPN.
+IPAT's R9.21 helper analyzes a PRIVATE offline status transcript,
+marks real chassis trust FALSE and never authorizes OLT configuration.
+If the actual firmware differs, require exact vendor documentation.
+
+## ADR-054 — CONFIRMED per-device legacy SSH group14-SHA256 transport
+
+An actual single bounded PRIVATE owner-VPS C320 SSH probe established
+that `ssh-rsa` plus `aes128-cbc` plus specifically
+`diffie-hellman-group14-sha256` reaches server host-key and SSH
+userauth method negotiation with ZERO credentials or OLT commands.
+Earlier actual `diffie-hellman-group16-sha512` choice stalled before
+server key exchange. Introduce a PROCESS-SCOPED optional C320
+transport profile; never weaken server-global SSH, enable `ssh-dss`
+or infer physical chassis trust from a network-host-key handshake.
+Real trusted console RSA source, restricted account, isolated POP
+ACL and signed tenant approvals remain independently blocking gates
+for actual C320 `show card` and later device management.
+
+## ADR-055 — R9.23 no speculative live OLT server config edits
+
+Owner authorizes operational adoption and conditional SSH changes,
+but current actual group14/RSA/aes128-CBC direct-private transport
+already reaches server authentication. The original privileged test
+account, a recurring network-only RSA key, and synthetic firmware
+CLI cannot independently prove the true active chassis/POP scope.
+An offline-only site change planner is introduced to classify a
+REAL trusted-console `show ssh` transcript without executing
+commands. Do NOT change or regenerate a working server key or enable
+SSH globally merely to work around a CLIENT-SIDE negotiation issue.
+Actual site changes require independently trusted hardware identity,
+exact firmware, secure restricted collector role, local console
+recovery, live baseline and independent approved maintenance;
+all actual OLT server configuration commands executed are ZERO at
+this milestone. Client-side exact-device group14 profile remains
+verified and scoped to a single SSH process.
+
+## ADR-056 — R9.24 observed `password`-only C320 test account
+
+An ACTUAL credential-free bounded C320 owner-VPS probe successfully
+reached userauth and received ONLY `password` for the owner-reported
+test username. The preexisting key-only R7.9 collector is INCOMPATIBLE
+with that observed account until independent dedicated user setup
+proves a real `publickey` offer. Do not infer an SSH server config
+defect or edit the OLT merely because the existing collector enforces
+keys. Support a separately approved, trusted-host, on-site operator
+ATTENDED first read if actual minimally privileged account only
+supports password; commercial automation requires isolated credential
+vault, independent true MFA, POP scope/worker and audit not yet
+implemented. This observation is account/time-specific, not a
+universal vendor capability statement.
+
+## ADR-057 — SSHv2 server-key initialization status is ambiguous
+
+Actual C320 group14/RSA/AES128-CBC handshake already returns the RSA
+server host key and advertises test-user password authentication.
+Historical firmware manuals show `SSH init server key : not initialized`
+or `disable` even with SSHv2 enabled. These fields alone SHALL NOT
+indicate a defective SSHv2 RSA key or trigger regeneration, SSH
+daemon restart or live crypto changes. R9.25 offline triage and
+conditional site change planner now classify both values as
+SSHV2_FIELD_AMBIGUOUS while retaining UNKNOWN physical chassis
+identity. Real first-read requires external trusted-console
+provenance, restricted user and explicit site risk controls.
+
+## ADR-058 — Physical acceptance cannot be synthesized from owner plan metadata
+
+Current real authorized owner Mac C320 private intake contains only
+`plan.json`; current VPS has no verified site console capture.
+Introduce strict separate R9.26 nonroot local assessment to name
+precise missing physical files and independent tenant/POP production
+authorization gates without disclosing raw CLI or accepting browser
+boolean attestations. Even a matching offline key+card/version capture
+is insufficient to mark device ADOPTED; trust provenance, actual
+restricted role, live baseline, tenant OIDC/MFA and dedicated audited
+non-demo production worker must be independently proven. Do not
+repeat uncredentialed SSH scans to substitute for these missing facts.
+
+## ADR-059 — Owner-authorized exact private TCP323 Telnet fallback as NOAUTH only
+
+An ACTUAL one-time authorized private owner-VPS passive TCP323
+connection received 15 bytes starting with Telnet IAC. Add exact
+per-device alternative transport evidence and a bounded single-socket
+noauth checker. This is *not* verified physical identity, approved
+plaintext login, credentialed remote command support or full
+vendor-compatible adoption. No default password over Telnet, no
+port323 public ingress, no auto-Telnet fallback on failed SSH and no
+loosening of strict production worker/tenant gates. User-requested
+Telnet is a site-approved isolated TEMPORARY alternative only after
+actual chassis/POP provenance, restricted role, baseline and
+independent reviewer/security approval. Keep SSH transport preferred
+for eventual production due to host-key verification and encryption.
+
+## ADR-060 — R9.30 lab owner explicitly permits bounded default-account first READ, live change controls remain
+
+Owner corrected earlier DEV-01 site-impact assumption: this exact
+ZTE C320 is disconnected test-lab hardware with zero attached
+customers (owner attestation, not independent service survey), but
+MUST be treated with LIVE change discipline while adopted. A
+one-time owner-authorized interactive temporary account login was
+ACTUALLY successful on private Telnet323 and separately on private
+SSH with an existing repeat-observed network RSA pin. Only strictly
+bounded read-only `show card`, `show version-running`, `show ssh`
+commands were successful; no device-side changes. SSH is the
+preferred operational path, but the pinned RSA key remains
+network-observed and NOT independently sourced from the chassis.
+Treat this as `AUTHENTICATED_LAB_READ_OBSERVED_ADOPTION_PENDING`,
+not commercial ADOPTED or firmware-certification. No secret in Git,
+no unattended privileged factory account, no automatic Telnet
+fallback, no live config commands without secure tested backup,
+scoped credential/worker, baseline and independent authorization.
+R9.30 slot-only first-read partial version analysis MUST preserve
+unresolved GTGHK-vs-GTXK file-type identity and missing PRAM MVR;
+it may not loosen the existing complete-inventory validator.
+
+## ADR-061 — Separate strict actual-first-read PARTIAL firmware normalization
+
+A real manually captured interactive C320 lab `show version-running`
+contains one-digit clock hours, version `GTXK` on the SAME physical
+slot reported as `GTGHK` in `show card`, and NO running MVR for the
+observed PRAM. Harden version time parser to strictly accept vendor
+H:MM:SS or HH:MM:SS, without allowing impossible hours/minutes.
+Keep complete-firmware `olt-evidence` default DENY on unknown
+filetype or missing MVR. Add separate explicit owner-only CLI
+`--first-observation-partial-versions` that validates exact same
+physical slot with internally consistent FileType, outputs partial
+slot-by-slot uncertainty and unconditionally keeps actual independent
+chassis trust, full firmware and production adoption FALSE.
+This cannot grant OLT write authority or certify alias equivalence.
+Validated on actual owner-VPS PRIVATE manually transcribed first
+snapshot (3 physical cards, 5 reported versions, 1 alias unresolved,
+PRAM running MVR unreported). All new code must preserve negative
+firmware tests on synthetic fixture and never include device secrets.
+
+## ADR-062 — R9.31 actual full offline-lab OLT config captured, no config changes before independent backup
+
+Owner-directed disconnected C320 lab was ACTUALLY authenticated through
+bounded SSH. `show privilege` reported privilege 15; vendor `show file
+cfg` showed on-device saved configuration files (112902 bytes each),
+`show system-group` reported software V2.1.0 and `show alarm counter`
+returned historical counters (NOT current active faults). Actual
+`show startup-config` syntax rejected. Session-only `terminal length
+0` then `show running-config` produced a COMPLETE 119980-byte raw
+configuration; the true returned CLI prompt and standalone config
+`end` were checked. It is kept exclusively inside a mode-0700
+nonroot owner-VPS folder with mode-0600 raw output and SHA-256 receipt
+`5b21f96b...e1989ba3`. This contains potentially secret
+configuration and must NEVER enter Git, CI, dashboard or chat.
+Remote Desktop Commander rejected direct guarded secret-bearing
+VPS→Mac SCP, so no off-host encrypted Restic snapshot or isolated
+restore may be claimed. Do not bypass tool controls. Add a strict
+LOCAL readonly digest/shape checker; retain all current hardware
+and privileged account settings until off-host encrypted backup,
+isolated restore, safe firmware-aware recovery, verified restricted
+account and separate tenant MFA/reviewer/worker are in place.
+
+## ADR-063 — No tool-mediated secret transfer bypass; explicit owner-executed off-VPS encrypted backup
+
+The real R9.31 full 119980-byte actual C320 running-config CLI output
+is sensitive, owner-only VPS evidence. A Remote Desktop Commander
+SCP copy to Mac was explicitly REFUSED by tool security. Keep refusal
+intact; DO NOT retry through alternate transfer channels or mask the
+sensitive content. Prepared R9.32 **human-operated on Mac Terminal
+only** single opt-in Restic backup+encrypted data pack check+isolated
+byte-identical restored reference workflow, using an existing
+verified encrypted Mac Restic repository, FileVault ON, existing
+Keychain password command, trusted owner-VPS SSH, exact privately
+pinned source digest and zero plaintext Mac staging before Restic.
+Noninteractive ChatGPT access is NEVER authorized to execute the
+sensitive mode. No real off-VPS snapshot/restore may be claimed
+until the owner actually runs it and separately proves success.
+Even a successful off-VPS byte restore cannot certify that this
+raw CLI output (including final prompt) is a vendor-native import
+file or a successful hardware configuration restore. R9.32 does
+not alter C320 settings, trust unknown local accounts, enable
+unattended privileged default credentials or release production
+physical-action gates.
+
+## ADR-064 — Verified owner-executed actual off-host encrypted reference restore enables R9.33 historic LAB inventory reporting, not production auto adoption
+
+The owner ACTUALLY executed the previously developed guarded one-time
+Mac Restic operator command. Independently inspected real Mac
+mode0600 completion receipt and actual existing encrypted Restic
+snapshot ID/path/tag via the prior local Keychain-held secret. The
+encrypted off-VPS reference backup and isolated byte-identical
+119980-byte recovered CLI output are therefore **VERIFIED**, replacing
+older R9.31/R9.32 backup-blocked status; previous states remain
+historical, not current. Original owner VPS source digest still
+matches. BUT raw CLI transcript includes vendor prompt and remains
+NOT vendor-native import/rehearsed on-device restore. The new
+non-secret facts may enter PRIVATE restricted :3002 LAB readiness,
+with explicit observed timestamp and historical three-card evidence,
+never enable the eight real OLT action POST routes. Actual read-only
+`show username` showed two explicit privilege15 accounts, no
+validated limited account. `show alarm crtv-active` syntax was
+accepted, output semantics not yet measured. Weak privileged test
+credentials remain break-glass until independent review/role-safe
+replacement and validated vendor-native recovery. No device writes
+in this milestone. Separate trust/POP/MFA/reviewer/audited worker
+remain mandatory before genuine automatic/production adoption.
+
+## ADR-065 — One operator-interactive EXACT LAB SSH first read separated from production service worker
+
+R9.33 actual Mac Restic off-VPS encrypted capture/isolated reference
+restore is verified. Production still has no dedicated physically
+proved restricted device identity, genuine tenant MFA/reviewer,
+independent chassis key or native firmware-import drill.
+Introduce only a stand-alone opt-in owner-lab SSH `show card` adapter
+with a single interactive short-lived password challenge for the
+already owner-approved TEST device/account, strict pinned previously
+observed network RSA and one vendor-validated read-only command,
+plus owner-only evidence normalization/audit. It is NOT an
+unattended default-credential controller, commercial tenant worker
+or blanket privilege; never mount it on public HTTP/API, queue or
+K3s while current user remains privileged or identity unclear.
+A first accepted live read does not confer `ADOPTED_READ_ONLY` until
+all separately documented production gates have been genuinely met.
+
+R9.34 ADR-065 implementation evidence: The owner approved and ACTUAL
+nonroot owner-VPS ephemeral SSH lab adapter successfully performed
+one bounded `show card` against the physical C320 and ran the
+existing offline Rust card parser on its fresh private CLI response.
+The three independent owner historic card identities/statuses
+matched exactly. There was NO on-device config change/password
+persistence/unattended polling; owner-only private receipt confirms.
+No elevation to commercial ADOPTED or service identity is warranted.
+
+## ADR-066 — ONT registration requires separately accepted physical C320 adoption and exact vendor adapter
+
+Owner objective is immediate ONT registration after real OLT adoption. A functioning SSH card read and recovered off-host CLI transcript do not authorize ONT configuration. Add `olt-core::ont_registration` as a strict pure offline draft validator (bounded exact observed slot, field validation, collision checks) with `ONT_EXECUTION_ENABLED=false`. No executable generic CLI string template, transport or device secrets are exposed. Its syntax validation is not authoritative inventory freshness, availability or authorization.
+
+Before enabling even one physical registration, require R9.35 identity/native restore/limited account/POP/MFA/reviewer/worker evidence AND actual firmware-specific PON/ONT/profile interoperability, unique serial and ONU ID read-back, per-OLT/PON locks, immutable plan approval and bounded one-ONT rollback. Device registration, service provisioning and firmware upgrade are separate privileges and jobs. Current C320 remains NOT ADOPTED; no production action path may use synthetic/LAB signals as permission.
+
+## ADR-067 — Disentangle discovery, registration, service provisioning and firmware-specific execution
+
+R9.37 implements ONLY pure bounded synthetic unconfigured ONU listing normalization and offline bridge/VLAN/TCONT/GEM review. An unconfigured ONU reported index must never be interpreted as a free registrable ONU ID; actual registered inventory and scoped fresh hardware proof are required. Explicit false backend feature flags and absent mutation endpoints enforce separation between reviewed draft and device writes. A caller-supplied exact-profile flag is not a security attestation, so the pure service validator is never linked directly to a physical worker or commercial approval. Only independently verified profile capabilities, tenant/POP identity, separate maker-checker with audited immutable plan, lease/lock, firmware-tested commands, recovery and physical read-back can permit actual actions. ONT Wi-Fi/routed-WAN/VoIP/firmware and multi-vendor provisioning stay individually certified later work.
+
+## ADR-068 — Owner-operated LAB read adoption fast path versus commercial unattended adoption
+
+The owner requires a usable one-OLT/one-ONT outcome quickly. Maintain **separate states**: operator-supervised `LAB_C320_AUTHENTICATED_READ_PROVEN` (already actual one-time `show card`), new `LAB_ONU_DISCOVERY_VERIFIED` (only after R9.38 fresh real scripted response accepted), and commercial `PRODUCTION_ADOPTED` (existing stricter R9.35 gates). Do not require all enterprise worker/MFA prerequisites just to perform an owner-approved bounded and audited READ-ONLY hardware discovery; do require them before privileged unattended production operation. One-ONT configuration remains a distinct high-risk authorized operation with exact firmware, live clash check, backup/native rollback and real physical read-back.
+
+Offline inspection of the prior owner-protected 119980-byte actual running-config transcript revealed 171 syntactically recognized ONU declarations within five GPON PON interface sections; 72 in historical `gpon-olt_1/1/1`. This is NOT live ONU presence, free-ID proof or subscriber count, but forbids treating the chassis as blank. The fresh R9.38 read uses only three exact allowlisted read commands with local TTY-held password and private captures. No auto-adoption transition may be inferred from the existence or success of the script alone.
+
+## ADR-069 — Actual manual C320 CLI source may produce only redacted, dated private inventory
+
+29 September 2026: owner supplied first firmware-compatible actual read-only `show gpon onu uncfg`, `show gpon onu state gpon-olt_1/1/1`, `show run interface gpon-olt_1/1/1` results. Never copy customer/ONT serials from chat into source, docs, database or private LAB preview. Permit **private** dated count-only owner-attested inventory display and strict PURE actual CLI shape parsers with synthetic serial test fixtures; explicitly mark `snapshot_is_live=false`, automatic ID reconciliation FALSE, `device_adopted=false` and hardware provisioning still forbidden. No automatic authority is derived from ChatGPT transcript. Actual source-controlled parser must reconcile per-ID state vs configuration only on separately acquired fresh protected runtime evidence, and no empty unconfigured ONU output permits an ONT registration attempt. Firmware-specific vendor commands from online literature remain suggestions, not authorization or compatibility proof; profile/type, native restore, real tenant reviewer and physical read-back are mandatory before high-impact writes.
+
+## ADR-070 — R9.40 temporary owner-supervised private C320 real-read panel without permanent privileged worker
+
+Use a real owner-supervised first functional hardware panel before full production SaaS adoption: Axum private opt-in :3002 allows ONLY POST fixed `REFRESH` to a nonroot owner-only Linux AF_UNIX agent. A human owner starts the agent locally and supplies temporary C320 credential through `getpass` inside a bounded at-most-five-read, fifteen-minute process; the existing actual previously observed network SSH key is pinned (NOT console-certified). The agent accepts no arbitrary target/CLI/browser serial or password and returns only strict counts with timestamp. The Rust backend separately revalidates and field-allowlists all IPC responses, never exports raw serials, credentials or CLI. The UI displays fresh evidence ONLY on actual success, with false live status otherwise. HIGH-IMPACT ACTS AND AUTOMATED PRODUCTION ADOPTION REMAIN DENIED: ephemeral privileged TEST account is not adequate for unattended worker/tenant privileges. This interim implementation is deliberately separated from commercial RBAC+ABAC, OIDC MFA, distinct reviewer, native device recovery, firmware certification and actual optical/ONT writes; none are waived for write access. Nonroot rollback-safe unit replacement on private loopback is approved for read-only lab UI only; do not touch firewall/K3s/DB or production listeners.
+
+## ADR-071 — Expand temporary real C320 read controls to boards and firmware without broad privileged CLI access
+
+R9.41 adds two **additional FIXED firmware-observed safe C320 read commands** (`show card`, `show version-running`) behind distinct private POST routes and the existing bounded owner-interactive read agent. All 3 dashboard actions share a strict 5-request/15-minute owner-controlled quota; no arbitrary CLI or device target is accepted. Rust allowlists each returned response to count/UTC fields, ignores any raw CLI, refuses false firmware alias certification and keeps all physical config/firmware/ONT writes disabled. Actual vendor-independent transport, unrestricted privilege-15 unattended access and blanket 'enable all' hardware writes are categorically excluded until scoped least-privilege account, physical rollback, tenant authority and signed independent approval are verified. Preserve exact source checksum and separate :3002 unit rollback for the change; not a full commercial adopter.
+
+## ADR-072 — Require visible truth of agent readiness rather than invisible dashboard session expiry
+
+Owner-authenticated temporary C320 read agent expires after fifteen minutes or five actual read requests; this is an intended security cap, not a persistent dashboard login. On 29 Sep 2026 the panel appeared nonfunctional because its only agent had closed while the private backend/browser continued serving. Preserve the human local hidden password and the short-lived quota; add fixed owner-only Unix `STATUS` (never counts as a device read), strictly private Axum agent-state GET and visible browser countdown with fail-closed buttons. STATUS/agent presence is not device health, physical read success, production adoption or authorization of writes. Never solve short session by persisting the existing privileged temporary password unattended. Commercial persistent control requires a newly provisioned verified least-privilege device identity and standard tenant security; do not equate public dashboard with Mac loopback test preview.
+
+## ADR-073 — Decouple agent STATUS from long physical CLI reads without persisting privileged SSH secrets
+
+In R9.42 the owner-observed Python `BrokenPipeError` occurred after backend clients closed before serialized Unix STATUS responses. Use `ThreadingMixIn` Unix server exclusively for interprocess status concurrency, lock shared quota and the one physical read at a time, return owner-safe busy/read-left without physical commands for STATUS, suppress only expected broken-client sends, and preserve bounded owner interactive memory-only credential. Do not widen the actor into unattended privilege-15 remote CLI or claim underlying network/firmware compatibility from the IPC fix.
+
+## ADR-074 — Operator-first GUI without copying vendor software or falsely claiming physical adoption
+
+Owner provided ZetSet.id as feature research reference on 2026-09-29. Its public feature categories are multi-OLT dashboard, ONU wizard, PON/ONU traffic/optical, FTTH topology, backup, ACS/TR-069, VPN, technician RBAC/audit, synchronization, profile reuse and API. These feature categories MAY inform IPAT product requirements; do NOT copy the reference vendor's code/visual design or treat untested vendor claims as IPAT hardware evidence. R9.44 develops a distinct IPAT C320 operations GUI on top of existing private actual-read endpoints. Keep current firmware-proven *only* PON 1/1/1 enabled, explicit source timestamp/manual-vs-live markers and independent owner-agent readiness, and prohibit arbitrary CLI or changes in an unauthenticated lab preview. Future always-on commercial device collector requires genuinely restricted identity and OOB chassis pin, multi-tenant OIDC/MFA+RBAC+ABAC, per-POP isolation, audit, bounded queue and tested native rollback; public Host/subdomain must never grant access itself. Existing production physical writes stay HTTP403 until these are verified.
+
+
+## ADR-075 — Direct-first device connection and one-time encrypted dashboard enrollment (29 Sep 2026)
+
+Product owner requires a device input/connection flow in the actual dashboard with no temporary owner Terminal, recurring password entry or mandatory overlay tunnel when VPS directly reaches a device's management network. Choose **DIRECT-FIRST** for each individually verified management target (SSH-pinned ZTE C320 adapter first), and use WireGuard/IPsec transport **only when** the selected worker/POP has no valid management route. A tunnel establishes reachability, never authorization; it must not bridge arbitrary subscriber networks. Record at least distinct `NOT_ENROLLED`, `CONFIGURED_AWAITING_READ`, `READ_ONLY_CONNECTED_LAB` and fully governed production `ADOPTED_MANAGED` states so mere ping/TCP or saved credentials never count as live adoption.
+
+R9.45 replaces the **temporary human-TTY-required 15-minute collector** for the private ZTE C320 laboratory with a separate nonroot systemd user service and fixed per-device SSH read adapter, a one-time owner code and device password entered via the SSH-forwarded loopback browser form. Only after strict network-pinned **real** authenticated `show card` evidence is the credential encrypted using restricted separate Fernet key/ciphertext owner files and consumed bootstrap code. No real password/secret flows through GitHub, ChatGPT messages, terminal arguments, console logging or browser storage. The owner setup code is copied directly through an authorized Mac↔VPS SSH connection to the Mac clipboard without disclosing it in tool output. Allowlisted Unix messages, Linux peer UID checks, per-device read lock, five-minute cached health checks and typed HTTP boundaries prevent generic device command execution. The original privileged laboratory ZTE login and network-observed SSH key are temporary **LAB exceptions**, not production OOB attestation, tenant authentication, separately managed vault or permission for ONT/VLAN/reboot/firmware writes. Keep all production high-risk hardware actions denied. The `:3002` bootstrap screen MUST NEVER be exposed as a multi-tenant or public unauthenticated endpoint; replace with verified OIDC MFA/RBAC+ABAC and per-tenant scoped secret vault before commercial adoption. Preserve prior private unit and avoid changing original :3000, firewall, K3s or database in this milestone.
+
+
+## ADR-075 — Direct-first persistent device enrollment, per-device read scope and optional private-network tunnel
+
+29 September 2026: the owner rejects repeated local Terminal/password authorization for every OLT dashboard action. Adopt **direct-first** management: if IPAT worker can route to a device's verified private management address, a properly authorized company user claims the device ONCE through the authenticated dashboard and stores a restricted management credential only in server-side secret storage; a persistent bounded worker independently refreshes stale read telemetry. If no safe L3 management route exists, establish a tenant-scoped site-to-site WireGuard/IPsec path, verify private management reachability and last-hop segmentation, THEN follow the SAME device enrollment and privileges. An available route alone is not proof of SSH identity, authorization or operational adoption.
+
+R9.45 replaces R9.40's repeated 15-minute human Terminal prompt for the **fixed, previously owner-tested laboratory ZTE C320 SSH target only** with a nonroot user-systemd Python connector and one-time private-dashboard registration, fixed read-command allowlist, SSH host key observed-and-pinned from network, five-minute read heartbeat, UNIX peer UID validation and mode0600 envelope-encrypted device credential. A one-time server bootstrap code remains a LAB-only ownership gate because the private :3002 preview still lacks verified tenant OIDC/MFA; never treat SSH tunnel reachability or possession of Host/Origin headers as production authorization. There is NO public form exposing the enrollment or raw credential, no arbitrary CLI, no general-device dynamic SSRF target and no production device writes. Do NOT allow this temporary privileged laboratory credential to become a permanent unattended commercial management identity without scoped read-only device account, out-of-band chassis key verification and tenant MFA/ABAC.
+
+Status taxonomy: `NOT_ENROLLED` (form ready), `CONFIGURED_AWAITING_READ` (credential stored, no fresh physical proof), `READ_ONLY_CONNECTED_LAB` (fresh authenticated fixed physical read) and separately `PRODUCTION_ADOPTED` ONLY when full tenant and physical acceptance gates are met. An ONU/VLAN/PPPoE change, reboot, password rotation or OLT firmware upgrade is a distinct approved and audited change class requiring native backup/restore recovery and exact firmware physical evidence; network connection itself never grants write access.
+
+## ADR-076 — Device status is derived from fresh physical evidence, never management-route reachability
+
+For every tenant-owned actual enrolled device, server-normalized status MUST be CONNECTED only after a fresh authenticated device-specific read, DISCONNECTED only when a previously verified device loses valid observations, PENDING for an available connector awaiting enrollment/initial read, and UNKNOWN when evidence or the management connector is unavailable. Preserve the source timestamp and TTL, avoid cross-tenant data leak, and never infer live ONU state from dated owner-provided CLI. R9.46 implements this for actual DEV-01 ZTE C320 and only UNKNOWN for synthetic candidates; shared status schema for vendor-specific ONTs/routers is the next integration milestone. The public ipat-open-ci repository is kept as a sanitized supplementary synthetic CI mirror because its current public workflow is installed and three recently inspected workflow runs passed; never treat it as production infrastructure or proof of protected/private CI.
+
+## ADR-077 — Standard Add Device schema, verified transport profiles and phased vendor adapters
+
+The operator's requested onboarding schema is Device Name, Device Type, Vendor/Model, Management Protocol, Management IP, SSH Port, Username and Password. Use international UI terminology, responsive aligned inputs and vendor-specific capabilities; a persistent server-side connector must perform authentication and a fresh read before marking a device Connected or read-only adopted. The initial R9.47 release converts the cramped fixed lab UI to this schema but **only the already observed pinned ZTE C320 LAB transport profile is implemented**. Back-end must independently check the actual profile/type/management endpoint/account, not use arbitrary browser IP/port as an SSH proxy or infer ownership from L3 reachability. Other vendor options remain explicitly Coming Soon and disabled for connection until a tenant-scoped device registry, verified model/firmware transport adapter, target allowlist, host identity and observability are available. Do not weaken lab owner verification before genuine authenticated SaaS session and tenant authorization replace it. The Device Name field is not yet durable tenant inventory; do not claim general device registration based solely on current lab credential enrollment.
+
+## ADR-078 — Save Device is independent of network authentication; classified connection failure
+
+R9.48 decision: Device Manager MUST persist an authorized device record and display it immediately as Pending BEFORE any network/auth step. A failed route, closed SSH port, missing temporary lab owner verification, bad SSH credentials, unsupported device CLI or offline status must NEVER silently discard a validated draft. Only fresh, authenticated device evidence can promote the connection state to Connected. For the currently fixed ZTE C320 laboratory implementation, a mode0600 nonsecret owner-private JSON draft is a temporary bridge; this is not a substitute for tenant-isolated PostgreSQL device inventory or production RBAC/OIDC. Device passwords never enter the saved draft; the existing encrypted credential is written only after actual fixed pinned SSH and live card output pass. Fixed-target bounded TCP diagnostic distinguishes reachable port, refused port, unreachable network, ambiguous timeout and other network/port errors without falsely attributing ambiguous failures. Separately classify owner verification, SSH challenge/method, SSH auth or prompt, and unsupported device response, without exposing secrets/CLI. Arbitrary target probes and high-impact writes remain denied; authenticated SaaS admin session must replace the temporary lab-only one-time code.
+
+
+## ADR-079 — Explain the one-time lab setup gate; authenticated admin replaces it
+
+The temporary lab One-Time Owner Code is generated by the nonroot persistent C320 connector during its one-time initialization and stored **only on the owner VPS** (0600; a separate 0600 SHA-256 verifier is used). It is NOT an OLT password, a device username, a session on the normal IPAT SaaS dashboard, or a mandatory recurring credential. On first successful pinned SSH authentication and real card read, the connector encrypts the device credential and invalidates/deletes the temporary setup verifier. An incorrect code or a rate-limited attempt returns a specific nonsecret error. The current owner-only private :3002 preview has no genuine administrator session enforcement: never auto-insert the setup code into publicly callable API responses or skip this check because the browser can reach loopback. Current owner-facing LAB instructions must clearly explain how the authorized owner retrieves the existing code **locally**, without asking them to send it to chat or Git. R9.50 clarifies this in the collapsed setup panel and provides a button that copies ONLY the nonsecret owner-Mac instruction, not the setup secret itself. After the code is locally pasted into the form, the existing R9.49 state machine resumes the pending C320 SSH verification automatically.
+
+MUST for commercial implementation: remove the one-time code from normal operator flow after a genuine authenticated, MFA-protected Tenant/Company Admin session with per-tenant/POP ownership and deny-by-default device enrollment policy is implemented and exercised on both BFF/backend and worker. Access to the current owner-private lab tunnel and its Host/Origin checks are NOT a substitute for user authentication. A newly created device record stays Pending until fresh authenticated device evidence; high-impact physical write operations remain separately blocked and audited.
+
+
+## ADR-080 — Production-path first; laboratory becomes validation only
+
+Effective 30 September 2026, stop extending the separate owner-only `:3002` laboratory UX as the product path. It remains only a hardware-validation and regression harness. New operator functionality MUST be implemented first on the production architecture: authenticated user/session → tenant/company scope → PostgreSQL inventory/secrets reference → capability-driven device adapter → worker/queue → current health/telemetry → audited action. Physical lab devices then validate that exact path; they do not get a separate onboarding model, special owner-code workflow or long-lived fixed-address UI.
+
+The production device registry is protocol-agnostic. An adapter exposes device identity, capabilities, health/discovery reads and separately authorized write operations. Initial adapter families are: ZTE/C-DATA OLT management (SSH/SNMP/vendor API as actually verified), MikroTik RouterOS API-SSL, native CWMP/TR-069 inbound CPE sessions, and native USP/TR-369 controller sessions. Direct routed management is preferred; a tenant/site WireGuard/IPsec management path is used only when direct safe management routing is absent. A successful TCP connection is not adoption; fresh authenticated protocol evidence is required.
+
+The existing C320 lab code is reusable only as verified parser/transport evidence and must be moved behind the generic adapter interface instead of being promoted as a fixed production route. Existing CWMP, USP and RouterOS laboratory modules are foundations but are NOT production services yet. Production readiness requires real ingress/authentication, tenant binding, persisted state, secrets handling, operational status, observability and explicit device-specific compatibility evidence.
+
+High-impact writes remain deny-by-default even in production-path code. Read-only adoption and monitoring may become operational earlier than firmware, reboot, ONU provisioning, VLAN/PPPoE changes or credential rotation. Those actions require independent authorization, audit, idempotency, rollback/recovery evidence and device/firmware capability checks.
+
+## ADR-081 — Production-path tenant hostname registry and verified domain routing (APPROVED, 30 Sep 2026)
+
+**Decision.** Customer/company subdomains and custom domains are implemented on the production control path now. ADR-020 domain-later sequencing and the unresolved routing portion of ADR-014 are superseded. A globally unique PostgreSQL registry maps a canonical FQDN to exactly one tenant. Only an active tenant with a domain record in `verified` state and `tls_ready=true` may be resolved by the application.
+
+**Trust boundary.** The HTTP `Host` value selects only a routing context. It is never proof of user membership, role, POP, device ownership or platform privilege. Every protected request must independently verify signed identity, current database membership, RBAC+ABAC and resource scope, then require equality between the authorized tenant and the tenant resolved from the verified hostname. User supplied `X-Tenant-Id`, role headers and `X-Forwarded-Host` cannot override this mapping.
+
+**Verification.** Platform-controlled subdomains such as `<tenant>.ipat.id` may use platform parent-domain ownership as the verification authority. Externally owned custom domains require an explicit ownership challenge (initially DNS TXT) before activation. Certificate/TLS readiness is stored separately and is required before a domain can resolve to tenant context. Unknown, pending, suspended, revoked, malformed, duplicate and non-TLS-ready domains fail closed.
+
+**Browser security.** Public tenant sessions must use host-only Secure HttpOnly cookies, CSRF/origin protection, exact OIDC redirect/callback allowlists and trusted-ingress Host normalization. A shared parent-domain cookie that can cross customer hostnames is prohibited. The ingress must remove or ignore untrusted forwarded-host headers and emit one canonical Host to the application.
+
+**First owner-designated example.** `ipat.fadly.id` is the first intended custom-domain example. Its DNS pointing does not by itself prove ownership/TLS/session readiness and must not hardcode a tenant UUID in source. The domain becomes live only through an audited registry record plus the production ingress and identity gates above.
+
+**Validation.** R9.52 adds migration `0012_tenant_domains.sql`, a least-privilege SECURITY DEFINER resolver and Rust `GET /v1/tenant-context`. Disposable PostgreSQL tests cover exact mapping, cross-tenant independence, tenant suspension, domain lifecycle, TLS readiness, malformed/duplicate hostnames and direct-table denial. Rust tests cover Host normalization, duplicate Host and forwarded-host non-authority. Public HTTPS/customer login remains a separate deployment acceptance gate, not implied by source completion.

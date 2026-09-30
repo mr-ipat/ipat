@@ -3,10 +3,14 @@
 //! This is NOT an authenticated tenant dashboard or a production/public UI.
 
 mod browser_session_lab;
+mod c320_actions_lab;
+mod c320_live_lab;
 mod device_review_lab;
 mod device_workbench_lab;
 mod oidc_browser_lab;
 mod oidc_lab;
+mod site_a_pairing_lab;
+mod tenant_domain;
 mod tenant_membership_lab;
 
 use identity_core::PinnedIssuer;
@@ -27,8 +31,9 @@ const LAB_DASHBOARD_CSS: &str = include_str!("../../../web/lab/dashboard-preview
 const LAB_DASHBOARD_JS: &str = include_str!("../../../web/lab/dashboard-preview.js");
 // Public project target taxonomy only. Not an enrollment record or real device data.
 const LAB_DEVICE_TARGETS: &str = include_str!("../../../web/lab/device-targets.json");
-// Product-owner approved rollout SEQUENCING, not a trusted entitlement or
-// authority for actual devices. Runtime never learns a tenant from Host.
+// Historical owner-lab rollout manifest only; it is not a trusted entitlement
+// and stays domain-disabled. Production hostname context is resolved separately
+// through tenant_domain and still never grants authorization by Host alone.
 const LAB_ROLLOUT_PHASE: &str = include_str!("../../../web/lab/rollout-phase.json");
 const LAB_STATUS: &str = r#"{"mode":"ssh-loopback-only","production_access":false,"authentication_enabled":false,"device_operations_enabled":false,"backend":"online"}"#;
 
@@ -295,6 +300,16 @@ async fn main() {
         .await
         .expect("bind isolated identity/dashboard lab listener");
     let mut app = app_with_lab_identity_and_store(lab_web_enabled, identity, store);
+    // R9.52 production-path hostname routing. Host selects only a verified
+    // tenant context; all business APIs still require independent identity,
+    // membership and policy authorization.
+    let domain_requested = std::env::var("IPAT_TENANT_DOMAIN_ROUTING").as_deref() == Ok("YES");
+    if domain_requested {
+        app = app.merge(tenant_domain::router(
+            tenant_domain::from_environment()
+                .expect("invalid dedicated tenant-domain PostgreSQL resolver"),
+        ));
+    }
     if let Some(registry) = registry {
         app = app.merge(tenant_membership_lab::registry_router(registry));
     }
@@ -312,6 +327,15 @@ async fn main() {
             oidc_browser_lab::from_owner_environment()
                 .expect("unsafe or missing explicitly approved browser provider configuration"),
         ));
+    }
+    // Separate owner-opted ephemeral live read: mounted ONLY for the private
+    // loopback :3002 process, never for :3000/:3001/public K3s or production.
+    let owner_live_read = std::env::var("IPAT_R940_PRIVATE_OWNER_READ").as_deref() == Ok("YES");
+    if owner_live_read && !private_canary {
+        panic!("owner physical read bridge requires explicitly isolated private canary");
+    }
+    if owner_live_read {
+        app = app.merge(c320_live_lab::router());
     }
     axum::serve(listener, app).await.expect("serve API");
 }
@@ -381,6 +405,12 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn tenant_domain_context_is_not_mounted_without_explicit_runtime_config() {
+        let response = get_path(app(), "/v1/tenant-context").await;
+        assert_eq!(response.status(), StatusCode::NOT_FOUND);
+    }
+
+    #[tokio::test]
     async fn lab_routes_are_missing_by_default_and_on_k3s_router() {
         for uri in [
             "/lab",
@@ -435,6 +465,52 @@ mod tests {
         assert_eq!(data["device_adopted"], false);
         assert_eq!(data["out_of_band_host_key_verified"], false);
         assert_eq!(data["olt_commands_executed"], 0);
+    }
+
+    #[tokio::test]
+    async fn actual_manual_c320_onu_snapshot_is_private_sanitized_non_live() {
+        let path = "/lab/c320-owner-manual-onu-snapshot";
+        assert_eq!(get_path(app(), path).await.status(), StatusCode::NOT_FOUND);
+        let missing_host = get_path(app_with_lab(true), path).await;
+        assert_eq!(missing_host.status(), StatusCode::FORBIDDEN);
+        let response = app_with_lab(true)
+            .oneshot(
+                Request::builder()
+                    .uri(path)
+                    .header(header::HOST, "127.0.0.1:3002")
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(response.status(), StatusCode::OK);
+        assert_eq!(response.headers()[header::CACHE_CONTROL], "no-store");
+        let body = axum::body::to_bytes(response.into_body(), 8192)
+            .await
+            .unwrap();
+        let evidence: serde_json::Value = serde_json::from_slice(&body).unwrap();
+        assert_eq!(
+            evidence["source"],
+            "OWNER_ATTESTED_ACTUAL_MANUAL_TELNET323_CLI"
+        );
+        assert_eq!(evidence["registered_onu_status_rows"], 72);
+        assert_eq!(evidence["registered_onu_config_declarations"], 72);
+        assert_eq!(evidence["unconfigured_onus_reported"], 0);
+        assert_eq!(evidence["onu_online"], 0);
+        assert_eq!(evidence["snapshot_is_live"], false);
+        assert_eq!(evidence["real_olt_adopted"], false);
+        assert!(!String::from_utf8_lossy(&body).contains("ZTEGC969"));
+        let blocked = app_with_lab(true)
+            .oneshot(
+                Request::builder()
+                    .method("POST")
+                    .uri(path)
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(blocked.status(), StatusCode::METHOD_NOT_ALLOWED);
     }
 
     #[tokio::test]

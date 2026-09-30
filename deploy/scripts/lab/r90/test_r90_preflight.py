@@ -99,9 +99,10 @@ class R90Safety(unittest.TestCase):
     def test_dashboard_displays_timestamped_network_evidence_without_online_claim(self):
         page=(MODULE.ROOT / "web/lab/device-workbench.html").read_text()
         self.assertIn("BUKTI HISTORIS, BUKAN TELEMETRI LIVE",page)
-        self.assertIn("negosiasi Telnet",page)
-        self.assertIn("mengalami timeout",page)
-        self.assertIn("BELUM terverifikasi",page)
+        self.assertIn("SSH terenkripsi serta Telnet sementara",page)
+        self.assertIn("Restic terenkripsi",page)
+        self.assertIn("BELUM ADOPSI OTOMATIS",page)
+        self.assertIn("bukan monitoring aktif",page)
         self.assertNotIn("27.121.113.1",page)
 
     def test_source_no_network_writes_or_command_execution(self):
@@ -131,6 +132,76 @@ def load_tests(loader, suite, pattern):
     module=importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     suite.addTests(loader.loadTestsFromModule(module))
+    extra=Path(__file__).resolve().parents[1] / "r916" / "test_site_a_keypair_static.py"
+    spec=importlib.util.spec_from_file_location("r916_site_a_key_policy",extra)
+    module=importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    suite.addTests(loader.loadTestsFromModule(module))
+    path=Path(__file__).resolve().parents[1]/'r917'/'test_direct_protocol.py'
+    spec=importlib.util.spec_from_file_location('r917_direct_protocol_tests',path)
+    mod=importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    suite.addTests(loader.loadTestsFromModule(mod))
+    path=Path(__file__).resolve().parents[1]/'r919'/'test_c320_action_policy_static.py'
+    spec=importlib.util.spec_from_file_location('r919_c320_action_tests',path)
+    mod=importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    suite.addTests(loader.loadTestsFromModule(mod))
+    path=Path(__file__).resolve().parents[1]/'r920'/'test_prepare_pin.py'
+    spec=importlib.util.spec_from_file_location('r920_console_pin_tests',path)
+    mod=importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    suite.addTests(loader.loadTestsFromModule(mod))
+    path=Path(__file__).resolve().parents[1]/'r921'/'test_show_ssh.py'
+    spec=importlib.util.spec_from_file_location('r921_offline_show_ssh_tests',path)
+    mod=importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    suite.addTests(loader.loadTestsFromModule(mod))
+    path=Path(__file__).resolve().parents[1]/'r923'/'test_plan_ssh_remediation.py'
+    spec=importlib.util.spec_from_file_location('r923_onsite_change_review_tests',path)
+    mod=importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    suite.addTests(loader.loadTestsFromModule(mod))
+    path=Path(__file__).resolve().parents[1]/'r924'/'test_auth_capability.py'
+    spec=importlib.util.spec_from_file_location('r924_actual_auth_offer_tests',path)
+    mod=importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    suite.addTests(loader.loadTestsFromModule(mod))
+    path=Path(__file__).resolve().parents[1]/'r926'/'test_assess_site_packet.py'
+    spec=importlib.util.spec_from_file_location('r926_offline_physical_acceptance_tests',path)
+    mod=importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    suite.addTests(loader.loadTestsFromModule(mod))
+    path=Path(__file__).resolve().parents[1]/'r928'/'test_private_telnet_323.py'
+    spec=importlib.util.spec_from_file_location('r928_exact_private_telnet_tests',path)
+    mod=importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    suite.addTests(loader.loadTestsFromModule(mod))
+    path=Path(__file__).resolve().parents[1]/'r930'/'test_real_lab_metadata_no_false_adoption.py'
+    spec=importlib.util.spec_from_file_location('r930_authenticated_lab_read_report_tests',path)
+    mod=importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    suite.addTests(loader.loadTestsFromModule(mod))
+    path=Path(__file__).resolve().parents[1]/'r931'/'test_private_backup.py'
+    spec=importlib.util.spec_from_file_location('r931_protected_real_config_tests',path)
+    mod=importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    suite.addTests(loader.loadTestsFromModule(mod))
+    path=Path(__file__).resolve().parents[1]/'r932'/'test_owner_mac_restic_c320_snapshot.py'
+    spec=importlib.util.spec_from_file_location('r932_owner_operated_off_vps_backup_tests',path)
+    mod=importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    suite.addTests(loader.loadTestsFromModule(mod))
+    path=Path(__file__).resolve().parents[1]/'r933'/'test_actual_recovery_status_static.py'
+    spec=importlib.util.spec_from_file_location('r933_actual_backup_metadata_only_tests',path)
+    mod=importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    suite.addTests(loader.loadTestsFromModule(mod))
+    path=Path(__file__).resolve().parents[1]/'r934'/'test_one_manual_c320_ssh_read.py'
+    spec=importlib.util.spec_from_file_location('r934_ephemeral_actual_c320_one_read_tests',path)
+    mod=importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    suite.addTests(loader.loadTestsFromModule(mod))
     return suite
 
 if __name__=="__main__":
