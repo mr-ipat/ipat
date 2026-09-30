@@ -11,6 +11,7 @@ mod oidc_browser_lab;
 mod oidc_lab;
 mod site_a_pairing_lab;
 mod tenant_domain;
+mod tenant_domain_bff;
 mod tenant_membership_lab;
 
 use identity_core::PinnedIssuer;
