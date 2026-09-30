@@ -303,8 +303,7 @@ async fn main() {
     // R9.52 production-path hostname routing. Host selects only a verified
     // tenant context; all business APIs still require independent identity,
     // membership and policy authorization.
-    let domain_requested =
-        std::env::var("IPAT_TENANT_DOMAIN_ROUTING").as_deref() == Ok("YES");
+    let domain_requested = std::env::var("IPAT_TENANT_DOMAIN_ROUTING").as_deref() == Ok("YES");
     if domain_requested {
         app = app.merge(tenant_domain::router(
             tenant_domain::from_environment()

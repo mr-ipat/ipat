@@ -167,8 +167,7 @@ fn read_private_file(path: &Path) -> Result<String, &'static str> {
         return Err("domain DB config path must be absolute");
     }
     for (point, mode) in [(parent, 0o700), (path, 0o600)] {
-        let metadata =
-            std::fs::symlink_metadata(point).map_err(|_| "missing domain DB config")?;
+        let metadata = std::fs::symlink_metadata(point).map_err(|_| "missing domain DB config")?;
         if metadata.file_type().is_symlink()
             || metadata.uid() != unsafe { libc::geteuid() }
             || metadata.mode() & 0o777 != mode
@@ -275,10 +274,7 @@ mod tests {
         let mut headers = HeaderMap::new();
         headers.append(header::HOST, HeaderValue::from_static("ipat.fadly.id"));
         headers.append(header::HOST, HeaderValue::from_static("other.example"));
-        assert_eq!(
-            canonical_hostname(&headers),
-            Err(StatusCode::BAD_REQUEST)
-        );
+        assert_eq!(canonical_hostname(&headers), Err(StatusCode::BAD_REQUEST));
     }
 
     #[test]
