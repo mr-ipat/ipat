@@ -77,8 +77,8 @@ class TenantDomainsIntegration(unittest.TestCase):
         )
 
     def test_01_verified_tls_ready_domains_resolve_exactly(self):
-        self.assertEqual(resolve("kangnet.ipat.id"), "kangnet")
-        self.assertEqual(resolve("ipat.fadly.id"), "nengnet")
+        self.assertEqual(resolve("kangnet.ipat.id"), "tenant-alpha")
+        self.assertEqual(resolve("ipat.fadly.id"), "tenant-beta")
         self.assertEqual(resolve("IPAT.FADLY.ID"), "DENIED")
         self.assertEqual(resolve("other.ipat.id"), "DENIED")
     def test_02_pending_suspended_revoked_or_no_tls_fail_closed(self):
@@ -96,7 +96,7 @@ class TenantDomainsIntegration(unittest.TestCase):
     def test_03_suspended_tenant_fails_without_affecting_other_tenant(self):
         sql(f"UPDATE ipat_platform.tenants SET state='suspended' WHERE id='{TB}'")
         self.assertEqual(resolve("ipat.fadly.id"), "DENIED")
-        self.assertEqual(resolve("kangnet.ipat.id"), "kangnet")
+        self.assertEqual(resolve("kangnet.ipat.id"), "tenant-alpha")
 
     def test_04_runtime_has_no_direct_domain_table_access(self):
         for role in ("ipat_domain_query", "ipat_app_runtime"):

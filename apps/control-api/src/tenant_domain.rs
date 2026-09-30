@@ -322,7 +322,7 @@ mod tests {
         let body = to_bytes(response.into_body(), 4096).await.unwrap();
         let value: Value = serde_json::from_slice(&body).unwrap();
         assert_eq!(value["tenant_context"], true);
-        assert_eq!(value["tenant_slug"], "nengnet");
+        assert_eq!(value["tenant_slug"], "tenant-beta");
         assert_eq!(value["hostname"], "ipat.fadly.id");
         assert_eq!(value["authentication_required"], true);
         assert_eq!(value["business_access_enabled"], false);
