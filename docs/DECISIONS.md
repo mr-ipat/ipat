@@ -612,3 +612,14 @@ metadata alone may authorize live device management.
 **Readiness rules.** `safe_to_point_now=true` requires the deployment to explicitly mark tenant routing ready. Nameserver mode additionally requires the authoritative IPAT DNS service to be explicitly ready. At least two unique nameservers remain mandatory. If these gates are false, the dashboard may show the intended values for planning but must state **JANGAN POINTING DULU**.
 
 **Reason.** This prevents an operator from pointing a customer domain to a VPS whose port 443/TLS/ingress is not ready, while still satisfying the product requirement that IPAT tells the customer exactly what DNS value will be required.
+
+
+## ADR-047 — APPROVED: domain activation is an ordered service-controlled lifecycle — 2026-09-30
+
+**Decision.** Custom-domain onboarding is split into customer authority and service evidence. Tenant Admin may request, list and disable a domain through a BFF using an opaque browser session, CSRF for writes, trusted same-origin validation and a current database membership check. The browser never generates the ownership token and never marks verification, routing, TLS or activation complete.
+
+**Lifecycle.** A custom domain advances only through `pending_dns → ownership_verified → routing_ready → tls_ready → active`. An isolated verifier service account may record evidence for exactly the next state through a narrow `SECURITY DEFINER` function. It cannot skip steps and has no direct table access. Failures may record a bounded error code without changing the current successful state.
+
+**DNS responsibility.** The routing profile remains deployment-driven. A/AAAA/CNAME targets may be shown before activation, but `safe_to_point_now` remains a separate runtime readiness signal. Nameserver delegation continues to require at least two distinct authoritative nameservers and explicit authoritative-DNS readiness.
+
+**Deployment boundary.** R9.19 implements the persistent lifecycle and BFF primitives but does not claim that the current VPS has public HTTPS, a real IdP/MFA session, PostgreSQL, certificate automation or authoritative DNS online.
