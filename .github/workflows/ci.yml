@@ -212,6 +212,12 @@ jobs:
           grep -Fq 'available_routing_modes' web/lab/domain-settings.js
           grep -Fq 'AKSI CUSTOMER' web/lab/domain-settings.html
           grep -Fq 'JANGAN POINTING DULU' web/lab/domain-settings.js
+      - name: R9.55 automatic DNS TXT ownership verifier contracts
+        run: |
+          python3 -m py_compile deploy/db/tests/test_tenant_domain_dns_verifier_integration.py
+          cargo test --locked -p control-api tenant_domain_verifier::tests
+          grep -Fq 'IPAT_TENANT_DOMAIN_VERIFIER' apps/control-api/src/main.rs
+          grep -Fq 'list_tenant_domain_ownership_checks' deploy/db/migrations/0015_tenant_domain_dns_verifier.sql
       - name: Verify formatting
         run: cargo fmt --all -- --check
       - name: Run locked unit tests
@@ -344,6 +350,9 @@ jobs:
       - name: R9.54 ordered custom-domain lifecycle and verifier isolation
         run: |
           python3 -m unittest discover deploy/db/tests -p test_tenant_domain_activation_lifecycle_integration.py -v
+      - name: R9.55 sealed pending TXT verifier queue
+        run: |
+          python3 -m unittest discover deploy/db/tests -p test_tenant_domain_dns_verifier_integration.py -v
       - name: R7.8 real signed JWT to isolated Postgres reader to private Axum menu (synthetic CI ONLY)
         run: |
           python3 deploy/db/tests/seed_private_http_identity_ci.py
