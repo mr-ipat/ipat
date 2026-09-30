@@ -360,10 +360,16 @@ async fn js() -> (HeaderMap, &'static str) {
     )
 }
 async fn domain_html() -> (HeaderMap, &'static str) {
-    (super::private_lab_headers("text/html; charset=utf-8"), DOMAIN_HTML)
+    (
+        super::private_lab_headers("text/html; charset=utf-8"),
+        DOMAIN_HTML,
+    )
 }
 async fn domain_css() -> (HeaderMap, &'static str) {
-    (super::private_lab_headers("text/css; charset=utf-8"), DOMAIN_CSS)
+    (
+        super::private_lab_headers("text/css; charset=utf-8"),
+        DOMAIN_CSS,
+    )
 }
 async fn domain_js() -> (HeaderMap, &'static str) {
     (
