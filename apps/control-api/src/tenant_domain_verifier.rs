@@ -161,9 +161,13 @@ fn txt_record_matches(
 async fn txt_matches(resolver: &TokioResolver, target: &OwnershipTarget) -> Result<bool, ()> {
     let query = format!("{}.", target.verification_name);
     let lookup = resolver.txt_lookup(query).await.map_err(|_| ())?;
-    Ok(lookup
-        .iter()
-        .any(|record| txt_record_matches(record, &target.verification_value)))
+    Ok(lookup.answers().iter().any(|record| {
+        matches!(
+            record.data(),
+            hickory_resolver::proto::rr::RData::TXT(txt)
+                if txt_record_matches(txt, &target.verification_value)
+        )
+    }))
 }
 
 async fn advance_ownership(client: &tokio_postgres::Client, fqdn: &str) -> bool {
@@ -204,7 +208,8 @@ pub(crate) async fn run_once(store: &VerifierStore) -> Result<usize, &'static st
         .map_err(|_| "invalid verifier target set")?;
     let resolver = TokioResolver::builder_tokio()
         .map_err(|_| "resolver system configuration unavailable")?
-        .build();
+        .build()
+        .map_err(|_| "resolver initialization failed")?;
 
     let mut advanced = 0usize;
     for target in targets {
