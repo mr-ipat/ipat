@@ -43,7 +43,10 @@ fn valid_routing_mode(value: &str) -> bool {
 
 fn new_request_id() -> Option<Uuid> {
     let mut bytes = [0u8; 16];
-    File::open("/dev/urandom").ok()?.read_exact(&mut bytes).ok()?;
+    File::open("/dev/urandom")
+        .ok()?
+        .read_exact(&mut bytes)
+        .ok()?;
     // RFC 4122/9562-compatible UUIDv4 version and variant bits.
     bytes[6] = (bytes[6] & 0x0f) | 0x40;
     bytes[8] = (bytes[8] & 0x3f) | 0x80;
@@ -114,13 +117,7 @@ pub(super) async fn list_custom_domains_for_session(
     tenant: Uuid,
     now: u64,
 ) -> Option<Vec<DomainStatus>> {
-    let identity = vault.authenticate(
-        cookie,
-        None,
-        RequestKind::Read,
-        trusted_same_origin,
-        now,
-    )?;
+    let identity = vault.authenticate(cookie, None, RequestKind::Read, trusted_same_origin, now)?;
     let rows = db
         .query(
             "SELECT id,hostname,routing_mode,verification_name,verification_value,
@@ -193,12 +190,7 @@ pub(super) async fn disable_custom_domain_for_session(
             "SELECT ipat_platform.disable_tenant_custom_domain(
                $1,$2,$3::uuid,$4::uuid
              )",
-            &[
-                &identity.issuer(),
-                &identity.subject(),
-                &tenant,
-                &domain_id,
-            ],
+            &[&identity.issuer(), &identity.subject(), &tenant, &domain_id],
         )
         .await;
     matches!(row, Ok(Some(row)) if row.get::<_, bool>(0))
