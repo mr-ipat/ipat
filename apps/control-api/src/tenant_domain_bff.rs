@@ -64,7 +64,7 @@ pub(super) async fn request_custom_domain_for_session(
     let identity = vault.authenticate(
         cookie,
         Some(csrf),
-        RequestKind::Write,
+        RequestKind::Mutation,
         trusted_same_origin,
         now,
     )?;
@@ -182,7 +182,7 @@ pub(super) async fn disable_custom_domain_for_session(
     let Some(identity) = vault.authenticate(
         cookie,
         Some(csrf),
-        RequestKind::Write,
+        RequestKind::Mutation,
         trusted_same_origin,
         now,
     ) else {
