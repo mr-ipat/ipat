@@ -188,6 +188,12 @@ jobs:
         run: |
           python3 -m py_compile deploy/db/tests/test_tenant_domains_integration.py
           cargo test --locked -p control-api tenant_domain::tests
+      - name: R9.17 custom-domain enrollment and dashboard source contracts
+        run: |
+          python3 -m py_compile deploy/db/tests/test_tenant_domain_enrollment_integration.py
+          grep -Fq '/v1/domains/instructions' web/lab/domain-settings.js
+          grep -Fq 'Simpan domain & buat token verifikasi' web/lab/domain-settings.html
+          grep -Fq 'disabled' web/lab/domain-settings.html
       - name: R8.0 private restricted PostgreSQL inventory router/static SQL policy contract
         run: |
           python3 -m unittest discover deploy/db/tests -p 'test_r80_inventory_contract.py' -v
@@ -303,6 +309,9 @@ jobs:
       - name: R9.16 verified tenant-domain registry resolves only active verified hosts
         run: |
           python3 -m unittest discover deploy/db/tests -p test_tenant_domains_integration.py -v
+      - name: R9.17 tenant-admin custom-domain enrollment is tenant isolated
+        run: |
+          python3 -m unittest discover deploy/db/tests -p test_tenant_domain_enrollment_integration.py -v
       - name: R8.3 real disposable PostgreSQL pending adoption and separate admin registration/POP read privilege tests
         run: |
           python3 -m unittest discover deploy/db/tests -p test_device_candidates_integration.py -v
