@@ -40,11 +40,19 @@ pub(crate) fn canonical_host(value: &HeaderValue) -> Option<CanonicalHost> {
         None => raw,
     };
     let host = host.strip_suffix('.').unwrap_or(host);
-    if host.len() < 3 || host.len() > 253 || host.starts_with('.') || host.ends_with('.') || host.contains("..") {
+    if host.len() < 3
+        || host.len() > 253
+        || host.starts_with('.')
+        || host.ends_with('.')
+        || host.contains("..")
+    {
         return None;
     }
     let lower = host.to_ascii_lowercase();
-    if !lower.bytes().all(|b| b.is_ascii_lowercase() || b.is_ascii_digit() || b == b'-' || b == b'.') {
+    if !lower
+        .bytes()
+        .all(|b| b.is_ascii_lowercase() || b.is_ascii_digit() || b == b'-' || b == b'.')
+    {
         return None;
     }
     for label in lower.split('.') {
@@ -62,18 +70,19 @@ pub(crate) struct DomainStore {
 fn safe_name(value: &str, max: usize) -> bool {
     !value.is_empty()
         && value.len() <= max
-        && value.bytes().all(|b| b.is_ascii_alphanumeric() || matches!(b, b'_' | b'-'))
+        && value
+            .bytes()
+            .all(|b| b.is_ascii_alphanumeric() || matches!(b, b'_' | b'-'))
 }
 
 /// Initial runtime adapter uses a local Unix socket with peer/local credential
 /// isolation. It intentionally refuses TCP without a reviewed TLS DB adapter.
 pub(crate) fn from_environment() -> Result<Arc<DomainStore>, String> {
-    let socket = std::env::var("IPAT_TENANT_DOMAIN_DB_SOCKET")
-        .map_err(|_| "missing domain DB socket")?;
-    let database = std::env::var("IPAT_TENANT_DOMAIN_DB_NAME")
-        .map_err(|_| "missing domain DB name")?;
-    let user = std::env::var("IPAT_TENANT_DOMAIN_DB_USER")
-        .map_err(|_| "missing domain DB user")?;
+    let socket =
+        std::env::var("IPAT_TENANT_DOMAIN_DB_SOCKET").map_err(|_| "missing domain DB socket")?;
+    let database =
+        std::env::var("IPAT_TENANT_DOMAIN_DB_NAME").map_err(|_| "missing domain DB name")?;
+    let user = std::env::var("IPAT_TENANT_DOMAIN_DB_USER").map_err(|_| "missing domain DB user")?;
     if user != "ipat_domain_reader_login" || !safe_name(&database, 63) {
         return Err("unexpected domain DB identity".into());
     }
@@ -91,7 +100,10 @@ pub(crate) fn from_environment() -> Result<Arc<DomainStore>, String> {
 fn headers() -> HeaderMap {
     let mut h = HeaderMap::new();
     h.insert(header::CACHE_CONTROL, HeaderValue::from_static("no-store"));
-    h.insert("x-content-type-options", HeaderValue::from_static("nosniff"));
+    h.insert(
+        "x-content-type-options",
+        HeaderValue::from_static("nosniff"),
+    );
     h
 }
 
@@ -107,7 +119,11 @@ async fn bootstrap(
         );
     }
     let Some(host) = request_headers.get(header::HOST).and_then(canonical_host) else {
-        return (StatusCode::BAD_REQUEST, headers(), Json(json!({"tenant":null})));
+        return (
+            StatusCode::BAD_REQUEST,
+            headers(),
+            Json(json!({"tenant":null})),
+        );
     };
 
     let Ok((client, connection)) = store.db.connect(NoTls).await else {
@@ -150,7 +166,11 @@ async fn bootstrap(
     let hostname: String = row.get(2);
     let domain_type: String = row.get(3);
     if hostname != host.as_str() {
-        return (StatusCode::SERVICE_UNAVAILABLE, headers(), Json(json!({"tenant":null})));
+        return (
+            StatusCode::SERVICE_UNAVAILABLE,
+            headers(),
+            Json(json!({"tenant":null})),
+        );
     }
     (
         StatusCode::OK,
