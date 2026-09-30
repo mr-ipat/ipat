@@ -442,6 +442,23 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn r953_domain_settings_ui_is_private_lab_only() {
+        assert_eq!(
+            get_path(app(), "/lab/domain-settings").await.status(),
+            StatusCode::NOT_FOUND
+        );
+        let response = get_path(app_with_lab(true), "/lab/domain-settings").await;
+        assert_eq!(response.status(), StatusCode::OK);
+        assert_eq!(response.headers()[header::CACHE_CONTROL], "no-store");
+        let body = axum::body::to_bytes(response.into_body(), 64 * 1024)
+            .await
+            .unwrap();
+        let html = std::str::from_utf8(&body).unwrap();
+        assert!(html.contains("Domains & Branding"));
+        assert!(html.contains("Simpan domain &amp; buat token verifikasi"));
+    }
+
+    #[tokio::test]
     async fn private_lab_has_browser_content_and_restrictive_headers() {
         let response = get_path(app_with_lab(true), "/lab").await;
         assert_eq!(response.status(), StatusCode::OK);
