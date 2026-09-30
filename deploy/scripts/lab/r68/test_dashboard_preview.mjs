@@ -49,9 +49,11 @@ const responses = {
     authentication_enabled:false,device_operations_enabled:false
   }),
   "/lab/rollout-phase": mockResponse({
-    schema:1, phase:"private_single_endpoint_device_lab",
-    domain_verification_deferred:true, custom_domains_enabled:false,
-    public_tenant_hostnames_enabled:false, private_loopback_transport_only:true,
+    schema:2, phase:"private_production_shaped_control_plane",
+    domain_control_plane_available:true, custom_domain_instructions_enabled:true,
+    custom_domain_persistence_requires_authenticated_bff:true,
+    custom_domain_write_enabled:false, public_tenant_hostnames_enabled:false,
+    public_https_ready:false, private_loopback_transport_only:true,
     tenant_isolation_mandatory:true, tenant_isolation_end_to_end_verified:false,
     authenticated_tenant_data_apis_enabled:false,
     physical_device_connected:false, device_reads_approved:false,
@@ -99,7 +101,8 @@ assert.match(byId("page-title").nodes.map(x=>x.textContent).join(""),/Platform A
 assert.match(byId("checked").textContent,/privat terhubung/);
 assert.match(byId("device-summary").textContent,/8 target.*0 perangkat nyata/);
 assert.deepEqual(calls,["/healthz","/lab/status","/lab/device-targets","/lab/rollout-phase"]);
-assert.match(byId("rollout-status").textContent,/custom domain terkunci/);
+assert.match(byId("rollout-status").textContent,/Control-plane domain aktif/);
+assert.match(byId("rollout-status").textContent,/TLS publik masih terkunci/);
 
 function links() {
   return byId("demo-nav").nodes.filter(n=>n.tag==="a")
@@ -133,9 +136,12 @@ assert.deepEqual(calls,["/healthz","/lab/status","/lab/device-targets","/lab/rol
   "Changing visual workspace MUST NOT contact a protected API");
 // A forged success flag on a new rollout manifest MUST fail the UI preflight.
 responses["/lab/rollout-phase"] = mockResponse({
-  schema:1,phase:"private_single_endpoint_device_lab",
-  domain_verification_deferred:true,custom_domains_enabled:true,
-  public_tenant_hostnames_enabled:true,private_loopback_transport_only:true,
+  schema:2,phase:"private_production_shaped_control_plane",
+  domain_control_plane_available:true,custom_domain_instructions_enabled:true,
+  custom_domain_persistence_requires_authenticated_bff:true,
+  custom_domain_write_enabled:true,
+  public_tenant_hostnames_enabled:true,public_https_ready:true,
+  private_loopback_transport_only:true,
   tenant_isolation_mandatory:false,tenant_isolation_end_to_end_verified:false,
   authenticated_tenant_data_apis_enabled:false,physical_device_connected:false,
   device_reads_approved:false,firmware_updates_enabled:false
@@ -144,5 +150,5 @@ byId("check").events.click();
 await new Promise((resolve)=>setImmediate(resolve));
 assert.match(byId("rollout-status").textContent,/tidak terverifikasi/);
 assert.match(byId("checked").textContent,/belum terverifikasi/);
-console.log("R75_SYNTHETIC_DOMAIN_DEFERRED_PHASE_FAILS_CLOSED=PASS");
+console.log("R921_SYNTHETIC_DOMAIN_CONTROL_PLANE_PUBLIC_ACTIVATION_FAILS_CLOSED=PASS");
 console.log("R68_SYNTHETIC_THREE_WORKSPACE_UI_SELECTION_AND_NO_REAL_API_CALLS=PASS");
