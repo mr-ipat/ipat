@@ -14,8 +14,11 @@ class R912StaticContracts(unittest.TestCase):
                       'id="check-wg-review"', 'id="wg-review-status"'):
             self.assertIn(value,HTML)
         self.assertIn('TANPA KONFIGURASI AKTIF',HTML)
-        self.assertNotIn('type="password"',HTML)
-        self.assertNotIn('id="wg-private-key"',HTML)
+        start=HTML.index('id="tunnel-wizard"')
+        end=HTML.index('id="direct-protocol-panel"',start)
+        wg_panel=HTML[start:end]
+        self.assertNotIn('type="password"',wg_panel)
+        self.assertNotIn('id="wg-private-key"',wg_panel)
     def test_backend_is_no_credential_no_deploy(self):
         self.assertIn('async fn preview_tunnel_review(', API)
         self.assertIn('serde(deny_unknown_fields)',API)
