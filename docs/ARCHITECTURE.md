@@ -1200,3 +1200,10 @@ R9.53 extends the R9.52 production hostname resolver instead of replacing it. Th
 Persistence is a separate privileged boundary. Migration `0013_tenant_domain_enrollment.sql` extends the FORCE-RLS registry with routing mode, DNS-TXT challenge metadata, requester identity, ownership timestamp and routing readiness. The `ipat_domain_enrollment_owner` is NOLOGIN/NOINHERIT and owns sealed request/list/revoke functions; `ipat_domain_admin` has EXECUTE-only capability and no direct domain-table privileges. Real service LOGIN provisioning remains external to migrations.
 
 Expected lifecycle is dashboard request → TXT ownership proof → routing-ready evidence → TLS-ready evidence → R9.52 verified resolver → authenticated tenant BFF. The private Device Manager may render the workflow for validation, but only the real authenticated production BFF may enable the write action.
+
+
+## R9.54 unified domain runtime
+
+The forward control-api combines the advanced R9.49+ device runtime with the R9.52 resolver and R9.53 enrollment schema. Domain instructions are deployment-driven and support adaptive selection without changing tenant authorization. Response metadata includes the selected routing mode, available modes, bounded selection reason, exact customer action and readiness flags.
+
+A new verifier boundary advances custom-domain state one step at a time using SECURITY DEFINER functions and a NOLOGIN/NOINHERIT EXECUTE-only capability. Browser-facing enrollment primitives authenticate opaque BFF sessions and re-check PostgreSQL tenant_admin membership for request/list/revoke. Verification, routing and TLS completion are never browser-controlled.
