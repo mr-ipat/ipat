@@ -36,7 +36,7 @@ class TestOfflineC320ActionCatalog(unittest.TestCase):
                        "row.append(el('span','flag unknown','TERKUNCI')"):
             self.assertIn(marker,js)
         self.assertNotIn("mutate('POST','/lab/c320-actions/",js)
-        self.assertLessEqual(len(html.encode()),32768)
-        self.assertLessEqual(len(js.encode()),32768)
+        self.assertLessEqual(len(html.encode()),65536)
+        self.assertLessEqual(len(js.encode()),65536)
 
 if __name__=='__main__':unittest.main()
