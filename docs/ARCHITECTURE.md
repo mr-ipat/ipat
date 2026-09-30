@@ -1105,3 +1105,10 @@ peer; B's local OLT routing and secure reply path must be verified,
 not silently modified. IPsec is a separate pending adapter.
 Current R9.15 Rust private LAB endpoint and offline address review
 cannot configure either endpoint or replace real signed MFA.
+
+
+## R9.17 custom-domain onboarding control plane
+
+The tenant-domain control plane now has two distinct surfaces. A public-safe instruction engine accepts a canonical hostname and emits routing records from an explicit deployment profile (`a_record`, `cname`, or `nameserver`). It does not read tenant data, issue membership, or activate a domain. The privileged enrollment path persists pending custom domains through exact tenant-admin membership checks and narrow database functions; direct table access remains denied.
+
+DNS onboarding state is intentionally separate from tenant authorization. The expected lifecycle is request → TXT ownership proof → routing record/delegation → TLS readiness → verified/active bootstrap mapping. The frontend never embeds an IP or NS set; deployment configuration supplies those values. Authoritative NS mode is only valid when at least two configured nameservers and the corresponding DNS service exist.

@@ -592,3 +592,14 @@ tested adapters. For separately proven existing bidirectional private
 management access, generate no redundant VPN package. No amount of
 synthetic CLI metadata, remote TCP SSH handshake or approved database
 metadata alone may authorize live device management.
+
+
+## ADR-042 — APPROVED: dashboard-driven adaptive custom-domain DNS onboarding — 2026-09-30
+
+**Decision.** Tenant Admin supplies only the desired hostname. IPAT derives customer-facing DNS instructions from an environment/deployment profile rather than embedding a VPS address or nameserver in frontend code. Supported routing profiles are A/AAAA, CNAME, and authoritative NS delegation. NS delegation is only advertised when at least two distinct authoritative nameservers are configured and the DNS service actually exists.
+
+**Ownership sequence.** Custom domains are registered as tenant-scoped `pending` entries with a unique DNS TXT challenge at `_ipat-verify.<hostname>`. Ownership must be verified before the routing record/delegation is treated as active. This keeps nameserver mode workable without treating an unverified delegation claim as proof of ownership.
+
+**Authorization boundary.** Public DNS-instruction generation grants no tenant authority. Persisting, listing, or disabling a domain requires current `tenant_admin` membership for the exact tenant and goes through narrow `SECURITY DEFINER` functions; runtime roles have no direct table `SELECT/INSERT/UPDATE/DELETE`. Duplicate hostnames return no owning-tenant metadata.
+
+**Deployment reality.** A profile may describe an ingress target only after that target is actually intended for tenant traffic. R9.17 does not claim that the current VPS port 443, certificate automation, or authoritative nameservers are deployed merely because the dashboard/backend can generate instructions.

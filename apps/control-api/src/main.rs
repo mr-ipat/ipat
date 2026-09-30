@@ -306,6 +306,14 @@ async fn main() {
                 .expect("invalid restricted tenant-domain database configuration"),
         ));
     }
+    let domain_instructions_requested =
+        std::env::var("IPAT_CUSTOM_DOMAIN_INSTRUCTIONS").as_deref() == Ok("YES");
+    if domain_instructions_requested {
+        app = app.merge(tenant_domain::instruction_router(
+            tenant_domain::dns_profile_from_environment()
+                .expect("invalid custom-domain DNS instruction profile"),
+        ));
+    }
     if let Some(registry) = registry {
         app = app.merge(tenant_membership_lab::registry_router(registry));
     }

@@ -1199,3 +1199,10 @@ Site B RouterOS review commands are disabled; a site owner must
 explicitly apply changes on B, under independently reviewed rollback.
 Never capture Site B's WireGuard private key or accept default/wide
 AllowedIPs exported by version-dependent RouterOS tooling.
+
+
+## R9.17 custom-domain enrollment security
+
+DNS routing instructions are public-safe metadata and explicitly return `authorization_granted=false`. They cannot create a tenant mapping or session. Custom-domain persistence is a separate privileged path: current `tenant_admin` membership is re-evaluated in PostgreSQL; the domain-admin login role owns no table privileges; cross-tenant duplicate hostname attempts disclose no owner; and disabled/pending domains cannot become bootstrap authority.
+
+Ownership proof uses a per-request TXT value. The TXT challenge is not treated as a secret, but it must be unpredictable at issuance and bound to the exact requested hostname. A later DNS verifier must record evidence before moving state to verified. TLS issuance must follow verified routing and must not automatically expand ingress host allowlists from untrusted Host headers.

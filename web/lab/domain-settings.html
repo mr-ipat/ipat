@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <meta name="referrer" content="no-referrer">
+  <title>IPAT | Domains & Branding</title>
+  <link rel="stylesheet" href="/lab/domain-settings.css">
+  <script src="/lab/domain-settings.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Ke konten</a>
+<div class="alert" role="alert">
+  <strong>DOMAIN CONTROL-PLANE SUDAH PRODUCTION-SHAPED; PUBLIC HTTPS BELUM DIAKTIFKAN</strong>
+  Halaman ini menampilkan alur domain tenant dan instruksi DNS dari profil deployment IPAT.
+  Aktivasi domain tetap membutuhkan verifikasi DNS, TLS ingress, dan sesi Tenant Admin yang sah.
+</div>
+<div class="shell">
+  <aside class="sidebar">
+    <a class="brand" href="/lab/dashboard-preview"><span class="brand-icon">IP<span>@</span></span>
+      <span><strong>iPat</strong><small>NETWORK OPERATIONS</small></span></a>
+    <div class="sidelabel">TENANT SETTINGS</div>
+    <nav>
+      <a href="/lab/dashboard-preview">◈ &nbsp; Semua dashboard</a>
+      <a href="/lab/device-workbench">▦ &nbsp; Device Manager</a>
+      <a class="active" href="/lab/domain-settings" aria-current="page">◎ &nbsp; Domains & Branding</a>
+    </nav>
+    <div class="sidebottom"><strong>DOMAIN IS NOT AUTHORIZATION</strong>
+      <p>Hostname hanya memilih konteks tenant publik. Membership, role dan akses API tetap diverifikasi terpisah.</p>
+    </div>
+  </aside>
+  <div class="main">
+    <header class="topbar">
+      <span>IPAT / Tenant Settings / <b>Domains & Branding</b></span>
+      <span class="env">DNS PROFILE DRIVEN</span>
+    </header>
+    <main id="main">
+      <div class="heading">
+        <span class="eyebrow">CUSTOM DOMAIN ONBOARDING</span>
+        <h1>Input domain, <em>IPAT memberi instruksi DNS.</em></h1>
+        <p>Tenant tidak perlu mengetahui arsitektur ingress IPAT. Masukkan hostname yang akan dipakai.
+        Backend menentukan apakah domain harus diarahkan dengan A/AAAA, CNAME, atau delegasi nameserver.</p>
+      </div>
+
+      <section class="panel">
+        <div class="section-top">
+          <div><span class="eyebrow">01 / DOMAIN REQUEST</span><h2>Tambahkan custom domain</h2></div>
+          <span class="pill">TENANT ADMIN</span>
+        </div>
+        <label for="domain-hostname">Hostname / domain</label>
+        <input id="domain-hostname" inputmode="url" autocomplete="off"
+          placeholder="portal.customer.co.id" maxlength="253">
+        <div class="actions">
+          <button id="show-instructions" class="primary" type="button">Tampilkan instruksi DNS</button>
+          <button id="save-domain" class="secondary" type="button" disabled
+            title="Memerlukan authenticated Tenant Admin BFF">Simpan domain & buat token verifikasi</button>
+        </div>
+        <p id="domain-status" class="notice" role="status" aria-live="polite">
+          Belum ada domain diperiksa.
+        </p>
+      </section>
+
+      <section class="panel" aria-labelledby="dns-title">
+        <div class="section-top">
+          <div><span class="eyebrow">02 / DNS ROUTING</span><h2 id="dns-title">Instruksi DNS dari IPAT</h2></div>
+          <span id="routing-mode" class="pill muted">BELUM TERSEDIA</span>
+        </div>
+        <div id="dns-records" class="records">
+          <p class="empty">Masukkan domain untuk melihat record yang harus dibuat customer.</p>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="section-top">
+          <div><span class="eyebrow">03 / OWNERSHIP VERIFICATION</span><h2>Verifikasi kepemilikan</h2></div>
+          <span class="pill amber">WAJIB</span>
+        </div>
+        <p>Setelah domain disimpan oleh Tenant Admin, IPAT menerbitkan nilai TXT unik untuk hostname tersebut.
+        Domain tidak aktif sampai resolver/verifier IPAT menemukan bukti DNS yang sesuai.</p>
+        <div class="verification">
+          <div><small>TYPE</small><strong>TXT</strong></div>
+          <div><small>NAME</small><strong id="verify-name">_ipat-verify.&lt;domain&gt;</strong></div>
+          <div><small>VALUE</small><strong id="verify-value">Dibuat setelah Save</strong></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="section-top">
+          <div><span class="eyebrow">04 / ACTIVATION</span><h2>Status domain</h2></div>
+          <span class="pill amber">PENDING</span>
+        </div>
+        <ol class="steps">
+          <li><b>Domain disimpan</b><span>Tenant Admin + membership tenant diverifikasi.</span></li>
+          <li><b>DNS ownership diverifikasi</b><span>TXT harus cocok; duplicate hostname lintas tenant ditolak.</span></li>
+          <li><b>Routing DNS diterapkan</b><span>A/AAAA, CNAME, atau NS sesuai profil deployment IPAT.</span></li>
+          <li><b>TLS siap</b><span>Ingress hanya menerima hostname yang sudah diprovision.</span></li>
+          <li><b>Domain aktif</b><span>Baru dapat memilih bootstrap tenant; tetap bukan bukti otorisasi user.</span></li>
+        </ol>
+      </section>
+    </main>
+  </div>
+</div>
+</body>
+</html>

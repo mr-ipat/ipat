@@ -1,4 +1,4 @@
-//! Production-shaped tenant-domain routing.
+//! Production-shaped tenant-domain routing and DNS onboarding instructions.
 //!
 //! A verified hostname may select public tenant bootstrap context, but NEVER
 //! grants user membership, role, POP scope, device access, or secrets.
@@ -6,11 +6,17 @@
 use axum::{
     extract::State,
     http::{header, HeaderMap, HeaderValue, StatusCode},
-    routing::get,
+    routing::{get, post},
     Json, Router,
 };
+use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
-use std::{path::PathBuf, sync::Arc};
+use std::{
+    collections::HashSet,
+    net::{Ipv4Addr, Ipv6Addr},
+    path::PathBuf,
+    sync::Arc,
+};
 use tokio_postgres::{Config, NoTls};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -22,24 +28,15 @@ impl CanonicalHost {
     }
 }
 
-pub(crate) fn canonical_host(value: &HeaderValue) -> Option<CanonicalHost> {
-    let raw = value.to_str().ok()?.trim();
+fn canonical_dns_name(raw: &str) -> Option<CanonicalHost> {
+    let raw = raw.trim();
     if raw.is_empty() || raw.len() > 255 || raw.contains(['/', '\\', ' ', '\t', '\r', '\n']) {
         return None;
     }
     if raw.starts_with('[') {
-        return None; // tenant selectors are DNS names, not IP literals
+        return None;
     }
-    let host = match raw.rsplit_once(':') {
-        Some((left, port))
-            if !left.is_empty() && !port.is_empty() && port.bytes().all(|b| b.is_ascii_digit()) =>
-        {
-            left
-        }
-        Some(_) => return None,
-        None => raw,
-    };
-    let host = host.strip_suffix('.').unwrap_or(host);
+    let host = raw.strip_suffix('.').unwrap_or(raw);
     if host.len() < 3
         || host.len() > 253
         || host.starts_with('.')
@@ -61,6 +58,36 @@ pub(crate) fn canonical_host(value: &HeaderValue) -> Option<CanonicalHost> {
         }
     }
     Some(CanonicalHost(lower))
+}
+
+pub(crate) fn canonical_host(value: &HeaderValue) -> Option<CanonicalHost> {
+    let raw = value.to_str().ok()?.trim();
+    if raw.starts_with('[') {
+        return None;
+    }
+    let host = match raw.rsplit_once(':') {
+        Some((left, port))
+            if !left.is_empty() && !port.is_empty() && port.bytes().all(|b| b.is_ascii_digit()) =>
+        {
+            left
+        }
+        Some(_) => raw,
+        None => raw,
+    };
+    if raw.contains(':') && host == raw {
+        return None;
+    }
+    canonical_dns_name(host)
+}
+
+fn valid_custom_domain(host: &CanonicalHost) -> bool {
+    let name = host.as_str();
+    name.contains('.')
+        && !name.ends_with(".local")
+        && !name.ends_with(".localhost")
+        && !name.ends_with(".invalid")
+        && !name.ends_with(".test")
+        && !name.ends_with(".example")
 }
 
 pub(crate) struct DomainStore {
@@ -97,6 +124,181 @@ pub(crate) fn from_environment() -> Result<Arc<DomainStore>, String> {
     Ok(Arc::new(DomainStore { db }))
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+enum DnsRoutingMode {
+    ARecord,
+    Cname,
+    Nameserver,
+}
+
+impl DnsRoutingMode {
+    fn as_str(&self) -> &'static str {
+        match self {
+            Self::ARecord => "a_record",
+            Self::Cname => "cname",
+            Self::Nameserver => "nameserver",
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub(crate) struct DnsInstructionProfile {
+    mode: DnsRoutingMode,
+    ipv4: Option<Ipv4Addr>,
+    ipv6: Option<Ipv6Addr>,
+    cname_target: Option<CanonicalHost>,
+    nameservers: Vec<CanonicalHost>,
+}
+
+pub(crate) fn dns_profile_from_environment() -> Result<Arc<DnsInstructionProfile>, String> {
+    let mode = match std::env::var("IPAT_CUSTOM_DOMAIN_DNS_MODE")
+        .map_err(|_| "missing custom-domain DNS mode")?
+        .as_str()
+    {
+        "a_record" => DnsRoutingMode::ARecord,
+        "cname" => DnsRoutingMode::Cname,
+        "nameserver" => DnsRoutingMode::Nameserver,
+        _ => return Err("unsupported custom-domain DNS mode".into()),
+    };
+    let ipv4 = std::env::var("IPAT_CUSTOM_DOMAIN_IPV4")
+        .ok()
+        .map(|value| value.parse::<Ipv4Addr>())
+        .transpose()
+        .map_err(|_| "invalid custom-domain IPv4 target")?;
+    let ipv6 = std::env::var("IPAT_CUSTOM_DOMAIN_IPV6")
+        .ok()
+        .map(|value| value.parse::<Ipv6Addr>())
+        .transpose()
+        .map_err(|_| "invalid custom-domain IPv6 target")?;
+    let cname_target = std::env::var("IPAT_CUSTOM_DOMAIN_CNAME_TARGET")
+        .ok()
+        .and_then(|value| canonical_dns_name(&value));
+    let nameservers = std::env::var("IPAT_CUSTOM_DOMAIN_NAMESERVERS")
+        .ok()
+        .map(|value| {
+            value
+                .split(',')
+                .filter_map(canonical_dns_name)
+                .collect::<Vec<_>>()
+        })
+        .unwrap_or_default();
+
+    match mode {
+        DnsRoutingMode::ARecord if ipv4.is_none() && ipv6.is_none() => {
+            return Err("A/AAAA routing requires at least one IP target".into());
+        }
+        DnsRoutingMode::Cname if cname_target.is_none() => {
+            return Err("CNAME routing requires canonical target".into());
+        }
+        DnsRoutingMode::Nameserver => {
+            let unique = nameservers
+                .iter()
+                .map(|n| n.as_str())
+                .collect::<HashSet<_>>();
+            if unique.len() < 2 || unique.len() != nameservers.len() {
+                return Err("nameserver routing requires at least two unique nameservers".into());
+            }
+        }
+        _ => {}
+    }
+
+    Ok(Arc::new(DnsInstructionProfile {
+        mode,
+        ipv4,
+        ipv6,
+        cname_target,
+        nameservers,
+    }))
+}
+
+#[derive(Debug, Deserialize)]
+struct DomainInstructionRequest {
+    hostname: String,
+}
+
+#[derive(Debug, Serialize)]
+struct DnsRecordInstruction {
+    record_type: &'static str,
+    name: String,
+    value: String,
+    stage: &'static str,
+}
+
+#[derive(Debug, Serialize)]
+struct DomainInstructionResponse {
+    hostname: String,
+    routing_mode: &'static str,
+    routing_records: Vec<DnsRecordInstruction>,
+    verification_record_type: &'static str,
+    verification_record_name: String,
+    verification_value_issued_after_save: bool,
+    activation_requires_verification: bool,
+    authorization_granted: bool,
+}
+
+fn build_dns_instructions(
+    profile: &DnsInstructionProfile,
+    hostname: CanonicalHost,
+) -> Option<DomainInstructionResponse> {
+    if !valid_custom_domain(&hostname) {
+        return None;
+    }
+    let mut routing_records = Vec::new();
+    match profile.mode {
+        DnsRoutingMode::ARecord => {
+            if let Some(ipv4) = profile.ipv4 {
+                routing_records.push(DnsRecordInstruction {
+                    record_type: "A",
+                    name: hostname.as_str().to_string(),
+                    value: ipv4.to_string(),
+                    stage: "after_ownership_verification",
+                });
+            }
+            if let Some(ipv6) = profile.ipv6 {
+                routing_records.push(DnsRecordInstruction {
+                    record_type: "AAAA",
+                    name: hostname.as_str().to_string(),
+                    value: ipv6.to_string(),
+                    stage: "after_ownership_verification",
+                });
+            }
+        }
+        DnsRoutingMode::Cname => {
+            let target = profile.cname_target.as_ref()?;
+            if target == &hostname {
+                return None;
+            }
+            routing_records.push(DnsRecordInstruction {
+                record_type: "CNAME",
+                name: hostname.as_str().to_string(),
+                value: target.as_str().to_string(),
+                stage: "after_ownership_verification",
+            });
+        }
+        DnsRoutingMode::Nameserver => {
+            for target in &profile.nameservers {
+                routing_records.push(DnsRecordInstruction {
+                    record_type: "NS",
+                    name: hostname.as_str().to_string(),
+                    value: target.as_str().to_string(),
+                    stage: "after_ownership_verification",
+                });
+            }
+        }
+    }
+
+    Some(DomainInstructionResponse {
+        verification_record_name: format!("_ipat-verify.{}", hostname.as_str()),
+        hostname: hostname.as_str().to_string(),
+        routing_mode: profile.mode.as_str(),
+        routing_records,
+        verification_record_type: "TXT",
+        verification_value_issued_after_save: true,
+        activation_requires_verification: true,
+        authorization_granted: false,
+    })
+}
+
 fn headers() -> HeaderMap {
     let mut h = HeaderMap::new();
     h.insert(header::CACHE_CONTROL, HeaderValue::from_static("no-store"));
@@ -105,6 +307,31 @@ fn headers() -> HeaderMap {
         HeaderValue::from_static("nosniff"),
     );
     h
+}
+
+async fn dns_instructions(
+    State(profile): State<Arc<DnsInstructionProfile>>,
+    Json(input): Json<DomainInstructionRequest>,
+) -> (StatusCode, HeaderMap, Json<Value>) {
+    let Some(hostname) = canonical_dns_name(&input.hostname) else {
+        return (
+            StatusCode::BAD_REQUEST,
+            headers(),
+            Json(json!({"error":"INVALID_DOMAIN"})),
+        );
+    };
+    let Some(result) = build_dns_instructions(&profile, hostname) else {
+        return (
+            StatusCode::BAD_REQUEST,
+            headers(),
+            Json(json!({"error":"UNSUPPORTED_DOMAIN"})),
+        );
+    };
+    (
+        StatusCode::OK,
+        headers(),
+        Json(serde_json::to_value(result).expect("serializable DNS instructions")),
+    )
 }
 
 async fn bootstrap(
@@ -194,9 +421,30 @@ pub(crate) fn router(store: Arc<DomainStore>) -> Router {
         .with_state(store)
 }
 
+pub(crate) fn instruction_router(profile: Arc<DnsInstructionProfile>) -> Router {
+    Router::new()
+        .route("/v1/domains/instructions", post(dns_instructions))
+        .with_state(profile)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+    use axum::{
+        body::{to_bytes, Body},
+        http::Request,
+    };
+    use tower::ServiceExt;
+
+    fn profile_a() -> Arc<DnsInstructionProfile> {
+        Arc::new(DnsInstructionProfile {
+            mode: DnsRoutingMode::ARecord,
+            ipv4: Some("203.0.113.20".parse().unwrap()),
+            ipv6: None,
+            cname_target: None,
+            nameservers: Vec::new(),
+        })
+    }
 
     #[test]
     fn canonicalizes_dns_host_without_conferring_authority() {
@@ -224,6 +472,92 @@ mod tests {
             let value = HeaderValue::from_bytes(raw.as_bytes()).unwrap();
             assert!(canonical_host(&value).is_none(), "{raw}");
         }
+    }
+
+    #[test]
+    fn a_record_profile_builds_customer_specific_instructions() {
+        let response = build_dns_instructions(
+            &profile_a(),
+            canonical_dns_name("portal.customer.id").unwrap(),
+        )
+        .unwrap();
+        assert_eq!(response.hostname, "portal.customer.id");
+        assert_eq!(response.routing_mode, "a_record");
+        assert_eq!(response.routing_records.len(), 1);
+        assert_eq!(response.routing_records[0].record_type, "A");
+        assert_eq!(response.routing_records[0].value, "203.0.113.20");
+        assert_eq!(
+            response.verification_record_name,
+            "_ipat-verify.portal.customer.id"
+        );
+        assert!(!response.authorization_granted);
+    }
+
+    #[test]
+    fn nameserver_profile_requires_two_unique_nameservers() {
+        let profile = DnsInstructionProfile {
+            mode: DnsRoutingMode::Nameserver,
+            ipv4: None,
+            ipv6: None,
+            cname_target: None,
+            nameservers: vec![
+                canonical_dns_name("ns1.ipat.id").unwrap(),
+                canonical_dns_name("ns2.ipat.id").unwrap(),
+            ],
+        };
+        let response =
+            build_dns_instructions(&profile, canonical_dns_name("customer.co.id").unwrap())
+                .unwrap();
+        assert_eq!(response.routing_mode, "nameserver");
+        assert_eq!(response.routing_records.len(), 2);
+        assert!(response
+            .routing_records
+            .iter()
+            .all(|record| record.record_type == "NS"));
+    }
+
+    #[tokio::test]
+    async fn instruction_endpoint_rejects_reserved_or_malformed_domains() {
+        let app = instruction_router(profile_a());
+        for hostname in ["localhost", "tenant.invalid", "bad domain.id"] {
+            let body = serde_json::to_vec(&json!({"hostname":hostname})).unwrap();
+            let response = app
+                .clone()
+                .oneshot(
+                    Request::post("/v1/domains/instructions")
+                        .header("content-type", "application/json")
+                        .body(Body::from(body))
+                        .unwrap(),
+                )
+                .await
+                .unwrap();
+            assert_eq!(response.status(), StatusCode::BAD_REQUEST);
+        }
+    }
+
+    #[tokio::test]
+    async fn instruction_endpoint_returns_no_store_and_no_authorization() {
+        let app = instruction_router(profile_a());
+        let body = serde_json::to_vec(&json!({"hostname":"portal.customer.id"})).unwrap();
+        let response = app
+            .oneshot(
+                Request::post("/v1/domains/instructions")
+                    .header("content-type", "application/json")
+                    .body(Body::from(body))
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(response.status(), StatusCode::OK);
+        assert_eq!(
+            response.headers().get(header::CACHE_CONTROL).unwrap(),
+            "no-store"
+        );
+        let body = to_bytes(response.into_body(), 32 * 1024).await.unwrap();
+        let value: Value = serde_json::from_slice(&body).unwrap();
+        assert_eq!(value["routing_mode"], "a_record");
+        assert_eq!(value["authorization_granted"], false);
+        assert_eq!(value["activation_requires_verification"], true);
     }
 
     #[test]
