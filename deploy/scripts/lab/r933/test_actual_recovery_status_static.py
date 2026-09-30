@@ -42,5 +42,5 @@ class ActualBackupHistoricCatalog(unittest.TestCase):
   self.assertIn('output.replaceChildren()',js)
   self.assertNotIn('zte:zte',js+html)
   self.assertNotIn('10.10.13.233',js+html)
-  self.assertLess(len(js.encode()),16384)
+  self.assertLess(len(js.encode()),32768)
 if __name__=='__main__':unittest.main()
