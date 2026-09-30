@@ -505,11 +505,9 @@ mod tests {
                 canonical_dns_name("ns2.ipat.id").unwrap(),
             ],
         };
-        let response = build_dns_instructions(
-            &profile,
-            canonical_dns_name("customer.co.id").unwrap(),
-        )
-        .unwrap();
+        let response =
+            build_dns_instructions(&profile, canonical_dns_name("customer.co.id").unwrap())
+                .unwrap();
         assert_eq!(response.routing_mode, "nameserver");
         assert_eq!(response.routing_records.len(), 2);
         assert!(response
