@@ -335,3 +335,17 @@ identity UNVERIFIED, interoperability UNTESTED and firmware
 execution DISABLED; no device is contacted or automatically
 enrolled. Unknown output is denied, not guessed.
 Live OLT access and firmware update are NOT available.
+
+
+## R9.54 adaptive custom-domain profile
+
+Runtime DNS instruction configuration:
+- `IPAT_CUSTOM_DOMAIN_DNS_MODE=auto|a_record|cname|nameserver`
+- optional `IPAT_CUSTOM_DOMAIN_IPV4` / `IPAT_CUSTOM_DOMAIN_IPV6`
+- optional `IPAT_CUSTOM_DOMAIN_CNAME_TARGET`
+- optional comma-separated `IPAT_CUSTOM_DOMAIN_NAMESERVERS` (minimum two unique names for NS)
+- `IPAT_CUSTOM_DOMAIN_AUTO_ALLOW_CNAME=YES` only after operations establish that automatic CNAME is appropriate
+- `IPAT_CUSTOM_DOMAIN_ROUTING_READY=YES` only after ingress routing is actually ready
+- `IPAT_CUSTOM_DOMAIN_AUTHORITATIVE_DNS=YES` only when IPAT authoritative DNS is genuinely operational
+
+Auto selection order is A/AAAA → NS → explicitly allowed CNAME. Do not use a publicly resolving management address as proof that customer DNS is safe to point. DNS ownership verification, ingress/TLS evidence and authenticated tenant BFF remain separate deployment gates.
