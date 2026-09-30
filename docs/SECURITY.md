@@ -1299,3 +1299,10 @@ The DNS TXT challenge is nonsecret evidence, but issuance must be unpredictable 
 Public-safe DNS instructions cannot supply arbitrary targets: IP/CNAME/NS values come only from deployment configuration. Invalid configured nameservers fail closed. Auto-CNAME requires an explicit deployment opt-in. `routing_target_known` and `safe_to_point_now` remain separate.
 
 The lifecycle verifier cannot skip ownership, routing or TLS gates and cannot SELECT the domain table directly. Tenant-admin request/list/revoke uses a different capability boundary and re-checks membership for each call. Session/CSRF/same-origin checks are required before an HTTP BFF mounts these primitives. No lifecycle state or Host header authorizes device/customer data.
+
+
+## R9.55 DNS ownership verifier security
+
+The ownership verifier consumes only pending custom-domain TXT challenges through an EXECUTE-only sealed function and keeps direct registry table access denied. Public DNS is untrusted input: only an exact expected TXT challenge match advances ownership; NXDOMAIN, timeout, malformed response, or value mismatch stays pending and records a bounded nonsecret error code. Split TXT strings are concatenated according to the DNS record representation before comparison.
+
+The verifier runs only with explicit nonroot opt-in, a dedicated Unix-socket DB identity and strict owner-only conninfo file checks. Batch size and polling interval are bounded. DNS ownership proof does not authorize users, devices, tenant data, Host routing, certificate issuance, or high-impact actions. Routing, TLS and final activation remain independent fail-closed gates.
