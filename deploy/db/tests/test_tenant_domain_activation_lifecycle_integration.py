@@ -86,6 +86,23 @@ class DomainLifecycleIntegration(unittest.TestCase):
             last_evidence_sha256=NULL;
         """)
 
+    def setUp(self):
+        run_psql("""
+          UPDATE ipat_platform.tenant_domains
+          SET verification_state='pending',
+              verified_at=NULL,
+              disabled_at=NULL,
+              activation_state='pending_dns',
+              ownership_verified_at=NULL,
+              routing_ready_at=NULL,
+              tls_ready_at=NULL,
+              activated_at=NULL,
+              last_checked_at=NULL,
+              last_error_code=NULL,
+              last_evidence_sha256=NULL
+          WHERE id='cccccccc-cccc-cccc-cccc-ccccccccccc1';
+        """)
+
     def event(self, name, digest="a"*64, error="NULL"):
         value = f"'{error}'" if error != "NULL" else "NULL"
         out = run_psql(f"""
