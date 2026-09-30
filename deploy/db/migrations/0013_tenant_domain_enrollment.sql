@@ -27,6 +27,8 @@ ALTER TABLE ipat_platform.tenant_domains
     )
   );
 
+CREATE ROLE ipat_domain_enrollment_owner
+  NOLOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS NOINHERIT;
 CREATE ROLE ipat_domain_admin
   NOLOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS;
 
@@ -35,7 +37,12 @@ CREATE ROLE ipat_domain_admin_login
   LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS
   IN ROLE ipat_domain_admin;
 
-GRANT USAGE ON SCHEMA ipat_platform TO ipat_domain_admin;
+GRANT USAGE ON SCHEMA ipat_platform TO ipat_domain_enrollment_owner, ipat_domain_admin;
+GRANT SELECT,INSERT,UPDATE ON ipat_platform.tenant_domains
+  TO ipat_domain_enrollment_owner;
+GRANT EXECUTE ON FUNCTION ipat_platform.lookup_active_membership(
+  text,text,uuid,text,text
+) TO ipat_domain_enrollment_owner;
 
 CREATE OR REPLACE FUNCTION ipat_platform.request_tenant_custom_domain(
   p_issuer text,
@@ -90,7 +97,7 @@ END
 $$;
 ALTER FUNCTION ipat_platform.request_tenant_custom_domain(
   text,text,uuid,uuid,text,text,text
-) OWNER TO ipat_schema_owner;
+) OWNER TO ipat_domain_enrollment_owner;
 REVOKE ALL ON FUNCTION ipat_platform.request_tenant_custom_domain(
   text,text,uuid,uuid,text,text,text
 ) FROM PUBLIC;
@@ -137,7 +144,7 @@ AS $$
 $$;
 ALTER FUNCTION ipat_platform.list_tenant_domains_for_member(
   text,text,uuid
-) OWNER TO ipat_schema_owner;
+) OWNER TO ipat_domain_enrollment_owner;
 REVOKE ALL ON FUNCTION ipat_platform.list_tenant_domains_for_member(
   text,text,uuid
 ) FROM PUBLIC;
@@ -181,7 +188,7 @@ END
 $$;
 ALTER FUNCTION ipat_platform.disable_tenant_custom_domain(
   text,text,uuid,uuid
-) OWNER TO ipat_schema_owner;
+) OWNER TO ipat_domain_enrollment_owner;
 REVOKE ALL ON FUNCTION ipat_platform.disable_tenant_custom_domain(
   text,text,uuid,uuid
 ) FROM PUBLIC;
