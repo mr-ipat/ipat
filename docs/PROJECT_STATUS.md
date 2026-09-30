@@ -4136,3 +4136,12 @@ This change is intentionally consistent with the current VPS evidence: the custo
 ### R9.18 feature acceptance evidence — 2026-09-30
 
 Exact feature head `b97481ad9ac30bc56a773df7a125c56bbfc1884f` passed GitHub Actions run `36668838373` **SUCCESS 4/4**: unit/Rust locked tests including R9.17 domain dashboard contracts and pinned rustfmt, disposable PostgreSQL RLS/domain enrollment, disposable PostgreSQL physical recovery, and disposable Ubuntu 26 K3s smoke. The immediately preceding attempt failed only pinned rustfmt; domain/UI contracts had already passed. The formatter diff was applied without behavior changes before the verified head.
+
+
+## R9.19 domain lifecycle + Tenant Admin BFF primitives — 2026-09-30 (feature branch)
+
+R9.19 closes the gap between R9.17/R9.18 DNS instruction preview and a real persistent domain workflow. Migration `0014_tenant_domain_activation_lifecycle.sql` adds ordered states `pending_dns → ownership_verified → routing_ready → tls_ready → active`, timestamp/evidence fields, a separate restricted verifier capability/login role and a sealed transition function that cannot skip stages or directly read the registry.
+
+`apps/control-api/src/tenant_domain_bff.rs` adds transport-agnostic Save/List/Disable primitives. Save and Disable require an opaque authenticated session, CSRF and trusted same-origin decision; every operation still calls tenant-scoped database functions that re-check current `tenant_admin` membership. Domain IDs and TXT challenge values are generated server-side. The dashboard now has a lifecycle inventory and capability-gated Save behavior; when the authenticated BFF is not mounted it must remain read-only and state that fact instead of pretending the domain was saved.
+
+Runtime DNS verification, public TLS issuance and real IdP/BFF mounting remain separate deployment work and are NOT claimed by this branch. CI evidence is pending.
