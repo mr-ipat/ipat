@@ -194,11 +194,13 @@ jobs:
           python3 -m py_compile deploy/db/tests/test_tenant_domain_enrollment_integration.py
           cargo test --locked -p control-api tenant_domain::tests::r953_dns_instruction_builder_is_domain_specific_and_non_authorizing -- --exact
           cargo test --locked -p control-api tenant_domain::tests::r953_nameserver_profile_requires_real_authoritative_readiness_before_ready -- --exact
-          cargo test --locked -p control-api tenant_domain::tests::r953_instruction_endpoint_fails_closed_until_routing_target_is_ready -- --exact
+          cargo test --locked -p control-api tenant_domain::tests::r953_instruction_endpoint_shows_target_but_blocks_pointing_until_ready -- --exact
           cargo test --locked -p control-api tenant_domain::tests::r953_instruction_endpoint_returns_configured_record_when_ready -- --exact
           grep -Fq '/v1/domains/instructions' web/lab/domain-settings.js
           grep -Fq 'Domains & Branding' web/lab/domain-settings.html
           grep -Fq 'disabled' web/lab/domain-settings.html
+          grep -Fq 'safe_to_point_now' web/lab/domain-settings.js
+          grep -Fq 'JANGAN POINTING DULU' web/lab/domain-settings.js
       - name: Verify formatting
         run: cargo fmt --all -- --check
       - name: Run locked unit tests
