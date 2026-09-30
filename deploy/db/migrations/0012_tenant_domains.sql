@@ -6,6 +6,13 @@ BEGIN;
 CREATE ROLE ipat_domain_reader
   NOLOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS;
 
+-- Authentication material is never stored in Git/migration. This LOGIN role
+-- starts without a password and is usable only when deployment configures an
+-- approved local peer/cert/SCRAM authentication path outside source control.
+CREATE ROLE ipat_domain_reader_login
+  LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS
+  IN ROLE ipat_domain_reader;
+
 CREATE TABLE ipat_platform.tenant_domains (
   id uuid PRIMARY KEY,
   tenant_id uuid NOT NULL REFERENCES ipat_platform.tenants(id) ON DELETE CASCADE,
