@@ -1016,3 +1016,12 @@ High-impact writes remain deny-by-default even in production-path code. Read-onl
 **Lifecycle.** request/pending → ownership verified → routing ready → TLS ready → verified resolver. `Host` remains routing metadata only and never creates membership, role, POP scope, device ownership, or business access.
 
 **BFF gate.** The existing owner-only one-time lab code must not be reused for domain authorization. The Save Domain HTTP action remains gated until genuine tenant login/MFA/BFF exists; DB functions and UI workflow may be implemented/tested beforehand.
+
+
+## ADR-083 — APPROVED: unified adaptive domain runtime on R9.52/R9.53 schema — 2026-09-30
+
+**Decision.** The advanced Device Manager/OLT lineage remains the forward runtime. Domain onboarding is reconciled into that lineage instead of replacing it with the older R9.20 branch. Tenant Admin enters only the requested hostname; deployment configuration selects the actual DNS target.
+
+**Adaptive selection.** `auto` prefers stable configured A/AAAA ingress addresses, then at least two authoritative NS targets. Automatic CNAME is disabled unless the deployment explicitly enables `IPAT_CUSTOM_DOMAIN_AUTO_ALLOW_CNAME=YES`; explicit CNAME mode remains possible when operations have established that the requested DNS location supports it. Frontend never owns ingress IP, canonical hostname or NS values.
+
+**Lifecycle and authority.** The R9.52/R9.53 schema is authoritative. R9.54 adds an ordered verifier transition: pending → ownership verified → routing ready → TLS ready → verified/active. The verifier role has EXECUTE-only capability and no direct table access. Tenant Admin BFF operations remain separately session/CSRF/same-origin/membership-gated. Hostname, DNS ownership, or lifecycle evidence never creates membership/RBAC authority.
