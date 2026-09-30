@@ -4099,3 +4099,12 @@ No privileged OLT login or actual WireGuard peer activation has
 occurred. OLT trusted-console RSA proof, segment isolation and
 restricted account remain the hardware critical path. Earlier
 router management SSH pin mismatch also remains unresolved.
+
+
+## R9.16 production-shaped tenant-domain milestone — 2026-09-30 (feature branch)
+
+Product owner explicitly requested that company subdomains/custom domains become directly implementable instead of being deferred behind a separate lab product. PRD advanced to v0.2 sequencing: one codebase/schema/API for lab, pilot and production; domain allocation is onboarding-core while authorization remains identity+membership based.
+
+Feature branch `feat/r916-production-tenant-domains` adds `0012_tenant_domains.sql`: globally unique canonical domain registry, verified/pending/disabled lifecycle, active-tenant-only narrow resolver and separate NOLOGIN/EXECUTE-only reader boundary with no direct registry SELECT. Rust `tenant_domain.rs` canonicalizes Host strictly but confers zero authorization. Disposable PostgreSQL tests verify exact active+verified resolution and fail-closed pending/unknown/suspended cases plus denied direct table read. CI wiring added; results are PENDING until GitHub Actions completes.
+
+ADR-041 APPROVED supersedes ADR-020's domain deferral sequencing and amends ADR-021. Actual public HTTPS, customer login, cookie session and DNS/TLS deployment are NOT yet claimed by this code milestone. The intended Fadly hostname must not be treated as a tenant authorization signal merely because DNS points to the VPS; real ingress/TLS and OIDC/BFF remain next runtime work.
