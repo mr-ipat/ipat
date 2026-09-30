@@ -59,6 +59,7 @@
           <div class="page-actions">
             <button id="check" type="button" class="action-primary">↻ Periksa lingkungan privat</button>
             <a href="/lab/device-workbench" class="action-primary">＋ Tambah &amp; kelola perangkat →</a>
+            <a href="/lab/domain-settings" class="action-primary">◎ Atur domain customer →</a>
             <span class="ghost-label" id="checked" role="status" aria-live="polite">Belum diperiksa</span>
           </div>
         </section>
@@ -68,9 +69,9 @@
         </section>
         <section class="rollout-phase" aria-label="Urutan rilis dan batas isolasi tenant">
           <div>
-            <strong>TAHAP LAB PRIVAT · CUSTOM DOMAIN DITUNDA</strong>
-            <p>Subdomain perusahaan, custom domain dan sesi lintas domain masuk tahap komersial setelah uji sistem inti.
-            <b>ISOLASI DATA TENANT TIDAK BOLEH DITUNDA</b> sebelum API perusahaan atau data riil diaktifkan.</p>
+            <strong>CONTROL-PLANE DOMAIN AKTIF · AKTIVASI PUBLIK MASIH TERKUNCI</strong>
+            <p>Custom domain sudah dapat dimasukkan melalui <a href="/lab/domain-settings">Domains &amp; Branding</a> dan backend dapat memberi instruksi A/AAAA, CNAME, atau NS dari profil deployment.
+            Penyimpanan/aktivasi tetap membutuhkan login Tenant Admin, PostgreSQL, verification, routing dan TLS. <b>ISOLASI DATA TENANT TIDAK BOLEH DITUNDA</b>.</p>
             <span id="rollout-status" role="status" aria-live="polite">Kondisi fase backend belum diverifikasi</span>
           </div>
           <span class="no-go">DOMAIN PUBLIK TERKUNCI</span>
