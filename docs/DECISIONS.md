@@ -1025,3 +1025,14 @@ High-impact writes remain deny-by-default even in production-path code. Read-onl
 **Adaptive selection.** `auto` prefers stable configured A/AAAA ingress addresses, then at least two authoritative NS targets. Automatic CNAME is disabled unless the deployment explicitly enables `IPAT_CUSTOM_DOMAIN_AUTO_ALLOW_CNAME=YES`; explicit CNAME mode remains possible when operations have established that the requested DNS location supports it. Frontend never owns ingress IP, canonical hostname or NS values.
 
 **Lifecycle and authority.** The R9.52/R9.53 schema is authoritative. R9.54 adds an ordered verifier transition: pending → ownership verified → routing ready → TLS ready → verified/active. The verifier role has EXECUTE-only capability and no direct table access. Tenant Admin BFF operations remain separately session/CSRF/same-origin/membership-gated. Hostname, DNS ownership, or lifecycle evidence never creates membership/RBAC authority.
+
+
+## ADR-084 — APPROVED: automatic DNS TXT ownership verifier is a separate non-authorizing worker — 2026-09-30
+
+**Decision.** After Tenant Admin saves a custom domain, IPAT MUST verify ownership automatically rather than requiring an operator to press a privileged “mark verified” control. A dedicated background worker reads only pending DNS-TXT challenges through the sealed `list_tenant_domain_ownership_checks(integer)` function, performs public DNS TXT lookup, joins split TXT character strings, and requires an exact byte-equivalent challenge match before calling the existing ordered lifecycle transition to `ownership_verified`.
+
+**Isolation.** The verifier runtime uses its own least-privilege database identity/capability and has no direct table SELECT/INSERT/UPDATE/DELETE rights. DNS evidence is routing/ownership evidence only and never creates tenant membership, session, RBAC/ABAC authority, device ownership, or business-data access. Browser-facing Tenant Admin enrollment remains a different BFF/session/CSRF/membership boundary.
+
+**Failure semantics.** TXT mismatch and DNS lookup failure are recorded as bounded nonsecret lifecycle error codes and leave the domain pending. The verifier does not regress an already verified domain and does not skip routing, TLS, or final activation. Routing verification (observed A/AAAA/CNAME/NS against the selected deployment target), certificate issuance/validation, and activation remain separate controllers/evidence gates.
+
+**Runtime.** The worker is explicit nonroot opt-in, uses a dedicated local Unix-socket PostgreSQL conninfo file with strict ownership/mode checks, bounded batch size and polling interval, and Hickory Resolver 0.26.3 using system resolver configuration. No public DNS mutation, nameserver hosting, certificate issuance, or production deployment is implied by this source milestone.
