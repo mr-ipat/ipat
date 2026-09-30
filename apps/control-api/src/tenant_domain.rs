@@ -100,14 +100,22 @@ async fn bootstrap(
     request_headers: HeaderMap,
 ) -> (StatusCode, HeaderMap, Json<Value>) {
     if request_headers.get_all(header::HOST).iter().count() != 1 {
-        return (StatusCode::BAD_REQUEST, headers(), Json(json!({"tenant":null})));
+        return (
+            StatusCode::BAD_REQUEST,
+            headers(),
+            Json(json!({"tenant":null})),
+        );
     }
     let Some(host) = request_headers.get(header::HOST).and_then(canonical_host) else {
         return (StatusCode::BAD_REQUEST, headers(), Json(json!({"tenant":null})));
     };
 
     let Ok((client, connection)) = store.db.connect(NoTls).await else {
-        return (StatusCode::SERVICE_UNAVAILABLE, headers(), Json(json!({"tenant":null})));
+        return (
+            StatusCode::SERVICE_UNAVAILABLE,
+            headers(),
+            Json(json!({"tenant":null})),
+        );
     };
     let task = tokio::spawn(async move {
         let _ = connection.await;
@@ -124,8 +132,16 @@ async fn bootstrap(
 
     let Ok(Some(row)) = row else {
         return match row {
-            Ok(None) => (StatusCode::NOT_FOUND, headers(), Json(json!({"tenant":null}))),
-            Err(_) => (StatusCode::SERVICE_UNAVAILABLE, headers(), Json(json!({"tenant":null}))),
+            Ok(None) => (
+                StatusCode::NOT_FOUND,
+                headers(),
+                Json(json!({"tenant":null})),
+            ),
+            Err(_) => (
+                StatusCode::SERVICE_UNAVAILABLE,
+                headers(),
+                Json(json!({"tenant":null})),
+            ),
             _ => unreachable!(),
         };
     };
