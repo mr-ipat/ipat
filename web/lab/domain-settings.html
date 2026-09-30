@@ -55,7 +55,7 @@
         <div class="actions">
           <button id="show-instructions" class="primary" type="button">Tampilkan instruksi DNS</button>
           <button id="save-domain" class="secondary" type="button" disabled
-            title="Memerlukan authenticated Tenant Admin BFF">Simpan domain & buat token verifikasi</button>
+            title="Aktif setelah authenticated Tenant Admin BFF tersedia">Simpan domain & buat token verifikasi</button>
         </div>
         <p id="domain-status" class="notice" role="status" aria-live="polite">
           Belum ada domain diperiksa.
@@ -99,6 +99,22 @@
           <li><b>TLS siap</b><span>Ingress hanya menerima hostname yang sudah diprovision.</span></li>
           <li><b>Domain aktif</b><span>Baru dapat memilih bootstrap tenant; tetap bukan bukti otorisasi user.</span></li>
         </ol>
+      </section>
+
+      <section class="panel" aria-labelledby="domain-list-title">
+        <div class="section-top">
+          <div><span class="eyebrow">05 / DOMAIN INVENTORY</span><h2 id="domain-list-title">Domain tenant</h2></div>
+          <button id="refresh-domains" class="secondary" type="button">Refresh</button>
+        </div>
+        <p id="domain-list-status" class="notice" role="status" aria-live="polite">
+          Memeriksa kemampuan BFF domain…
+        </p>
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Domain</th><th>Routing</th><th>Status</th><th>Last check</th><th>Error</th></tr></thead>
+            <tbody id="domain-list"><tr><td colspan="5" class="empty">Belum ada data domain.</td></tr></tbody>
+          </table>
+        </div>
       </section>
     </main>
   </div>
