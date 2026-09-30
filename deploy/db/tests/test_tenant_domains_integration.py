@@ -3,7 +3,7 @@ import pathlib
 import subprocess
 import unittest
 
-ROOT = pathlib.Path(__file__).resolve().parents[2]
+ROOT = pathlib.Path(__file__).resolve().parents[3]
 M1 = ROOT / "deploy/db/migrations/0001_lab_tenant_rls.sql"
 M12 = ROOT / "deploy/db/migrations/0012_tenant_domains.sql"
 
