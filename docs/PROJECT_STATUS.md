@@ -4131,3 +4131,8 @@ No DNS target is hard-coded in frontend source. The current VPS has previously b
 R9.17 already merged dashboard-driven custom-domain instructions and tenant-scoped enrollment metadata. R9.18 tightens the production behavior: deployment profiles now expose separate `routing_target_known`, `routing_ready`, `authoritative_dns_ready`, and `safe_to_point_now` states. The dashboard can show the planned A/AAAA/CNAME/NS values but explicitly blocks the operator from treating them as safe-to-point until runtime ingress is declared ready; NS mode additionally requires authoritative DNS readiness.
 
 This change is intentionally consistent with the current VPS evidence: the customer-facing target may be known, while public HTTPS/TLS is still not proven ready. No domain activation, DNS mutation, certificate issuance, or customer authorization is claimed by R9.18.
+
+
+### R9.18 feature acceptance evidence — 2026-09-30
+
+Exact feature head `b97481ad9ac30bc56a773df7a125c56bbfc1884f` passed GitHub Actions run `36668838373` **SUCCESS 4/4**: unit/Rust locked tests including R9.17 domain dashboard contracts and pinned rustfmt, disposable PostgreSQL RLS/domain enrollment, disposable PostgreSQL physical recovery, and disposable Ubuntu 26 K3s smoke. The immediately preceding attempt failed only pinned rustfmt; domain/UI contracts had already passed. The formatter diff was applied without behavior changes before the verified head.
