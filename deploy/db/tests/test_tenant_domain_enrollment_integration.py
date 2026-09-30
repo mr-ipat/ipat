@@ -45,6 +45,7 @@ class TenantDomainEnrollmentIntegration(unittest.TestCase):
           DROP FUNCTION IF EXISTS ipat_platform.request_tenant_custom_domain(text,text,uuid,uuid,text,text,text);
           DROP ROLE IF EXISTS ipat_domain_admin_login;
           DROP ROLE IF EXISTS ipat_domain_admin;
+          DROP ROLE IF EXISTS ipat_domain_enrollment_owner;
         """)
         run_file(M13)
 
@@ -82,7 +83,7 @@ class TenantDomainEnrollmentIntegration(unittest.TestCase):
             'https://id.example.invalid/realms/ipat','tenant-a-admin',
             '44444444-4444-4444-4444-444444444444',
             'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb1',
-            'portal.domain-a.example','a_record',
+            'portal-a.domain-a.co.id','a_record',
             'ipat-domain=bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb1'
           );
         """).stdout.splitlines()
@@ -101,20 +102,32 @@ class TenantDomainEnrollmentIntegration(unittest.TestCase):
         """).stdout.splitlines()
         rows = [x for x in listed if x and x != "SET"]
         self.assertEqual(rows, [
-            "portal.domain-a.example|pending|a_record|"
-            "_ipat-verify.portal.domain-a.example|"
+            "portal-a.domain-a.co.id|pending|a_record|"
+            "_ipat-verify.portal-a.domain-a.co.id|"
             "ipat-domain=bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb1"
         ])
 
     def test_duplicate_hostname_does_not_leak_other_tenant(self):
+        seed = run_psql("""
+          SET ROLE ipat_domain_admin_login;
+          SELECT ipat_platform.request_tenant_custom_domain(
+            'https://id.example.invalid/realms/ipat','tenant-a-admin',
+            '44444444-4444-4444-4444-444444444444',
+            'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb2',
+            'duplicate.domain-a.co.id','a_record',
+            'ipat-domain=bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb2'
+          );
+        """).stdout.splitlines()
+        self.assertIn("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb2", seed)
+
         out = run_psql("""
           SET ROLE ipat_domain_admin_login;
           SELECT COALESCE(ipat_platform.request_tenant_custom_domain(
             'https://id.example.invalid/realms/ipat','tenant-b-admin',
             '55555555-5555-5555-5555-555555555555',
-            'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb2',
-            'portal.domain-a.example','cname',
-            'ipat-domain=bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb2'
+            'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb3',
+            'duplicate.domain-a.co.id','cname',
+            'ipat-domain=bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb3'
           )::text,'NULL');
         """).stdout.splitlines()
         rows = [x for x in out if x and x != "SET"]
@@ -127,7 +140,7 @@ class TenantDomainEnrollmentIntegration(unittest.TestCase):
             'https://id.example.invalid/realms/ipat','tenant-b-admin',
             '55555555-5555-5555-5555-555555555555'
           )
-          WHERE hostname='portal.domain-a.example';
+          WHERE hostname='duplicate.domain-a.co.id';
         """).stdout.splitlines()
         rows = [x for x in listed if x and x != "SET"]
         self.assertEqual(rows, ["0"])
@@ -141,12 +154,24 @@ class TenantDomainEnrollmentIntegration(unittest.TestCase):
         self.assertIn("permission denied", p.stderr.lower())
 
     def test_wrong_subject_cannot_disable_domain(self):
+        seed = run_psql("""
+          SET ROLE ipat_domain_admin_login;
+          SELECT ipat_platform.request_tenant_custom_domain(
+            'https://id.example.invalid/realms/ipat','tenant-a-admin',
+            '44444444-4444-4444-4444-444444444444',
+            'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb4',
+            'disable-check.domain-a.co.id','a_record',
+            'ipat-domain=bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb4'
+          );
+        """).stdout.splitlines()
+        self.assertIn("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb4", seed)
+
         out = run_psql("""
           SET ROLE ipat_domain_admin_login;
           SELECT ipat_platform.disable_tenant_custom_domain(
             'https://id.example.invalid/realms/ipat','tenant-b-admin',
             '44444444-4444-4444-4444-444444444444',
-            'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb1'
+            'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb4'
           );
         """).stdout.splitlines()
         rows = [x for x in out if x and x != "SET"]
