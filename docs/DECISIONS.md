@@ -1003,3 +1003,16 @@ High-impact writes remain deny-by-default even in production-path code. Read-onl
 **First owner-designated example.** `ipat.fadly.id` is the first intended custom-domain example. Its DNS pointing does not by itself prove ownership/TLS/session readiness and must not hardcode a tenant UUID in source. The domain becomes live only through an audited registry record plus the production ingress and identity gates above.
 
 **Validation.** R9.52 adds migration `0012_tenant_domains.sql`, a least-privilege SECURITY DEFINER resolver and Rust `GET /v1/tenant-context`. Disposable PostgreSQL tests cover exact mapping, cross-tenant independence, tenant suspension, domain lifecycle, TLS readiness, malformed/duplicate hostnames and direct-table denial. Rust tests cover Host normalization, duplicate Host and forwarded-host non-authority. Public HTTPS/customer login remains a separate deployment acceptance gate, not implied by source completion.
+
+
+## ADR-082 — APPROVED: dashboard-driven adaptive custom-domain onboarding on the R9.52 resolver — 2026-09-30
+
+**Decision.** R9.52 remains the canonical hostname-routing baseline. Tenant Admin supplies only the desired hostname; IPAT derives customer-facing A/AAAA, CNAME, or NS instructions from an explicit deployment profile. Frontend source must never embed the VPS address or authoritative nameserver set.
+
+**Readiness rule.** The instruction endpoint fails closed while the selected ingress/DNS target is not marked routing-ready. NS mode additionally requires at least two unique nameservers and explicit evidence/configuration that IPAT authoritative DNS is actually available. DNS instructions do not make a domain active.
+
+**Enrollment rule.** Custom-domain persistence uses the R9.52 FORCE-RLS registry extended by R9.53 metadata and narrow SECURITY DEFINER functions. Current `tenant_admin` membership is re-checked in PostgreSQL; the runtime domain-admin capability has no direct table privileges; duplicate FQDN attempts disclose no owning tenant. Database LOGIN roles remain deployment-owned and are not created by migrations.
+
+**Lifecycle.** request/pending → ownership verified → routing ready → TLS ready → verified resolver. `Host` remains routing metadata only and never creates membership, role, POP scope, device ownership, or business access.
+
+**BFF gate.** The existing owner-only one-time lab code must not be reused for domain authorization. The Save Domain HTTP action remains gated until genuine tenant login/MFA/BFF exists; DB functions and UI workflow may be implemented/tested beforehand.
