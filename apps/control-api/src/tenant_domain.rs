@@ -302,9 +302,7 @@ fn select_routing_mode(
     hostname: &CanonicalHost,
 ) -> Option<(DnsRoutingMode, &'static str)> {
     match profile.mode {
-        DnsRoutingMode::ARecord => {
-            Some((DnsRoutingMode::ARecord, "DEPLOYMENT_FORCED_A_RECORD"))
-        }
+        DnsRoutingMode::ARecord => Some((DnsRoutingMode::ARecord, "DEPLOYMENT_FORCED_A_RECORD")),
         DnsRoutingMode::Cname => {
             let target = profile.cname_target.as_ref()?;
             if target == hostname {
@@ -313,28 +311,20 @@ fn select_routing_mode(
                 Some((DnsRoutingMode::Cname, "DEPLOYMENT_FORCED_CNAME"))
             }
         }
-        DnsRoutingMode::Nameserver => (profile.nameservers.len() >= 2).then_some((
-            DnsRoutingMode::Nameserver,
-            "DEPLOYMENT_FORCED_NAMESERVER",
-        )),
+        DnsRoutingMode::Nameserver => (profile.nameservers.len() >= 2)
+            .then_some((DnsRoutingMode::Nameserver, "DEPLOYMENT_FORCED_NAMESERVER")),
         DnsRoutingMode::Auto => {
             if profile.ipv4.is_some() || profile.ipv6.is_some() {
                 Some((DnsRoutingMode::ARecord, "AUTO_STABLE_INGRESS_ADDRESS"))
             } else if profile.nameservers.len() >= 2 {
-                Some((
-                    DnsRoutingMode::Nameserver,
-                    "AUTO_AUTHORITATIVE_NAMESERVERS",
-                ))
+                Some((DnsRoutingMode::Nameserver, "AUTO_AUTHORITATIVE_NAMESERVERS"))
             } else if profile.auto_allow_cname
                 && profile
                     .cname_target
                     .as_ref()
                     .is_some_and(|target| target != hostname)
             {
-                Some((
-                    DnsRoutingMode::Cname,
-                    "AUTO_CANONICAL_INGRESS_HOSTNAME",
-                ))
+                Some((DnsRoutingMode::Cname, "AUTO_CANONICAL_INGRESS_HOSTNAME"))
             } else {
                 None
             }
@@ -646,11 +636,9 @@ mod tests {
     #[test]
     fn auto_profile_prefers_stable_address_and_reports_all_available_methods() {
         let profile = profile_auto();
-        let response = build_dns_instructions(
-            &profile,
-            canonical_dns_name("portal.customer.id").unwrap(),
-        )
-        .unwrap();
+        let response =
+            build_dns_instructions(&profile, canonical_dns_name("portal.customer.id").unwrap())
+                .unwrap();
         assert_eq!(response.routing_mode, "a_record");
         assert_eq!(response.customer_action, "CREATE_ADDRESS_RECORDS");
         assert_eq!(response.selection_reason, "AUTO_STABLE_INGRESS_ADDRESS");
