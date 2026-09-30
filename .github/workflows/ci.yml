@@ -194,6 +194,8 @@ jobs:
           grep -Fq '/v1/domains/instructions' web/lab/domain-settings.js
           grep -Fq 'Simpan domain & buat token verifikasi' web/lab/domain-settings.html
           grep -Fq 'disabled' web/lab/domain-settings.html
+          grep -Fq 'safe_to_point_now' web/lab/domain-settings.js
+          grep -Fq 'JANGAN POINTING DULU' web/lab/domain-settings.js
       - name: R8.0 private restricted PostgreSQL inventory router/static SQL policy contract
         run: |
           python3 -m unittest discover deploy/db/tests -p 'test_r80_inventory_contract.py' -v
