@@ -455,7 +455,7 @@ mod tests {
             .unwrap();
         let html = std::str::from_utf8(&body).unwrap();
         assert!(html.contains("Domains & Branding"));
-        assert!(html.contains("Simpan domain &amp; buat token verifikasi"));
+        assert!(html.contains("Simpan domain & buat token verifikasi"));
     }
 
     #[tokio::test]
