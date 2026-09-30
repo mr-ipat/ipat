@@ -79,6 +79,14 @@ class DomainLifecycleIntegration(unittest.TestCase):
         """).stdout.splitlines()
         return [x for x in out if x and x != "SET"]
 
+    def test_initial_request_is_persisted_as_pending_dns(self):
+        out = run_psql("""
+          SELECT activation_state||'|'||verification_state
+          FROM ipat_platform.tenant_domains
+          WHERE id='cccccccc-cccc-cccc-cccc-ccccccccccc1';
+        """).stdout.strip()
+        self.assertEqual(out, "pending_dns|pending")
+
     def test_verifier_cannot_skip_lifecycle_steps(self):
         self.assertEqual(self.event("tls_ready"), ["NULL"])
         self.assertEqual(self.event("activate"), ["NULL"])
