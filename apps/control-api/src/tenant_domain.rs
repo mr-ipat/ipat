@@ -148,6 +148,8 @@ pub(crate) struct DnsInstructionProfile {
     ipv6: Option<Ipv6Addr>,
     cname_target: Option<CanonicalHost>,
     nameservers: Vec<CanonicalHost>,
+    routing_ready: bool,
+    authoritative_dns_ready: bool,
 }
 
 pub(crate) fn dns_profile_from_environment() -> Result<Arc<DnsInstructionProfile>, String> {
@@ -182,6 +184,10 @@ pub(crate) fn dns_profile_from_environment() -> Result<Arc<DnsInstructionProfile
                 .collect::<Vec<_>>()
         })
         .unwrap_or_default();
+    let routing_ready =
+        std::env::var("IPAT_CUSTOM_DOMAIN_ROUTING_READY").as_deref() == Ok("YES");
+    let authoritative_dns_ready =
+        std::env::var("IPAT_CUSTOM_DOMAIN_AUTHORITATIVE_DNS_READY").as_deref() == Ok("YES");
 
     match mode {
         DnsRoutingMode::ARecord if ipv4.is_none() && ipv6.is_none() => {
@@ -208,6 +214,8 @@ pub(crate) fn dns_profile_from_environment() -> Result<Arc<DnsInstructionProfile
         ipv6,
         cname_target,
         nameservers,
+        routing_ready,
+        authoritative_dns_ready,
     }))
 }
 
@@ -229,6 +237,10 @@ struct DomainInstructionResponse {
     hostname: String,
     routing_mode: &'static str,
     routing_records: Vec<DnsRecordInstruction>,
+    routing_target_known: bool,
+    routing_ready: bool,
+    authoritative_dns_ready: bool,
+    safe_to_point_now: bool,
     verification_record_type: &'static str,
     verification_record_name: String,
     verification_value_issued_after_save: bool,
@@ -287,11 +299,21 @@ fn build_dns_instructions(
         }
     }
 
+    let authoritative_dns_ready = match profile.mode {
+        DnsRoutingMode::Nameserver => profile.authoritative_dns_ready,
+        _ => true,
+    };
+    let safe_to_point_now = profile.routing_ready && authoritative_dns_ready;
+
     Some(DomainInstructionResponse {
         verification_record_name: format!("_ipat-verify.{}", hostname.as_str()),
         hostname: hostname.as_str().to_string(),
         routing_mode: profile.mode.as_str(),
+        routing_target_known: !routing_records.is_empty(),
         routing_records,
+        routing_ready: profile.routing_ready,
+        authoritative_dns_ready,
+        safe_to_point_now,
         verification_record_type: "TXT",
         verification_value_issued_after_save: true,
         activation_requires_verification: true,
@@ -443,6 +465,8 @@ mod tests {
             ipv6: None,
             cname_target: None,
             nameservers: Vec::new(),
+            routing_ready: false,
+            authoritative_dns_ready: false,
         })
     }
 
@@ -490,6 +514,9 @@ mod tests {
             response.verification_record_name,
             "_ipat-verify.portal.customer.id"
         );
+        assert!(response.routing_target_known);
+        assert!(!response.routing_ready);
+        assert!(!response.safe_to_point_now);
         assert!(!response.authorization_granted);
     }
 
@@ -504,6 +531,8 @@ mod tests {
                 canonical_dns_name("ns1.ipat.id").unwrap(),
                 canonical_dns_name("ns2.ipat.id").unwrap(),
             ],
+            routing_ready: true,
+            authoritative_dns_ready: true,
         };
         let response =
             build_dns_instructions(&profile, canonical_dns_name("customer.co.id").unwrap())
@@ -514,6 +543,31 @@ mod tests {
             .routing_records
             .iter()
             .all(|record| record.record_type == "NS"));
+        assert!(response.authoritative_dns_ready);
+        assert!(response.safe_to_point_now);
+    }
+
+    #[test]
+    fn nameserver_target_is_not_safe_until_authoritative_dns_is_ready() {
+        let profile = DnsInstructionProfile {
+            mode: DnsRoutingMode::Nameserver,
+            ipv4: None,
+            ipv6: None,
+            cname_target: None,
+            nameservers: vec![
+                canonical_dns_name("ns1.ipat.id").unwrap(),
+                canonical_dns_name("ns2.ipat.id").unwrap(),
+            ],
+            routing_ready: true,
+            authoritative_dns_ready: false,
+        };
+        let response =
+            build_dns_instructions(&profile, canonical_dns_name("customer.co.id").unwrap())
+                .unwrap();
+        assert!(response.routing_target_known);
+        assert!(response.routing_ready);
+        assert!(!response.authoritative_dns_ready);
+        assert!(!response.safe_to_point_now);
     }
 
     #[tokio::test]
@@ -558,6 +612,9 @@ mod tests {
         assert_eq!(value["routing_mode"], "a_record");
         assert_eq!(value["authorization_granted"], false);
         assert_eq!(value["activation_requires_verification"], true);
+        assert_eq!(value["routing_target_known"], true);
+        assert_eq!(value["routing_ready"], false);
+        assert_eq!(value["safe_to_point_now"], false);
     }
 
     #[test]
