@@ -89,7 +89,7 @@ fn canonical_hostname(headers: &HeaderMap) -> Result<String, StatusCode> {
     Ok(host)
 }
 
-fn canonical_requested_domain(raw: &str) -> Option<String> {
+pub(crate) fn canonical_requested_domain(raw: &str) -> Option<String> {
     let raw = raw.trim();
     if raw.is_empty()
         || raw.len() > 253
