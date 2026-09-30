@@ -570,6 +570,21 @@ mod tests {
         })
     }
 
+    fn profile_auto() -> DnsInstructionProfile {
+        DnsInstructionProfile {
+            mode: DnsRoutingMode::Auto,
+            ipv4: Some("203.0.113.20".parse().unwrap()),
+            ipv6: None,
+            cname_target: canonical_dns_name("edge.ipat.id"),
+            nameservers: vec![
+                canonical_dns_name("ns1.ipat.id").unwrap(),
+                canonical_dns_name("ns2.ipat.id").unwrap(),
+            ],
+            routing_ready: true,
+            authoritative_dns_ready: true,
+        }
+    }
+
     #[test]
     fn canonicalizes_dns_host_without_conferring_authority() {
         let h = HeaderValue::from_static("IPAT.FADLY.ID:443");
@@ -618,6 +633,51 @@ mod tests {
         assert!(!response.routing_ready);
         assert!(!response.safe_to_point_now);
         assert!(!response.authorization_granted);
+    }
+
+    #[test]
+    fn auto_profile_prefers_stable_address_and_reports_all_available_methods() {
+        let profile = profile_auto();
+        let response = build_dns_instructions(
+            &profile,
+            canonical_dns_name("portal.customer.id").unwrap(),
+        )
+        .unwrap();
+        assert_eq!(response.routing_mode, "a_record");
+        assert_eq!(response.customer_action, "CREATE_ADDRESS_RECORDS");
+        assert_eq!(response.selection_reason, "AUTO_STABLE_INGRESS_ADDRESS");
+        assert_eq!(
+            response.available_routing_modes,
+            vec!["a_record", "cname", "nameserver"]
+        );
+        assert_eq!(response.routing_records[0].value, "203.0.113.20");
+        assert!(response.safe_to_point_now);
+    }
+
+    #[test]
+    fn auto_profile_falls_back_to_cname_when_address_is_unavailable() {
+        let mut profile = profile_auto();
+        profile.ipv4 = None;
+        let response =
+            build_dns_instructions(&profile, canonical_dns_name("portal.customer.id").unwrap())
+                .unwrap();
+        assert_eq!(response.routing_mode, "cname");
+        assert_eq!(response.customer_action, "CREATE_CNAME_RECORD");
+        assert_eq!(response.routing_records[0].value, "edge.ipat.id");
+    }
+
+    #[test]
+    fn auto_profile_falls_back_to_nameservers_when_other_targets_are_unavailable() {
+        let mut profile = profile_auto();
+        profile.ipv4 = None;
+        profile.cname_target = None;
+        let response =
+            build_dns_instructions(&profile, canonical_dns_name("customer.co.id").unwrap())
+                .unwrap();
+        assert_eq!(response.routing_mode, "nameserver");
+        assert_eq!(response.customer_action, "DELEGATE_NAMESERVERS");
+        assert_eq!(response.routing_records.len(), 2);
+        assert!(response.safe_to_point_now);
     }
 
     #[test]
