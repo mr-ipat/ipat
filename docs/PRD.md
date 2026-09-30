@@ -1122,3 +1122,28 @@ MUST: a user-authorized Add Device action saves validated metadata immediately, 
 ## R9.50 — LAB setup code clarity and replacement acceptance
 
 MUST not present an unexplained "One-Time Owner Code" as if it were an OLT credential. When an R9.49 saved Pending device cannot authenticate because the **temporary lab** setup proof is missing, open the verification instructions with a clear explanation, show where the authorized owner can retrieve the already-existing private one-time code locally, provide a nonsecret Copy Command interaction, focus the input, retain the SSH password in the still-active form, and continue the bounded fixed-target connection on submission/paste. Do not put secret text in source files, HTML, APIs, logs, chat or a public repository. Do not label TCP reachability as SSH authentication. A new SaaS Tenant Admin with genuine login/MFA and authorization must have a direct Save & Connect path with no separate lab setup prompt; that production work remains OPEN until actually implemented and tested. All other OLT/ONT/router target types remain gated by verified vendor-specific adapters and tenant-scoped device ownership; no arbitrary SSH proxy.
+
+
+## R9.51 — Production-path operational flow replaces lab-first product UX
+
+Product direction: new functionality is built on the production path first; laboratory mode is used only to validate the same code with physical devices. Do not create another fixed lab-only onboarding flow that later needs migration.
+
+### Required production operator flow
+
+1. User signs in to IPAT and receives a server-validated tenant/company/POP scope. Unauthorized menus are hidden and the backend still denies direct API calls.
+2. Device Manager persists a device row in PostgreSQL with tenant, site/POP, type, vendor/model, management endpoint, protocol, credential secret reference and capability/adoption state.
+3. A connection worker automatically attempts the selected adapter. It returns standardized stages such as ROUTE_UNREACHABLE, PORT_REFUSED, TLS_OR_HOST_IDENTITY_FAILED, AUTH_FAILED, UNSUPPORTED_DEVICE_RESPONSE, CONNECTED_READ_ONLY and DEGRADED.
+4. On successful authenticated discovery, IPAT records actual model/firmware/capabilities, refresh timestamp and inventory. The UI immediately changes the same persisted device row; no separate Terminal agent is part of normal operation.
+5. Background workers keep health/telemetry fresh. Lost freshness changes status without deleting the device.
+6. Action menus are generated from verified adapter capabilities and RBAC+ABAC. Unsupported operations stay absent from the menu and denied by the API.
+
+### Protocol plug-and-play targets
+
+- **TR-069/CWMP:** an ONT/CPE configured with the IPAT ACS URL reaches the in-house Rust ACS. Inform establishes device identity, tenant mapping and persisted session state; pre-provisioned serial/token rules may auto-adopt known CPEs. IPAT then schedules supported RPCs. An ACS URL/authentication path must exist on the CPE; TR-069 support alone does not make an unconfigured CPE magically discover the ACS.
+- **TR-369/USP:** native controller remains mandatory; agent identity/MTP/session persistence and tenant binding must be implemented on the same production inventory.
+- **MikroTik:** use RouterOS API-SSL as the preferred management adapter when enabled. Add endpoint + restricted account/certificate once, verify TLS identity, read system/routerboard/interface/PPP capability data, persist the router and keep background health. SSH is a fallback/diagnostic adapter, not the primary production UX.
+- **OLT:** Add Device selects the vendor/model adapter; IPAT discovers chassis/cards/PON/ONU inventory and current health. ZTE C320 is the first physical validation target. C-DATA follows after exact physical model/firmware evidence.
+
+### Acceptance cut-line
+
+The current owner-only `:3002` UI and one-time owner code are not the commercial product path. They remain validation artifacts until removed after the real authenticated production Device Manager is mounted. Production-path read-only adoption may ship before high-impact writes, but the login, tenant scoping, persistent inventory, adapter worker and health/error reporting are MUST before calling Device Manager usable.
