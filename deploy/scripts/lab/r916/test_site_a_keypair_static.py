@@ -63,13 +63,13 @@ class OfflineSiteAKeyPolicy(unittest.TestCase):
 
     def test_actual_http_harness_reads_full_dashboard_and_never_publishes_secrets(self):
         source=(ROOT/'deploy/scripts/lab/r916/actual_private_site_a_http_smoke.py').read_text()
-        for marker in ('res.read(32768)', 'SITE_A_KEY_READBACK',
+        for marker in ('res.read(65536)', 'SITE_A_KEY_READBACK',
                        'site_b_routeros_disabled_review_commands',
                        "'/lab/dev-site-a-public-key'", "'/lab/demo/site-a-manual-pairing'",
                        "'/v1/devices/DEV-01'"):
             self.assertIn(marker,source)
-        self.assertLessEqual(len((ROOT/'web/lab/device-workbench.html').read_bytes()),32768)
-        self.assertLessEqual(len((ROOT/'web/lab/device-workbench.js').read_bytes()),32768)
+        self.assertLessEqual(len((ROOT/'web/lab/device-workbench.html').read_bytes()),65536)
+        self.assertLessEqual(len((ROOT/'web/lab/device-workbench.js').read_bytes()),65536)
         self.assertNotIn('private-key=',source)
 
     def test_never_claims_active_peer_production_backup(self):
