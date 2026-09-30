@@ -3,8 +3,9 @@ name: Rust workspace CI
 on:
   push:
     branches: [main]
+  # Run the same safety suite for integration PRs as well as PRs to main.
+  # This avoids untested feature-to-feature reconciliation branches.
   pull_request:
-    branches: [main]
 
 permissions:
   contents: read
