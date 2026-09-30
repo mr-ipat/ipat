@@ -1292,3 +1292,17 @@ R9.53 keeps R9.52 Host routing and custom-domain enrollment as separate authorit
 Custom-domain writes go through FORCE-RLS plus a NOLOGIN/NOINHERIT function owner. The EXECUTE-only `ipat_domain_admin` capability gets no direct SELECT/INSERT/UPDATE/DELETE/TRUNCATE privilege. Every request/list/revoke function re-checks exact current `tenant_admin` membership and tenant UUID. Duplicate FQDN conflicts return no owner metadata. Login credentials, SCRAM secrets and certificates remain outside Git/migrations.
 
 The DNS TXT challenge is nonsecret evidence, but issuance must be unpredictable and bound to the exact FQDN. A future verifier must record ownership evidence before routing-ready; TLS automation must follow verified routing and must never expand ingress host allowlists from an untrusted Host header alone. The temporary owner lab code is not acceptable domain authorization.
+
+
+## R9.54 unified domain security
+
+Public-safe DNS instructions cannot supply arbitrary targets: IP/CNAME/NS values come only from deployment configuration. Invalid configured nameservers fail closed. Auto-CNAME requires an explicit deployment opt-in. `routing_target_known` and `safe_to_point_now` remain separate.
+
+The lifecycle verifier cannot skip ownership, routing or TLS gates and cannot SELECT the domain table directly. Tenant-admin request/list/revoke uses a different capability boundary and re-checks membership for each call. Session/CSRF/same-origin checks are required before an HTTP BFF mounts these primitives. No lifecycle state or Host header authorizes device/customer data.
+
+
+## R9.55 DNS ownership verifier security
+
+The ownership verifier consumes only pending custom-domain TXT challenges through an EXECUTE-only sealed function and keeps direct registry table access denied. Public DNS is untrusted input: only an exact expected TXT challenge match advances ownership; NXDOMAIN, timeout, malformed response, or value mismatch stays pending and records a bounded nonsecret error code. Split TXT strings are concatenated according to the DNS record representation before comparison.
+
+The verifier runs only with explicit nonroot opt-in, a dedicated Unix-socket DB identity and strict owner-only conninfo file checks. Batch size and polling interval are bounded. DNS ownership proof does not authorize users, devices, tenant data, Host routing, certificate issuance, or high-impact actions. Routing, TLS and final activation remain independent fail-closed gates.

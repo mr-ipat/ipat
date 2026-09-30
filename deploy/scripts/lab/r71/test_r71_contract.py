@@ -28,7 +28,22 @@ class R71SourceSafety(unittest.TestCase):
         for forbidden in ('TcpStream','Command::new','ssh2::', 'download img',
                           'update-boot', 'patch active', 'telnet', 'ftp://'):
             self.assertNotIn(forbidden, RUST)
-        self.assertEqual(MANIFEST.split('[dependencies]',1)[1].strip(), 'libc = "=0.2.189"')
+        # R7.1 originally allowed only libc. The advanced offline inventory
+        # modules also use serde_json + sha2 for bounded local evidence/hash
+        # handling; keep an exact allowlist so no network/process dependency can
+        # silently enter olt-core.
+        dependencies = {
+            line.strip()
+            for line in MANIFEST.split('[dependencies]',1)[1].splitlines()
+            if line.strip() and not line.lstrip().startswith('#')
+        }
+        self.assertEqual(dependencies, {
+            'libc = "=0.2.189"',
+            'serde_json = "1"',
+            'sha2 = "=0.11.0"',
+        })
+        for forbidden_dependency in ('reqwest', 'hyper', 'tokio', 'ssh2', 'telnet', 'ftp'):
+            self.assertNotIn(forbidden_dependency, MANIFEST.casefold())
 
     def test_offline_parsers_bounded_and_do_not_store_raw_vendor_data(self):
         for required in ('pub const MAX_OUTPUT','EvidenceError::Unsafe',
