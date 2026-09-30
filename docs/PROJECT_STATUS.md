@@ -4159,4 +4159,10 @@ Product owner clarified that a customer-domain request should be simple: enter t
 
 R9.20 adds deployment mode `auto`. Backend selection prefers configured stable A/AAAA ingress addresses, then at least two configured nameservers, and uses CNAME automatically only when deployment explicitly enables that fallback. The instruction response now includes the selected mode, all available methods, a bounded selection reason and a customer action. Dashboard rendering translates these into plain instructions and copy controls without hard-coded DNS targets.
 
-This feature does NOT claim that current public DNS should already be changed. `routing_target_known` and `safe_to_point_now` remain distinct; ownership TXT verification, routing readiness, TLS readiness and activation remain ordered R9.19 service states. CI and exact runtime evidence remain PENDING until the branch is tested.
+This feature does NOT claim that current public DNS should already be changed. `routing_target_known` and `safe_to_point_now` remain distinct; ownership TXT verification, routing readiness, TLS readiness and activation remain ordered R9.19 service states.
+
+### R9.20 feature acceptance evidence — 2026-09-30
+
+Exact application head `ddd011d97b8af6c274849e012ae5644db2b59890` passed GitHub Actions run `36683465158` **SUCCESS 4/4**: pinned Rust 1.98.1 targeted adaptive-domain tests plus full locked workspace and rustfmt, disposable PostgreSQL RLS/domain integration, disposable PostgreSQL physical recovery, and disposable Ubuntu 26 K3s smoke. The R9.20 domain test step passed 12/12.
+
+Earlier failures are retained as engineering evidence: initial run `36682558380` had the Rust R9.20 tests pass but the CI source contract failed because the intended R9.20 deployment documentation had not actually been appended due a helper-marker bug; the missing docs were then committed. Run `36682934134` had the R9.20 step pass but failed only pinned rustfmt; the formatter diff was applied without behavior changes. No public DNS mutation, certificate issuance, PostgreSQL production deployment, IdP login, or customer-domain activation is inferred from this CI evidence.
