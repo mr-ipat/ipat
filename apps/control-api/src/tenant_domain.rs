@@ -185,7 +185,7 @@ mod tests {
             "ipat.fadly.id/path",
             "ipat.fadly.id evil.example",
         ] {
-            let value = HeaderValue::from_str(raw).unwrap();
+            let value = HeaderValue::from_bytes(raw.as_bytes()).unwrap();
             assert!(canonical_host(&value).is_none(), "{raw}");
         }
     }
