@@ -4175,3 +4175,7 @@ Product owner reiterated that domain onboarding must adapt from the dashboard: o
 R9.21 fixes stale R6.8/R7.5 dashboard rollout messaging that still claimed custom domains were deferred/disabled. The rollout manifest is advanced to schema 2 and now distinguishes: domain control-plane available, DNS instructions enabled, persistence requiring authenticated BFF, write disabled in the current no-login preview, public tenant hostnames disabled, and public HTTPS not ready. Platform/Tenant preview cards now link directly to Domains & Branding and describe implemented control-plane behavior without claiming public activation.
 
 Acceptance coverage is updated across Rust route assertions, static Python UI contracts, synthetic Node DOM behavior, and disposable real localhost HTTP smoke. No DNS records, TLS certificates, PostgreSQL production state, or public listener are mutated by this milestone.
+
+### R9.21 feature acceptance evidence — 2026-10-01
+
+Exact feature head `99bc6613108059cd93f845572a7c05668f1e0d22` passed GitHub Actions run `36757369885` **SUCCESS 4/4**: unit/Rust and dashboard contracts, disposable PostgreSQL RLS suite, disposable PostgreSQL physical recovery, and disposable Ubuntu 26 K3s smoke. This verifies the rollout-manifest/dashboard reconciliation and keeps public activation fail-closed; it does not claim live public HTTPS or authenticated domain persistence.
