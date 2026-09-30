@@ -39,6 +39,9 @@ async function showInstructions(){
     if(!response.ok) throw new Error(data.error||"DNS_PROFILE_UNAVAILABLE");
     if(data.authorization_granted!==false || data.activation_requires_verification!==true
       || data.verification_record_type!=="TXT"
+      || data.routing_target_known!==true
+      || typeof data.routing_ready!=="boolean"
+      || typeof data.safe_to_point_now!=="boolean"
       || !Array.isArray(data.routing_records) || !data.routing_records.length){
       throw new Error("INVALID_BACKEND_RESPONSE");
     }
@@ -51,7 +54,9 @@ async function showInstructions(){
     const fragment=document.createDocumentFragment();
     for(const record of data.routing_records) fragment.append(row(record));
     records.replaceChildren(fragment);
-    status.textContent="Instruksi DNS berhasil dibuat. Domain masih belum aktif dan belum memberi akses tenant.";
+    status.textContent=data.safe_to_point_now
+      ?"Target DNS tersedia dan runtime routing siap. Tetap selesaikan ownership verification sebelum aktivasi."
+      :"Target DNS sudah diketahui, tetapi JANGAN POINTING DULU: ingress/TLS/authoritative DNS belum dinyatakan siap oleh deployment IPAT.";
   }catch(error){
     byId("routing-mode").textContent="BELUM TERSEDIA";
     byId("routing-mode").className="pill muted";
