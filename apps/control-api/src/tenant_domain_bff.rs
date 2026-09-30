@@ -220,7 +220,10 @@ mod tests {
 
     #[test]
     fn lifecycle_projection_is_fail_closed_and_ordered() {
-        assert_eq!(lifecycle_state("pending", false, false, false), Some("pending_dns"));
+        assert_eq!(
+            lifecycle_state("pending", false, false, false),
+            Some("pending_dns")
+        );
         assert_eq!(
             lifecycle_state("pending", true, false, false),
             Some("ownership_verified")
@@ -229,8 +232,14 @@ mod tests {
             lifecycle_state("pending", true, true, false),
             Some("routing_ready")
         );
-        assert_eq!(lifecycle_state("pending", true, true, true), Some("tls_ready"));
-        assert_eq!(lifecycle_state("verified", true, true, true), Some("active"));
+        assert_eq!(
+            lifecycle_state("pending", true, true, true),
+            Some("tls_ready")
+        );
+        assert_eq!(
+            lifecycle_state("verified", true, true, true),
+            Some("active")
+        );
         assert_eq!(lifecycle_state("verified", false, true, true), None);
     }
 }

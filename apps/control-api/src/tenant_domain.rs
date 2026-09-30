@@ -106,15 +106,9 @@ pub(crate) fn canonical_requested_domain(raw: &str) -> Option<String> {
         || fqdn.ends_with('.')
         || fqdn.contains("..")
         || !fqdn.contains('.')
-        || [
-            ".local",
-            ".localhost",
-            ".invalid",
-            ".test",
-            ".example",
-        ]
-        .iter()
-        .any(|suffix| fqdn.ends_with(suffix))
+        || [".local", ".localhost", ".invalid", ".test", ".example"]
+            .iter()
+            .any(|suffix| fqdn.ends_with(suffix))
     {
         return None;
     }
@@ -230,7 +224,9 @@ pub(crate) fn dns_profile_from_environment() -> Result<Arc<DnsInstructionProfile
         .map(|value| {
             value
                 .split(',')
-                .map(|name| canonical_requested_domain(name).ok_or("invalid custom-domain nameserver"))
+                .map(|name| {
+                    canonical_requested_domain(name).ok_or("invalid custom-domain nameserver")
+                })
                 .collect::<Result<Vec<_>, _>>()
         })
         .transpose()?
@@ -280,10 +276,7 @@ pub(crate) fn dns_profile_from_environment() -> Result<Arc<DnsInstructionProfile
     }))
 }
 
-fn available_routing_modes(
-    profile: &DnsInstructionProfile,
-    hostname: &str,
-) -> Vec<&'static str> {
+fn available_routing_modes(profile: &DnsInstructionProfile, hostname: &str) -> Vec<&'static str> {
     let mut modes = Vec::new();
     if profile.ipv4.is_some() || profile.ipv6.is_some() {
         modes.push("a_record");
@@ -292,7 +285,10 @@ fn available_routing_modes(
         modes.push("nameserver");
     }
     if (profile.mode != DnsRoutingMode::Auto || profile.auto_allow_cname)
-        && profile.cname_target.as_deref().is_some_and(|target| target != hostname)
+        && profile
+            .cname_target
+            .as_deref()
+            .is_some_and(|target| target != hostname)
     {
         modes.push("cname");
     }
@@ -318,7 +314,10 @@ fn select_routing_mode(
             } else if profile.nameservers.len() >= 2 {
                 Some((DnsRoutingMode::Nameserver, "AUTO_AUTHORITATIVE_NAMESERVERS"))
             } else if profile.auto_allow_cname
-                && profile.cname_target.as_deref().is_some_and(|target| target != hostname)
+                && profile
+                    .cname_target
+                    .as_deref()
+                    .is_some_and(|target| target != hostname)
             {
                 Some((DnsRoutingMode::Cname, "AUTO_CANONICAL_INGRESS_HOSTNAME"))
             } else {
@@ -759,8 +758,7 @@ mod tests {
     #[tokio::test]
     async fn r953_instruction_endpoint_shows_target_but_blocks_pointing_until_ready() {
         let app = instruction_router(a_profile(false));
-        let body =
-            serde_json::to_vec(&json!({"hostname":"portal.customer.co.id"})).unwrap();
+        let body = serde_json::to_vec(&json!({"hostname":"portal.customer.co.id"})).unwrap();
         let response = app
             .oneshot(
                 Request::post("/v1/domains/instructions")
@@ -783,8 +781,7 @@ mod tests {
     #[tokio::test]
     async fn r953_instruction_endpoint_returns_configured_record_when_ready() {
         let app = instruction_router(a_profile(true));
-        let body =
-            serde_json::to_vec(&json!({"hostname":"portal.customer.co.id"})).unwrap();
+        let body = serde_json::to_vec(&json!({"hostname":"portal.customer.co.id"})).unwrap();
         let response = app
             .oneshot(
                 Request::post("/v1/domains/instructions")
