@@ -3,7 +3,7 @@
 //! This worker advances ONLY the ownership gate. Routing/TLS/activation remain
 //! separate evidence steps. DNS evidence never grants tenant authorization.
 
-use hickory_resolver::Resolver;
+use hickory_resolver::TokioResolver;
 use std::{
     fs::OpenOptions,
     io::Read,
@@ -152,13 +152,13 @@ fn txt_record_matches(
     expected: &str,
 ) -> bool {
     let mut joined = Vec::new();
-    for part in txt.txt_data() {
+    for part in &txt.txt_data {
         joined.extend_from_slice(part);
     }
     joined == expected.as_bytes()
 }
 
-async fn txt_matches(resolver: &Resolver, target: &OwnershipTarget) -> Result<bool, ()> {
+async fn txt_matches(resolver: &TokioResolver, target: &OwnershipTarget) -> Result<bool, ()> {
     let query = format!("{}.", target.verification_name);
     let lookup = resolver.txt_lookup(query).await.map_err(|_| ())?;
     Ok(lookup
@@ -202,7 +202,7 @@ pub(crate) async fn run_once(store: &VerifierStore) -> Result<usize, &'static st
     let targets = pending_targets(&client)
         .await
         .map_err(|_| "invalid verifier target set")?;
-    let resolver = Resolver::builder_tokio()
+    let resolver = TokioResolver::builder_tokio()
         .map_err(|_| "resolver system configuration unavailable")?
         .build();
 
