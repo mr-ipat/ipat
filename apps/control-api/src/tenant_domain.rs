@@ -179,7 +179,10 @@ struct DomainInstructionResponse {
     verification_record_name: String,
     verification_value_issued_after_save: bool,
     activation_requires_verification: bool,
-    routing_target_ready: bool,
+    routing_target_known: bool,
+    routing_ready: bool,
+    authoritative_dns_ready: bool,
+    safe_to_point_now: bool,
     authorization_granted: bool,
 }
 
@@ -291,9 +294,6 @@ fn build_dns_instructions(
             });
         }
         DnsRoutingMode::Nameserver => {
-            if profile.routing_ready && !profile.authoritative_dns_ready {
-                return None;
-            }
             for target in &profile.nameservers {
                 routing_records.push(DnsRecordInstruction {
                     record_type: "NS",
@@ -304,15 +304,23 @@ fn build_dns_instructions(
             }
         }
     }
+    let authoritative_dns_ready = match profile.mode {
+        DnsRoutingMode::Nameserver => profile.authoritative_dns_ready,
+        _ => true,
+    };
+    let safe_to_point_now = profile.routing_ready && authoritative_dns_ready;
     Some(DomainInstructionResponse {
         verification_record_name: format!("_ipat-verify.{hostname}"),
         hostname,
         routing_mode: profile.mode.as_str(),
+        routing_target_known: !routing_records.is_empty(),
         routing_records,
         verification_record_type: "TXT",
         verification_value_issued_after_save: true,
         activation_requires_verification: true,
-        routing_target_ready: profile.routing_ready,
+        routing_ready: profile.routing_ready,
+        authoritative_dns_ready,
+        safe_to_point_now,
         authorization_granted: false,
     })
 }
@@ -335,18 +343,6 @@ async fn dns_instructions(
             Json(json!({"error":"UNSUPPORTED_DOMAIN"})),
         );
     };
-    if !result.routing_target_ready {
-        return (
-            StatusCode::SERVICE_UNAVAILABLE,
-            response_headers(),
-            Json(json!({
-                "error":"ROUTING_TARGET_NOT_READY",
-                "hostname":result.hostname,
-                "activation_requires_verification":true,
-                "authorization_granted":false
-            })),
-        );
-    }
     (
         StatusCode::OK,
         response_headers(),
@@ -579,7 +575,9 @@ mod tests {
             response.verification_record_name,
             "_ipat-verify.portal.customer.co.id"
         );
-        assert!(response.routing_target_ready);
+        assert!(response.routing_target_known);
+        assert!(response.routing_ready);
+        assert!(response.safe_to_point_now);
         assert!(!response.authorization_granted);
     }
 
@@ -594,15 +592,19 @@ mod tests {
             routing_ready: true,
             authoritative_dns_ready: false,
         };
-        assert!(build_dns_instructions(
+        let response = build_dns_instructions(
             &profile,
-            canonical_requested_domain("customer.co.id").unwrap()
+            canonical_requested_domain("customer.co.id").unwrap(),
         )
-        .is_none());
+        .unwrap();
+        assert!(response.routing_target_known);
+        assert!(response.routing_ready);
+        assert!(!response.authoritative_dns_ready);
+        assert!(!response.safe_to_point_now);
     }
 
     #[tokio::test]
-    async fn r953_instruction_endpoint_fails_closed_until_routing_target_is_ready() {
+    async fn r953_instruction_endpoint_shows_target_but_blocks_pointing_until_ready() {
         let app = instruction_router(a_profile(false));
         let body =
             serde_json::to_vec(&json!({"hostname":"portal.customer.co.id"})).unwrap();
@@ -615,10 +617,13 @@ mod tests {
             )
             .await
             .unwrap();
-        assert_eq!(response.status(), StatusCode::SERVICE_UNAVAILABLE);
-        let body = to_bytes(response.into_body(), 4096).await.unwrap();
+        assert_eq!(response.status(), StatusCode::OK);
+        let body = to_bytes(response.into_body(), 16 * 1024).await.unwrap();
         let value: Value = serde_json::from_slice(&body).unwrap();
-        assert_eq!(value["error"], "ROUTING_TARGET_NOT_READY");
+        assert_eq!(value["routing_records"][0]["value"], "203.0.113.20");
+        assert_eq!(value["routing_target_known"], true);
+        assert_eq!(value["routing_ready"], false);
+        assert_eq!(value["safe_to_point_now"], false);
         assert_eq!(value["authorization_granted"], false);
     }
 
@@ -646,6 +651,9 @@ mod tests {
         assert_eq!(value["routing_mode"], "a_record");
         assert_eq!(value["routing_records"][0]["value"], "203.0.113.20");
         assert_eq!(value["activation_requires_verification"], true);
+        assert_eq!(value["routing_target_known"], true);
+        assert_eq!(value["routing_ready"], true);
+        assert_eq!(value["safe_to_point_now"], true);
         assert_eq!(value["authorization_granted"], false);
     }
 
