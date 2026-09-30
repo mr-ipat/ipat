@@ -2,8 +2,20 @@
 No real CPE, identity, subscriber DB, firmware or network discovery.
 """
 import json
+from html.parser import HTMLParser
 import urllib.error
 import urllib.request
+
+class Inputs(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.passwords = []
+    def handle_starttag(self, tag, attrs):
+        if tag != "input":
+            return
+        values = dict(attrs)
+        if values.get("type") == "password":
+            self.passwords.append(values)
 
 BASE="http://127.0.0.1:3000"
 PATH="/lab/demo/device-candidates"
@@ -30,7 +42,13 @@ def main():
     assert b"Tambah kandidat perangkat" in html
     assert b"Daftar kandidat" in html
     assert b"PERINGATAN PRD" in html
-    assert b"type=\"password\"" not in html
+    parser=Inputs();parser.feed(html.decode("utf-8"))
+    assert {item.get("id") for item in parser.passwords} == {
+        "ipat-c320-device-password","ipat-c320-bootstrap"
+    }, parser.passwords
+    for item in parser.passwords:
+        assert "value" not in item, item
+        assert item.get("autocomplete") in ("new-password","off"), item
     assert headers.get("cache-control")=="no-store"
     assert headers.get("x-frame-options")=="DENY"
     assert call("/lab/device-workbench.css")[0]==200

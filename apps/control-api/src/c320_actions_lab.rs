@@ -16,6 +16,52 @@ fn high_impact(label: &'static str) -> Value {
        "enabled":false,"requires":"SEPARATE_FIRMWARE_SPECIFIC_TEST_BACKUP_RESTORE_MFA_MAKER_CHECKER_MAINTENANCE",
        "can_run_on_live_device":false,"writes":true})
 }
+/// Deterministic fail-closed historical gate display, not an authorization endpoint.
+/// Production adoption requires separately signed tenant-scoped evidence.
+fn lab_adoption_gate_report(evidence: &Value) -> Value {
+    const GATES: [(&str, &str); 10] = [
+        (
+            "SCRIPTED_LAB_READ",
+            "actual_ephemeral_scripted_owner_lab_ssh_show_card_verified",
+        ),
+        (
+            "ENCRYPTED_OFF_HOST_REFERENCE_RESTORE",
+            "verified_mac_restic_isolated_byte_identical_restore",
+        ),
+        (
+            "DEVICE_NATIVE_RECOVERY",
+            "vendor_native_startup_config_restore_tested",
+        ),
+        (
+            "INDEPENDENT_CHASSIS_IDENTITY",
+            "independent_oob_olt_host_key_verified",
+        ),
+        (
+            "LIMITED_DEVICE_SERVICE_ACCOUNT",
+            "dedicated_device_readonly_account_verified",
+        ),
+        (
+            "ISOLATED_MANAGEMENT_LAST_HOP",
+            "management_last_hop_isolated",
+        ),
+        ("FIRMWARE_RECONCILED", "firmware_inventory_fully_reconciled"),
+        ("TENANT_MFA", "genuine_tenant_admin_mfa_verified"),
+        ("INDEPENDENT_REVIEWER", "independent_reviewer_approved"),
+        ("BOUNDED_AUDITED_PRODUCTION_WORKER", "worker_enabled"),
+    ];
+    let gates: Vec<Value> = GATES
+        .iter()
+        .map(|(name, key)| {
+            let verified = evidence.get(*key).and_then(Value::as_bool) == Some(true);
+            json!({"gate":name,"evidence_field":key,"verified":verified})
+        })
+        .collect();
+    let verified = gates.iter().filter(|g| g["verified"] == true).count();
+    json!({"mode":"HISTORICAL_LAB_DISPLAY_NOT_AUTHORIZATION",
+        "verified_gate_count":verified,"required_gate_count":GATES.len(),
+        "all_gates_verified":verified == GATES.len(),"gates":gates})
+}
+
 fn readiness() -> Value {
     let mut catalog = json!({
       "target":"DEV-01",
@@ -46,6 +92,7 @@ fn readiness() -> Value {
       "dedicated_device_readonly_account_verified":false,
       "management_last_hop_isolated":false,
       "model_and_firmware_read_from_real_hardware":true,
+      "firmware_inventory_fully_reconciled":false,
       "live_distribution_baseline_approved":false,
       "genuine_tenant_admin_mfa_verified":false,
       "independent_reviewer_approved":false,
@@ -96,12 +143,20 @@ fn readiness() -> Value {
       "actual_live_active_alarms_semantically_validated":false,
       "passwordless_ssh_service_account_verified":false,
       "physical_source_independent_console_verified":false,
+      "actual_ephemeral_scripted_owner_lab_ssh_show_card_verified":true,
+      "actual_ephemeral_scripted_owner_lab_ssh_read_utc":"2026-09-29T06:10:34+00:00",
+      "actual_ephemeral_scripted_rust_normalizer_exact_cards":3,
+      "actual_ephemeral_scripted_device_configuration_writes":0,
+      "actual_ephemeral_scripted_test_credential_persisted":false,
+      "ephemeral_one_shot_adapter_is_unattended_worker":false,
       "production_auto_adoption_approved":false,
     });
     catalog
         .as_object_mut()
         .expect("known static catalog")
         .extend(lab.as_object().expect("known static evidence").clone());
+    let report = lab_adoption_gate_report(&catalog);
+    catalog["adoption_gate_report"] = report;
     catalog
 }
 /// Historical, SANITIZED source-backed first physical LAB C320 inventory.
@@ -136,9 +191,89 @@ fn first_real_inventory() -> Value {
         "device_native_restore_rehearsed":false,
         "existing_privilege15_account_count":2,
         "dedicated_verified_limited_role_account_exists":false,
+        "actual_one_shot_lab_scripted_ssh_read_verified":true,
+        "actual_one_shot_scripted_read_utc":"2026-09-29T06:10:34+00:00",
+        "actual_one_shot_scripted_cards_matched":3,
+        "scripted_read_was_unattended_production_worker":false,
         "production_worker_enabled":false,
         "real_saas_device_adopted":false
     })
+}
+
+/// Owner-provided real interactive C320 CLI on 29 Sep 2026, SANITIZED.
+/// This is a dated USER-ATTESTED manual snapshot, NEVER a live discovery feed.
+fn owner_manual_onu_snapshot() -> Value {
+    json!({
+      "target":"DEV-01","source":"OWNER_ATTESTED_ACTUAL_MANUAL_TELNET323_CLI",
+      "observation_date":"2026-09-29","snapshot_is_live":false,
+      "olt_c320_authenticated_owner_session_reported":true,
+      "pon":"1/1/1","unconfigured_onus_reported":0,
+      "unconfigured_command_result":"62310_NO_RELATED_INFORMATION",
+      "registered_onu_status_rows":72,"registered_onu_config_declarations":72,
+      "onu_online":0,"onu_offline":72,
+      "manual_onu_ids":[2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,32,33,34,35,37,38,39,42,44,45,47,48,49,50,56,57,58,63,64,65,66,68,69,70,71,75,76,77,78,79,80,83,84,85,86,87,88,89,91,92,93,95,96,97,98],
+      "manual_onu_rows_are_live":false,
+      "state_and_configuration_count_agree":true,
+      "state_and_configuration_ids_automatically_reconciled":false,
+      "serial_numbers_disclosed":false,"onu_id_reservation_verified":false,
+      "onu_registration_ready":false,"registered_model_observed":"ZTEG-F623",
+      "ont_firmware_verified":false,"optical_evidence_verified":false,
+      "current_live_subscriber_status_proven":false,
+      "real_olt_adopted":false,"production_worker_enabled":false,
+      "warning":"MANUAL_OWNER_SNAPSHOT_NOT_FRESH_AUTOMATED_ADOPTION"
+    })
+}
+
+pub(super) async fn owner_onu_snapshot(
+    headers: HeaderMap,
+) -> Result<(HeaderMap, Json<Value>), (StatusCode, HeaderMap, Json<Value>)> {
+    if !super::device_workbench_lab::demo_csrf_read(&headers) {
+        return Err((
+            StatusCode::FORBIDDEN,
+            super::private_lab_headers("application/json; charset=utf-8"),
+            Json(json!({"error":"PRIVATE_LOCAL_LAB_ONLY"})),
+        ));
+    }
+    Ok((
+        super::private_lab_headers("application/json; charset=utf-8"),
+        Json(owner_manual_onu_snapshot()),
+    ))
+}
+
+/// Actual C320 ONT feature states remain explicit and DENIED until verified.
+/// No real serial/CLI inputs or live scans in this LAB endpoint.
+fn ont_feature_readiness() -> Value {
+    let report = readiness()["adoption_gate_report"].clone();
+    json!({"target":"DEV-01","mode":"PRIVATE_HISTORICAL_ONT_REVIEW_ONLY",
+       "adoption_gate_report":report,"real_hardware_adopted":false,
+       "actual_unconfigured_onu_discovery_verified":false,
+       "real_ont_model_firmware_verified":false,
+       "actual_pon_port_and_free_onu_id_verified":false,
+       "actual_vlan_tcont_gem_profiles_verified":false,
+       "real_tenant_provisioning_approval":false,
+       "available_offline_modules":["STRICT_UNCONFIGURED_ONU_OUTPUT_PARSER_SYNTHETIC",
+           "ONE_ONT_REGISTRATION_DRAFT_VALIDATOR_SYNTHETIC",
+           "BRIDGE_SERVICE_VLAN_PROFILE_REVIEW_SYNTHETIC"],
+       "unconfigured_onu_cli_compatibility":"NOT_TESTED_ON_REAL_C320",
+       "physical_ont_register_enabled":false,"physical_ont_config_enabled":false,
+       "physical_ont_rollback_verified":false,"network_actions":0
+    })
+}
+
+pub(super) async fn ont_features(
+    headers: HeaderMap,
+) -> Result<(HeaderMap, Json<Value>), (StatusCode, HeaderMap, Json<Value>)> {
+    if !super::device_workbench_lab::demo_csrf_read(&headers) {
+        return Err((
+            StatusCode::FORBIDDEN,
+            super::private_lab_headers("application/json; charset=utf-8"),
+            Json(json!({"error":"PRIVATE_LOCAL_LAB_ONLY"})),
+        ));
+    }
+    Ok((
+        super::private_lab_headers("application/json; charset=utf-8"),
+        Json(ont_feature_readiness()),
+    ))
 }
 
 pub(super) async fn first_read(
@@ -207,6 +342,79 @@ mod tests {
     }
 
     #[test]
+    fn owner_reported_actual_onu_snapshot_is_sanitized_and_never_promotes_adoption() {
+        let r = owner_manual_onu_snapshot();
+        assert_eq!(r["registered_onu_status_rows"], 72);
+        assert_eq!(r["registered_onu_config_declarations"], 72);
+        assert_eq!(r["onu_online"], 0);
+        assert_eq!(r["onu_offline"], 72);
+        assert_eq!(r["manual_onu_ids"].as_array().unwrap().len(), 72);
+        assert_eq!(r["manual_onu_ids"][0], 2);
+        assert_eq!(r["manual_onu_ids"][71], 98);
+        assert_eq!(r["manual_onu_rows_are_live"], false);
+        assert_eq!(r["unconfigured_onus_reported"], 0);
+        assert_eq!(r["snapshot_is_live"], false);
+        assert_eq!(
+            r["state_and_configuration_ids_automatically_reconciled"],
+            false
+        );
+        assert_eq!(r["onu_registration_ready"], false);
+        assert_eq!(r["real_olt_adopted"], false);
+        let s = r.to_string();
+        assert!(!s.contains("ZTEGC969"));
+        assert!(!s.contains("Password"));
+    }
+
+    #[test]
+    fn ont_register_and_service_config_remain_unmounted() {
+        let r = ont_feature_readiness();
+        assert_eq!(r["adoption_gate_report"]["verified_gate_count"], 2);
+        assert_eq!(r["physical_ont_register_enabled"], false);
+        assert_eq!(r["physical_ont_config_enabled"], false);
+        assert_eq!(r["physical_ont_rollback_verified"], false);
+        assert_eq!(r["actual_unconfigured_onu_discovery_verified"], false);
+        assert_eq!(r["real_tenant_provisioning_approval"], false);
+        assert_eq!(r["network_actions"], 0);
+    }
+
+    #[test]
+    fn actual_gate_matrix_is_closed_and_not_an_approval_token() {
+        let r = readiness();
+        let report = &r["adoption_gate_report"];
+        assert_eq!(report["mode"], "HISTORICAL_LAB_DISPLAY_NOT_AUTHORIZATION");
+        assert_eq!(report["required_gate_count"], 10);
+        assert_eq!(report["verified_gate_count"], 2);
+        assert_eq!(report["all_gates_verified"], false);
+        assert_eq!(r["device_adopted"], false);
+        assert_eq!(r["worker_enabled"], false);
+    }
+
+    #[test]
+    fn missing_and_non_boolean_gate_inputs_fail_closed() {
+        let r = readiness();
+        let mut synthetic = r.clone();
+        for item in r["adoption_gate_report"]["gates"].as_array().unwrap() {
+            let field = item["evidence_field"].as_str().unwrap();
+            synthetic[field] = json!(true);
+        }
+        assert_eq!(
+            lab_adoption_gate_report(&synthetic)["all_gates_verified"],
+            true
+        );
+        synthetic["worker_enabled"] = json!("true");
+        assert_eq!(
+            lab_adoption_gate_report(&synthetic)["all_gates_verified"],
+            false
+        );
+        synthetic.as_object_mut().unwrap().remove("worker_enabled");
+        assert_eq!(
+            lab_adoption_gate_report(&synthetic)["all_gates_verified"],
+            false
+        );
+        assert_eq!(r["device_adopted"], false);
+    }
+
+    #[test]
     fn incomplete_real_hardware_proof_keeps_entire_catalog_disabled() {
         let r = readiness();
         assert_eq!(
@@ -254,6 +462,23 @@ mod tests {
         assert_eq!(r["actual_local_restricted_account_proven"], false);
         assert_eq!(r["actual_live_manual_alarm_cli_syntax_verified"], true);
         assert_eq!(r["actual_live_active_alarms_semantically_validated"], false);
+        assert_eq!(
+            r["actual_ephemeral_scripted_owner_lab_ssh_show_card_verified"],
+            true
+        );
+        assert_eq!(
+            r["actual_ephemeral_scripted_rust_normalizer_exact_cards"],
+            3
+        );
+        assert_eq!(
+            r["actual_ephemeral_scripted_device_configuration_writes"],
+            0
+        );
+        assert_eq!(
+            r["actual_ephemeral_scripted_test_credential_persisted"],
+            false
+        );
+        assert_eq!(r["ephemeral_one_shot_adapter_is_unattended_worker"], false);
         assert_eq!(r["production_auto_adoption_approved"], false);
         assert_eq!(r["device_adopted"], false);
         assert_eq!(r["independent_reviewer_approved"], false);

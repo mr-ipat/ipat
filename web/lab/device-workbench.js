@@ -3,6 +3,7 @@ const node = (id) => document.getElementById(id);
 const source = "/lab/demo/device-candidates";
 let candidates = [];
 let observedPhysical = null; // historical owner report, NEVER enrolled inventory
+let savedPhysical = null; // source: fixed-target server-side draft or verified enrollment
 function el(tag, cls, content) {
   const e = document.createElement(tag);
   if (cls) e.className = cls;
@@ -49,27 +50,29 @@ function draw() {
     row.appendChild(remove);
     fragment.appendChild(row);
   }
-  const physicalVisible=observedPhysical !== null && pop === "all"
+  const physicalVisible=(observedPhysical !== null || savedPhysical !== null) && pop === "all"
     && (kind === "all" || kind === "olt");
   if (physicalVisible) {
     const physicalRow=el("tr","physical-observed-row");
     const identity=el("td");
-    identity.append(el("strong","","DEV-01 · LAPORAN PEMILIK"),
-                  el("small","","BACAAN FISIK LAB "+observedPhysical.observed_on));
+    identity.append(el("strong","",savedPhysical ? savedPhysical.name : "DEV-01 · OWNER MANUAL REPORT"),
+                  el("small","",savedPhysical ? "DEV-01 · SERVER DEVICE RECORD" : "MANUAL OBSERVATION "+observedPhysical.observed_on));
     physicalRow.appendChild(identity);
     const device=el("td");
-    device.append(el("strong","","OLT · ZTE C320 (LOGIN LAB)"),
-                el("small","","3 kartu; sebagian firmware perlu rekonsiliasi"));
+    device.append(el("strong","","OLT · ZTE C320"),
+                el("small","",savedPhysical ? "SSH · pinned lab adapter" : "Historical owner-supplied report"));
     physicalRow.appendChild(device);
     physicalRow.appendChild(td("POP BELUM DIVERIFIKASI"));
-    physicalRow.appendChild(el("td","","LAB AUTH READ · BELUM DIADOPSI"));
+    physicalRow.appendChild(el("td","",savedPhysical ? savedPhysical.adoption : "HISTORICAL · NOT ADOPTED"));
     const transport=el("td");
-    transport.appendChild(badge("SSH + TELNET LAB","unknown"));
+    const indicator=el("span","ipat-device-signal ipat-device-signal--unknown","Unknown");
+    indicator.setAttribute("data-ipat-device-status","DEV-01");
+    transport.appendChild(indicator);
     physicalRow.appendChild(transport);
     const health=el("td");
     health.appendChild(badge("BELUM DIUKUR","unknown"));
     physicalRow.appendChild(health);
-    physicalRow.appendChild(td("Tidak ada operasi perangkat"));
+    physicalRow.appendChild(td(savedPhysical ? "Open Add Device / read-only C320 console" : "Historical data only"));
     fragment.appendChild(physicalRow);
   }
   if (!view.length && !physicalVisible) {
@@ -80,7 +83,62 @@ function draw() {
     fragment.appendChild(row);
   }
   node("rows").replaceChildren(fragment);
-  node("candidate-count").textContent = String(candidates.length);
+  // The real saved device list is visible at the top of Device Manager.
+  // The historical demo table below remains an optional lab-only detail.
+  const actual=document.createDocumentFragment();
+  if(savedPhysical){
+    const tr=el('tr');
+    const identity=el('td');
+    identity.append(el('strong','',savedPhysical.name),el('small','','DEV-01 · ZTE C320'));
+    tr.append(identity);
+    tr.append(td('SSH · Existing verified management profile'));
+    tr.append(td(savedPhysical.adoption));
+    const signalCell=el('td');
+    const signal=el('span','ipat-device-signal ipat-device-signal--unknown','● Unknown');
+    signal.setAttribute('data-ipat-device-status','DEV-01');
+    signalCell.append(signal);
+    tr.append(signalCell);
+    actual.append(tr);
+  }else{
+    const tr=el('tr');
+    const cell=el('td','','No saved physical device is currently available.');
+    cell.colSpan=4;
+    tr.append(cell);
+    actual.append(tr);
+  }
+  node('ipat-saved-physical-rows').replaceChildren(actual);
+  window.dispatchEvent(new Event("ipat-device-list-rendered"));
+  node("candidate-count").textContent = String(candidates.length + (savedPhysical ? 1 : 0));
+}
+async function loadSavedPhysical() {
+  try {
+    const response=await fetch('/lab/c320-owner-connection',{
+      cache:'no-store',credentials:'omit'
+    });
+    if(!response.ok)throw Error('device record endpoint unavailable');
+    const v=await response.json();
+    if(v.target!=='DEV-01'||v.vendor!=='ZTE'||v.model!=='C320'
+       ||v.production_adopted!==false||v.physical_writes_enabled!==false)
+      throw Error('unexpected device record');
+    if(v.draft_saved===true||v.credentials_enrolled===true){
+      const verified=v.device_status==='CONNECTED'
+        && v.adoption_state==='READ_ONLY_CONNECTED_LAB';
+      savedPhysical={
+        name:typeof v.device_name==='string'&&v.device_name.length<=64
+          ?v.device_name:'ZTE C320 Lab',
+        adoption:verified?'READ-ONLY CONNECTED'
+          :v.credentials_enrolled===true?'WAITING FOR FRESH DEVICE READ'
+            :'PENDING · OWNER VERIFICATION',
+        status:v.device_status
+      };
+    }else savedPhysical=null;
+  }catch{
+    // Preserve the previously loaded saved row during a transient API
+    // outage, but replace its status with UNKNOWN rather than false GREEN.
+    if(savedPhysical)savedPhysical={...savedPhysical,
+      adoption:'SAVED · STATUS UNAVAILABLE',status:'UNKNOWN'};
+  }
+  draw();
 }
 async function refresh() {
   node("refresh").disabled = true;
@@ -104,6 +162,7 @@ async function refresh() {
     draw();
     status("Tidak berhasil memverifikasi backend privat. Jangan menganggap perangkat aktif.",true);
   } finally {
+    await loadSavedPhysical();
     node("refresh").disabled=false;
   }
 }
@@ -156,6 +215,7 @@ async function submit(event) {
     button.disabled=false;
   }
 }
+window.addEventListener("ipat-device-connection-changed",()=>{void loadSavedPhysical();});
 node("device-form").addEventListener("submit",event=>{void submit(event);});
 node("refresh").addEventListener("click",()=>{void refresh();});
 node("pop-filter").addEventListener("change",draw);
@@ -592,6 +652,8 @@ async function refreshC320Actions(){
     || catalog.vendor_native_startup_config_restore_tested!==false
     || catalog.actual_local_account_privilege15_count!==2
     || catalog.actual_local_restricted_account_proven!==false
+    || catalog.actual_ephemeral_scripted_owner_lab_ssh_show_card_verified!==true
+    || catalog.ephemeral_one_shot_adapter_is_unattended_worker!==false
     || catalog.worker_enabled!==false
     || catalog.network_actions!==0 || catalog.device_adopted!==false
     || catalog.actual_device_health!=='THREE_CARDS_INSERVICE_ALARMS_NOT_MEASURED'
@@ -614,7 +676,7 @@ async function refreshC320Actions(){
     list.append(row);
     }
     output.replaceChildren(list);
-    status.textContent='LAB NYATA: SSH/Telnet login dan 3 kartu INSERVICE terbaca; backup Restic eksternal teruji pulih identik. Impor vendor, akun terbatas, MFA dan seluruh aksi otomatis masih TERKUNCI.';
+    status.textContent='LAB: SSH terprogram satu kali terbukti membaca 3 kartu nyata. Restic pulih identik; impor vendor, akun terbatas, MFA dan aksi otomatis TERKUNCI.';
   }catch{
     output.replaceChildren();
     status.textContent='Katalog tidak terverifikasi. Semua aksi tetap terkunci.';

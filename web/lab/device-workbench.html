@@ -10,6 +10,9 @@
   <link rel="stylesheet" href="/lab/device-workbench.css">
   <script src="/lab/device-workbench.js" defer></script>
   <script src="/lab/c320-first-real-inventory.js" defer></script>
+  <script src="/lab/c320-operator-console.js" defer></script>
+  <script src="/lab/c320-connection-setup.js" defer></script>
+  <script src="/lab/device-status-indicators.js" defer></script>
 </head>
 <body>
 <a href="#main" class="skip">Ke konten</a>
@@ -36,9 +39,133 @@
       <span class="env">● SSH PRIVATE · DEMO ONLY</span></header>
     <main id="main">
       <div class="heading"><span class="eyebrow">DEVICE OPERATIONS</span>
-        <h1>Kelola perangkat <em>sebelum adopsi.</em></h1>
-        <p>Daftarkan kandidat virtual, lihat inventaris dan status verifikasi. Jalur kandidat PostgreSQL terpisah telah disiapkan untuk proses persetujuan operator ketika identitas yang terpercaya tersedia.</p>
+        <h1>Kelola perangkat <em>langsung dari IPAT.</em></h1>
+        <p>Daftarkan koneksi ZTE C320 satu kali, lihat status, dan jalankan pembacaan langsung. Diagnostik pengembangan dipindahkan ke bagian opsional di bawah.</p>
       </div>
+      <section class="panel ipat-ops-console" id="ipat-c320-console" aria-labelledby="ipat-c320-console-heading">
+  <div class="section-top"><div><span class="eyebrow">IPAT OLT OPERATIONS · LAB PRIVAT R9.44</span>
+  <h2 id="ipat-c320-console-heading">ZTE C320 · Konsol Operasional</h2>
+    <span class="ipat-device-signal ipat-device-signal--unknown" data-ipat-device-status="DEV-01" role="status" aria-live="polite">● Unknown</span></div><span class="pill amber-pill">PERUBAHAN FISIK TERKUNCI</span></div>
+  <section class="ipat-c320-enrollment" aria-labelledby="device-add-heading">
+    <div class="ipat-device-form-heading">
+      <div><span class="eyebrow">DEVICE MANAGER</span><h3 id="device-add-heading">Add Device</h3>
+      <p class="ipat-ops-disclosure">Enter management credentials once. IPAT connects directly when a secure management route exists. Use a site-to-site VPN only when direct access is unavailable.</p></div>
+      <strong id="ipat-c320-enroll-state" class="ipat-device-signal ipat-device-signal--unknown" role="status">Checking connector...</strong>
+    </div>
+    <form id="ipat-c320-enroll-form" autocomplete="off">
+      <div class="ipat-device-form-grid">
+        <div class="ipat-field"><label for="ipat-device-name">Device Name</label>
+          <input id="ipat-device-name" type="text" required maxlength="64" value="ZTE C320 Lab" placeholder="e.g. Core OLT - POP 01" autocomplete="off"></div>
+        <div class="ipat-field"><label for="ipat-device-type">Device Type</label>
+          <select id="ipat-device-type" required>
+            <option value="olt">OLT</option>
+            <option value="ont">ONT / ONU</option>
+            <option value="router">Router</option>
+            <option value="other">Other Network Device</option>
+          </select></div>
+        <div class="ipat-field"><label for="ipat-device-model">Vendor / Model</label>
+          <select id="ipat-device-model" required>
+            <option value="zte_c320_lab">ZTE C320 (Lab Read-Only)</option>
+            <option value="zte_other">ZTE - Other Model (Coming Soon)</option>
+            <option value="cdata_olt">C-DATA OLT (Coming Soon)</option>
+          </select></div>
+        <div class="ipat-field"><label for="ipat-device-protocol">Management Protocol</label>
+          <select id="ipat-device-protocol">
+            <option value="ssh">SSH (Direct)</option>
+            <option value="wireguard" disabled>WireGuard (Not Configured)</option>
+            <option value="ipsec" disabled>IPsec (Not Configured)</option>
+          </select></div>
+        <div class="ipat-field"><label for="ipat-device-host">Management IP</label>
+          <input id="ipat-device-host" type="text" inputmode="decimal" maxlength="45" required value="10.10.13.233" placeholder="192.0.2.10" autocomplete="off" spellcheck="false"></div>
+        <div class="ipat-field"><label for="ipat-device-port">SSH Port</label>
+          <input id="ipat-device-port" type="number" min="1" max="65535" step="1" required value="321"></div>
+        <div class="ipat-field"><label for="ipat-device-username">Username</label>
+          <input id="ipat-device-username" type="text" required maxlength="64" value="zte" autocomplete="off" spellcheck="false"></div>
+        <div class="ipat-field"><label for="ipat-c320-device-password">Password</label>
+          <input id="ipat-c320-device-password" type="password" autocomplete="new-password" maxlength="128" placeholder="Required for connection; optional to save device"></div>
+      </div>
+      <div id="ipat-device-profile-notice" class="ipat-profile-info" role="status">ZTE C320: pinned SSH identity, read-only connection profile. Other models require their own verified adapters.</div>
+      <details class="ipat-device-security">
+        <summary>Lab Setup Verification · Required Once</summary>
+        <p><strong>Why is this required?</strong> This private lab preview is not yet protected by the production IPAT Admin login. This temporary code proves access to the owner VPS before IPAT sends your SSH password to the OLT. It is <strong>not</strong> the OLT password and is invalidated after the first successful device verification.</p>
+        <p><strong>Where do I get the code?</strong> On the Mac already connected to your IPAT lab, copy the command below, paste it into your own Terminal, then paste the resulting clipboard contents into this field. The code stays between your Mac and private VPS; do not send it through chat or GitHub.</p>
+        <div class="ipat-owner-command">
+          <code id="ipat-owner-code-command">ssh -o BatchMode=yes ipat-lab 'cat /home/openai/.local/share/ipat/r945-connection/bootstrap-token' | pbcopy</code>
+          <button type="button" id="ipat-copy-owner-command" class="secondary">Copy Command</button>
+        </div>
+        <p id="ipat-owner-command-feedback" role="status" aria-live="polite">This command copies the private code to your Mac clipboard without printing it in the chat. If your SSH alias differs, use your existing authorized VPS connection.</p>
+        <label for="ipat-c320-bootstrap">One-Time Owner Code (Lab Only)</label>
+        <input id="ipat-c320-bootstrap" type="password" autocomplete="off" minlength="32" maxlength="128" placeholder="Paste the private setup code here">
+        <p><strong>Future production flow:</strong> a verified IPAT Admin session with tenant permissions will replace this temporary lab-only step.</p>
+      </details>
+      <div class="ipat-ops-actionbar">
+        <button type="submit" id="ipat-c320-enroll-button" class="secondary">Save Device &amp; Connect</button>
+        <span class="ipat-ops-disclosure">Only the verified C320 lab profile can connect in this release.</span>
+      </div>
+    </form>
+    <div id="ipat-device-connection-summary" class="ipat-connection-summary" aria-live="polite">
+      <strong id="ipat-device-save-stage">Not Saved</strong>
+      <span id="ipat-device-connect-stage">Awaiting device registration</span>
+    </div>
+    <div id="ipat-device-diagnostic" class="ipat-connection-diagnostic" role="status" aria-live="polite">Network check will start automatically when the device is saved.</div>
+    <p id="ipat-c320-enroll-result" role="status" aria-live="polite">Save creates a Pending device entry immediately. IPAT then checks the management route and connects when the required credentials and owner verification are available.</p>
+  </section>
+  <section class="ipat-active-device-list" aria-labelledby="ipat-real-device-list-heading">
+    <div class="ipat-device-form-heading"><h3 id="ipat-real-device-list-heading">Device List</h3>
+      <span class="ipat-ops-disclosure">Saved devices remain visible even when SSH is offline or authentication is pending.</span></div>
+    <div class="table-scroll"><table aria-label="Saved physical devices">
+      <thead><tr><th>Device</th><th>Management</th><th>Adoption</th><th>Connection</th></tr></thead>
+      <tbody id="ipat-saved-physical-rows"><tr><td colspan="4">Loading saved devices...</td></tr></tbody>
+    </table></div>
+  </section>
+  <p id="ipat-c320-signal-detail" class="ipat-ops-disclosure">Menunggu pemeriksaan koneksi C320...</p>
+  <p id="ipat-c320-connectivity" role="status" aria-live="polite">Mengecek sesi agen OLT...</p>
+  <div class="ipat-ops-tabs" aria-label="Kategori fungsi OLT">
+    <span class="ipat-ops-tab active">Ringkasan & ONU</span>
+    <span class="ipat-ops-tab">Kartu perangkat</span>
+    <span class="ipat-ops-tab">Firmware</span>
+    <span class="ipat-ops-tab locked">Optik & traffic · berikutnya</span>
+  </div>
+  <div class="ipat-ops-topology">
+    <div><label for="ipat-c320-pon">Perangkat</label><strong>ZTE C320 · DEV-01</strong></div>
+    <div><label for="ipat-c320-pon">Port PON</label>
+      <select id="ipat-c320-pon" aria-describedby="ipat-c320-pon-disclosure">
+        <option value="1/1/1">PON 1/1/1 · pembacaan teruji</option>
+        <option value="other" disabled>PON lainnya · adapter fisik belum diuji</option>
+      </select></div>
+    <div><label>Pengamatan</label><strong id="ipat-c320-observation-stamp">Belum ada hasil terkini</strong></div>
+  </div>
+  <p id="ipat-c320-pon-disclosure" class="ipat-ops-disclosure">Pembacaan langsung hanya untuk PON 1/1/1. Ringkasan awal bersumber dari pemeriksaan manual pemilik tanggal 29 September 2026, bukan polling langsung.</p>
+  <div class="ipat-ops-metrics" aria-label="Ringkasan data ONU">
+    <article><small>ONU terkonfigurasi</small><strong id="ipat-c320-configured">—</strong></article>
+    <article><small>Online</small><strong id="ipat-c320-online">—</strong></article>
+    <article><small>Offline</small><strong id="ipat-c320-offline">—</strong></article>
+    <article><small>Belum terdaftar</small><strong id="ipat-c320-unconfigured">—</strong></article>
+  </div>
+  <h3>Daftar ONU pada PON 1/1/1</h3>
+  <p class="ipat-ops-disclosure" id="ipat-c320-onu-table-notice">Daftar ID berasal dari keluaran manual OLT tanggal 29 September 2026, belum disinkronkan melalui pembacaan langsung. Status baris tidak berubah ketika hanya total ONU dibaca ulang.</p>
+  <label for="ipat-c320-onu-search">Cari ID ONU</label>
+  <input id="ipat-c320-onu-search" type="search" placeholder="Misalnya 1/1/1:2" autocomplete="off">
+  <div class="table-scroll"><table aria-label="Daftar ID ONU historis ZTE C320">
+    <thead><tr><th>ONU ID</th><th>Admin (manual)</th><th>Phase (manual)</th><th>Model konfigurasi</th><th>Sumber</th></tr></thead>
+    <tbody id="ipat-c320-onu-rows"><tr><td colspan="5">Memuat bukti inventaris tersanitasi...</td></tr></tbody>
+  </table></div>
+  <div class="ipat-ops-actionbar" aria-label="Perintah baca-saja perangkat">
+    <button type="button" class="secondary" id="ipat-c320-read-onus" disabled>Baca ulang inventaris ONU</button>
+    <button type="button" class="secondary" id="ipat-c320-read-cards" disabled>Baca kartu fisik</button>
+    <button type="button" class="secondary" id="ipat-c320-read-firmware" disabled>Baca versi firmware</button>
+  </div>
+  <div class="ipat-ops-metrics ipat-ops-secondary">
+    <article><small>Kartu INSERVICE</small><strong id="ipat-c320-cards">Belum dibaca</strong></article>
+    <article><small>Inventaris firmware</small><strong id="ipat-c320-firmware">Belum dibaca</strong></article>
+  </div>
+  <p id="ipat-c320-console-status" role="status" aria-live="polite" class="form-notice">Agen pemilik harus aktif sebelum pembacaan nyata. Pengaktifan agen saja belum membuktikan OLT online.</p>
+  <h3>Aktivitas sesi lokal</h3><ol id="ipat-c320-events" class="ipat-ops-events" aria-label="Aktivitas pembacaan OLT"></ol>
+  <p id="ipat-c320-write-guard" class="separation"></p>
+  <p class="ipat-ops-disclosure">Kontrol ini hanya laboratorium privat; bukan produk SaaS multi-tenant yang telah selesai diadopsi. Pembacaan per-ONU, redaman, traffic, dan firmware detail memerlukan adapter khusus firmware yang belum dibuktikan.</p>
+</section>
+      <details class="ipat-lab-diagnostics" id="ipat-lab-diagnostics">
+        <summary>Pengaturan lanjutan dan diagnostik pengembangan (opsional)</summary>
       <div class="metric-row" aria-label="Ringkasan perangkat">
         <article class="stat"><small>KANDIDAT DEMO</small><strong id="candidate-count">0</strong><span>Memori laboratorium</span></article>
         <article class="stat"><small>PERANGKAT NYATA DIADOPSI</small><strong>0</strong><span>LAB SSH/Telnet terbaca; belum diadopsi</span></article>
@@ -62,8 +189,21 @@
         <div class="section-top"><div><span class="eyebrow">BUKTI FISIK LAB HISTORIS</span>
           <h2 id="c320-real-first-read-title">Inventaris nyata ZTE C320 — pembacaan pertama</h2></div>
           <span class="pill amber-pill">BELUM ADOPSI OTOMATIS</span></div>
+        <p>Adapter pengujian telah menjalankan satu sesi SSH terprogram langsung pada C320, memvalidasi 3 kartu melalui Rust dan menutup sesi. Bukti ini historis LAB, bukan polling otomatis.</p>
         <p id="c320-real-inventory-status" role="status" aria-live="polite">Memeriksa bukti privat, bukan polling perangkat...</p>
         <div id="c320-real-inventory" class="steps" aria-label="Tiga kartu fisik historis"></div>
+      </section>
+            <section class="panel" id="c320-supervised-read" aria-labelledby="c320-supervised-read-title">
+        <div class="section-top"><div><span class="eyebrow">R9.40 · KONTROL OLT NYATA, BACA SAJA</span>
+          <h2 id="c320-supervised-read-title">ZTE C320 — pembacaan langsung dari panel</h2></div><span class="pill amber-pill">OWNER-SUPERVISED LAB</span></div>
+        <p>Setelah pemilik mengaktifkan agen sementara melalui terminal privat VPS, tombol ini akan menjalankan tiga perintah inventaris READ-ONLY ke C320 melalui SSH yang sudah dipin secara observasi jaringan. Tidak menerima serial, password atau perintah CLI di browser. Maksimal 5 kali pembacaan dalam 15 menit. Ini bukan otorisasi tenant SaaS ataupun adopsi produksi.</p>
+        <p id="c320-owner-agent-state" role="status" aria-live="polite"><b>Memeriksa agen OLT...</b> Pembacaan hanya tersedia dari koneksi privat Mac.</p>
+        <button id="c320-read-live" type="button" disabled class="secondary">Baca status OLT sekarang</button>
+        <button id="c320-read-cards" type="button" disabled class="secondary">Baca kartu fisik sekarang</button>
+        <button id="c320-read-firmware" type="button" disabled class="secondary">Baca versi firmware sekarang</button>
+        <p id="c320-read-live-status" role="status" aria-live="polite">Agen pemilik perlu diaktifkan secara terpisah; data historis di atas bukan telemetri langsung.</p>
+        <div id="c320-read-live-summary" class="steps" aria-label="Hasil pembacaan C320 langsung dan tersanitasi"></div>
+        <div class="separation"><b>AKSI PERUBAHAN KONFIGURASI TETAP TERKUNCI</b><p>Registrasi ONT, VLAN, perubahan akun dan upgrade firmware memerlukan alur persetujuan serta pengujian pemulihan native. Jangan menganggap tombol pembacaan ini sebagai izin menulis perangkat.</p></div>
       </section>
       <section class="panel" id="c320-operations" aria-labelledby="c320-operations-title">
         <div class="section-top"><div><span class="eyebrow">R9.33 / KATALOG AKSI OLT</span><h2 id="c320-operations-title">Fungsi OLT ZTE C320 — kesiapan sebenarnya</h2></div><span class="pill amber-pill">AKSI FISIK TERKUNCI</span></div>
@@ -189,6 +329,7 @@
         </table></div>
         <p id="list-status" role="status" aria-live="polite">Belum memuat daftar.</p>
       </section>
+      </details>
       <footer>IPAT · Device Manager <span>Mode sintetis, in-memory · perangkat nyata dan produksi NO_GO</span></footer>
     </main>
   </div>

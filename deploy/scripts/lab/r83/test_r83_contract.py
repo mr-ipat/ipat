@@ -35,7 +35,12 @@ class DeviceManagerContract(unittest.TestCase):
                       "candidate-count","rows","refresh","pop-filter","kind-filter"):
             self.assertIn(("id",field),[(k,v) for _,k,v in dom.attrs])
         self.assertIn("form",dom.tags)
-        self.assertEqual(dom.tags.count("script"),1)
+        scripts=[v for tag,k,v in dom.attrs if tag=="script" and k=="src"]
+        self.assertGreaterEqual(len(scripts),1)
+        self.assertIn("/lab/device-workbench.js",scripts)
+        self.assertTrue(all(v.startswith("/lab/") for v in scripts),scripts)
+        self.assertEqual(dom.tags.count("script"),len(scripts),
+                         "inline scripts are forbidden in the workbench")
         self.assertIn("/lab/device-workbench",OLD)
         self.assertIn("/lab/device-workbench",INDEX)
         for phrase in ("replaceChildren","textContent","encodeURIComponent",

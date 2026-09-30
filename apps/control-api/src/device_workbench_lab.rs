@@ -16,6 +16,9 @@ const HTML: &str = include_str!("../../../web/lab/device-workbench.html");
 const CSS: &str = include_str!("../../../web/lab/device-workbench.css");
 const JS: &str = include_str!("../../../web/lab/device-workbench.js");
 const C320_FIRST_REAL_JS: &str = include_str!("../../../web/lab/c320-first-real-inventory.js");
+const C320_OPERATOR_JS: &str = include_str!("../../../web/lab/c320-operator-console.js");
+const C320_CONNECT_JS: &str = include_str!("../../../web/lab/c320-connection-setup.js");
+const C320_DEVICE_STATUS_JS: &str = include_str!("../../../web/lab/device-status-indicators.js");
 const PHYSICAL_EVIDENCE: &str = include_str!("../../../web/lab/physical-intake-evidence.json");
 const MAX_DEMO_CANDIDATES: usize = 24;
 
@@ -446,6 +449,24 @@ async fn first_real_inventory_js() -> (HeaderMap, &'static str) {
         C320_FIRST_REAL_JS,
     )
 }
+async fn device_status_js() -> (HeaderMap, &'static str) {
+    (
+        super::private_lab_headers("text/javascript; charset=utf-8"),
+        C320_DEVICE_STATUS_JS,
+    )
+}
+async fn connection_setup_js() -> (HeaderMap, &'static str) {
+    (
+        super::private_lab_headers("text/javascript; charset=utf-8"),
+        C320_CONNECT_JS,
+    )
+}
+async fn operator_console_js() -> (HeaderMap, &'static str) {
+    (
+        super::private_lab_headers("text/javascript; charset=utf-8"),
+        C320_OPERATOR_JS,
+    )
+}
 async fn physical_evidence() -> (HeaderMap, &'static str) {
     (
         super::private_lab_headers("application/json; charset=utf-8"),
@@ -462,6 +483,9 @@ pub(super) fn router() -> Router {
             "/lab/c320-first-real-inventory.js",
             get(first_real_inventory_js),
         )
+        .route("/lab/c320-operator-console.js", get(operator_console_js))
+        .route("/lab/c320-connection-setup.js", get(connection_setup_js))
+        .route("/lab/device-status-indicators.js", get(device_status_js))
         .route("/lab/device-physical-evidence", get(physical_evidence))
         .route(
             "/lab/c320-action-readiness",
@@ -470,6 +494,14 @@ pub(super) fn router() -> Router {
         .route(
             "/lab/c320-first-real-inventory",
             get(super::c320_actions_lab::first_read),
+        )
+        .route(
+            "/lab/c320-ont-feature-readiness",
+            get(super::c320_actions_lab::ont_features),
+        )
+        .route(
+            "/lab/c320-owner-manual-onu-snapshot",
+            get(super::c320_actions_lab::owner_onu_snapshot),
         )
         .route(
             "/lab/c320-actions/{action}",
@@ -682,7 +714,10 @@ mod tests {
         assert!(html.contains("Tambah kandidat perangkat"));
         assert!(html.contains("Daftar kandidat"));
         assert!(html.contains("PERINGATAN PRD"));
-        assert!(!html.contains("type=\"password\""));
+        // Private device enrollment inputs are separate from legacy demo candidates.
+        assert_eq!(html.matches("type=\"password\"").count(), 2);
+        assert!(html.contains("id=\"ipat-c320-bootstrap\""));
+        assert!(html.contains("id=\"ipat-c320-device-password\""));
         assert!(!html.contains("10.0.0.2"));
     }
     #[tokio::test]
@@ -767,6 +802,14 @@ mod tests {
         );
         assert_eq!(first["observation_is_live"], false);
         assert_eq!(first["cards"].as_array().unwrap().len(), 3);
+        assert_eq!(
+            first["actual_one_shot_lab_scripted_ssh_read_verified"],
+            true
+        );
+        assert_eq!(
+            first["scripted_read_was_unattended_production_worker"],
+            false
+        );
         assert_eq!(first["real_saas_device_adopted"], false);
         assert_eq!(
             first["owner_restic_isolated_byte_identical_restore_verified"],
@@ -783,6 +826,30 @@ mod tests {
             .await
             .status(),
             StatusCode::OK
+        );
+        assert_eq!(
+            request(
+                app.clone(),
+                "GET",
+                "/lab/c320-operator-console.js",
+                "",
+                false
+            )
+            .await
+            .status(),
+            StatusCode::OK
+        );
+        assert_eq!(
+            json["actual_ephemeral_scripted_owner_lab_ssh_show_card_verified"],
+            true
+        );
+        assert_eq!(
+            json["actual_ephemeral_scripted_rust_normalizer_exact_cards"],
+            3
+        );
+        assert_eq!(
+            json["ephemeral_one_shot_adapter_is_unattended_worker"],
+            false
         );
         assert_eq!(json["actual_cards_reported"], 3);
         assert_eq!(json["network_actions"], 0);

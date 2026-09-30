@@ -83,7 +83,7 @@ Semua FR memiliki `tenant_id`/otorisasi yang sesuai atau eksplisit `platform-sco
 | FR-001 | S1 | Buat minimal dua tenant sintetis yang terisolasi; query/command yang salah tenant ditolak di UI, API, service, job, search dan export. |
 | FR-002 | S1→C | Login OIDC dengan MFA untuk privileged users dan sesi tenant-scoped; user tenant lain tidak dapat memalsukan context via header/host/token. |
 | FR-003 | S1 | Policy RBAC + ABAC deny-by-default: action/resource/tenant/POP; menu tak berhak tidak dirender, API memberikan 403/404 sesuai kebijakan tanpa bocor metadata. |
-| FR-004 | C | Verifikasi kepemilikan subdomain/custom domain, TLS per domain, isolasi cookie/session/branding tenant, mapping domain↔tenant tervalidasi. |
+| FR-004 | S1→C | **Production-path sekarang:** platform subdomain atau custom domain disimpan pada registry PostgreSQL unik dan hanya status verified+TLS-ready yang boleh menyelesaikan `Host` menjadi konteks tenant. `Host` tidak pernah memberi authorization; identity+membership+RBAC/ABAC harus cocok dengan tenant hasil resolver. Platform-controlled `*.ipat.id` memakai verifikasi parent-domain; custom domain memakai proof kepemilikan (DNS TXT). Cookie host-only, callback OIDC allowlist, TLS dan negative cross-host tests wajib sebelum tenant data publik. |
 | FR-005 | S1→C | Antarmuka platform owner terpisah, tidak ada akses otomatis terhadap credential/data operasional tenant. |
 | FR-006 | S1→C | Audit siapa/kapan/aksi/tenant/resource/hasil/correlation-id tanpa secret; log akses lintas tenant ditolak juga dicatat. |
 | FR-007 | S1→C | Aksi berisiko memiliki klasifikasi, dry-run, approval *two-person* bila ditetapkan, expiry, reason, dan opsi emergency tercatat. |
@@ -166,7 +166,7 @@ Semua FR memiliki `tenant_id`/otorisasi yang sesuai atau eksplisit `platform-sco
 | AC-06 | S1 MUST | 3 skenario incident menghasilkan domain hipotesis berbeda, evidence/source/age dan disclaimer unknown; satu observasi CWMP missing tak memicu vonis fiber cut. |
 | AC-07 | S1 MUST | Backup PostgreSQL dan restore ke isolated instance dengan row counts/integrity sampel; hasil dicatat. |
 | AC-08 | S1 CONDITIONAL | Node kedua heterogen join dan menjalankan job eligible; tes gangguan/restart worker dan tidak ada duplicate side effect dalam skenario; jika node belum ada, ditandai BLOCKED. |
-| AC-09 | C | Customer custom domain tidak bisa mengambil tenant lain melalui host spoofing; TLS/session/domain ownership policy ditest. |
+| AC-09 | S1→C | Verified tenant hostname resolver gagal tertutup untuk unknown/pending/suspended/revoked/no-TLS domain; duplicate/forged Host dan `X-Forwarded-Host` tidak dapat memilih tenant lain. Sebelum public tenant data: ownership proof, certificate/TLS, host-only session cookie, OIDC callback allowlist dan cross-domain isolation diuji end-to-end. |
 | AC-10 | C | ACS interop per metode/firmware berdasarkan matriks, termasuk malformed XML, timeout, auth failures; tidak menggeneralisasi model lain. |
 | AC-11 | C | USP authenticated interoperability/conformance sesuai target fitur/amendment; setiap metode dan MTP punya evidence. |
 | AC-12 | C | OLT ZTE/C-DATA read-only dan aksi write yang diusulkan teruji per firmware dengan rollback/outage control terpisah. |
@@ -206,7 +206,7 @@ Frontend tenant + platform admin mengakses Axum API melalui verified domain ingr
 | M0 (hari ini) | PRD/architecture/security/device matrix/ADRs/backlog | Dokumen siap version control; pilihan PROPOSED tidak disalahsebut APPROVED |
 | S1 D1–D7 | Vertical slices MVP lab; baca `SPRINT_BACKLOG.md` | AC-01..07 dicatat, AC-08 jika node tersedia; demo & status akurat |
 | M1, setelah sprint | ACS/USP protocol completeness terprioritas, physical interop, adapter read-only, end-to-end authz | Test matrix meningkat **per kombinasi**; ketiadaan perangkat tetap blocker |
-| M2 | Batch provisioning controlled, diagnostics richer, UX tenant/custom-domain, operational hardening | Stage pilot tenant terisolasi + security review |
+| M2 | Batch provisioning controlled, diagnostics richer, advanced white-label/domain automation, operational hardening | Stage pilot tenant terisolasi + security review |
 | M3 | HA DB, production K3s, DR/backup, threat verification, load/fault injection, SLO budgeting | Commercial readiness review dengan bukti SLO/RPO/RTO dan pentest |
 | M4 | Paket/kuota, tenant onboarding self-service terbatas, observability/cost & scale tuning | Contract/compliance/support model disahkan sebelum penjualan luas |
 
@@ -1088,3 +1088,76 @@ commercial collector. MUST independently pin true physical chassis
 RSA, validate restricted device account, tenant/POP and baseline
 before an authenticated first CLI read. Hardware ADOPTED and actual
 health are FALSE/NOT_MEASURED until genuine signed reviewer approval.
+
+## R9.44 operational GUI first acceptance scope (supplement to baseline, 29 September 2026)
+
+MUST provide an operator-first OLT overview and per-PON summary that can display genuine versioned/timestamped, read-only inventory and valid C320 card/firmware readings by authenticated fixed read APIs; lab frontend must never mark dated owner screenshots as live telemetry. Initially only physically verified ZTE C320 PON 1/1/1 and bounded three read operations; present disabled/unsupported states rather than invented capabilities. Current `R944_C320_OPERATOR_GUI_REFERENCE.md` has evidence and feature mapping from user-supplied public reference to a distinct IPAT GUI without copying vendor implementation. SHOULD add independently physically verified ONU row listing, optical/traffic, alarms and PON navigation under tenant-aware production identity. LATER add physical C-DATA/vendor-specific mapping, reusable PPPoE/VLAN profiles, multi-vendor firmware and multi-OLT/FTTH management after exact model/firmware support. All actual configuration writes require native vendor restore rehearsal, per-device restrictions, signed owner/MFA maker-checker audit and tested rollback; GUI-visible actions are not proof hardware compatibility.
+
+
+## R9.45 clarification: direct-first device adoption and persistent server connectivity (29 September 2026)
+
+The product owner requires a real operator flow, not time-limited terminal-run collector UX. These requirements clarify existing PRD v0.1 and are not proof that full commercial tenancy or vendor coverage has been implemented.
+
+**MUST:** An entitled tenant/POP operator adds a real OLT/ONT/router using a supported device type, exact firmware/model where applicable, management address, approved protocol and scoped credential ONCE in the authenticated company dashboard. IPAT first evaluates the management route **FROM THE SELECTED SERVER/WORKER**, and connects directly over secure device-management transport when reachable. An overlay tunnel is NOT mandatory just because the target address is private. If unreachable, provide a scoped, audited WireGuard or verified IPsec site-gateway setup, check route/segmentation, then resume the same enrollment workflow. Network reachability alone is `REACHABLE_NOT_AUTHENTICATED`, not `ADOPTED`.
+
+**MUST:** Persistent server-side credential handling uses a separately managed production vault, tenant/POP RBAC+ABAC and MFA, bounded per-device workers, authenticated encrypted protocols with verified device identity, audit and background discovery/health. Success requires exact device challenge plus read-back of real identity/inventory with timestamp. Distinguish `NOT_ENROLLED`, `CONFIGURED_AWAITING_READ`, `READ_ONLY_CONNECTED`, `DEGRADED` and `ADOPTED_MANAGED`. On access failure, stale evidence or tunnel outage, mark degraded without showing a fabricated live state. Hide every unauthorized control and enforce the same policy in backend and workers.
+
+**MUST:** Real service configuration and firmware write actions are separate audited, scoped entitlements with independent approval, exact native backup/rollback rehearsal and device-specific validation. Never grant a user arbitrary raw CLI solely because a tunnel or login works.
+
+**LAB IMPLEMENTED (not equivalent to commercial acceptance):** On the first owner-only ZTE C320 target, private IPAT :3002 now has a persistent nonroot fixed SSH connector and a one-time secret-enrollment form, eliminating recurring temporary Mac-terminal authentication; owner-VPS TCP connectivity to management SSH port 321 was genuinely observed. At deployment it was NOT YET ENROLLED; physical SSH authentication remains contingent on the owner entering the device password once in the private browser. Existing :3002 preview has no verified OIDC tenant login, so its independent owner-bootstrap code, same-user-host encrypted credential files and network-observed pinned SSH key are **restricted interim lab exceptions**, not the commercial identity or vault implementation. Other vendors, arbitrary IP onboarding, approved tunnel provisioning, full optics/traffic and managed configuration remain MUST/SHOULD work, not completed claims. See `R945_DIRECT_DEVICE_ONBOARDING.md`, ADR-075 and `PROJECT_STATUS.md`.
+
+## R9.45: direktif adopsi langsung
+
+Owner product direction 29 September 2026: operator should input management address/profile and credential ONCE in authorized IPAT Device Manager. The server first checks an approved management route; use direct protocol (pinned SSH, vendor-verified TLS API or SNMPv3) if safe. Only if no safe route exists, establish a tenant/POP-restricted WireGuard or IPsec management link, validate last-hop access, and then use the exact same enrollment flow. A persistent per-device bounded collector updates honest fresh timestamp and online/degraded state. Accessible TCP does not alone mean adopted. Configuration changes, ONU registration, PPPoE/VLAN, firmware and reboot require separately authorized and audited scoped worker and proven vendor-native restoration. Production portal MUST enforce tenant OIDC/MFA and deny-by-default RBAC+ABAC on both menus and APIs; never expose password entry on unauthenticated public lab preview. R9.45 deploys ONLY private fixed-target owner-lab ZTE C320 persistent read connector. Actual network TCP 321 is reachable; owner has not yet entered device credential through new GUI. Generic multi-vendor enrollment and actual site-to-site tunnel provisioning remain UNIMPLEMENTED.
+
+## R9.46 — Per-device connection colors and provenance
+
+MUST show a text-and-color connection indicator on every actual enrolled device row and its operational header, derived from one tenant-scoped server-side measurement with freshness TTL. Green CONNECTED requires fresh real authenticated device read (not ping/TCP, saved password or an active agent), red DISCONNECTED means the previously authenticated device lacks current valid readings, amber PENDING means awaiting initial verification, and neutral grey UNKNOWN means no conclusive source. Provide accessible text and source timestamp in addition to color. Do not display dated historical ONU screenshots as current per-ONU connected states. Current first delivered scope is fixed real C320 DEV-01 and synthetic candidates UNKNOWN; generic multi-vendor status integration is pending.
+
+## R9.48 — Device management Save, Connect and diagnostics acceptance
+
+MUST: a user-authorized Add Device action saves validated metadata immediately, shows a durable Pending row in Device List with a consistent four-color status, and starts the connection worker automatically. Network/service reachability must be reported separately from device SSH authentication, exact vendor command support and adoption. A failure must preserve the Pending row and display an international IT-standard diagnostic code with actionable next step; do not claim invalid passwords solely from unsupported prompts. Only after actual authenticated inventory passes may a device become Read-only Connected, with source timestamp. Temporary lab owner verification must not silently block saving the nonsecret draft; show it as an explicit next-step blocker and focus the relevant field. Future generic network devices require authenticated tenant scope, device-specific verified target allowlist and per-vendor transport adapters, not arbitrary SSRF/CLI. Current R9.48 implementation remains owner-private fixed ZTE C320 only, and production portal, PostgreSQL multi-tenant inventory, WireGuard onboarding and write-capable firmware workflows are still NOT DONE.
+
+
+## R9.50 — LAB setup code clarity and replacement acceptance
+
+MUST not present an unexplained "One-Time Owner Code" as if it were an OLT credential. When an R9.49 saved Pending device cannot authenticate because the **temporary lab** setup proof is missing, open the verification instructions with a clear explanation, show where the authorized owner can retrieve the already-existing private one-time code locally, provide a nonsecret Copy Command interaction, focus the input, retain the SSH password in the still-active form, and continue the bounded fixed-target connection on submission/paste. Do not put secret text in source files, HTML, APIs, logs, chat or a public repository. Do not label TCP reachability as SSH authentication. A new SaaS Tenant Admin with genuine login/MFA and authorization must have a direct Save & Connect path with no separate lab setup prompt; that production work remains OPEN until actually implemented and tested. All other OLT/ONT/router target types remain gated by verified vendor-specific adapters and tenant-scoped device ownership; no arbitrary SSH proxy.
+
+
+## R9.51 — Production-path operational flow replaces lab-first product UX
+
+Product direction: new functionality is built on the production path first; laboratory mode is used only to validate the same code with physical devices. Do not create another fixed lab-only onboarding flow that later needs migration.
+
+### Required production operator flow
+
+1. User signs in to IPAT and receives a server-validated tenant/company/POP scope. Unauthorized menus are hidden and the backend still denies direct API calls.
+2. Device Manager persists a device row in PostgreSQL with tenant, site/POP, type, vendor/model, management endpoint, protocol, credential secret reference and capability/adoption state.
+3. A connection worker automatically attempts the selected adapter. It returns standardized stages such as ROUTE_UNREACHABLE, PORT_REFUSED, TLS_OR_HOST_IDENTITY_FAILED, AUTH_FAILED, UNSUPPORTED_DEVICE_RESPONSE, CONNECTED_READ_ONLY and DEGRADED.
+4. On successful authenticated discovery, IPAT records actual model/firmware/capabilities, refresh timestamp and inventory. The UI immediately changes the same persisted device row; no separate Terminal agent is part of normal operation.
+5. Background workers keep health/telemetry fresh. Lost freshness changes status without deleting the device.
+6. Action menus are generated from verified adapter capabilities and RBAC+ABAC. Unsupported operations stay absent from the menu and denied by the API.
+
+### Protocol plug-and-play targets
+
+- **TR-069/CWMP:** an ONT/CPE configured with the IPAT ACS URL reaches the in-house Rust ACS. Inform establishes device identity, tenant mapping and persisted session state; pre-provisioned serial/token rules may auto-adopt known CPEs. IPAT then schedules supported RPCs. An ACS URL/authentication path must exist on the CPE; TR-069 support alone does not make an unconfigured CPE magically discover the ACS.
+- **TR-369/USP:** native controller remains mandatory; agent identity/MTP/session persistence and tenant binding must be implemented on the same production inventory.
+- **MikroTik:** use RouterOS API-SSL as the preferred management adapter when enabled. Add endpoint + restricted account/certificate once, verify TLS identity, read system/routerboard/interface/PPP capability data, persist the router and keep background health. SSH is a fallback/diagnostic adapter, not the primary production UX.
+- **OLT:** Add Device selects the vendor/model adapter; IPAT discovers chassis/cards/PON/ONU inventory and current health. ZTE C320 is the first physical validation target. C-DATA follows after exact physical model/firmware evidence.
+
+### Acceptance cut-line
+
+The current owner-only `:3002` UI and one-time owner code are not the commercial product path. They remain validation artifacts until removed after the real authenticated production Device Manager is mounted. Production-path read-only adoption may ship before high-impact writes, but the login, tenant scoping, persistent inventory, adapter worker and health/error reporting are MUST before calling Device Manager usable.
+
+## R9.52 — Tenant subdomain/custom-domain is production-path NOW (30 Sep 2026)
+
+Owner direction supersedes the former R7.5/ADR-020 sequencing that deferred customer-domain work. Domain routing is now a MUST on the same production control API as login and Device Manager, not a later lab-to-production migration.
+
+**MUST:** a globally unique PostgreSQL tenant-domain registry stores tenant, canonical FQDN, domain kind, verification method, lifecycle state and TLS readiness. Only verified + tls_ready + active tenant may resolve. Platform-owned subdomains under a controlled IPAT parent may use parent-domain verification; externally owned custom domains require an explicit ownership proof such as DNS TXT before activation.
+
+**MUST:** HTTP Host is only a routing selector. It MUST NOT create membership, role, POP, device ownership or platform privilege. Authenticated requests must independently validate signed identity, current DB membership, RBAC+ABAC and resource tenant, then require that authorized tenant to equal the resolved hostname tenant. X-Forwarded-Host or user-supplied tenant headers are never standalone authority.
+
+**MUST:** unknown, duplicate, malformed, pending, suspended, revoked or non-TLS-ready hostnames fail closed. Public tenant data additionally requires certificate/TLS, host-only Secure HttpOnly session cookies, CSRF/origin protection and exact OIDC redirect/callback allowlists.
+
+**IMPLEMENTED IN R9.52 SOURCE:** migration `deploy/db/migrations/0012_tenant_domains.sql`, dedicated non-login resolver roles/function and Rust production route `GET /v1/tenant-context`. The route intentionally returns only a safe tenant slug/hostname plus `authentication_required=true`; it grants zero business access. The existing private `:3002` lab manifest remains domain-disabled because it is no longer the product path.
+
+**NOT YET CLAIMED LIVE:** public HTTPS customer dashboard, certificate issuance, actual DNS-TXT verification workflow, real tenant OIDC/MFA browser session and cross-host business API authorization must still be deployed/tested end-to-end. `ipat.fadly.id` is the owner-designated first custom-domain example; do not hardcode a tenant UUID or mark it public-live merely because DNS points to the VPS.

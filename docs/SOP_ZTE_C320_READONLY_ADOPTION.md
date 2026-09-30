@@ -189,3 +189,12 @@ yang nyata dan tiga kartu historis, delapan aksi otomatis masih
 HTTP403. Jangan menjalankan `username`, `write`, menghapus
 akses recovery atau mematikan Telnet hanya karena raw referensi
 CLI kini tersedia.
+
+## R9.34 working one-time LAB read adapter
+
+A real owner-interactive scripted SSH `show card` completed on C320;
+protected Rust normalization confirmed all three previously seen
+physical cards INSERVICE. This proves the IPAT LAB adapter can read
+real hardware, not that an unattended limited-privilege SaaS worker,
+physical identity, independent reviewer or native recovery is ready.
+See R934_C320_EPHEMERAL_ONE_SHOT_LAB_SSH_READ.md for verified scope.

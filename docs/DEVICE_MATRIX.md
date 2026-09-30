@@ -680,3 +680,53 @@ measured slots and five version rows; vendor GTGHK/GTXK mapping
 unverified and PRAM MVR unreported. Separate PRIVATE LAB historical
 inventory endpoint makes exact verified rows visible without
 misrepresenting active telemetry or production adoption.
+
+## R9.34 real C320 first ONE-SHOT scripted operator SSH `show card`
+
+Source 3afe20b approved ephemeral operator LAB command tested on
+actual private C320 SSH from owner VPS: exactly ONE actual bounded
+read-only `show card` command returned three actual cards matching
+the independently recorded initial owner Telnet and SSH snapshots
+(1/1/1 GTGHK, 1/1/3 PRAM, 1/1/4 SMXA), all INSERVICE.
+Actual independently inspected protected offline Rust normalizer
+parsed 3/3; private file SHA256
+5dc6aebaa162de7899fdec974377e1b9631647bdbab3b2b1502e20ce6810a722.
+No device config writes, no persisted test password, active owner
+socket closed. This establishes a working software LAB read adapter,
+NOT unattended production adoption, safe limited role or certified
+firmware alias/ONT/health/upgrade compatibility.
+
+## R9.36 C320 ONT registration adapter status — 29 September 2026
+
+Pure synthetic `olt-core::ont_registration` single-draft validation now exists and was covered by actual owner-VPS Rust unit tests. This module DOES NOT issue ONU/ONT registration commands or prove support for any ONT model, SN registration method, GPON profile, VLAN/service flow or physical firmware. The actual C320 only has independently repeated lab SSH scripted `show card` results on its known GTGHK slot 1/1/1; observed GTGHK↔GTXK file-type and missing PRAM MVR remain unresolved. OLT production ADOPTED = FALSE; ONT physical register/config test = NOT RUN; all physical action POST endpoints remain disabled.
+
+## R9.37 strict ONU/ONT parser and bridge/VLAN feature status (29 Sep 2026)
+
+C320 real physical `show gpon onu uncfg` response: **NOT OBSERVED by R9.37**. Public old C320 CLI documents describe a candidate syntax but are not firmware-matched proof. Rust synthetic parser for candidate unconfigured ONU table and offline bridge/VLAN/TCONT/GEM profile reviewer tested; **all physical ONU discovery, ONT registration, service profile activation, model/firmware and optical/traffic validation remain UNTESTED**. No real ONT serial, ONU ID, unconfigured inventory, VLAN or profile from actual C320 was ingested. Historical 1/1/1 GTGHK board observation cannot prove supported port occupancy or chosen ONT capability. Commercial physical adopt and ONT write state FALSE.
+
+## R9.38 owner-lab fresh ONU inventory staging and historical real configuration counters
+
+Protected actual R9.31 complete C320 running-config owner-VPS transcript (119980 bytes; owner-only 0600, NOT exported) independently parsed locally for sanitized counters: 171 `onu N type` declarations within five `gpon-olt` configuration sections; 72 declarations in historical `gpon-olt_1/1/1`. This does NOT establish these ONUs physically present, operational, or still configured today. An earlier generic lstrip count found 174 ONU-prefix lines across *all* config contexts; use 171 as the narrower interface-scoped count, not interchangeable totals. Fresh exact-firmware `show gpon onu uncfg`, `show gpon onu state` and `show run interface gpon-olt_1/1/1` owner-interactive capture is prepared but not yet actually executed or certified. Physical ONU registration remains UNTESTED; no free ID may be allocated based on historical counts.
+
+## R9.39 — Owner-attested real ZTE C320 CLI response on PON 1/1/1, 29 September 2026
+
+**Actual manual commands supported by this physical firmware in owner-provided interactive Telnet LAB output**: `show gpon onu uncfg` returned `%Code 62310-GPONSRV : No related information to show.` (zero reported unconfigured at the specific snapshot); `show gpon onu state gpon-olt_1/1/1` returned 72 configured status rows and footer `ONU Number: 0/72` (all were `enable`, `OMCC disable`, `OffLine`, GPON channel); `show run interface gpon-olt_1/1/1` returned 72 matching-count configured ONU declarations, each with configured type label `ZTEG-F623`. Registered ONU serials were included in owner chat transcript and MUST NOT be recopied to docs/Git/frontend/logs or used as enrollment inputs from chat. This is dated **manual owner-attested** real observation, not unattended worker evidence or automatically verified ID-by-ID equality. Configured type labels alone do not certify connected model/firmware or multi-vendor support. Zero unconfigured NOW does not prove optical port fault without a test ONT connected.
+
+Real C320 command-specific offline strict Rust response parser added in `crates/olt-core/src/c320_real_inventory.rs`; R9.38 one-time owner SSH reader corrected to exact scoped command and observed C320 response shape. Actual scheduled operator-executed SSH reread via newly corrected script, native restore, signed production adoption and actual physical ONT provisioning remain NOT VERIFIED; maintain `device_adopted=false` and physical ONT writes HTTP403.
+
+## R9.40 actual private dashboard control boundary (29 Sep 2026)
+
+C320 exact proven owner-manual read command shapes now have a deployed private owner-supervised panel button/SSH read IPC bridge, not just synthetic CLI parsing. The separately authorized owner-only interactive agent is NOT YET activated and the new button has NOT YET produced a fresh physical C320 result; actual private HTTP offline/positive synthetic IPC tests passed separately. Bound per-activation to five read-only cycles within 15 minutes, no CLI writes, no serials returned. Last real physical owner-manual 1/1/1 evidence remains 72 configured, zero online, zero unconfigured. Unsupported optical, firmware normalization, native restore, actual ONT registration/provisioning and production adoption remain UNTESTED/NOT ENABLED.
+
+## R9.41 C320 panel controlled-read expansion
+
+Private LAB dashboard now offers authenticated owner-supervised *candidate real* READ-ONLY `show card`, `show version-running` and the already owner-manually verified three PON inventory commands under temporary owner SSH activation; device model is owner-attested ZTE C320 and GTGHK/GTXK MVR discrepancy remains unresolved. Two new fixed cards/firmware panel routes were deployed and synthetic IPC/HTTP tests passed; **fresh physical result THROUGH THESE NEW BUTTONS HAS NOT BEEN EXECUTED** because owner-local TTY temporary credential still must be supplied. Do not label C-DATA, VSOL, additional ZTE ONTs, ZTE firmware upgrades, OLT write operations or final production adoption as supported from this result.
+
+
+## R9.45 actual direct-connect path evidence (29 Sep 2026)
+
+**ZTE C320 initial owner lab management target**: owner-VPS nonroot process independently established **TCP connection** to previously observed device SSH endpoint `10.10.13.233:321`, so a WireGuard or IPsec tunnel is NOT required for this currently routed test path. This is only L3/L4 reachability, **not authenticated SSH access**, current firmware/ONU status or an approved production identity. Existing privately pinned RSA SSH host key is **network-observed**, not independently chassis-console attested. R9.45 private `127.0.0.1:3002` GUI supports one-time bootstrapped direct C320 SSH enrollment and ongoing server-based fixed read commands. At verified VPS rollout time the GUI explicitly returned `NOT_ENROLLED`, `credentials_enrolled=false`; owner still needs to submit credentials ONCE in the browser and obtain actual physical card read before `READ_ONLY_CONNECTED_LAB` is achieved. No WAN/public Telnet credential enrollment, generic C-DATA/VSOL/MikroTik device adapter, generalized IP input, live per-ONU optical/traffic, native firmware upgrade/rollback, production `ADOPTED_MANAGED` or real tunnel provisioning has been demonstrated by this deployment.
+
+## R9.45: C320 direct route evidence
+
+Actual owner-VPS management route to owner-supplied ZTE C320 at 10.10.13.233:321 is present and bounded TCP connection succeeded on 29 September 2026. Private R9.45 read-only connector and Axum UI are active and enabled across user-systemd restarts, but endpoint status still reports connector_online=true, credentials_enrolled=false and adoption_state=NOT_ENROLLED. Only previously firmware-observed fixed card, running version and PON 1/1/1 ONU command families are permitted. A previous network-observed SSH key is pinned but has no independent out-of-band attestation. Optical data, actual ONT provisioning, firmware upgrade, native restore, C-DATA and other models remain blocked/unverified.
