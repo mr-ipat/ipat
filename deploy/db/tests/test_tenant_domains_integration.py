@@ -16,14 +16,21 @@ def run_psql(sql: str, *, check=True):
 class TenantDomainIntegration(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        run_psql("DROP SCHEMA IF EXISTS ipat_ops CASCADE; DROP SCHEMA IF EXISTS ipat_platform CASCADE; "
-                  "DROP ROLE IF EXISTS ipat_domain_reader; DROP ROLE IF EXISTS ipat_app_runtime; "
-                  "DROP ROLE IF EXISTS ipat_schema_owner;")
-        for path in (M1, M12):
+        # CI migrations are intentionally cumulative. Never drop shared base
+        # roles/schemas created and exercised by earlier integration tests.
+        base = run_psql("SELECT to_regclass('ipat_platform.tenants') IS NOT NULL;").stdout.strip()
+        if base != "t":
             subprocess.run(
-                ["psql", "-X", "-v", "ON_ERROR_STOP=1", "-f", str(path)],
+                ["psql", "-X", "-v", "ON_ERROR_STOP=1", "-f", str(M1)],
                 env=os.environ.copy(), text=True, capture_output=True, check=True
             )
+        run_psql("DROP FUNCTION IF EXISTS ipat_platform.resolve_active_tenant_domain(text); "
+                  "DROP TABLE IF EXISTS ipat_platform.tenant_domains CASCADE; "
+                  "DROP ROLE IF EXISTS ipat_domain_reader;")
+        subprocess.run(
+            ["psql", "-X", "-v", "ON_ERROR_STOP=1", "-f", str(M12)],
+            env=os.environ.copy(), text=True, capture_output=True, check=True
+        )
         run_psql("""
           INSERT INTO ipat_platform.tenants(id,tenant_slug,state) VALUES
           ('11111111-1111-1111-1111-111111111111','fadly','active'),
