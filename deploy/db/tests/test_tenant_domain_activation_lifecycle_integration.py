@@ -58,15 +58,32 @@ class DomainLifecycleIntegration(unittest.TestCase):
           ON CONFLICT (tenant_id,issuer,subject,role) DO UPDATE
           SET revoked_at=NULL,expires_at='2099-01-01T00:00:00Z';
 
-          SET ROLE ipat_domain_admin_login;
-          SELECT ipat_platform.request_tenant_custom_domain(
-            'https://id.example.invalid/realms/ipat','domain-admin',
-            '66666666-6666-6666-6666-666666666666',
+          INSERT INTO ipat_platform.tenant_domains(
+            id,tenant_id,hostname,domain_type,verification_state,verification_method,
+            routing_mode,verification_name,verification_value,
+            requested_by_issuer,requested_by_subject,requested_at,
+            activation_state
+          ) VALUES (
             'cccccccc-cccc-cccc-cccc-ccccccccccc1',
-            'portal.lifecycle.example.net','a_record',
-            'ipat-domain=cccccccc-cccc-cccc-cccc-ccccccccccc1'
-          );
-          RESET ROLE;
+            '66666666-6666-6666-6666-666666666666',
+            'portal.lifecycle.example.net','custom_domain','pending','dns_txt',
+            'a_record','_ipat-verify.portal.lifecycle.example.net',
+            'ipat-domain=cccccccc-cccc-cccc-cccc-ccccccccccc1',
+            'https://id.example.invalid/realms/ipat','domain-admin',clock_timestamp(),
+            'pending_dns'
+          )
+          ON CONFLICT (id) DO UPDATE SET
+            verification_state='pending',
+            verified_at=NULL,
+            disabled_at=NULL,
+            activation_state='pending_dns',
+            ownership_verified_at=NULL,
+            routing_ready_at=NULL,
+            tls_ready_at=NULL,
+            activated_at=NULL,
+            last_checked_at=NULL,
+            last_error_code=NULL,
+            last_evidence_sha256=NULL;
         """)
 
     def event(self, name, digest="a"*64, error="NULL"):
