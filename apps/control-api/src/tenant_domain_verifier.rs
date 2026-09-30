@@ -163,7 +163,7 @@ async fn txt_matches(resolver: &TokioResolver, target: &OwnershipTarget) -> Resu
     let lookup = resolver.txt_lookup(query).await.map_err(|_| ())?;
     Ok(lookup.answers().iter().any(|record| {
         matches!(
-            record.data(),
+            &record.data,
             hickory_resolver::proto::rr::RData::TXT(txt)
                 if txt_record_matches(txt, &target.verification_value)
         )
