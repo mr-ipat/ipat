@@ -7,6 +7,7 @@
 //! for every operation.
 
 use identity_core::browser_session::{BrowserSessionVault, RequestKind};
+use std::{fs::File, io::Read};
 use tokio_postgres::Client;
 use uuid::Uuid;
 
@@ -40,6 +41,15 @@ fn valid_routing_mode(value: &str) -> bool {
     matches!(value, "a_record" | "cname" | "nameserver")
 }
 
+fn new_request_id() -> Option<Uuid> {
+    let mut bytes = [0u8; 16];
+    File::open("/dev/urandom").ok()?.read_exact(&mut bytes).ok()?;
+    // RFC 4122/9562-compatible UUIDv4 version and variant bits.
+    bytes[6] = (bytes[6] & 0x0f) | 0x40;
+    bytes[8] = (bytes[8] & 0x3f) | 0x80;
+    Some(Uuid::from_bytes(bytes))
+}
+
 pub(super) async fn request_custom_domain_for_session(
     vault: &mut BrowserSessionVault,
     cookie: &str,
@@ -63,7 +73,7 @@ pub(super) async fn request_custom_domain_for_session(
         return None;
     }
 
-    let id = Uuid::new_v4();
+    let id = new_request_id()?;
     let verification_value = format!("ipat-domain={id}");
     let row = db
         .query_opt(
@@ -205,5 +215,12 @@ mod tests {
         assert!(valid_routing_mode("nameserver"));
         assert!(!valid_routing_mode("http_proxy"));
         assert!(!valid_routing_mode("A"));
+    }
+
+    #[test]
+    fn server_request_id_is_uuid_v4_with_rfc_variant() {
+        let id = new_request_id().expect("Ubuntu target must provide /dev/urandom");
+        assert_eq!(id.get_version_num(), 4);
+        assert_eq!(id.as_bytes()[8] & 0xc0, 0x80);
     }
 }
