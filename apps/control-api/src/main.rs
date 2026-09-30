@@ -8,6 +8,7 @@ mod device_workbench_lab;
 mod oidc_browser_lab;
 mod oidc_lab;
 mod tenant_membership_lab;
+mod tenant_domain;
 
 use identity_core::PinnedIssuer;
 use std::sync::Arc;
