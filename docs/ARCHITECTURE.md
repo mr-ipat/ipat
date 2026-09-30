@@ -1207,3 +1207,10 @@ Expected lifecycle is dashboard request → TXT ownership proof → routing-read
 The forward control-api combines the advanced R9.49+ device runtime with the R9.52 resolver and R9.53 enrollment schema. Domain instructions are deployment-driven and support adaptive selection without changing tenant authorization. Response metadata includes the selected routing mode, available modes, bounded selection reason, exact customer action and readiness flags.
 
 A new verifier boundary advances custom-domain state one step at a time using SECURITY DEFINER functions and a NOLOGIN/NOINHERIT EXECUTE-only capability. Browser-facing enrollment primitives authenticate opaque BFF sessions and re-check PostgreSQL tenant_admin membership for request/list/revoke. Verification, routing and TLS completion are never browser-controlled.
+
+
+## R9.55 automatic custom-domain ownership verification
+
+The custom-domain control path now includes a separate background verifier after enrollment: Tenant Admin/BFF creates a pending domain + unpredictable TXT challenge; `ipat_domain_verifier` can enumerate only pending ownership challenges through a sealed PostgreSQL function; the Rust worker resolves the FQDN TXT record and advances only `ownership_verified` on an exact challenge match. It cannot read the registry table directly and cannot grant tenant authorization.
+
+The remaining production controller chain is intentionally staged: **ownership verifier → routing observer (A/AAAA/CNAME/NS) → TLS/certificate controller → activation**. Each stage records its own evidence and cannot be browser-asserted. The DNS-instruction engine remains server-configured and decides whether the customer should point A/AAAA, CNAME, or delegated nameservers based on actual deployment capability.
