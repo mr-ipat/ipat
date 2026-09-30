@@ -1,9 +1,9 @@
-# IPAT — Product Requirements Document (PRD) v0.3
+# IPAT — Product Requirements Document (PRD) v0.4
 
 | Metadata | Nilai |
 |---|---|
 | Produk | IPAT (`IP@`) — Integrated Provisioning, Automation & Telemetry |
-| Versi/tanggal | v0.3 / 2026-09-30 (Asia/Jakarta) |
+| Versi/tanggal | v0.4 / 2026-09-30 (Asia/Jakarta) |
 | Status | **Baseline persyaratan untuk implementasi; validasi dan persetujuan akhir product owner masih diperlukan** |
 | Cakupan | Platform SaaS multi-tenant untuk provisioning, manajemen, telemetri, diagnostik, dan otomasi ISP |
 | Sumber primer | `IPAT_PROJECT_BRIEF.md`, approved design baseline; project instructions |
@@ -71,6 +71,7 @@ Tidak termasuk: seluruh RPC/TR-069 dan USP secara lengkap; sertifikasi perangkat
 - Ownership verification default menggunakan TXT unik `_ipat-verify.<hostname>` sebelum routing diaktifkan. Untuk mode nameserver, verifikasi ownership dilakukan sebelum customer diminta mendelegasikan NS sehingga domain tidak bergantung pada klaim NS yang belum terbukti.
 - Dashboard wajib menampilkan status terpisah: `draft/pending DNS`, `ownership verified`, `routing ready`, `TLS ready`, dan `active`; status tidak boleh disimpulkan hanya dari DNS resolve.
 - Managed subdomain dan custom domain memakai control-plane tenant yang sama. Domain tidak mengubah RBAC/ABAC, membership, atau entitlement.
+- Profil DNS `auto` wajib memilih metode tanpa meminta customer memahami arsitektur ingress: A/AAAA diprioritaskan bila ingress IP stabil tersedia; bila tidak, delegasi NS dipilih jika authoritative DNS IPAT tersedia. CNAME otomatis hanya boleh digunakan bila deployment secara eksplisit mengizinkannya karena CNAME pada zone apex tidak valid menurut DNS standar. Profil deployment tetap dapat memaksa A/AAAA, CNAME, atau NS untuk lingkungan tertentu.
 
 ## 4. Prioritas dan batas fase
 
@@ -97,7 +98,7 @@ Semua FR memiliki `tenant_id`/otorisasi yang sesuai atau eksplisit `platform-sco
 | FR-001 | S1 | Buat minimal dua tenant sintetis yang terisolasi; query/command yang salah tenant ditolak di UI, API, service, job, search dan export. |
 | FR-002 | S1→C | Login OIDC dengan MFA untuk privileged users dan sesi tenant-scoped; user tenant lain tidak dapat memalsukan context via header/host/token. |
 | FR-003 | S1 | Policy RBAC + ABAC deny-by-default: action/resource/tenant/POP; menu tak berhak tidak dirender, API memberikan 403/404 sesuai kebijakan tanpa bocor metadata. |
-| FR-004 | S1→C | Tenant Admin dapat menambah custom domain dari dashboard tanpa memilih detail infrastruktur secara manual. IPAT menghasilkan instruksi DNS dari profil deployment aktif: A/AAAA ke ingress IP, CNAME ke canonical ingress hostname, atau delegasi NS ke authoritative DNS IPAT bila layanan tersebut benar-benar diaktifkan. Target tidak boleh hard-code di frontend. Dashboard wajib memisahkan `routing_target_known` dari `safe_to_point_now`; customer tidak boleh diarahkan mengubah DNS sampai routing runtime siap, dan mode NS juga membutuhkan authoritative DNS readiness. Request disimpan tenant-scoped, hostname unik lintas platform, ownership diverifikasi melalui TXT sebelum routing/aktivasi, dan domain tetap `pending` sampai verifikasi + TLS selesai. Host hanya memilih public tenant bootstrap context dan **tidak pernah** memberi membership/role. |
+| FR-004 | S1→C | Tenant Admin dapat menambah custom domain dari dashboard tanpa memilih detail infrastruktur secara manual. IPAT menghasilkan instruksi DNS dari profil deployment aktif: A/AAAA ke ingress IP, CNAME ke canonical ingress hostname, atau delegasi NS ke authoritative DNS IPAT bila layanan tersebut benar-benar diaktifkan. Mode `auto` memilih metode aman secara server-side dan menyertakan alasan/aksi customer; A/AAAA diprioritaskan, NS menjadi fallback bila authoritative DNS tersedia, sedangkan CNAME otomatis memerlukan opt-in deployment eksplisit untuk menghindari instruksi apex yang tidak valid. Target tidak boleh hard-code di frontend. Dashboard wajib memisahkan `routing_target_known` dari `safe_to_point_now`; customer tidak boleh diarahkan mengubah DNS sampai routing runtime siap, dan mode NS juga membutuhkan authoritative DNS readiness. Request disimpan tenant-scoped, hostname unik lintas platform, ownership diverifikasi melalui TXT sebelum routing/aktivasi, dan domain tetap `pending` sampai verifikasi + TLS selesai. Host hanya memilih public tenant bootstrap context dan **tidak pernah** memberi membership/role. |
 | FR-005 | S1→C | Antarmuka platform owner terpisah, tidak ada akses otomatis terhadap credential/data operasional tenant. |
 | FR-006 | S1→C | Audit siapa/kapan/aksi/tenant/resource/hasil/correlation-id tanpa secret; log akses lintas tenant ditolak juga dicatat. |
 | FR-007 | S1→C | Aksi berisiko memiliki klasifikasi, dry-run, approval *two-person* bila ditetapkan, expiry, reason, dan opsi emergency tercatat. |
