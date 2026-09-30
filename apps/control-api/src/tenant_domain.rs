@@ -28,7 +28,7 @@ impl CanonicalHost {
     }
 }
 
-fn canonical_dns_name(raw: &str) -> Option<CanonicalHost> {
+pub(super) fn canonical_dns_name(raw: &str) -> Option<CanonicalHost> {
     let raw = raw.trim();
     if raw.is_empty() || raw.len() > 255 || raw.contains(['/', '\\', ' ', '\t', '\r', '\n']) {
         return None;
@@ -80,7 +80,7 @@ pub(crate) fn canonical_host(value: &HeaderValue) -> Option<CanonicalHost> {
     canonical_dns_name(host)
 }
 
-fn valid_custom_domain(host: &CanonicalHost) -> bool {
+pub(super) fn valid_custom_domain(host: &CanonicalHost) -> bool {
     let name = host.as_str();
     name.contains('.')
         && !name.ends_with(".local")
