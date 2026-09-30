@@ -296,6 +296,17 @@ async fn main() {
         .await
         .expect("bind isolated identity/dashboard lab listener");
     let mut app = app_with_lab_identity_and_store(lab_web_enabled, identity, store);
+    // Production-shaped tenant-domain bootstrap may be enabled independently
+    // of the old lab preview. It returns public routing context only and never
+    // grants membership or business API access.
+    let domain_requested =
+        std::env::var("IPAT_TENANT_DOMAIN_RESOLVER").as_deref() == Ok("YES");
+    if domain_requested {
+        app = app.merge(tenant_domain::router(
+            tenant_domain::from_environment()
+                .expect("invalid restricted tenant-domain database configuration"),
+        ));
+    }
     if let Some(registry) = registry {
         app = app.merge(tenant_membership_lab::registry_router(registry));
     }
