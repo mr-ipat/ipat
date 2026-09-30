@@ -12,6 +12,7 @@ mod oidc_lab;
 mod site_a_pairing_lab;
 mod tenant_domain;
 mod tenant_domain_bff;
+mod tenant_domain_verifier;
 mod tenant_membership_lab;
 
 use identity_core::PinnedIssuer;
@@ -318,6 +319,15 @@ async fn main() {
             tenant_domain::dns_profile_from_environment()
                 .expect("invalid custom-domain DNS instruction profile"),
         ));
+    }
+    // R9.55 background TXT ownership verifier. It advances ONLY the ownership
+    // gate; routing, TLS and final activation remain independent evidence.
+    let domain_verifier_requested =
+        std::env::var("IPAT_TENANT_DOMAIN_VERIFIER").as_deref() == Ok("YES");
+    if domain_verifier_requested {
+        let verifier = tenant_domain_verifier::from_environment()
+            .expect("invalid dedicated custom-domain verifier configuration");
+        tokio::spawn(tenant_domain_verifier::run_loop(verifier));
     }
     if let Some(registry) = registry {
         app = app.merge(tenant_membership_lab::registry_router(registry));
