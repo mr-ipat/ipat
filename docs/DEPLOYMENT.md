@@ -335,3 +335,18 @@ identity UNVERIFIED, interoperability UNTESTED and firmware
 execution DISABLED; no device is contacted or automatically
 enrolled. Unknown output is denied, not guessed.
 Live OLT access and firmware update are NOT available.
+
+
+## R9.20 custom-domain DNS profile
+
+Custom-domain DNS instructions are runtime configuration, not frontend constants. A deployment may set:
+
+- `IPAT_CUSTOM_DOMAIN_DNS_MODE=auto|a_record|cname|nameserver`
+- `IPAT_CUSTOM_DOMAIN_IPV4=<ingress IPv4>` and/or `IPAT_CUSTOM_DOMAIN_IPV6=<ingress IPv6>`
+- `IPAT_CUSTOM_DOMAIN_CNAME_TARGET=<canonical ingress hostname>`
+- `IPAT_CUSTOM_DOMAIN_NAMESERVERS=ns1.example,ns2.example`
+- `IPAT_CUSTOM_DOMAIN_AUTO_ALLOW_CNAME=YES` only when the deployment has separately established that automatic CNAME instructions are appropriate
+- `IPAT_CUSTOM_DOMAIN_ROUTING_READY=YES` only after the selected target actually accepts intended tenant traffic
+- `IPAT_CUSTOM_DOMAIN_AUTHORITATIVE_DNS_READY=YES` only after the configured NS service is genuinely authoritative and operational
+
+In `auto` mode the selection order is stable A/AAAA → two-or-more authoritative NS targets → CNAME only with explicit auto-CNAME opt-in. DNS targets may be shown for planning before readiness, but the UI must say not to point production DNS while `safe_to_point_now=false`. Do not configure the current VPS address merely because it resolves publicly; readiness requires working ingress/TLS evidence.
