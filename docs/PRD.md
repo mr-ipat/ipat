@@ -3,7 +3,7 @@
 | Metadata | Nilai |
 |---|---|
 | Produk | IPAT (`IP@`) — Integrated Provisioning, Automation & Telemetry |
-| Versi/tanggal | v0.1 / 2026-09-25 (Asia/Jakarta) |
+| Versi/tanggal | v0.2 / 2026-09-30 (Asia/Jakarta) |
 | Status | **Baseline persyaratan untuk implementasi; validasi dan persetujuan akhir product owner masih diperlukan** |
 | Cakupan | Platform SaaS multi-tenant untuk provisioning, manajemen, telemetri, diagnostik, dan otomasi ISP |
 | Sumber primer | `IPAT_PROJECT_BRIEF.md`, approved design baseline; project instructions |
@@ -18,7 +18,7 @@ IPAT menyatukan manajemen CPE melalui ACS TR-069/CWMP asli dalam Rust dan Contro
 
 **Outcome pengguna:** NOC melihat subscriber dan dependensi jaringan dalam satu konteks; provisioning officer menjalankan perubahan massal yang dapat ditinjau/diulang aman; security admin memeriksa dan menyetujui aksi berisiko; platform owner mengelola langganan dan tenant tanpa otomatis melihat kredensial tenant.
 
-**Outcome MVP tujuh hari:** potongan alur terintegrasi yang berjalan di laboratorium, bukti tes positif dan negatif, serta fondasi yang dapat dikembangkan. Jika perangkat nyata/node kedua tidak tersedia, demonstrasi simulator dibedakan tegas dari kelulusan tes fisik.
+**Outcome implementasi saat ini:** satu codebase production-shaped yang berjalan dengan deployment profile berbeda untuk lab/pilot/production. Lab bukan produk terpisah dan tidak boleh membutuhkan rewrite untuk produksi. Vertical slice yang diprioritaskan ialah login/tenant-domain → Device Manager persisten → worker/adapters → perangkat/ACS/USP nyata, dengan simulator tetap dibedakan tegas dari kelulusan tes fisik.
 
 **Indikator yang akan diukur (bukan janji):** jumlah kombinasi firmware tervalidasi per fitur; kelulusan tes isolasi dan deny-by-default; success/failure CWMP Inform/RPC dan USP PoC; perubahan PPPoE tanpa efek ganda; ketepatan/keterlacakan hipotesis diagnostik; throughput queue, error rate, p95 latensi, pemakaian node, RPO/RTO hasil tes.
 
@@ -58,11 +58,18 @@ Alur utama J-01: platform owner membuat tenant → domain subdomain/custom diver
 
 Tidak termasuk: seluruh RPC/TR-069 dan USP secara lengkap; sertifikasi perangkat; semua vendor/firmware; bulk firmware upgrade; remedi otomatis skala besar; billing/transaksi keuangan; HA/failover produksi; 100% akurasi RCA; autoscaling di semua penyedia cloud; bukti performa/keamanan lebih unggul dari produk lain.
 
+## 3.4 Prinsip deployment production-shaped (APPROVED 2026-09-30)
+
+- Lab, pilot dan production memakai source code, schema, API contract, worker/adapters dan policy model yang sama; yang berbeda hanya konfigurasi, identity provider, secret, ingress, HA, data dan approval profile.
+- Fitur lab-only yang tidak menuju jalur runtime produksi harus dianggap scaffolding sementara dan tidak boleh menghalangi vertical slice operasional.
+- Subdomain tenant adalah bagian onboarding inti. Managed subdomain dapat dialokasikan oleh platform; custom domain baru aktif setelah verifikasi. Hostname tidak pernah menjadi bukti otorisasi user.
+- Urutan delivery utama: authenticated tenant dashboard → persistent Device Manager → queue/worker → ZTE C320 read-only adoption → TR-069 auto-enrollment → MikroTik API-SSL/REST → USP/diagnostics/provisioning lanjutan.
+
 ## 4. Prioritas dan batas fase
 
 | Area | MUST — target demonstrasi 7 hari (jika dependensi tersedia) | MUST — sebelum rilis komersial | SHOULD | LATER |
 |---|---|---|---|---|
-| Identity/tenant | Dua tenant sintetis, OIDC/MFA dev, entitlements UI/API, tes negatif | End-to-end lintas data-plane, domain verified, secret boundaries, approval | Delegasi POP/region rinci | Advanced SSO per enterprise |
+| Identity/tenant | Dua tenant terisolasi, OIDC/MFA dev, entitlements UI/API, tes negatif, registry subdomain tenant | End-to-end lintas data-plane, domain verified, TLS/cookie isolation, secret boundaries, approval | Delegasi POP/region rinci | Advanced SSO per enterprise |
 | ACS | Rust endpoint HTTPS, Inform valid, session/fault dasar, 1 RPC parameter yang diuji | Metode prioritas lengkap menurut matriks, hardening/load/interoperabilitas | Templates/device profiles | Firmware campaign skala luas |
 | USP | Boundary, protobuf, simulator-agent PoC dengan satu flow; jika MTP tak siap tandai design-only | Native Controller interoperabel dan aman, MTP terpilih, reconnect/retry | Transport alternatif | USP Service orchestration luas |
 | OLT/ONT | Inventory/read-only via simulator dan perangkat bila ada | Adapter per kombinasi **teruji**, approval write | Event normalization multivendor | Ekspansi vendor |
@@ -83,7 +90,7 @@ Semua FR memiliki `tenant_id`/otorisasi yang sesuai atau eksplisit `platform-sco
 | FR-001 | S1 | Buat minimal dua tenant sintetis yang terisolasi; query/command yang salah tenant ditolak di UI, API, service, job, search dan export. |
 | FR-002 | S1→C | Login OIDC dengan MFA untuk privileged users dan sesi tenant-scoped; user tenant lain tidak dapat memalsukan context via header/host/token. |
 | FR-003 | S1 | Policy RBAC + ABAC deny-by-default: action/resource/tenant/POP; menu tak berhak tidak dirender, API memberikan 403/404 sesuai kebijakan tanpa bocor metadata. |
-| FR-004 | C | Verifikasi kepemilikan subdomain/custom domain, TLS per domain, isolasi cookie/session/branding tenant, mapping domain↔tenant tervalidasi. |
+| FR-004 | S1→C | Subdomain yang dikelola IPAT harus dapat dialokasikan saat tenant dibuat; custom domain memakai verifikasi DNS sebelum aktif. Host hanya memilih public tenant bootstrap context dan **tidak pernah** memberi membership/role. Backend wajib memverifikasi domain↔tenant bersama identity+membership; sebelum komersial wajib TLS per domain serta isolasi cookie/session/branding dan negative host-spoof tests. |
 | FR-005 | S1→C | Antarmuka platform owner terpisah, tidak ada akses otomatis terhadap credential/data operasional tenant. |
 | FR-006 | S1→C | Audit siapa/kapan/aksi/tenant/resource/hasil/correlation-id tanpa secret; log akses lintas tenant ditolak juga dicatat. |
 | FR-007 | S1→C | Aksi berisiko memiliki klasifikasi, dry-run, approval *two-person* bila ditetapkan, expiry, reason, dan opsi emergency tercatat. |
@@ -166,7 +173,7 @@ Semua FR memiliki `tenant_id`/otorisasi yang sesuai atau eksplisit `platform-sco
 | AC-06 | S1 MUST | 3 skenario incident menghasilkan domain hipotesis berbeda, evidence/source/age dan disclaimer unknown; satu observasi CWMP missing tak memicu vonis fiber cut. |
 | AC-07 | S1 MUST | Backup PostgreSQL dan restore ke isolated instance dengan row counts/integrity sampel; hasil dicatat. |
 | AC-08 | S1 CONDITIONAL | Node kedua heterogen join dan menjalankan job eligible; tes gangguan/restart worker dan tidak ada duplicate side effect dalam skenario; jika node belum ada, ditandai BLOCKED. |
-| AC-09 | C | Customer custom domain tidak bisa mengambil tenant lain melalui host spoofing; TLS/session/domain ownership policy ditest. |
+| AC-09 | S1→C | Registry domain hanya me-resolve hostname `verified` milik tenant `active`; pending/disabled/unknown/suspended fail closed dan reader tidak dapat SELECT tabel registry. Customer custom domain tidak bisa mengambil tenant lain melalui host spoofing; sebelum komersial TLS/session/domain ownership policy juga ditest. |
 | AC-10 | C | ACS interop per metode/firmware berdasarkan matriks, termasuk malformed XML, timeout, auth failures; tidak menggeneralisasi model lain. |
 | AC-11 | C | USP authenticated interoperability/conformance sesuai target fitur/amendment; setiap metode dan MTP punya evidence. |
 | AC-12 | C | OLT ZTE/C-DATA read-only dan aksi write yang diusulkan teruji per firmware dengan rollback/outage control terpisah. |
