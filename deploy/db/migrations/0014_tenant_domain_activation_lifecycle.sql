@@ -80,7 +80,7 @@ SECURITY DEFINER
 SET search_path = pg_catalog, ipat_platform
 AS $$
 DECLARE
-  v_state text;
+  v_next text;
 BEGIN
   IF p_domain_id IS NULL
      OR p_event NOT IN ('ownership_verified','routing_ready','tls_ready','activate','check_failed')
@@ -92,29 +92,23 @@ BEGIN
     RETURN NULL;
   END IF;
 
-  SELECT activation_state INTO v_state
-  FROM ipat_platform.tenant_domains
-  WHERE id=p_domain_id AND domain_type='custom_domain'
-  FOR UPDATE;
-
-  IF NOT FOUND OR v_state='disabled' THEN
-    RETURN NULL;
-  END IF;
-
   IF p_event='check_failed' THEN
     UPDATE ipat_platform.tenant_domains
     SET last_checked_at=clock_timestamp(),
         last_error_code=COALESCE(p_error_code,'CHECK_FAILED'),
         last_evidence_sha256=p_evidence_sha256
-    WHERE id=p_domain_id;
-    RETURN v_state;
+    WHERE id=p_domain_id
+      AND domain_type='custom_domain'
+      AND activation_state <> 'disabled'
+    RETURNING activation_state INTO v_next;
+    RETURN v_next;
   END IF;
 
   IF p_error_code IS NOT NULL OR p_evidence_sha256 IS NULL THEN
     RETURN NULL;
   END IF;
 
-  IF p_event='ownership_verified' AND v_state='pending_dns' THEN
+  IF p_event='ownership_verified' THEN
     UPDATE ipat_platform.tenant_domains
     SET activation_state='ownership_verified',
         verification_state='verified',
@@ -123,38 +117,46 @@ BEGIN
         last_checked_at=clock_timestamp(),
         last_error_code=NULL,
         last_evidence_sha256=p_evidence_sha256
-    WHERE id=p_domain_id;
-    RETURN 'ownership_verified';
-  ELSIF p_event='routing_ready' AND v_state='ownership_verified' THEN
+    WHERE id=p_domain_id
+      AND domain_type='custom_domain'
+      AND activation_state='pending_dns'
+    RETURNING activation_state INTO v_next;
+  ELSIF p_event='routing_ready' THEN
     UPDATE ipat_platform.tenant_domains
     SET activation_state='routing_ready',
         routing_ready_at=clock_timestamp(),
         last_checked_at=clock_timestamp(),
         last_error_code=NULL,
         last_evidence_sha256=p_evidence_sha256
-    WHERE id=p_domain_id;
-    RETURN 'routing_ready';
-  ELSIF p_event='tls_ready' AND v_state='routing_ready' THEN
+    WHERE id=p_domain_id
+      AND domain_type='custom_domain'
+      AND activation_state='ownership_verified'
+    RETURNING activation_state INTO v_next;
+  ELSIF p_event='tls_ready' THEN
     UPDATE ipat_platform.tenant_domains
     SET activation_state='tls_ready',
         tls_ready_at=clock_timestamp(),
         last_checked_at=clock_timestamp(),
         last_error_code=NULL,
         last_evidence_sha256=p_evidence_sha256
-    WHERE id=p_domain_id;
-    RETURN 'tls_ready';
-  ELSIF p_event='activate' AND v_state='tls_ready' THEN
+    WHERE id=p_domain_id
+      AND domain_type='custom_domain'
+      AND activation_state='routing_ready'
+    RETURNING activation_state INTO v_next;
+  ELSIF p_event='activate' THEN
     UPDATE ipat_platform.tenant_domains
     SET activation_state='active',
         activated_at=clock_timestamp(),
         last_checked_at=clock_timestamp(),
         last_error_code=NULL,
         last_evidence_sha256=p_evidence_sha256
-    WHERE id=p_domain_id;
-    RETURN 'active';
+    WHERE id=p_domain_id
+      AND domain_type='custom_domain'
+      AND activation_state='tls_ready'
+    RETURNING activation_state INTO v_next;
   END IF;
 
-  RETURN NULL;
+  RETURN v_next;
 END
 $$;
 ALTER FUNCTION ipat_platform.record_tenant_domain_check(uuid,text,text,text)
