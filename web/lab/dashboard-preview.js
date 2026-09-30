@@ -22,7 +22,7 @@ const DEMOS = Object.freeze({
       ["⬡","Perangkat terdaftar","0","Belum ada onboarding fisik ke ACS"]
     ]),
     rows: Object.freeze([
-      ["▥","Pembuatan tenant & domain","Rancang verifikasi domain, subdomain dan kuota per perusahaan.","Belum aktif"],
+      ["▥","Pembuatan tenant & domain","Input domain customer dan tampilkan instruksi DNS dari profil deployment; aktivasi publik tetap gated.","Control-plane aktif"],
       ["⟡","Paket & subscription","Metadata paket tanpa mengakses data pelanggan antar-tenant.","Rancangan"],
       ["◇","Keamanan & audit global","Peninjauan izin platform dengan pemisahan wewenang.","Belum aktif"]
     ])
@@ -30,7 +30,7 @@ const DEMOS = Object.freeze({
   tenant: Object.freeze({
     crumb: "Tenant Admin · LAB-ISP",
     title: "Tenant Admin",
-    description: "Pratinjau ruang kerja satu ISP sintetis. Identitas tenant nyata, domain dan login belum diaktifkan.",
+    description: "Pratinjau ruang kerja satu ISP sintetis. Control-plane custom domain dan instruksi DNS tersedia; login tenant nyata dan aktivasi publik belum diaktifkan.",
     overview: "Ringkasan ISP sintetis",
     focus: "Administrasi perusahaan",
     intro: "Menu yang dirancang hanya untuk perusahaan sendiri; tidak terdapat data tenant lain.",
@@ -46,7 +46,7 @@ const DEMOS = Object.freeze({
     ]),
     rows: Object.freeze([
       ["♧","Tim & delegasi peran","Undangan pengguna, bantuan dan audit hanya setelah OIDC/MFA.","Belum aktif"],
-      ["⬡","Branding & subdomain","Identitas masing-masing ISP, pemeriksaan kepemilikan domain wajib.","Rancangan"],
+      ["⬡","Branding & custom domain","Input domain dan instruksi DNS tersedia; ownership verification dan TLS tetap wajib.","Control-plane aktif"],
       ["▥","Inventory & subscriber","Terikat tenant + POP; tidak menampilkan data nyata sebelum izin.","Diblokir"]
     ])
   }),
@@ -78,7 +78,7 @@ const DEMOS = Object.freeze({
 const GAP_LEDGER = Object.freeze({
   platform: Object.freeze([
     ["FR-002","OIDC/MFA dan identitas pemilik platform belum terintegrasi"],
-    ["FR-004","Verifikasi subdomain/custom domain dan isolasi sesi belum diterapkan"],
+    ["FR-004","Control-plane domain + instruksi DNS sudah diterapkan; persistence BFF, public HTTPS dan sesi lintas domain nyata belum aktif"],
     ["FR-005/008","Onboarding tenant serta paket/kuota runtime belum tersedia"]
   ]),
   tenant: Object.freeze([
@@ -183,11 +183,14 @@ async function checkPrivateEnvironment() {
         || catalog.physical_interoperability_verified !== 0
         || catalog.compatibility_claim !== false
         || !Array.isArray(catalog.targets) || catalog.targets.length !== 8
-        || phase.schema !== 1
-        || phase.phase !== "private_single_endpoint_device_lab"
-        || phase.domain_verification_deferred !== true
-        || phase.custom_domains_enabled !== false
+        || phase.schema !== 2
+        || phase.phase !== "private_production_shaped_control_plane"
+        || phase.domain_control_plane_available !== true
+        || phase.custom_domain_instructions_enabled !== true
+        || phase.custom_domain_persistence_requires_authenticated_bff !== true
+        || phase.custom_domain_write_enabled !== false
         || phase.public_tenant_hostnames_enabled !== false
+        || phase.public_https_ready !== false
         || phase.private_loopback_transport_only !== true
         || phase.tenant_isolation_mandatory !== true
         || phase.tenant_isolation_end_to_end_verified !== false
@@ -198,12 +201,12 @@ async function checkPrivateEnvironment() {
       throw new Error("Untrusted or unexpected laboratory state");
     }
     text($("checked"), "Control API privat terhubung · tanpa login ataupun data perangkat");
-    text($("rollout-status"), "Fase backend cocok · custom domain terkunci · isolasi tenant belum tervalidasi");
+    text($("rollout-status"), "Control-plane domain aktif · instruksi DNS tersedia · persistence/login/TLS publik masih terkunci");
     text($("device-summary"), "8 target yang direncanakan · 0 perangkat nyata terdaftar");
     text($("device-badge"), "BUKAN TELEMETRI");
   } catch {
     text($("checked"), "Status belum terverifikasi; periksa tunnel privat");
-    text($("rollout-status"), "Fase backend tidak terverifikasi · jangan aktifkan akses tenant atau domain");
+    text($("rollout-status"), "State backend tidak terverifikasi · jangan aktifkan persistence domain atau public HTTPS");
     text($("device-summary"), "Katalog tidak tersedia; status perangkat tidak dapat disimpulkan");
     text($("device-badge"), "TIDAK DIKETAHUI");
   } finally {
