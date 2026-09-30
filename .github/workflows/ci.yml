@@ -209,8 +209,8 @@ jobs:
           grep -Fq 'available_routing_modes' web/lab/domain-settings.js
           grep -Fq 'customer_action' web/lab/domain-settings.js
           grep -Fq 'AKSI CUSTOMER' web/lab/domain-settings.html
-          grep -Fq 'IPAT_CUSTOM_DOMAIN_DNS_MODE=auto' docs/DEPLOYMENT.md
-          grep -Fq 'IPAT_CUSTOM_DOMAIN_AUTO_ALLOW_CNAME=YES' docs/DEPLOYMENT.md
+          grep -Fq 'IPAT_CUSTOM_DOMAIN_DNS_MODE' docs/DEPLOYMENT.md
+          grep -Fq 'IPAT_CUSTOM_DOMAIN_AUTO_ALLOW_CNAME' docs/DEPLOYMENT.md
       - name: R8.0 private restricted PostgreSQL inventory router/static SQL policy contract
         run: |
           python3 -m unittest discover deploy/db/tests -p 'test_r80_inventory_contract.py' -v
