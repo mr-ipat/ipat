@@ -4,13 +4,16 @@
 use axum::{
     extract::State,
     http::{header, HeaderMap, HeaderValue, StatusCode},
-    routing::get,
+    routing::{get, post},
     Json, Router,
 };
+use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use std::{
+    collections::HashSet,
     fs::OpenOptions,
     io::Read,
+    net::{Ipv4Addr, Ipv6Addr},
     os::unix::{fs::MetadataExt, fs::OpenOptionsExt},
     path::{Path, PathBuf},
     str::FromStr,
@@ -84,6 +87,273 @@ fn canonical_hostname(headers: &HeaderMap) -> Result<String, StatusCode> {
         }
     }
     Ok(host)
+}
+
+fn canonical_requested_domain(raw: &str) -> Option<String> {
+    let raw = raw.trim();
+    if raw.is_empty()
+        || raw.len() > 253
+        || !raw.is_ascii()
+        || raw
+            .chars()
+            .any(|c| matches!(c, '/' | '\\' | '@' | ' ' | '\t' | '\r' | '\n' | ':'))
+    {
+        return None;
+    }
+    let fqdn = raw.to_ascii_lowercase();
+    if fqdn.len() < 3
+        || fqdn.starts_with('.')
+        || fqdn.ends_with('.')
+        || fqdn.contains("..")
+        || !fqdn.contains('.')
+        || [
+            ".local",
+            ".localhost",
+            ".invalid",
+            ".test",
+            ".example",
+        ]
+        .iter()
+        .any(|suffix| fqdn.ends_with(suffix))
+    {
+        return None;
+    }
+    for label in fqdn.split('.') {
+        if label.is_empty()
+            || label.len() > 63
+            || label.starts_with('-')
+            || label.ends_with('-')
+            || !label
+                .bytes()
+                .all(|b| b.is_ascii_lowercase() || b.is_ascii_digit() || b == b'-')
+        {
+            return None;
+        }
+    }
+    Some(fqdn)
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+enum DnsRoutingMode {
+    ARecord,
+    Cname,
+    Nameserver,
+}
+impl DnsRoutingMode {
+    fn as_str(&self) -> &'static str {
+        match self {
+            Self::ARecord => "a_record",
+            Self::Cname => "cname",
+            Self::Nameserver => "nameserver",
+        }
+    }
+}
+#[derive(Debug, Clone)]
+pub(crate) struct DnsInstructionProfile {
+    mode: DnsRoutingMode,
+    ipv4: Option<Ipv4Addr>,
+    ipv6: Option<Ipv6Addr>,
+    cname_target: Option<String>,
+    nameservers: Vec<String>,
+    routing_ready: bool,
+    authoritative_dns_ready: bool,
+}
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct DomainInstructionRequest {
+    hostname: String,
+}
+#[derive(Debug, Serialize)]
+struct DnsRecordInstruction {
+    record_type: &'static str,
+    name: String,
+    value: String,
+    stage: &'static str,
+}
+#[derive(Debug, Serialize)]
+struct DomainInstructionResponse {
+    hostname: String,
+    routing_mode: &'static str,
+    routing_records: Vec<DnsRecordInstruction>,
+    verification_record_type: &'static str,
+    verification_record_name: String,
+    verification_value_issued_after_save: bool,
+    activation_requires_verification: bool,
+    routing_target_known: bool,
+    routing_ready: bool,
+    authoritative_dns_ready: bool,
+    safe_to_point_now: bool,
+    authorization_granted: bool,
+}
+
+fn env_yes(name: &str) -> bool {
+    std::env::var(name).as_deref() == Ok("YES")
+}
+
+pub(crate) fn dns_profile_from_environment() -> Result<Arc<DnsInstructionProfile>, &'static str> {
+    if !env_yes("IPAT_CUSTOM_DOMAIN_INSTRUCTIONS") || unsafe { libc::geteuid() } == 0 {
+        return Err("custom-domain instructions require explicit nonroot opt-in");
+    }
+    let mode = match std::env::var("IPAT_CUSTOM_DOMAIN_DNS_MODE")
+        .map_err(|_| "missing custom-domain DNS mode")?
+        .as_str()
+    {
+        "a_record" => DnsRoutingMode::ARecord,
+        "cname" => DnsRoutingMode::Cname,
+        "nameserver" => DnsRoutingMode::Nameserver,
+        _ => return Err("unsupported custom-domain DNS mode"),
+    };
+    let ipv4 = std::env::var("IPAT_CUSTOM_DOMAIN_IPV4")
+        .ok()
+        .map(|value| value.parse::<Ipv4Addr>())
+        .transpose()
+        .map_err(|_| "invalid custom-domain IPv4 target")?;
+    let ipv6 = std::env::var("IPAT_CUSTOM_DOMAIN_IPV6")
+        .ok()
+        .map(|value| value.parse::<Ipv6Addr>())
+        .transpose()
+        .map_err(|_| "invalid custom-domain IPv6 target")?;
+    let cname_target = std::env::var("IPAT_CUSTOM_DOMAIN_CNAME_TARGET")
+        .ok()
+        .and_then(|value| canonical_requested_domain(&value));
+    let nameservers = std::env::var("IPAT_CUSTOM_DOMAIN_NAMESERVERS")
+        .ok()
+        .map(|value| {
+            value
+                .split(',')
+                .filter_map(canonical_requested_domain)
+                .collect::<Vec<_>>()
+        })
+        .unwrap_or_default();
+    let routing_ready = env_yes("IPAT_CUSTOM_DOMAIN_ROUTING_READY");
+    let authoritative_dns_ready = env_yes("IPAT_CUSTOM_DOMAIN_AUTHORITATIVE_DNS");
+
+    match mode {
+        DnsRoutingMode::ARecord if ipv4.is_none() && ipv6.is_none() => {
+            return Err("A/AAAA routing requires at least one IP target");
+        }
+        DnsRoutingMode::Cname if cname_target.is_none() => {
+            return Err("CNAME routing requires canonical target");
+        }
+        DnsRoutingMode::Nameserver => {
+            let unique = nameservers.iter().collect::<HashSet<_>>();
+            if unique.len() < 2 || unique.len() != nameservers.len() {
+                return Err("nameserver routing requires at least two unique nameservers");
+            }
+            if routing_ready && !authoritative_dns_ready {
+                return Err("ready NS routing requires authoritative DNS service evidence");
+            }
+        }
+        _ => {}
+    }
+    Ok(Arc::new(DnsInstructionProfile {
+        mode,
+        ipv4,
+        ipv6,
+        cname_target,
+        nameservers,
+        routing_ready,
+        authoritative_dns_ready,
+    }))
+}
+
+fn build_dns_instructions(
+    profile: &DnsInstructionProfile,
+    hostname: String,
+) -> Option<DomainInstructionResponse> {
+    let mut routing_records = Vec::new();
+    match profile.mode {
+        DnsRoutingMode::ARecord => {
+            if let Some(ipv4) = profile.ipv4 {
+                routing_records.push(DnsRecordInstruction {
+                    record_type: "A",
+                    name: hostname.clone(),
+                    value: ipv4.to_string(),
+                    stage: "after_ownership_verification",
+                });
+            }
+            if let Some(ipv6) = profile.ipv6 {
+                routing_records.push(DnsRecordInstruction {
+                    record_type: "AAAA",
+                    name: hostname.clone(),
+                    value: ipv6.to_string(),
+                    stage: "after_ownership_verification",
+                });
+            }
+        }
+        DnsRoutingMode::Cname => {
+            let target = profile.cname_target.as_ref()?;
+            if target == &hostname {
+                return None;
+            }
+            routing_records.push(DnsRecordInstruction {
+                record_type: "CNAME",
+                name: hostname.clone(),
+                value: target.clone(),
+                stage: "after_ownership_verification",
+            });
+        }
+        DnsRoutingMode::Nameserver => {
+            for target in &profile.nameservers {
+                routing_records.push(DnsRecordInstruction {
+                    record_type: "NS",
+                    name: hostname.clone(),
+                    value: target.clone(),
+                    stage: "after_ownership_verification",
+                });
+            }
+        }
+    }
+    let authoritative_dns_ready = match profile.mode {
+        DnsRoutingMode::Nameserver => profile.authoritative_dns_ready,
+        _ => true,
+    };
+    let safe_to_point_now = profile.routing_ready && authoritative_dns_ready;
+    Some(DomainInstructionResponse {
+        verification_record_name: format!("_ipat-verify.{hostname}"),
+        hostname,
+        routing_mode: profile.mode.as_str(),
+        routing_target_known: !routing_records.is_empty(),
+        routing_records,
+        verification_record_type: "TXT",
+        verification_value_issued_after_save: true,
+        activation_requires_verification: true,
+        routing_ready: profile.routing_ready,
+        authoritative_dns_ready,
+        safe_to_point_now,
+        authorization_granted: false,
+    })
+}
+
+async fn dns_instructions(
+    State(profile): State<Arc<DnsInstructionProfile>>,
+    Json(input): Json<DomainInstructionRequest>,
+) -> (StatusCode, HeaderMap, Json<Value>) {
+    let Some(hostname) = canonical_requested_domain(&input.hostname) else {
+        return (
+            StatusCode::BAD_REQUEST,
+            response_headers(),
+            Json(json!({"error":"INVALID_DOMAIN"})),
+        );
+    };
+    let Some(result) = build_dns_instructions(&profile, hostname) else {
+        return (
+            StatusCode::BAD_REQUEST,
+            response_headers(),
+            Json(json!({"error":"UNSUPPORTED_DOMAIN"})),
+        );
+    };
+    (
+        StatusCode::OK,
+        response_headers(),
+        Json(serde_json::to_value(result).expect("serializable DNS instructions")),
+    )
+}
+
+pub(crate) fn instruction_router(profile: Arc<DnsInstructionProfile>) -> Router {
+    Router::new()
+        .route("/v1/domains/instructions", post(dns_instructions))
+        .with_state(profile)
 }
 
 async fn context(
@@ -275,6 +545,116 @@ mod tests {
         headers.append(header::HOST, HeaderValue::from_static("ipat.fadly.id"));
         headers.append(header::HOST, HeaderValue::from_static("other.example"));
         assert_eq!(canonical_hostname(&headers), Err(StatusCode::BAD_REQUEST));
+    }
+
+    fn a_profile(ready: bool) -> Arc<DnsInstructionProfile> {
+        Arc::new(DnsInstructionProfile {
+            mode: DnsRoutingMode::ARecord,
+            ipv4: Some("203.0.113.20".parse().unwrap()),
+            ipv6: None,
+            cname_target: None,
+            nameservers: Vec::new(),
+            routing_ready: ready,
+            authoritative_dns_ready: false,
+        })
+    }
+
+    #[test]
+    fn r953_dns_instruction_builder_is_domain_specific_and_non_authorizing() {
+        let response = build_dns_instructions(
+            &a_profile(true),
+            canonical_requested_domain("Portal.Customer.Co.Id").unwrap(),
+        )
+        .unwrap();
+        assert_eq!(response.hostname, "portal.customer.co.id");
+        assert_eq!(response.routing_mode, "a_record");
+        assert_eq!(response.routing_records.len(), 1);
+        assert_eq!(response.routing_records[0].record_type, "A");
+        assert_eq!(response.routing_records[0].value, "203.0.113.20");
+        assert_eq!(
+            response.verification_record_name,
+            "_ipat-verify.portal.customer.co.id"
+        );
+        assert!(response.routing_target_known);
+        assert!(response.routing_ready);
+        assert!(response.safe_to_point_now);
+        assert!(!response.authorization_granted);
+    }
+
+    #[test]
+    fn r953_nameserver_profile_requires_real_authoritative_readiness_before_ready() {
+        let profile = DnsInstructionProfile {
+            mode: DnsRoutingMode::Nameserver,
+            ipv4: None,
+            ipv6: None,
+            cname_target: None,
+            nameservers: vec!["ns1.ipat.id".into(), "ns2.ipat.id".into()],
+            routing_ready: true,
+            authoritative_dns_ready: false,
+        };
+        let response = build_dns_instructions(
+            &profile,
+            canonical_requested_domain("customer.co.id").unwrap(),
+        )
+        .unwrap();
+        assert!(response.routing_target_known);
+        assert!(response.routing_ready);
+        assert!(!response.authoritative_dns_ready);
+        assert!(!response.safe_to_point_now);
+    }
+
+    #[tokio::test]
+    async fn r953_instruction_endpoint_shows_target_but_blocks_pointing_until_ready() {
+        let app = instruction_router(a_profile(false));
+        let body =
+            serde_json::to_vec(&json!({"hostname":"portal.customer.co.id"})).unwrap();
+        let response = app
+            .oneshot(
+                Request::post("/v1/domains/instructions")
+                    .header("content-type", "application/json")
+                    .body(Body::from(body))
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(response.status(), StatusCode::OK);
+        let body = to_bytes(response.into_body(), 16 * 1024).await.unwrap();
+        let value: Value = serde_json::from_slice(&body).unwrap();
+        assert_eq!(value["routing_records"][0]["value"], "203.0.113.20");
+        assert_eq!(value["routing_target_known"], true);
+        assert_eq!(value["routing_ready"], false);
+        assert_eq!(value["safe_to_point_now"], false);
+        assert_eq!(value["authorization_granted"], false);
+    }
+
+    #[tokio::test]
+    async fn r953_instruction_endpoint_returns_configured_record_when_ready() {
+        let app = instruction_router(a_profile(true));
+        let body =
+            serde_json::to_vec(&json!({"hostname":"portal.customer.co.id"})).unwrap();
+        let response = app
+            .oneshot(
+                Request::post("/v1/domains/instructions")
+                    .header("content-type", "application/json")
+                    .body(Body::from(body))
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(response.status(), StatusCode::OK);
+        assert_eq!(
+            response.headers().get(header::CACHE_CONTROL).unwrap(),
+            "no-store"
+        );
+        let body = to_bytes(response.into_body(), 16 * 1024).await.unwrap();
+        let value: Value = serde_json::from_slice(&body).unwrap();
+        assert_eq!(value["routing_mode"], "a_record");
+        assert_eq!(value["routing_records"][0]["value"], "203.0.113.20");
+        assert_eq!(value["activation_requires_verification"], true);
+        assert_eq!(value["routing_target_known"], true);
+        assert_eq!(value["routing_ready"], true);
+        assert_eq!(value["safe_to_point_now"], true);
+        assert_eq!(value["authorization_granted"], false);
     }
 
     #[test]

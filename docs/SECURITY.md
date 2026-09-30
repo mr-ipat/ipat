@@ -1283,3 +1283,12 @@ The tenant hostname is an untrusted request selector until it matches a `verifie
 Threat controls added in this milestone: exactly one bounded canonical Host; malformed/IP-literal/duplicate Host rejected; `X-Forwarded-Host` is not application authority; globally unique FQDN; custom-domain ownership challenge separated from TLS readiness; suspended/revoked/no-TLS domains fail closed; dedicated resolver role has no direct table mutation or operational-data rights; output excludes tenant UUID/secrets. Trusted ingress must strip attacker-supplied forwarded-host headers and use exact allowed hosts/certificates.
 
 Before a customer hostname is publicly usable, require HTTPS only, host-only `Secure; HttpOnly` session cookies, SameSite/CSRF/origin enforcement, exact OIDC redirect URI allowlist and cross-host negative tests. Do not set a parent-domain cookie such as `.ipat.id` for tenant sessions. Platform owner support access remains separately authorized and does not inherit tenant device credentials merely by visiting a tenant hostname.
+
+
+## R9.53 custom-domain enrollment security
+
+R9.53 keeps R9.52 Host routing and custom-domain enrollment as separate authorities. `/v1/domains/instructions` is public-safe metadata and must always communicate `authorization_granted=false`; it cannot persist a mapping, activate TLS, or mint a tenant session. The endpoint returns active routing instructions only when the configured target is explicitly routing-ready. A planned IP/hostname/NS set is not enough.
+
+Custom-domain writes go through FORCE-RLS plus a NOLOGIN/NOINHERIT function owner. The EXECUTE-only `ipat_domain_admin` capability gets no direct SELECT/INSERT/UPDATE/DELETE/TRUNCATE privilege. Every request/list/revoke function re-checks exact current `tenant_admin` membership and tenant UUID. Duplicate FQDN conflicts return no owner metadata. Login credentials, SCRAM secrets and certificates remain outside Git/migrations.
+
+The DNS TXT challenge is nonsecret evidence, but issuance must be unpredictable and bound to the exact FQDN. A future verifier must record ownership evidence before routing-ready; TLS automation must follow verified routing and must never expand ingress host allowlists from an untrusted Host header alone. The temporary owner lab code is not acceptable domain authorization.

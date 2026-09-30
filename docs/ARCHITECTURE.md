@@ -1191,3 +1191,12 @@ The production edge resolves company hostnames before protected business routing
 Platform-managed `<tenant>.ipat.id` and externally owned custom domains share this runtime path. Their verification differs: parent-domain control may verify the former; DNS TXT challenge verifies the latter. TLS readiness is an independent activation condition. A domain lifecycle change to suspended/revoked, tenant suspension, or certificate-readiness loss immediately makes hostname resolution fail closed on the next request.
 
 The old `web/lab/rollout-phase.json` remains domain-disabled because the owner-only loopback lab is no longer the product entrypoint. Production domain behavior must not be demonstrated by weakening that lab manifest. Public deployment still requires ingress certificate automation, canonical Host forwarding, OIDC callback registration and host-only session cookies; those are deployment components layered on this same resolver, not a separate product implementation.
+
+
+## R9.53 adaptive custom-domain onboarding
+
+R9.53 extends the R9.52 production hostname resolver instead of replacing it. The public-safe `POST /v1/domains/instructions` surface accepts only a canonical requested hostname and returns routing metadata from a deployment profile (`a_record`, `cname`, or `nameserver`). It does not read tenant data or create a tenant mapping. A profile marked not-ready returns fail-closed; NS mode cannot be declared ready without at least two unique configured nameservers and explicit authoritative-DNS readiness.
+
+Persistence is a separate privileged boundary. Migration `0013_tenant_domain_enrollment.sql` extends the FORCE-RLS registry with routing mode, DNS-TXT challenge metadata, requester identity, ownership timestamp and routing readiness. The `ipat_domain_enrollment_owner` is NOLOGIN/NOINHERIT and owns sealed request/list/revoke functions; `ipat_domain_admin` has EXECUTE-only capability and no direct domain-table privileges. Real service LOGIN provisioning remains external to migrations.
+
+Expected lifecycle is dashboard request → TXT ownership proof → routing-ready evidence → TLS-ready evidence → R9.52 verified resolver → authenticated tenant BFF. The private Device Manager may render the workflow for validation, but only the real authenticated production BFF may enable the write action.

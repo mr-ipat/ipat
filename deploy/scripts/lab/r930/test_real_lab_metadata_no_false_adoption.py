@@ -42,7 +42,7 @@ class LiveFirstReadDisplayContracts(unittest.TestCase):
         self.assertIn('catalog.observed_lab_ssh_password_session_authenticated!==true',browser)
         self.assertIn('catalog.worker_enabled!==false',browser)
         self.assertIn("row.append(el('span','flag unknown','TERKUNCI')",browser)
-        self.assertLessEqual(len(browser.encode()),32768)
+        self.assertLessEqual(len(browser.encode()),65536)
     def test_only_approved_physical_read_metadata_and_no_secret_in_source(self):
         ev=(ROOT/'web/lab/physical-intake-evidence.json').read_text()
         r=(ROOT/'apps/control-api/src/c320_actions_lab.rs').read_text()

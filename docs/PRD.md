@@ -1,9 +1,9 @@
-# IPAT — Product Requirements Document (PRD) v0.1
+# IPAT — Product Requirements Document (PRD) v0.3
 
 | Metadata | Nilai |
 |---|---|
 | Produk | IPAT (`IP@`) — Integrated Provisioning, Automation & Telemetry |
-| Versi/tanggal | v0.1 / 2026-09-25 (Asia/Jakarta) |
+| Versi/tanggal | v0.3 / 2026-09-30 (Asia/Jakarta) |
 | Status | **Baseline persyaratan untuk implementasi; validasi dan persetujuan akhir product owner masih diperlukan** |
 | Cakupan | Platform SaaS multi-tenant untuk provisioning, manajemen, telemetri, diagnostik, dan otomasi ISP |
 | Sumber primer | `IPAT_PROJECT_BRIEF.md`, approved design baseline; project instructions |
@@ -18,7 +18,7 @@ IPAT menyatukan manajemen CPE melalui ACS TR-069/CWMP asli dalam Rust dan Contro
 
 **Outcome pengguna:** NOC melihat subscriber dan dependensi jaringan dalam satu konteks; provisioning officer menjalankan perubahan massal yang dapat ditinjau/diulang aman; security admin memeriksa dan menyetujui aksi berisiko; platform owner mengelola langganan dan tenant tanpa otomatis melihat kredensial tenant.
 
-**Outcome MVP tujuh hari:** potongan alur terintegrasi yang berjalan di laboratorium, bukti tes positif dan negatif, serta fondasi yang dapat dikembangkan. Jika perangkat nyata/node kedua tidak tersedia, demonstrasi simulator dibedakan tegas dari kelulusan tes fisik.
+**Outcome implementasi saat ini:** satu jalur source/schema/API production-shaped untuk login, tenant-domain, Device Manager, worker/adapters, ACS dan USP; laboratorium hanya memvalidasi jalur yang sama pada perangkat fisik. Simulator dan preview privat tetap dibedakan tegas dari kelulusan produksi/fisik.
 
 **Indikator yang akan diukur (bukan janji):** jumlah kombinasi firmware tervalidasi per fitur; kelulusan tes isolasi dan deny-by-default; success/failure CWMP Inform/RPC dan USP PoC; perubahan PPPoE tanpa efek ganda; ketepatan/keterlacakan hipotesis diagnostik; throughput queue, error rate, p95 latensi, pemakaian node, RPO/RTO hasil tes.
 
@@ -83,7 +83,7 @@ Semua FR memiliki `tenant_id`/otorisasi yang sesuai atau eksplisit `platform-sco
 | FR-001 | S1 | Buat minimal dua tenant sintetis yang terisolasi; query/command yang salah tenant ditolak di UI, API, service, job, search dan export. |
 | FR-002 | S1→C | Login OIDC dengan MFA untuk privileged users dan sesi tenant-scoped; user tenant lain tidak dapat memalsukan context via header/host/token. |
 | FR-003 | S1 | Policy RBAC + ABAC deny-by-default: action/resource/tenant/POP; menu tak berhak tidak dirender, API memberikan 403/404 sesuai kebijakan tanpa bocor metadata. |
-| FR-004 | S1→C | **Production-path sekarang:** platform subdomain atau custom domain disimpan pada registry PostgreSQL unik dan hanya status verified+TLS-ready yang boleh menyelesaikan `Host` menjadi konteks tenant. `Host` tidak pernah memberi authorization; identity+membership+RBAC/ABAC harus cocok dengan tenant hasil resolver. Platform-controlled `*.ipat.id` memakai verifikasi parent-domain; custom domain memakai proof kepemilikan (DNS TXT). Cookie host-only, callback OIDC allowlist, TLS dan negative cross-host tests wajib sebelum tenant data publik. |
+| FR-004 | S1→C | **Production-path sekarang:** Tenant Admin memasukkan hostname custom domain dari dashboard; IPAT menentukan instruksi DNS dari deployment profile aktif—A/AAAA ke ingress IP, CNAME ke canonical ingress hostname, atau delegasi NS hanya bila authoritative DNS IPAT benar-benar tersedia. Target tidak boleh hard-code di frontend. Request disimpan tenant-scoped sebagai `pending`, hostname unik lintas platform, dan ownership TXT `_ipat-verify.<fqdn>` harus lulus sebelum routing-ready + TLS-ready + `verified`. `Host` tidak pernah memberi authorization; identity+membership+RBAC/ABAC tetap harus cocok dengan tenant hasil resolver. |
 | FR-005 | S1→C | Antarmuka platform owner terpisah, tidak ada akses otomatis terhadap credential/data operasional tenant. |
 | FR-006 | S1→C | Audit siapa/kapan/aksi/tenant/resource/hasil/correlation-id tanpa secret; log akses lintas tenant ditolak juga dicatat. |
 | FR-007 | S1→C | Aksi berisiko memiliki klasifikasi, dry-run, approval *two-person* bila ditetapkan, expiry, reason, dan opsi emergency tercatat. |
@@ -166,7 +166,7 @@ Semua FR memiliki `tenant_id`/otorisasi yang sesuai atau eksplisit `platform-sco
 | AC-06 | S1 MUST | 3 skenario incident menghasilkan domain hipotesis berbeda, evidence/source/age dan disclaimer unknown; satu observasi CWMP missing tak memicu vonis fiber cut. |
 | AC-07 | S1 MUST | Backup PostgreSQL dan restore ke isolated instance dengan row counts/integrity sampel; hasil dicatat. |
 | AC-08 | S1 CONDITIONAL | Node kedua heterogen join dan menjalankan job eligible; tes gangguan/restart worker dan tidak ada duplicate side effect dalam skenario; jika node belum ada, ditandai BLOCKED. |
-| AC-09 | S1→C | Verified tenant hostname resolver gagal tertutup untuk unknown/pending/suspended/revoked/no-TLS domain; duplicate/forged Host dan `X-Forwarded-Host` tidak dapat memilih tenant lain. Sebelum public tenant data: ownership proof, certificate/TLS, host-only session cookie, OIDC callback allowlist dan cross-domain isolation diuji end-to-end. |
+| AC-09 | S1→C | Dashboard menerima hostname customer dan backend hanya mengembalikan A/AAAA, CNAME, atau NS dari deployment profile yang tervalidasi; target yang belum routing-ready menghasilkan fail-closed, dan mode NS memerlukan minimal dua NS unik plus authoritative-DNS readiness. Request/list/revoke custom domain hanya melalui membership `tenant_admin` tenant yang sama; duplicate FQDN lintas tenant tidak membocorkan pemilik dan runtime role tidak mendapat direct table access. Resolver tetap gagal tertutup untuk unknown/pending/suspended/revoked/no-TLS domain; forged Host/`X-Forwarded-Host` tidak memberi akses. |
 | AC-10 | C | ACS interop per metode/firmware berdasarkan matriks, termasuk malformed XML, timeout, auth failures; tidak menggeneralisasi model lain. |
 | AC-11 | C | USP authenticated interoperability/conformance sesuai target fitur/amendment; setiap metode dan MTP punya evidence. |
 | AC-12 | C | OLT ZTE/C-DATA read-only dan aksi write yang diusulkan teruji per firmware dengan rollback/outage control terpisah. |
@@ -1161,3 +1161,16 @@ Owner direction supersedes the former R7.5/ADR-020 sequencing that deferred cust
 **IMPLEMENTED IN R9.52 SOURCE:** migration `deploy/db/migrations/0012_tenant_domains.sql`, dedicated non-login resolver roles/function and Rust production route `GET /v1/tenant-context`. The route intentionally returns only a safe tenant slug/hostname plus `authentication_required=true`; it grants zero business access. The existing private `:3002` lab manifest remains domain-disabled because it is no longer the product path.
 
 **NOT YET CLAIMED LIVE:** public HTTPS customer dashboard, certificate issuance, actual DNS-TXT verification workflow, real tenant OIDC/MFA browser session and cross-host business API authorization must still be deployed/tested end-to-end. `ipat.fadly.id` is the owner-designated first custom-domain example; do not hardcode a tenant UUID or mark it public-live merely because DNS points to the VPS.
+
+
+## R9.53 — Dashboard-driven custom-domain onboarding on R9.52 resolver (30 Sep 2026)
+
+Owner requirement: customer/company domain setup must be simple from the dashboard. Tenant Admin supplies only the hostname; IPAT tells the customer what DNS record/delegation is required based on the active deployment profile.
+
+**MUST:** deployment profile supports `a_record` (A/AAAA), `cname`, or `nameserver`. Frontend must never embed a VPS address or nameserver set. Routing instructions are not returned as active/usable while `routing_target_ready=false`; NS mode additionally requires at least two unique nameservers and explicit authoritative-DNS readiness.
+
+**MUST:** custom-domain persistence is separate from the public-safe instruction endpoint. Database enrollment re-checks current `tenant_admin` membership, creates `pending` DNS-TXT ownership metadata, preserves FORCE RLS, and exposes no direct domain-table privileges to the runtime capability role. Duplicate FQDN attempts return no owner metadata.
+
+**MUST:** lifecycle is request → ownership verified → routing ready → TLS ready → verified/active resolver. A routing record alone is not activation, and a matching Host never becomes authorization.
+
+**CURRENT GATE:** real HTTPS ingress/certificate automation and real IdP/MFA BFF are still required before the dashboard write button can be enabled for production users. The owner-only lab verification code must not be reused as tenant-domain authorization.

@@ -358,7 +358,7 @@ async function showPhysicalEvidence() {
     }
     observedPhysical={observed_on:'2026-09-29',auth_read:true};
     draw();
-    statusNode.textContent='DEV-01 · ACTUAL LAB: login SSH dan Telnet berhasil; tiga kartu INSERVICE, lima baris versi teramati. BUKAN adopsi produksi: identitas fisik independen, akun terbatas, backup dan worker berotorisasi belum dibuktikan.';
+    statusNode.textContent='DEV-01 · ACTUAL LAB: login SSH dan Telnet berhasil; tiga kartu INSERVICE, lima baris versi teramati. BELUM DIADOPSI / BUKAN adopsi produksi: identitas fisik independen, akun terbatas, backup dan worker berotorisasi belum dibuktikan.';
     const items=document.createDocumentFragment();
     for(const [,title] of gated) {
     const item=el("div","physical-gate");

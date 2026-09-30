@@ -15,6 +15,9 @@ use tokio::sync::Mutex;
 const HTML: &str = include_str!("../../../web/lab/device-workbench.html");
 const CSS: &str = include_str!("../../../web/lab/device-workbench.css");
 const JS: &str = include_str!("../../../web/lab/device-workbench.js");
+const DOMAIN_HTML: &str = include_str!("../../../web/lab/domain-settings.html");
+const DOMAIN_CSS: &str = include_str!("../../../web/lab/domain-settings.css");
+const DOMAIN_JS: &str = include_str!("../../../web/lab/domain-settings.js");
 const C320_FIRST_REAL_JS: &str = include_str!("../../../web/lab/c320-first-real-inventory.js");
 const C320_OPERATOR_JS: &str = include_str!("../../../web/lab/c320-operator-console.js");
 const C320_CONNECT_JS: &str = include_str!("../../../web/lab/c320-connection-setup.js");
@@ -443,6 +446,24 @@ async fn js() -> (HeaderMap, &'static str) {
         JS,
     )
 }
+async fn domain_html() -> (HeaderMap, axum::response::Html<&'static str>) {
+    (
+        super::private_lab_headers("text/html; charset=utf-8"),
+        axum::response::Html(DOMAIN_HTML),
+    )
+}
+async fn domain_css() -> (HeaderMap, &'static str) {
+    (
+        super::private_lab_headers("text/css; charset=utf-8"),
+        DOMAIN_CSS,
+    )
+}
+async fn domain_js() -> (HeaderMap, &'static str) {
+    (
+        super::private_lab_headers("text/javascript; charset=utf-8"),
+        DOMAIN_JS,
+    )
+}
 async fn first_real_inventory_js() -> (HeaderMap, &'static str) {
     (
         super::private_lab_headers("text/javascript; charset=utf-8"),
@@ -479,6 +500,9 @@ pub(super) fn router() -> Router {
         .route("/lab/device-workbench", get(html))
         .route("/lab/device-workbench.css", get(css))
         .route("/lab/device-workbench.js", get(js))
+        .route("/lab/domain-settings", get(domain_html))
+        .route("/lab/domain-settings.css", get(domain_css))
+        .route("/lab/domain-settings.js", get(domain_js))
         .route(
             "/lab/c320-first-real-inventory.js",
             get(first_real_inventory_js),

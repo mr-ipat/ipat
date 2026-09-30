@@ -310,6 +310,14 @@ async fn main() {
                 .expect("invalid dedicated tenant-domain PostgreSQL resolver"),
         ));
     }
+    let domain_instructions_requested =
+        std::env::var("IPAT_CUSTOM_DOMAIN_INSTRUCTIONS").as_deref() == Ok("YES");
+    if domain_instructions_requested {
+        app = app.merge(tenant_domain::instruction_router(
+            tenant_domain::dns_profile_from_environment()
+                .expect("invalid custom-domain DNS instruction profile"),
+        ));
+    }
     if let Some(registry) = registry {
         app = app.merge(tenant_membership_lab::registry_router(registry));
     }
@@ -431,6 +439,23 @@ mod tests {
         assert!(lab_web_enabled(false, true));
         assert!(!lab_web_enabled(true, false));
         assert!(!lab_web_enabled(true, true));
+    }
+
+    #[tokio::test]
+    async fn r953_domain_settings_ui_is_private_lab_only() {
+        assert_eq!(
+            get_path(app(), "/lab/domain-settings").await.status(),
+            StatusCode::NOT_FOUND
+        );
+        let response = get_path(app_with_lab(true), "/lab/domain-settings").await;
+        assert_eq!(response.status(), StatusCode::OK);
+        assert_eq!(response.headers()[header::CACHE_CONTROL], "no-store");
+        let body = axum::body::to_bytes(response.into_body(), 64 * 1024)
+            .await
+            .unwrap();
+        let html = std::str::from_utf8(&body).unwrap();
+        assert!(html.contains("Domains & Branding"));
+        assert!(html.contains("Simpan domain & buat token verifikasi"));
     }
 
     #[tokio::test]
