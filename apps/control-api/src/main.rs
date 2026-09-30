@@ -475,7 +475,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn private_phase_may_defer_domains_but_never_tenant_isolation() {
+    async fn private_phase_reports_domain_control_plane_without_claiming_public_activation() {
         let response = get_path(app_with_lab(true), "/lab/rollout-phase").await;
         assert_eq!(response.status(), StatusCode::OK);
         assert_eq!(response.headers()[header::CACHE_CONTROL], "no-store");
@@ -487,10 +487,17 @@ mod tests {
             .await
             .unwrap();
         let policy: serde_json::Value = serde_json::from_slice(&bytes).unwrap();
-        assert_eq!(policy["phase"], "private_single_endpoint_device_lab");
-        assert_eq!(policy["domain_verification_deferred"], true);
-        assert_eq!(policy["custom_domains_enabled"], false);
+        assert_eq!(policy["schema"], 2);
+        assert_eq!(policy["phase"], "private_production_shaped_control_plane");
+        assert_eq!(policy["domain_control_plane_available"], true);
+        assert_eq!(policy["custom_domain_instructions_enabled"], true);
+        assert_eq!(
+            policy["custom_domain_persistence_requires_authenticated_bff"],
+            true
+        );
+        assert_eq!(policy["custom_domain_write_enabled"], false);
         assert_eq!(policy["public_tenant_hostnames_enabled"], false);
+        assert_eq!(policy["public_https_ready"], false);
         assert_eq!(policy["tenant_isolation_mandatory"], true);
         assert_eq!(policy["tenant_isolation_end_to_end_verified"], false);
         assert_eq!(policy["authenticated_tenant_data_apis_enabled"], false);
@@ -504,7 +511,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn rollout_status_cannot_be_mutated_to_enable_domains_or_device_access() {
+    async fn rollout_status_cannot_be_mutated_to_enable_public_domains_or_device_access() {
         for method in ["POST", "PUT", "DELETE"] {
             let response = app_with_lab(true)
                 .clone()
@@ -600,6 +607,9 @@ mod tests {
             );
         }
         assert!(LAB_DASHBOARD_PREVIEW.contains("Pengalih ini hanya mengganti tampilan"));
+        assert!(LAB_DASHBOARD_PREVIEW.contains("Atur domain customer"));
+        assert!(LAB_DASHBOARD_PREVIEW.contains("CONTROL-PLANE DOMAIN AKTIF"));
+        assert!(!LAB_DASHBOARD_PREVIEW.contains("CUSTOM DOMAIN DITUNDA"));
         assert!(!LAB_DASHBOARD_JS.contains("document.cookie"));
         assert!(!LAB_DASHBOARD_JS.contains("localStorage"));
         assert!(!LAB_DASHBOARD_PREVIEW.contains("type=\"password\""));
