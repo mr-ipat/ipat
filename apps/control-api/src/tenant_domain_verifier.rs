@@ -147,10 +147,7 @@ async fn pending_targets(client: &tokio_postgres::Client) -> Result<Vec<Ownershi
     Ok(targets)
 }
 
-fn txt_record_matches(
-    txt: &hickory_resolver::proto::rr::rdata::TXT,
-    expected: &str,
-) -> bool {
+fn txt_record_matches(txt: &hickory_resolver::proto::rr::rdata::TXT, expected: &str) -> bool {
     let mut joined = Vec::new();
     for part in &txt.txt_data {
         joined.extend_from_slice(part);
