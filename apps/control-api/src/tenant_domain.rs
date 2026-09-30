@@ -665,6 +665,74 @@ mod tests {
         assert!(!response.authorization_granted);
     }
 
+    fn auto_profile() -> DnsInstructionProfile {
+        DnsInstructionProfile {
+            mode: DnsRoutingMode::Auto,
+            ipv4: Some("203.0.113.20".parse().unwrap()),
+            ipv6: None,
+            cname_target: Some("edge.ipat.id".into()),
+            nameservers: vec!["ns1.ipat.id".into(), "ns2.ipat.id".into()],
+            auto_allow_cname: true,
+            routing_ready: true,
+            authoritative_dns_ready: true,
+        }
+    }
+
+    #[test]
+    fn r954_auto_prefers_stable_address_and_reports_customer_action() {
+        let profile = auto_profile();
+        let response = build_dns_instructions(
+            &profile,
+            canonical_requested_domain("portal.customer.co.id").unwrap(),
+        )
+        .unwrap();
+        assert_eq!(response.routing_mode, "a_record");
+        assert_eq!(response.selection_reason, "AUTO_STABLE_INGRESS_ADDRESS");
+        assert_eq!(response.customer_action, "CREATE_ADDRESS_RECORDS");
+        assert_eq!(
+            response.available_routing_modes,
+            vec!["a_record", "nameserver", "cname"]
+        );
+        assert_eq!(response.routing_records[0].value, "203.0.113.20");
+        assert!(response.safe_to_point_now);
+    }
+
+    #[test]
+    fn r954_auto_prefers_authoritative_ns_when_address_is_unavailable() {
+        let mut profile = auto_profile();
+        profile.ipv4 = None;
+        let response = build_dns_instructions(
+            &profile,
+            canonical_requested_domain("customer.co.id").unwrap(),
+        )
+        .unwrap();
+        assert_eq!(response.routing_mode, "nameserver");
+        assert_eq!(response.selection_reason, "AUTO_AUTHORITATIVE_NAMESERVERS");
+        assert_eq!(response.customer_action, "DELEGATE_NAMESERVERS");
+        assert_eq!(response.routing_records.len(), 2);
+    }
+
+    #[test]
+    fn r954_auto_cname_requires_explicit_deployment_opt_in() {
+        let mut profile = auto_profile();
+        profile.ipv4 = None;
+        profile.nameservers.clear();
+        let response = build_dns_instructions(
+            &profile,
+            canonical_requested_domain("portal.customer.co.id").unwrap(),
+        )
+        .unwrap();
+        assert_eq!(response.routing_mode, "cname");
+        assert_eq!(response.customer_action, "CREATE_CNAME_RECORD");
+
+        profile.auto_allow_cname = false;
+        assert!(build_dns_instructions(
+            &profile,
+            canonical_requested_domain("portal.customer.co.id").unwrap(),
+        )
+        .is_none());
+    }
+
     #[test]
     fn r953_nameserver_profile_requires_real_authoritative_readiness_before_ready() {
         let profile = DnsInstructionProfile {
@@ -673,6 +741,7 @@ mod tests {
             ipv6: None,
             cname_target: None,
             nameservers: vec!["ns1.ipat.id".into(), "ns2.ipat.id".into()],
+            auto_allow_cname: false,
             routing_ready: true,
             authoritative_dns_ready: false,
         };
