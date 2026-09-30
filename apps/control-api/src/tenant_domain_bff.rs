@@ -126,8 +126,7 @@ pub(super) async fn list_custom_domains_for_session(
         .query(
             "SELECT fqdn,state,routing_mode,verification_name,verification_value,
                     ownership_verified_at::text,routing_ready,tls_ready,
-                    verified_at::text,lifecycle_last_checked_at::text,
-                    lifecycle_last_error_code
+                    verified_at::text
              FROM ipat_platform.list_tenant_domains_for_member($1,$2,$3::uuid)",
             &[&identity.issuer(), &identity.subject(), &tenant],
         )
@@ -157,8 +156,8 @@ pub(super) async fn list_custom_domains_for_session(
             activation_state: activation_state.to_string(),
             ownership_verified_at,
             activated_at: row.get(8),
-            last_checked_at: row.get(9),
-            last_error_code: row.get(10),
+            last_checked_at: None,
+            last_error_code: None,
         });
     }
     Some(out)
