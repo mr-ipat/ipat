@@ -32,3 +32,80 @@ footer{border-top:1px solid #253e50;margin-top:24px;padding:20px 0;color:#83a1b3
 @media(max-width:1100px){.sidebar{flex-basis:190px}.twocol{grid-template-columns:1fr}.metric-row{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:700px){.shell{display:block}.sidebar{padding:15px}.sidebar nav{display:flex;overflow-x:auto}.sidebar nav a{white-space:nowrap}.sidebottom,.copyright{display:none}.topbar{padding:0 15px}.env{display:none}main{padding:14px}.metric-row{grid-template-columns:repeat(2,1fr)}.panel{padding:16px}.form-grid{grid-template-columns:1fr}}
 .physical-gate{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #2a4050;color:#bdd3df;font-size:11px}.physical-gate .flag{flex:none}
+/* R9.16 read-only public key / disabled preview; never render private keys. */
+.key-display{display:block;max-width:100%;overflow-wrap:anywhere;white-space:pre-wrap;padding:10px 12px;border:1px solid #37536b;border-radius:6px;color:#bce2e1}
+
+
+/* R9.44 device operator console; independent from legacy demo forms. */
+.ipat-ops-console{margin-bottom:18px;border-color:#287a83;background:linear-gradient(145deg,#132d3a,#111c2c)}
+.ipat-ops-console h3{font-size:13px;margin:16px 0 7px;color:#e6f6ff}
+.ipat-ops-tabs,.ipat-ops-actionbar{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:15px 0}
+.ipat-ops-tab{display:inline-flex;padding:8px 12px;border:1px solid #405768;border-radius:7px;color:#a4b9cc;font-size:11px}
+.ipat-ops-tab.active{border-color:#43c7bf;color:#dcfff9;background:#1a4749}
+.ipat-ops-tab.locked{border-style:dashed;color:#a8aab5}
+.ipat-ops-topology{display:grid;grid-template-columns:1fr 1.15fr 1.25fr;gap:13px;margin:15px 0}
+.ipat-ops-topology>div{padding:15px;border:1px solid #35566a;border-radius:9px;background:#0d202d;min-width:0}
+.ipat-ops-topology label{display:block;font-size:10px;color:#8fafbe;margin-bottom:8px}
+.ipat-ops-topology strong{font-size:12px;color:#e1f1fc;overflow-wrap:anywhere}
+.ipat-ops-topology select{min-width:0;font-size:11px}
+.ipat-ops-disclosure{font-size:11px;color:#a9bfd0;line-height:1.65}
+.ipat-ops-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:15px 0}
+.ipat-ops-metrics article{padding:16px;background:#0e202d;border:1px solid #345063;border-radius:9px;min-width:0}
+.ipat-ops-metrics small{display:block;font-size:10px;color:#9fbbcc;margin-bottom:8px}
+.ipat-ops-metrics strong{font-size:22px;color:#e9f9fd;overflow-wrap:anywhere}
+.ipat-ops-secondary{grid-template-columns:repeat(2,minmax(0,1fr))}
+.ipat-ops-secondary strong{font-size:14px}
+.ipat-ops-actionbar button{min-height:40px}
+.ipat-ops-events{margin:6px 0;padding:0 0 0 24px;max-height:155px;overflow:auto;font-size:11px;color:#9fc3d0}
+.ipat-ops-events li{padding:4px 0;overflow-wrap:anywhere}
+#ipat-c320-connectivity{display:inline-block;padding:8px 13px;color:#f4d9ac;background:#302b25;border:1px solid #927245;border-radius:7px}
+#ipat-c320-observation-stamp{font-size:11px}
+@media(max-width:900px){.ipat-ops-topology{grid-template-columns:1fr 1fr}.ipat-ops-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:580px){.ipat-ops-topology{grid-template-columns:1fr}.ipat-ops-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.ipat-ops-actionbar button{width:100%}}
+
+/* R9.45: one-time private device onboarding and optional legacy diagnostics */
+.ipat-c320-enrollment{border:1px solid #41787f;background:#0e2732;padding:15px;border-radius:10px;margin:12px 0 16px}
+.ipat-c320-enrollment h3{margin:0 0 8px;color:#dbfff8}
+.ipat-c320-enrollment input{width:100%;min-width:0;max-width:100%;box-sizing:border-box}
+.ipat-c320-enrollment #ipat-c320-enroll-result{font-size:12px;line-height:1.7;color:#d1e9ed}
+.ipat-lab-diagnostics{margin:16px 0;border:1px dashed #4b6475;border-radius:9px;padding:12px}
+.ipat-lab-diagnostics>summary{cursor:pointer;padding:9px 4px;font-size:12px;color:#a6bbca}
+.ipat-lab-diagnostics[open]>summary{margin-bottom:16px;border-bottom:1px solid #4b6475}
+
+/* R9.46 real-evidence per-device four-color connectivity chips */
+.ipat-device-signal{display:inline-flex;align-items:center;gap:6px;padding:5px 11px;border-radius:99px;border:1px solid;font-size:12px;font-weight:700;white-space:nowrap;line-height:1.5}
+.ipat-device-signal--connected{color:#a7f3d0;background:#064e3b;border-color:#34d399}
+.ipat-device-signal--disconnected{color:#fecaca;background:#7f1d1d;border-color:#f87171}
+.ipat-device-signal--pending{color:#fde68a;background:#713f12;border-color:#fbbf24}
+.ipat-device-signal--unknown{color:#e2e8f0;background:#334155;border-color:#94a3b8}
+.ipat-ops-console .ipat-device-signal{margin:6px 0}
+
+/* R9.47 · Standard network-device onboarding, responsive alignment */
+.ipat-device-form-heading{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}
+.ipat-device-form-heading h3{font-size:20px;letter-spacing:-.02em;margin:3px 0 8px}
+.ipat-device-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}
+.ipat-field{display:flex;flex-direction:column;min-width:0;gap:7px}
+.ipat-field label,.ipat-device-security label{font-size:12px;font-weight:650;color:#d8e6ed}
+.ipat-field input,.ipat-field select,.ipat-device-security input{width:100%;min-width:0;min-height:42px;padding:9px 12px;border:1px solid #4a6b7c;border-radius:8px;box-sizing:border-box;color:#e7f5fa;background:#122330;font:inherit}
+.ipat-field input:focus-visible,.ipat-field select:focus-visible,.ipat-device-security input:focus-visible{outline:2px solid #51cfc5;outline-offset:2px}
+.ipat-profile-info{font-size:12px;color:#b6eee0;border:1px solid #346b65;background:#173936;border-radius:8px;padding:10px 12px;margin:15px 0}
+.ipat-profile-info--warning{border-color:#977638;background:#3b2e1c;color:#ffdf9f}
+.ipat-device-security{max-width:650px;padding:12px;border:1px solid #385469;border-radius:8px;margin:12px 0}
+.ipat-device-security summary{font-size:12px;cursor:pointer;color:#d3e0e7;font-weight:600}
+.ipat-device-security p{font-size:12px;color:#a8bac7;line-height:1.5}
+.ipat-device-security input{margin-top:7px}
+@media(max-width:700px){.ipat-device-form-grid{grid-template-columns:minmax(0,1fr)}}
+
+/* R9.49: distinct device-save, connection and network diagnostic stages */
+.ipat-connection-summary{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-top:16px;padding:12px 14px;background:#19343c;border:1px solid #507782;border-radius:9px}
+.ipat-connection-summary strong{color:#a7f3d0;font-size:13px}
+.ipat-connection-summary span{font-size:13px;color:#deebf2}
+.ipat-connection-diagnostic{margin-top:12px;line-height:1.6;white-space:normal;overflow-wrap:anywhere;padding:10px 12px;border-left:3px solid #eab96b;background:#20333d;color:#ffe7b2;font-size:12px}
+.ipat-device-security[open]{border-color:#eab96b;background:#273740}
+.ipat-device-security[open] summary{color:#ffdf9f}
+
+/* R9.50: explicit temporary setup step that was previously undiscoverable */
+.ipat-owner-command{display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:12px;border:1px solid #52788b;border-radius:8px;background:#132934;margin:12px 0}
+.ipat-owner-command code{display:block;flex:1 1 300px;min-width:0;overflow-wrap:anywhere;user-select:all;font-size:12px;line-height:1.65;color:#d9f6ef}
+.ipat-owner-command button{flex:0 0 auto}
+#ipat-owner-command-feedback{font-size:12px;line-height:1.6;color:#d6e5ed}

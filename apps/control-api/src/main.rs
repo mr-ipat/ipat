@@ -3,10 +3,13 @@
 //! This is NOT an authenticated tenant dashboard or a production/public UI.
 
 mod browser_session_lab;
+mod c320_actions_lab;
+mod c320_live_lab;
 mod device_review_lab;
 mod device_workbench_lab;
 mod oidc_browser_lab;
 mod oidc_lab;
+mod site_a_pairing_lab;
 mod tenant_domain;
 mod tenant_domain_bff;
 mod tenant_membership_lab;
@@ -332,6 +335,14 @@ async fn main() {
             oidc_browser_lab::from_owner_environment()
                 .expect("unsafe or missing explicitly approved browser provider configuration"),
         ));
+    }
+    // R9.53: owner-only C320 bridge, strictly separate from public tenant APIs.
+    let owner_live_read = std::env::var("IPAT_R940_PRIVATE_OWNER_READ").as_deref() == Ok("YES");
+    if owner_live_read && !private_canary {
+        panic!("physical read bridge requires isolated private canary");
+    }
+    if owner_live_read {
+        app = app.merge(c320_live_lab::router());
     }
     axum::serve(listener, app).await.expect("serve API");
 }
