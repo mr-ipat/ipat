@@ -352,6 +352,10 @@ jobs:
       - name: R9.56 disposable restricted DNS verifier queue and lifecycle isolation
         run: |
           python3 -m unittest discover deploy/db/tests -p test_tenant_domain_dns_verifier_integration.py -v
+      - name: R9.57 disposable tenant/POP-scoped managed device registry and credentialless saves
+        run: |
+          python3 -m py_compile deploy/db/tests/test_managed_device_registry_integration.py
+          python3 -m unittest discover deploy/db/tests -p test_managed_device_registry_integration.py -v
       - name: R8.3 real disposable PostgreSQL pending adoption and separate admin registration/POP read privilege tests
         run: |
           python3 -m unittest discover deploy/db/tests -p test_device_candidates_integration.py -v
