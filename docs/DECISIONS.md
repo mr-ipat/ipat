@@ -651,3 +651,7 @@ The divergent R9.55 feature is reference material only. R9.56 is rebased
 onto merged canonical R9.53 and retains the current C320 connector.
 Public HTTPS, real OIDC/MFA, production PostgreSQL and physical OLT adoption
 remain independent release gates.
+
+## ADR-050 — R9.57 isolated production Device Registry metadata foundation (APPROVED scope, deployment PENDING)
+
+Use a new durable tenant+POP registry on the canonical merged main lineage, not the fixed owner lab device or incompatible advanced parallel migration. Never copy historical lab devices into a production tenant without verified ownership and credential re-enrollment. Metadata Save is independent of Connect, defaults to `SAVED`, is idempotent on request identity and has append-only save audit. Deny direct table privileges even to future login; restrict operations to sealed current-membership functions called after separately verified browser identity/CSRF/domain authority. Platform owners have no automatic tenant-device read privileges. Subsequent network worker, UI, real identity and data migration require independent acceptance.

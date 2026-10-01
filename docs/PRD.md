@@ -1037,3 +1037,9 @@ their own PRIVATE keys. No Site A remote push, wide default AllowedIPs,
 unsafe export QR defaults or automatic route/firewall modifications.
 Actual signed Tenant Admin profile download and separately approved
 Site A local activation remain MUST/NOT IMPLEMENTED.
+
+## R9.57 — Production-path durable Device Registry (MUST, source milestone)
+
+One shared, production-path metadata registry is required rather than reproducing the owner-only fixed C320 lab row. `0016_managed_device_registry.sql` creates a tenant+POP-scoped record and append-only metadata-save audit. `register_managed_device` is accessible only through a dedicated EXECUTE role and checks current active `tenant_admin` membership in the DB for every request, with exact idempotent request IDs. `list_managed_devices` returns no management endpoint or Vault reference, only authorized tenant-admin/NOC POP rows. Save succeeds independent of network reachability; the only current state is `SAVED`. Client-supplied role/tenant headers may not grant access. The BFF primitive also requires an opaque session, CSRF and same-origin for writes; it remains UNMOUNTED until real IdP/MFA, verified Host-to-tenant equality, durable sessions and production PostgreSQL deployment have passed.
+
+R9.57 source is NOT a connected Device Manager, worker, verified OLT, TR-069/USP session, usable live dashboard or completed production deployment. Next MUST: authenticated BFF mount, active DB migration, tenant domain equality, frontend Add/List, secure credential enrollment and read-only worker with fresh physical evidence. Firmware, reboot and configuration writes remain hard-disabled.
