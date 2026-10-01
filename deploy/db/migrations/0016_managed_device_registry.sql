@@ -45,25 +45,25 @@ ALTER TABLE ipat_ops.managed_device_audit ENABLE ROW LEVEL SECURITY;
 ALTER TABLE ipat_ops.managed_device_audit FORCE ROW LEVEL SECURITY;
 REVOKE ALL ON ipat_ops.managed_device_audit FROM PUBLIC, ipat_app_runtime;
 
-CREATE ROLE ipat_device_registry_owner NOLOGIN NOSUPERUSER NOCREATEDB
+CREATE ROLE ipat_managed_registry_owner NOLOGIN NOSUPERUSER NOCREATEDB
   NOCREATEROLE NOREPLICATION NOBYPASSRLS NOINHERIT;
-CREATE ROLE ipat_device_registry_exec NOLOGIN NOSUPERUSER NOCREATEDB
+CREATE ROLE ipat_managed_registry_exec NOLOGIN NOSUPERUSER NOCREATEDB
   NOCREATEROLE NOREPLICATION NOBYPASSRLS;
-GRANT USAGE ON SCHEMA ipat_platform TO ipat_device_registry_owner, ipat_device_registry_exec;
-GRANT USAGE ON SCHEMA ipat_ops TO ipat_device_registry_owner;
-GRANT SELECT ON ipat_platform.tenants TO ipat_device_registry_owner;
+GRANT USAGE ON SCHEMA ipat_platform TO ipat_managed_registry_owner, ipat_managed_registry_exec;
+GRANT USAGE ON SCHEMA ipat_ops TO ipat_managed_registry_owner;
+GRANT SELECT ON ipat_platform.tenants TO ipat_managed_registry_owner;
 GRANT EXECUTE ON FUNCTION ipat_platform.lookup_active_membership(text,text,uuid,text,text)
-  TO ipat_device_registry_owner;
+  TO ipat_managed_registry_owner;
 GRANT SELECT,INSERT ON ipat_ops.managed_devices,ipat_ops.managed_device_audit
-  TO ipat_device_registry_owner;
+  TO ipat_managed_registry_owner;
 CREATE POLICY managed_device_owner_read ON ipat_ops.managed_devices
-  FOR SELECT TO ipat_device_registry_owner USING (true);
+  FOR SELECT TO ipat_managed_registry_owner USING (true);
 CREATE POLICY managed_device_owner_insert ON ipat_ops.managed_devices
-  FOR INSERT TO ipat_device_registry_owner WITH CHECK (true);
+  FOR INSERT TO ipat_managed_registry_owner WITH CHECK (true);
 CREATE POLICY managed_device_audit_owner_read ON ipat_ops.managed_device_audit
-  FOR SELECT TO ipat_device_registry_owner USING (true);
+  FOR SELECT TO ipat_managed_registry_owner USING (true);
 CREATE POLICY managed_device_audit_owner_insert ON ipat_ops.managed_device_audit
-  FOR INSERT TO ipat_device_registry_owner WITH CHECK (true);
+  FOR INSERT TO ipat_managed_registry_owner WITH CHECK (true);
 
 -- The application must pass a server-verified issuer/subject/tenant, not headers.
 -- DB independently requires current tenant_admin membership, even on replay.
@@ -113,12 +113,12 @@ EXCEPTION WHEN check_violation OR unique_violation OR foreign_key_violation THEN
 END $body$;
 ALTER FUNCTION ipat_platform.register_managed_device(
  text,text,uuid,uuid,uuid,text,text,text,text,text,text,text,integer,text)
- OWNER TO ipat_device_registry_owner;
+ OWNER TO ipat_managed_registry_owner;
 REVOKE ALL ON FUNCTION ipat_platform.register_managed_device(
  text,text,uuid,uuid,uuid,text,text,text,text,text,text,text,integer,text) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION ipat_platform.register_managed_device(
  text,text,uuid,uuid,uuid,text,text,text,text,text,text,text,integer,text)
- TO ipat_device_registry_exec;
+ TO ipat_managed_registry_exec;
 
 -- Deliberately excludes management endpoint and vault ref from read results.
 -- NOC reader requires exact POP; tenant admin may list all assigned POPs.
@@ -141,9 +141,9 @@ CREATE FUNCTION ipat_platform.list_managed_devices(
  ORDER BY d.created_at DESC,d.id LIMIT 100
 $body$;
 ALTER FUNCTION ipat_platform.list_managed_devices(text,text,uuid,text)
- OWNER TO ipat_device_registry_owner;
+ OWNER TO ipat_managed_registry_owner;
 REVOKE ALL ON FUNCTION ipat_platform.list_managed_devices(text,text,uuid,text) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION ipat_platform.list_managed_devices(text,text,uuid,text)
- TO ipat_device_registry_exec;
+ TO ipat_managed_registry_exec;
 -- Runtime service login is provisioned outside this migration only after BFF gates.
 COMMIT;

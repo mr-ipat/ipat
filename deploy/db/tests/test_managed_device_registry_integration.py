@@ -20,7 +20,7 @@ SUBJECT_B = 'tenant-b-owner'
 FN = 'ipat_platform.register_managed_device'
 ARGS = '(text,text,uuid,uuid,uuid,text,text,text,text,text,text,text,integer,text)'
 
-def qrole(statement, role='ipat_device_registry_exec', expect=True):
+def qrole(statement, role='ipat_managed_registry_exec', expect=True):
     return sql(f'SET ROLE {role}; {statement}', expect=expect)
 
 def reg(tenant=TA, issuer=ISSUER, subject=SUBJECT, dev=A, request=REQ_A,
@@ -60,10 +60,10 @@ class ManagedDeviceRegistry(unittest.TestCase):
 
     def test_00_owner_only_exec_no_direct_table_access(self):
         rights = sql(f"""SELECT
-         has_function_privilege('ipat_device_registry_exec','{FN}{ARGS}','EXECUTE')::int,
+         has_function_privilege('ipat_managed_registry_exec','{FN}{ARGS}','EXECUTE')::int,
          has_function_privilege('ipat_app_runtime','{FN}{ARGS}','EXECUTE')::int,
-         has_table_privilege('ipat_device_registry_exec','ipat_ops.managed_devices','SELECT')::int,
-         has_table_privilege('ipat_device_registry_exec','ipat_ops.managed_devices','INSERT')::int""").stdout.strip()
+         has_table_privilege('ipat_managed_registry_exec','ipat_ops.managed_devices','SELECT')::int,
+         has_table_privilege('ipat_managed_registry_exec','ipat_ops.managed_devices','INSERT')::int""").stdout.strip()
         self.assertEqual(rights,'1|0|0|0')
         for tab in ('managed_devices','managed_device_audit'):
             self.assertNotEqual(qrole(f'SELECT count(*) FROM ipat_ops.{tab}',expect=False).returncode,0)
