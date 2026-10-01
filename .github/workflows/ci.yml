@@ -214,6 +214,12 @@ jobs:
           grep -Fq '/v1/tenant/domains' web/lab/domain-settings.js
           grep -Fq 'Domain tenant' web/lab/domain-settings.html
           grep -Fq 'activation_state' web/lab/domain-settings.js
+      - name: R9.56 dedicated DNS TXT ownership verifier contracts
+        run: |
+          cargo test --locked -p control-api tenant_domain_verifier::tests
+          python3 -m py_compile deploy/db/tests/test_tenant_domain_dns_verifier_integration.py
+          grep -Fq IPAT_TENANT_DOMAIN_VERIFIER apps/control-api/src/main.rs
+          grep -Fq list_tenant_domain_ownership_checks deploy/db/migrations/0015_tenant_domain_dns_verifier.sql
       - name: R9.20 adaptive custom-domain routing and customer instructions
         run: |
           cargo test --locked -p control-api tenant_domain::tests
@@ -343,6 +349,9 @@ jobs:
       - name: R9.19 ordered custom-domain activation and verifier isolation
         run: |
           python3 -m unittest discover deploy/db/tests -p test_tenant_domain_activation_lifecycle_integration.py -v
+      - name: R9.56 disposable restricted DNS verifier queue and lifecycle isolation
+        run: |
+          python3 -m unittest discover deploy/db/tests -p test_tenant_domain_dns_verifier_integration.py -v
       - name: R8.3 real disposable PostgreSQL pending adoption and separate admin registration/POP read privilege tests
         run: |
           python3 -m unittest discover deploy/db/tests -p test_device_candidates_integration.py -v
