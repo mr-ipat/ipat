@@ -12,6 +12,7 @@ mod oidc_lab;
 mod site_a_pairing_lab;
 mod tenant_domain;
 mod tenant_domain_bff;
+mod tenant_domain_verifier;
 mod tenant_membership_lab;
 
 use identity_core::PinnedIssuer;
@@ -222,6 +223,15 @@ fn app() -> Router {
 
 #[tokio::main]
 async fn main() {
+    // Nonroot background worker only: no HTTP listener or browser authority.
+    if std::env::var("IPAT_TENANT_DOMAIN_VERIFIER").as_deref() == Ok("YES") {
+        tenant_domain_verifier::run_loop(
+            tenant_domain_verifier::from_environment()
+                .expect("unsafe or missing dedicated DNS verifier configuration"),
+        )
+        .await;
+        return;
+    }
     let k3s_lab = std::env::var("IPAT_RUN_K3S_LAB").as_deref() == Ok("1");
     let lab_requested = std::env::var("IPAT_LAB_WEB").as_deref() == Ok("1");
     // Fail closed: never expose unauthenticated lab HTML through the K3s pod bind.

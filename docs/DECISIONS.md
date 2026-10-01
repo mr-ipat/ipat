@@ -635,3 +635,19 @@ metadata alone may authorize live device management.
 
 
 ADR-043 implementation note, R9.53 (2026-10-01): the existing nonroot, private :3002 canary now combines the latest canonical tenant-domain instruction control plane with previous reviewed C320 owner-only lab routes. It retains the same fail-closed public separation, no owner-code bypass and prior-binary rollback; it is NOT a new production authentication decision or permission to adopt a physical OLT. No architecture baseline changed.
+
+## ADR-049 — APPROVED: isolated DNS TXT ownership verification on canonical UUID domain schema — 2026-10-01
+
+IPAT uses a dedicated nonroot Rust DNS TXT worker with bounded batch and
+interval, separate from all browser-facing HTTP listeners. The existing
+ipat_domain_verifier capability only EXECUTEs a restricted pending-challenge
+queue and existing ordered lifecycle function; it receives no direct
+tenant-domain registry SELECT. Exact TXT evidence alone can advance only
+pending_dns to ownership_verified, not routing, TLS or active. Config must
+be owner-private, symlink-resistant Unix-socket conninfo with no stored
+database password. A verifier service identity is not a user/tenant identity.
+
+The divergent R9.55 feature is reference material only. R9.56 is rebased
+onto merged canonical R9.53 and retains the current C320 connector.
+Public HTTPS, real OIDC/MFA, production PostgreSQL and physical OLT adoption
+remain independent release gates.
