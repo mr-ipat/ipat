@@ -469,3 +469,8 @@ via an upstream route. Real dedicated management last-hop isolation,
 OOB fingerprint proof, restricted account and firmware UNKNOWN.
 Prefer direct-private as a candidate, NOT as an approved/validated
 physical adoption path. No firmware, chassis serial or health measured.
+
+
+## R9.53 DEV-01 fresh integrated private status (2026-10-01)
+
+Owner VPS private connector status: draft saved, credentials not enrolled, no verified current physical read, production adopted FALSE, writes FALSE. One bounded fixed allowlisted no-credential TCP probe returned TCP_REACHABLE_AUTH_NOT_TESTED. This is transport reachability only; exact current chassis/card/firmware and secure authenticated read remain pending. Historical earlier R9.30/R9.34 owner-observed reads are not silently promoted to a fresh production worker validation.

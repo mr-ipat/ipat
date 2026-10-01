@@ -14,7 +14,11 @@ class R912StaticContracts(unittest.TestCase):
                       'id="check-wg-review"', 'id="wg-review-status"'):
             self.assertIn(value,HTML)
         self.assertIn('TANPA KONFIGURASI AKTIF',HTML)
-        self.assertNotIn('type="password"',HTML)
+        # The wizard remains credential-free; password fields live only in
+        # the separate owner-only C320 enrollment panel.
+        wizard=HTML.split('<section id="tunnel-wizard"',1)[1].split("</section>",1)[0]
+        self.assertNotIn('type="password"',wizard)
+        self.assertIn('id="ipat-c320-bootstrap"',HTML)
         self.assertNotIn('id="wg-private-key"',HTML)
     def test_backend_is_no_credential_no_deploy(self):
         self.assertIn('async fn preview_tunnel_review(', API)

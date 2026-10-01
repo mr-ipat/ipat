@@ -172,6 +172,17 @@ jobs:
           bash -n deploy/scripts/lab/r68/private-dashboard-http-smoke.sh
           cargo build --locked -p control-api
           IPAT_R68_PRIVATE_HTTP_SMOKE=YES bash deploy/scripts/lab/r68/private-dashboard-http-smoke.sh
+      - name: R9.53 combined private domain/C320 operator GUI contracts
+        run: |
+          node --check web/lab/c320-connection-setup.js
+          node --check web/lab/device-workbench.js
+          node deploy/scripts/lab/r947/test_add_device.cjs
+          node deploy/scripts/lab/r946/test_device_status.cjs
+          python3 -m py_compile deploy/scripts/lab/r945/persistent_c320_connector.py
+          python3 -m py_compile deploy/scripts/lab/r945/test_persistent_connector.py
+          bash -n deploy/scripts/lab/r953/deploy_private_integrated_preview.sh
+          grep -Fq '/lab/domain-settings' apps/control-api/src/device_workbench_lab.rs
+          grep -Fq '/lab/c320-owner-connection' apps/control-api/src/c320_live_lab.rs
       - name: R6.9 real pinned RS256 JWT verification and private HTTP business-denial lab
         run: |
           python3 -m unittest discover deploy/scripts/lab/r69 -p test_r69_review.py -v

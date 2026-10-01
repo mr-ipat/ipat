@@ -35,7 +35,16 @@ class DeviceManagerContract(unittest.TestCase):
                       "candidate-count","rows","refresh","pop-filter","kind-filter"):
             self.assertIn(("id",field),[(k,v) for _,k,v in dom.attrs])
         self.assertIn("form",dom.tags)
-        self.assertEqual(dom.tags.count("script"),1)
+        allowed_scripts = [
+            "/lab/device-workbench.js",
+            "/lab/c320-first-real-inventory.js",
+            "/lab/c320-operator-console.js",
+            "/lab/c320-connection-setup.js",
+            "/lab/device-status-indicators.js",
+        ]
+        scripts = [value for tag,key,value in dom.attrs if tag=="script" and key=="src"]
+        self.assertEqual(dom.tags.count("script"),len(allowed_scripts))
+        self.assertCountEqual(scripts,allowed_scripts)
         self.assertIn("/lab/device-workbench",OLD)
         self.assertIn("/lab/device-workbench",INDEX)
         for phrase in ("replaceChildren","textContent","encodeURIComponent",
