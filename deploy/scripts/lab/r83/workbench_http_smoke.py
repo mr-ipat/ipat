@@ -30,11 +30,19 @@ def main():
     assert b"Tambah kandidat perangkat" in html
     assert b"Daftar kandidat" in html
     assert b"PERINGATAN PRD" in html
-    assert b"type=\"password\"" not in html
+    # The newer owner-only private C320 form has two deliberately blank
+    # password fields. The synthetic :3000 process must never mount the
+    # C320 credential enrollment endpoint, regardless of the visible UI.
+    for field in (b"ipat-c320-device-password", b"ipat-c320-bootstrap"):
+        element=html.split(b'<input id="'+field+b'"',1)
+        assert len(element)==2,field
+        attributes=element[1].split(b">",1)[0]
+        assert b'type="password"' in attributes and b"value=" not in attributes
     assert headers.get("cache-control")=="no-store"
     assert headers.get("x-frame-options")=="DENY"
     assert call("/lab/device-workbench.css")[0]==200
     assert call("/lab/device-workbench.js")[0]==200
+    assert call("/lab/c320-owner-connection")[0]==404
     assert b"Tambah &amp; kelola perangkat" in call("/lab/dashboard-preview")[2]
     assert b"Device Manager" in call("/lab")[2]
     s,_,body=call(PATH)
