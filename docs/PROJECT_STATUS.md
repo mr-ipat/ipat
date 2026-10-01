@@ -4190,3 +4190,22 @@ The existing fixed C320 private connector reported draft_saved=true, credentials
 ### R9.53 feature CI acceptance — 2026-10-01
 
 Exact feature application head `b348f25ec4dbf552db9f69d08b917cf29b7f1a15` passed GitHub Actions run `36825590304` SUCCESS **4/4**: locked Rust and R9.53 domain/C320 UI contracts, disposable PostgreSQL RLS, PostgreSQL physical recovery, and Ubuntu 26 K3s smoke. Earlier R9.53 PR CI failures were obsolete historical static/UI smoke expectations for one JavaScript asset, absence of empty password fields on owner-only private UI, and older evidence wording. The fixtures were adjusted to check exact allowlisted same-origin scripts, blank private owner-only password inputs and absence of the C320 credential endpoint from the separate :3000 demo, with all 31 historical transport/tunnel safety tests passing locally. No CI run proves public HTTPS/login/PG production deployment or authenticated real OLT adoption.
+
+## R9.56 — canonical custom-domain DNS ownership verifier (2026-10-01)
+
+Ported the reviewed R9.55 DNS TXT verifier design onto the actual merged
+R9.53 UUID tenant-domain schema, without merging incompatible alternate
+domain tables or replacing the live C320 private connector. Migration 0015
+introduces a bounded, restricted queue for pending custom-domain ownership
+challenges belonging to active tenants. A dedicated nonroot Rust worker
+checks exact TXT challenges and can advance only ownership_verified through
+the existing sealed lifecycle function. Other states remain independently
+gated. The CI suite adds Rust contract tests and disposable PostgreSQL
+queue/privilege tests. See docs/R956_DOMAIN_VERIFIER.md and ADR-049.
+
+The live VPS still lacks public HTTPS/TLS, a production PostgreSQL cluster,
+and authenticated tenant-domain Save. Its persistent C320 connector has
+a saved draft, but no enrolled device credentials and no new authenticated
+read. Only the authorized owner may enter approved read-only credentials
+and one-time lab code through the existing SSH-tunneled dashboard.
+Do not infer physical adoption or production readiness from these changes.
