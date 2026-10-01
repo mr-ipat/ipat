@@ -7,6 +7,7 @@ mod c320_actions_lab;
 mod c320_live_lab;
 mod device_review_lab;
 mod device_workbench_lab;
+mod managed_device_bff;
 mod oidc_browser_lab;
 mod oidc_lab;
 mod site_a_pairing_lab;
