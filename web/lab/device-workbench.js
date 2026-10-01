@@ -63,7 +63,7 @@ function draw() {
                 el("small","",savedPhysical ? "SSH · pinned lab adapter" : "Historical owner-supplied report"));
     physicalRow.appendChild(device);
     physicalRow.appendChild(td("POP BELUM DIVERIFIKASI"));
-    physicalRow.appendChild(el("td","",savedPhysical ? savedPhysical.adoption : "HISTORICAL · NOT ADOPTED"));
+    physicalRow.appendChild(el("td","",savedPhysical ? savedPhysical.adoption : "HISTORIS · BELUM DIADOPSI"));
     const transport=el("td");
     const indicator=el("span","ipat-device-signal ipat-device-signal--unknown","Unknown");
     indicator.setAttribute("data-ipat-device-status","DEV-01");

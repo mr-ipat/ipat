@@ -99,9 +99,12 @@ class R90Safety(unittest.TestCase):
     def test_dashboard_displays_timestamped_network_evidence_without_online_claim(self):
         page=(MODULE.ROOT / "web/lab/device-workbench.html").read_text()
         self.assertIn("BUKTI HISTORIS, BUKAN TELEMETRI LIVE",page)
-        self.assertIn("negosiasi Telnet",page)
-        self.assertIn("mengalami timeout",page)
-        self.assertIn("BELUM terverifikasi",page)
+        # The newer operator UI summarizes historical actual lab observations
+        # without claiming a currently authenticated production worker.
+        self.assertIn("BUKTI HISTORIS, BUKAN TELEMETRI LIVE",page)
+        self.assertIn("SSH terenkripsi serta Telnet sementara",page)
+        self.assertIn("bukan monitoring aktif",page.lower())
+        self.assertIn("BELUM DIADOPSI",page)
         self.assertNotIn("27.121.113.1",page)
 
     def test_source_no_network_writes_or_command_execution(self):
