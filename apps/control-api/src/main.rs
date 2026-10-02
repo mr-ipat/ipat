@@ -229,15 +229,68 @@ fn app() -> Router {
     app_with_lab(false)
 }
 
+// Exclusive process mode: the protected commercial API never shares a
+// listener, service state or route tree with owner-private/laboratory apps.
+fn commercial_only_mode(requested: bool, incompatible: bool, running_as_root: bool) -> bool {
+    requested && !incompatible && !running_as_root
+}
+
 #[tokio::main]
 async fn main() {
     // Nonroot background worker only: no HTTP listener or browser authority.
+    if std::env::var("IPAT_TENANT_DOMAIN_VERIFIER").as_deref() == Ok("YES")
+        && std::env::var("IPAT_R969_COMMERCIAL_SERVICE").as_deref() == Ok("YES")
+    {
+        panic!("commercial API and separate DNS verifier cannot share a process");
+    }
     if std::env::var("IPAT_TENANT_DOMAIN_VERIFIER").as_deref() == Ok("YES") {
         tenant_domain_verifier::run_loop(
             tenant_domain_verifier::from_environment()
                 .expect("unsafe or missing dedicated DNS verifier configuration"),
         )
         .await;
+        return;
+    }
+    // R9.69: mounting the already-tested commercial API is a distinct
+    // NONPUBLIC deployment unit. Its opt-in flags assert intent only; a
+    // reviewed live HTTPS edge, real IdP and recovered production database
+    // remain mandatory external release controls.
+    let commercial_requested =
+        std::env::var("IPAT_R969_COMMERCIAL_SERVICE").as_deref() == Ok("YES");
+    if commercial_requested {
+        let incompatible = [
+            "IPAT_RUN_K3S_LAB",
+            "IPAT_LAB_WEB",
+            "IPAT_LAB_OIDC_VERIFY",
+            "IPAT_R911_PRIVATE_CANARY",
+            "IPAT_R940_PRIVATE_OWNER_READ",
+            "IPAT_R86_BROWSER_FLOW",
+            "IPAT_LAB_SCOPED_MEMBERSHIP",
+            "IPAT_R83_REGISTRY_WRITE",
+            "IPAT_R84_SIMULATED_REVIEW",
+            "IPAT_TENANT_DOMAIN_VERIFIER",
+            "IPAT_TENANT_DOMAIN_RESOLVER",
+            "IPAT_CUSTOM_DOMAIN_INSTRUCTIONS",
+        ]
+        .iter()
+        .any(|name| std::env::var(name).is_ok());
+        assert!(
+            commercial_only_mode(true, incompatible, unsafe { libc::geteuid() } == 0),
+            "commercial tenant runtime cannot share lab or privileged process",
+        );
+        let db = commercial_tenant_api::connect_from_environment()
+            .await
+            .expect("dedicated trusted-edge and restricted PostgreSQL identity required");
+        // No unauthenticated preview, physical OLT bridge, identity issuer or
+        // owner-domain plan is mounted on this process. API requests still
+        // authenticate an active exact-Host durable session on every call.
+        let app = commercial_tenant_api::router(db);
+        let listener = tokio::net::TcpListener::bind("127.0.0.1:3003")
+            .await
+            .expect("isolated loopback commercial API listener");
+        axum::serve(listener, app)
+            .await
+            .expect("serve protected tenant API");
         return;
     }
     let k3s_lab = std::env::var("IPAT_RUN_K3S_LAB").as_deref() == Ok("1");
@@ -371,6 +424,17 @@ async fn main() {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn r969_commercial_api_never_overlaps_owner_lab_or_runs_root() {
+        assert!(!commercial_only_mode(false, false, false));
+        assert!(!commercial_only_mode(true, true, false));
+        assert!(!commercial_only_mode(true, false, true));
+        assert!(commercial_only_mode(true, false, false));
+        assert_eq!(
+            private_canary_bind(false, true, false, true),
+            "127.0.0.1:3002"
+        );
+    }
     use axum::{body::Body, http::Request};
     use tower::ServiceExt;
 
