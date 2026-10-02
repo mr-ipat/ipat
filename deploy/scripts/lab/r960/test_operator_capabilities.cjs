@@ -38,3 +38,12 @@ test('writes remain visible in private owner lab only, non-dispatchable by const
  assert.match(api,/"state":"DEGRADED"/);
  assert.match(api,/fn owner_catalog_never_authorizes_an_unqualified_command/);
 });
+
+test('exact checked private rollout is rollback-safe and cannot touch physical connector',()=>{
+ const script=src('deploy/scripts/lab/r960/rollout_private_c320_catalog.sh');
+ for(const marker of ['R960_REFUSE_ROOT','R960_AUTO_RESTORE_PREVIOUS_R959',
+   'r959-release/control-api','R960_LIVE_PRIVATE_HTTP_CAPABILITY_CENTER',
+   'physical_writes_enabled','127.0.0.1:3002','original_connector_pid'])
+   assert.ok(script.includes(marker),marker);
+ assert.doesNotMatch(script,/bootstrap-token|apt-get|iptables |nft |kubectl apply|firmware install/i);
+});
