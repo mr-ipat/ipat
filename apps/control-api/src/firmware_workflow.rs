@@ -4,7 +4,6 @@
 //! Image bytes belong in a tenant-isolated encrypted artifact service: SQL
 //! accepts an object pointer, digest and vendor manifest reference, never bytes.
 use identity_core::browser_session::{BrowserSessionVault, RequestKind};
-use std::{fs::File, io::Read};
 use tokio_postgres::Client;
 use uuid::Uuid;
 

@@ -88,6 +88,16 @@ class OperatorFirmwareWorkflow(unittest.TestCase):
         self.assertEqual(register(self.dev,self.dev_req),self.dev)
         self.window=(self.st,self.en)
 
+    def tearDown(self):
+        # This synthetic job shares the same throwaway PostgreSQL with the
+        # historical R8.3/R8.4/R9.1/R9.2 test suite. A firmware denial test
+        # must NEVER leave a tenant suspended or a reviewer revoked and
+        # accidentally make an unrelated adoption regression fail.
+        sql(f"UPDATE ipat_platform.tenants SET state='active' WHERE id IN ('{TA}','{TB}')")
+        sql(f"""UPDATE ipat_platform.identity_memberships
+           SET revoked_at=NULL,expires_at=statement_timestamp()+interval '1 day'
+           WHERE tenant_id='{TA}' AND issuer='{REVIEW_ISS}' AND subject='{REVIEW_SUB}'""")
+
     def test_00_role_and_direct_table_denial(self):
         for tab in ('firmware_artifacts','firmware_changes','firmware_evidence','firmware_change_events'):
             self.assertEqual(sql(f"""SELECT relrowsecurity::int,relforcerowsecurity::int
