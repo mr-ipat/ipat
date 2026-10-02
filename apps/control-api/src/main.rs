@@ -19,6 +19,7 @@ mod tenant_domain;
 mod tenant_domain_bff;
 mod tenant_domain_verifier;
 mod tenant_membership_lab;
+mod tenant_site_bff;
 
 use identity_core::PinnedIssuer;
 use std::sync::Arc;

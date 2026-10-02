@@ -388,6 +388,20 @@ jobs:
         run: |
           python3 -m py_compile deploy/db/tests/test_operator_firmware_workflow_integration.py
           python3 -m unittest discover deploy/db/tests -p test_operator_firmware_workflow_integration.py -v
+      - name: R9.64 commercial-path tenant Site master compound FK and explicit two-phase legacy validation (disposable ONLY)
+        run: |
+          python3 -m py_compile deploy/db/tests/test_tenant_sites_integration.py
+          bash -n deploy/db/tests/r964_docker_repro.sh
+          test -s deploy/db/tests/r964_synthetic_seed.sql
+          python3 -m unittest discover deploy/db/tests -p test_tenant_sites_integration.py -v
+          grep -Fq 'NOT VALID' deploy/db/migrations/0018_tenant_sites_staged.sql
+          grep -Fq 'VALIDATE CONSTRAINT managed_devices_registered_site_fk' deploy/db/migrations/0019_tenant_sites_validate_fk.sql
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('docs/PRD_AUDIT_MATRIX.md').read_text()
+          assert all(f'AC-{n:02d}' in p for n in range(1,18)) and 'AC-FW' in p
+          print('R964_ALL_PRD_GATES_IN_AUDIT_MATRIX=PASS')
+          PY
       - name: R9.1 real disposable PostgreSQL immutable adoption readiness evidence and fail-closed eligibility
         run: |
           python3 -m unittest discover deploy/db/tests -p test_device_adoption_readiness_integration.py -v
