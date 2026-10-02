@@ -15,6 +15,7 @@ members = [
   "crates/provisioning-core",
   "crates/routeros-core",
   "crates/olt-core",
+  "crates/firmware-core",
 ]
 
 [workspace.package]
