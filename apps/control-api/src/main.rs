@@ -5,6 +5,7 @@
 mod browser_session_lab;
 mod c320_actions_lab;
 mod c320_live_lab;
+mod commercial_oidc_issuer;
 mod commercial_tenant_api;
 mod device_review_lab;
 mod device_workbench_lab;
@@ -239,7 +240,8 @@ fn commercial_only_mode(requested: bool, incompatible: bool, running_as_root: bo
 async fn main() {
     // Nonroot background worker only: no HTTP listener or browser authority.
     if std::env::var("IPAT_TENANT_DOMAIN_VERIFIER").as_deref() == Ok("YES")
-        && std::env::var("IPAT_R969_COMMERCIAL_SERVICE").as_deref() == Ok("YES")
+        && (std::env::var("IPAT_R969_COMMERCIAL_SERVICE").as_deref() == Ok("YES")
+            || std::env::var("IPAT_R970_OIDC_ISSUER_SERVICE").as_deref() == Ok("YES"))
     {
         panic!("commercial API and separate DNS verifier cannot share a process");
     }
@@ -255,6 +257,39 @@ async fn main() {
     // NONPUBLIC deployment unit. Its opt-in flags assert intent only; a
     // reviewed live HTTPS edge, real IdP and recovered production database
     // remain mandatory external release controls.
+    // A confidential IdP callback is an entirely separate process/DB role.
+    // Never mount it into the business API or owner-private device service.
+    if std::env::var("IPAT_R970_OIDC_ISSUER_SERVICE").as_deref() == Ok("YES") {
+        let conflict = [
+            "IPAT_R969_COMMERCIAL_SERVICE",
+            "IPAT_LAB_WEB",
+            "IPAT_R940_PRIVATE_OWNER_READ",
+            "IPAT_R911_PRIVATE_CANARY",
+            "IPAT_TENANT_DOMAIN_VERIFIER",
+            "IPAT_LAB_OIDC_VERIFY",
+            "IPAT_RUN_K3S_LAB",
+            "IPAT_R86_BROWSER_FLOW",
+            "IPAT_PRODUCTION_TENANT_API",
+            "IPAT_TENANT_API_DB_USER",
+            "IPAT_TENANT_API_DB_SOCKET",
+        ]
+        .iter()
+        .any(|name| std::env::var(name).is_ok());
+        assert!(
+            !conflict,
+            "OIDC issuer cannot share lab or business process"
+        );
+        let app = commercial_oidc_issuer::from_environment()
+            .await
+            .expect("confidential pinned OIDC and restricted DB prerequisite missing");
+        let listener = tokio::net::TcpListener::bind("127.0.0.1:3004")
+            .await
+            .expect("dedicated OIDC loopback listener");
+        axum::serve(listener, app)
+            .await
+            .expect("serve isolated OIDC issuer");
+        return;
+    }
     let commercial_requested =
         std::env::var("IPAT_R969_COMMERCIAL_SERVICE").as_deref() == Ok("YES");
     if commercial_requested {
@@ -271,6 +306,7 @@ async fn main() {
             "IPAT_TENANT_DOMAIN_VERIFIER",
             "IPAT_TENANT_DOMAIN_RESOLVER",
             "IPAT_CUSTOM_DOMAIN_INSTRUCTIONS",
+            "IPAT_R970_OIDC_ISSUER_SERVICE",
         ]
         .iter()
         .any(|name| std::env::var(name).is_ok());
