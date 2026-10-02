@@ -21,6 +21,7 @@ use tokio::sync::Mutex;
 
 const MAX_FILE_BYTES: u64 = 512 * 1024;
 const MAX_DEVICES: usize = 64;
+const MAX_POPS: usize = 64;
 const MAX_EVENTS: usize = 2048;
 const DEFAULT_OWNER_STORE: &str = "/home/openai/.local/share/ipat/r961-device-inventory";
 
@@ -51,6 +52,14 @@ struct Audit {
     device_id: String,
     revision: u64,
 }
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct Pop {
+    code: String,
+    display_name: String,
+    revision: u64,
+}
+
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 struct Snapshot {
@@ -59,6 +68,11 @@ struct Snapshot {
     linked_revision: u64,
     devices: Vec<Device>,
     audit: Vec<Audit>,
+    // The original R9.61 owner file MUST load without an explicit migration.
+    #[serde(default)]
+    pops: Vec<Pop>,
+    #[serde(default)]
+    linked_c320_pop: Option<String>,
 }
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -77,7 +91,22 @@ struct Fields {
 struct LinkedRename {
     expected_revision: u64,
     display_name: String,
+    #[serde(default)]
+    pop_id: Option<String>,
 }
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct PopFields {
+    code: String,
+    display_name: String,
+}
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct PopUpdate {
+    expected_revision: u64,
+    display_name: String,
+}
+
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
 struct Remove {
@@ -91,7 +120,7 @@ fn error(status: StatusCode, code: &'static str) -> (StatusCode, HeaderMap, Json
         Json(json!({"error":code,"owner_private_lab_only":true,"device_command_sent":false})),
     )
 }
-fn strict_owner(headers: &HeaderMap, mutating: bool) -> bool {
+pub(super) fn strict_owner(headers: &HeaderMap, mutating: bool) -> bool {
     if headers.get_all(header::HOST).iter().count() != 1
         || headers.get(header::HOST).and_then(|v| v.to_str().ok()) != Some("127.0.0.1:3002")
     {
@@ -128,6 +157,42 @@ fn safe_host(s: &str) -> bool {
             .all(|b| b.is_ascii_alphanumeric() || matches!(b, b'.' | b'-' | b':'))
         && !s.contains("..")
 }
+// A vendor name is NOT sufficient proof of compatibility. Candidate entries
+// are permitted for inventory only, while the single physical DEV-01 C320
+// remains the sole hardware evidenced read-only pilot.
+fn permitted_vendor(vendor: &str, kind: &str, transport: &str) -> bool {
+    match (vendor, kind) {
+        ("ZTE", "olt") | ("C-DATA", "olt") => matches!(transport, "ssh" | "snmp"),
+        ("ZTE", "ont") | ("VSOL", "ont") => matches!(transport, "cwmp" | "usp"),
+        ("MikroTik", "router") => matches!(transport, "api-ssl" | "https" | "ssh"),
+        _ => false,
+    }
+}
+fn known_pop(snapshot: &Snapshot, code: &str) -> bool {
+    snapshot.pops.iter().any(|p| p.code == code)
+}
+async fn catalog(
+    headers: HeaderMap,
+) -> Result<(HeaderMap, Json<Value>), (StatusCode, HeaderMap, Json<Value>)> {
+    if !strict_owner(&headers, false) {
+        return Err(error(StatusCode::FORBIDDEN, "OWNER_TUNNEL_REQUIRED"));
+    }
+    Ok((
+        super::private_lab_headers("application/json; charset=utf-8"),
+        Json(json!({
+            "owner_private_lab_only":true,"inventory_catalog_version":"r962",
+            "support_semantics":"EXACT_DEVICE_FEATURE_ONLY",
+            "vendors":[
+                {"id":"ZTE","name":"ZTE","kinds":[{"kind":"olt","protocols":["ssh","snmp"],"status":"PARTIAL_EXACT_PILOT","scope":"Only the already connected DEV-01 C320 has two live read-only tests; new ZTE devices remain unqualified."},
+                     {"kind":"ont","protocols":["cwmp","usp"],"status":"INVENTORY_CANDIDATE","scope":"Actual ONT model, firmware and agent interoperability have not been tested."}]},
+                {"id":"C-DATA","name":"C-DATA","kinds":[{"kind":"olt","protocols":["ssh","snmp"],"status":"INVENTORY_CANDIDATE","scope":"Model/firmware and OLT commands require physical tests."}]},
+                {"id":"VSOL","name":"VSOL","kinds":[{"kind":"ont","protocols":["cwmp","usp"],"status":"INVENTORY_CANDIDATE","scope":"ONT CWMP/USP agent must be physically verified."}]},
+                {"id":"MikroTik","name":"MikroTik","kinds":[{"kind":"router","protocols":["api-ssl","https","ssh"],"status":"INVENTORY_CANDIDATE","scope":"RouterOS version/build and secure API interoperability require physical tests."}]}
+            ],
+            "new_device_connection_ready":false,"arbitrary_vendor_allowed":false
+        })),
+    ))
+}
 fn valid(fields: &Fields) -> bool {
     let protocol = fields.management_protocol.as_str();
     let endpoint = match protocol {
@@ -140,7 +205,11 @@ fn valid(fields: &Fields) -> bool {
     };
     valid_label(&fields.display_name, 80)
         && identifier(&fields.pop_id, 48)
-        && identifier(&fields.vendor, 48)
+        && permitted_vendor(
+            &fields.vendor,
+            &fields.device_kind,
+            &fields.management_protocol,
+        )
         && valid_label(&fields.exact_model, 80)
         && ["olt", "ont", "router", "switch", "other"].contains(&fields.device_kind.as_str())
         && endpoint
@@ -150,7 +219,7 @@ fn valid(fields: &Fields) -> bool {
             && fields.management_host.as_deref() == Some("10.10.13.233")
             && fields.management_port == Some(321))
 }
-fn private_dir(folder: &FsPath) -> std::io::Result<()> {
+pub(super) fn private_dir(folder: &FsPath) -> std::io::Result<()> {
     if !folder.exists() {
         fs::create_dir(folder)?;
         fs::set_permissions(folder, fs::Permissions::from_mode(0o700))?;
@@ -167,7 +236,7 @@ fn private_dir(folder: &FsPath) -> std::io::Result<()> {
     }
     Ok(())
 }
-fn private_file(file: &FsPath) -> std::io::Result<()> {
+pub(super) fn private_file(file: &FsPath) -> std::io::Result<()> {
     let m = file.symlink_metadata()?;
     if !m.file_type().is_file()
         || m.uid() != unsafe { libc::geteuid() }
@@ -202,6 +271,17 @@ fn load(path: &FsPath) -> std::io::Result<Snapshot> {
     let snapshot: Snapshot = serde_json::from_slice(&raw)
         .map_err(|_| std::io::Error::other("unreadable owner registry"))?;
     if snapshot.devices.len() > MAX_DEVICES
+        || snapshot.pops.len() > MAX_POPS
+        || snapshot.pops.iter().any(|p| {
+            !identifier(&p.code, 48) || !valid_label(&p.display_name, 80) || p.revision == 0
+        })
+        || snapshot.pops.iter().enumerate().any(|(i, p)| {
+            snapshot
+                .pops
+                .iter()
+                .skip(i + 1)
+                .any(|other| other.code == p.code)
+        })
         || snapshot.audit.len() > MAX_EVENTS
         || snapshot.devices.iter().any(|d| !d.id.starts_with("OWN-"))
     {
@@ -278,7 +358,7 @@ fn c320_present(snapshot: &Snapshot, live: &Value) -> Value {
     json!({"id":"DEV-01","revision":snapshot.linked_revision,
         "display_name":snapshot.linked_c320_label.as_deref().unwrap_or_else(||
             live.get("device_name").and_then(Value::as_str).unwrap_or("ZTE C320 Lab")),
-        "pop_id":"UNASSIGNED","device_kind":"olt","vendor":"ZTE",
+        "pop_id":snapshot.linked_c320_pop.as_deref().unwrap_or("UNASSIGNED"),"device_kind":"olt","vendor":"ZTE",
         "exact_model":"C320","management_protocol":"ssh",
         "management_host":null,"management_port":null,
         "linked_live_connector":true,"connection_state":state,
@@ -352,6 +432,12 @@ async fn create(
     let _guard = state.guard.lock().await;
     let mut snapshot = load(&state.path)
         .map_err(|_| error(StatusCode::SERVICE_UNAVAILABLE, "OWNER_STORE_UNAVAILABLE"))?;
+    if !known_pop(&snapshot, &fields.pop_id) {
+        return Err(error(
+            StatusCode::UNPROCESSABLE_ENTITY,
+            "POP_MUST_BE_REGISTERED",
+        ));
+    }
     if snapshot.devices.len() >= MAX_DEVICES {
         return Err(error(StatusCode::CONFLICT, "OWNER_DEVICE_LIMIT"));
     }
@@ -416,11 +502,24 @@ async fn update(
         if !valid_label(&new.display_name, 80) {
             return Err(error(StatusCode::BAD_REQUEST, "INVALID_DEVICE_LABEL"));
         }
+        if let Some(code) = &new.pop_id {
+            if !known_pop(&snapshot, code) {
+                return Err(error(
+                    StatusCode::UNPROCESSABLE_ENTITY,
+                    "POP_MUST_BE_REGISTERED",
+                ));
+            }
+        }
         let rev = snapshot.linked_revision + 1;
         if !audit(&mut snapshot, "RENAME_LINKED", &id, rev) {
             return Err(error(StatusCode::CONFLICT, "OWNER_AUDIT_LIMIT"));
         }
         snapshot.linked_c320_label = Some(new.display_name);
+        // Explicit pop_id:null retains the legacy unassigned site; no
+        // management transport/device connector fields are editable here.
+        if new.pop_id.is_some() {
+            snapshot.linked_c320_pop = new.pop_id;
+        }
         snapshot.linked_revision = rev;
         save(&state.path, &snapshot)
             .map_err(|_| error(StatusCode::SERVICE_UNAVAILABLE, "OWNER_SAVE_FAILED"))?;
@@ -441,6 +540,12 @@ async fn update(
         .map_err(|_| error(StatusCode::BAD_REQUEST, "INVALID_DEVICE_METADATA"))?;
     if !valid(&fields) {
         return Err(error(StatusCode::BAD_REQUEST, "INVALID_DEVICE_METADATA"));
+    }
+    if !known_pop(&snapshot, &fields.pop_id) {
+        return Err(error(
+            StatusCode::UNPROCESSABLE_ENTITY,
+            "POP_MUST_BE_REGISTERED",
+        ));
     }
     let Some(pos) = snapshot.devices.iter().position(|d| d.id == id) else {
         return Err(error(StatusCode::NOT_FOUND, "DEVICE_NOT_FOUND"));
@@ -523,12 +628,157 @@ async fn remove(
         Json(json!({"removed":true,"id":id,"durable":true,"device_command_sent":false})),
     ))
 }
+
+async fn list_pops(
+    State(state): State<OwnerState>,
+    headers: HeaderMap,
+) -> Result<(HeaderMap, Json<Value>), (StatusCode, HeaderMap, Json<Value>)> {
+    if !strict_owner(&headers, false) {
+        return Err(error(StatusCode::FORBIDDEN, "OWNER_TUNNEL_REQUIRED"));
+    }
+    let _lock = state.guard.lock().await;
+    let snapshot = load(&state.path)
+        .map_err(|_| error(StatusCode::SERVICE_UNAVAILABLE, "OWNER_STORE_UNAVAILABLE"))?;
+    Ok((
+        super::private_lab_headers("application/json; charset=utf-8"),
+        Json(
+            json!({"owner_private_lab_only":true,"persistent":true,"pops":snapshot.pops,"count":snapshot.pops.len()}),
+        ),
+    ))
+}
+async fn create_pop(
+    State(state): State<OwnerState>,
+    headers: HeaderMap,
+    Json(f): Json<PopFields>,
+) -> Result<(StatusCode, HeaderMap, Json<Value>), (StatusCode, HeaderMap, Json<Value>)> {
+    if !strict_owner(&headers, true) {
+        return Err(error(StatusCode::FORBIDDEN, "OWNER_TUNNEL_REQUIRED"));
+    }
+    if !identifier(&f.code, 48) || !valid_label(&f.display_name, 80) {
+        return Err(error(StatusCode::BAD_REQUEST, "INVALID_POP_METADATA"));
+    }
+    let _lock = state.guard.lock().await;
+    let mut snapshot = load(&state.path)
+        .map_err(|_| error(StatusCode::SERVICE_UNAVAILABLE, "OWNER_STORE_UNAVAILABLE"))?;
+    if snapshot.pops.len() >= MAX_POPS {
+        return Err(error(StatusCode::CONFLICT, "POP_LIMIT"));
+    }
+    if snapshot
+        .pops
+        .iter()
+        .any(|p| p.code.eq_ignore_ascii_case(&f.code))
+    {
+        return Err(error(StatusCode::CONFLICT, "POP_ALREADY_EXISTS"));
+    }
+    let p = Pop {
+        code: f.code,
+        display_name: f.display_name,
+        revision: 1,
+    };
+    if !audit(&mut snapshot, "CREATE_POP", &p.code, 1) {
+        return Err(error(StatusCode::CONFLICT, "OWNER_AUDIT_LIMIT"));
+    }
+    snapshot.pops.push(p.clone());
+    save(&state.path, &snapshot)
+        .map_err(|_| error(StatusCode::SERVICE_UNAVAILABLE, "OWNER_SAVE_FAILED"))?;
+    Ok((
+        StatusCode::CREATED,
+        super::private_lab_headers("application/json; charset=utf-8"),
+        Json(json!({"pop":p,"durable":true,"device_command_sent":false})),
+    ))
+}
+async fn update_pop(
+    State(state): State<OwnerState>,
+    headers: HeaderMap,
+    Path(code): Path<String>,
+    Json(f): Json<PopUpdate>,
+) -> Result<(HeaderMap, Json<Value>), (StatusCode, HeaderMap, Json<Value>)> {
+    if !strict_owner(&headers, true) {
+        return Err(error(StatusCode::FORBIDDEN, "OWNER_TUNNEL_REQUIRED"));
+    }
+    if !valid_label(&f.display_name, 80) {
+        return Err(error(StatusCode::BAD_REQUEST, "INVALID_POP_METADATA"));
+    }
+    let _lock = state.guard.lock().await;
+    let mut s = load(&state.path)
+        .map_err(|_| error(StatusCode::SERVICE_UNAVAILABLE, "OWNER_STORE_UNAVAILABLE"))?;
+    let i = s
+        .pops
+        .iter()
+        .position(|p| p.code == code)
+        .ok_or_else(|| error(StatusCode::NOT_FOUND, "POP_NOT_FOUND"))?;
+    if s.pops[i].revision != f.expected_revision {
+        return Err(error(StatusCode::CONFLICT, "STALE_REVISION"));
+    }
+    let rev = f
+        .expected_revision
+        .checked_add(1)
+        .ok_or_else(|| error(StatusCode::CONFLICT, "STALE_REVISION"))?;
+    if !audit(&mut s, "UPDATE_POP", &code, rev) {
+        return Err(error(StatusCode::CONFLICT, "OWNER_AUDIT_LIMIT"));
+    }
+    s.pops[i].revision = rev;
+    s.pops[i].display_name = f.display_name;
+    let out = s.pops[i].clone();
+    save(&state.path, &s)
+        .map_err(|_| error(StatusCode::SERVICE_UNAVAILABLE, "OWNER_SAVE_FAILED"))?;
+    Ok((
+        super::private_lab_headers("application/json; charset=utf-8"),
+        Json(json!({"pop":out,"durable":true})),
+    ))
+}
+async fn remove_pop(
+    State(state): State<OwnerState>,
+    headers: HeaderMap,
+    Path(code): Path<String>,
+    Json(f): Json<Remove>,
+) -> Result<(HeaderMap, Json<Value>), (StatusCode, HeaderMap, Json<Value>)> {
+    if !strict_owner(&headers, true) {
+        return Err(error(StatusCode::FORBIDDEN, "OWNER_TUNNEL_REQUIRED"));
+    }
+    if f.confirm != format!("REMOVE POP {code}") {
+        return Err(error(
+            StatusCode::BAD_REQUEST,
+            "EXPLICIT_POP_REMOVE_REQUIRED",
+        ));
+    }
+    let _lock = state.guard.lock().await;
+    let mut s = load(&state.path)
+        .map_err(|_| error(StatusCode::SERVICE_UNAVAILABLE, "OWNER_STORE_UNAVAILABLE"))?;
+    let i = s
+        .pops
+        .iter()
+        .position(|p| p.code == code)
+        .ok_or_else(|| error(StatusCode::NOT_FOUND, "POP_NOT_FOUND"))?;
+    if s.pops[i].revision != f.expected_revision {
+        return Err(error(StatusCode::CONFLICT, "STALE_REVISION"));
+    }
+    if s.devices.iter().any(|d| d.pop_id == code) || s.linked_c320_pop.as_deref() == Some(&code) {
+        return Err(error(StatusCode::CONFLICT, "POP_HAS_ASSIGNED_DEVICES"));
+    }
+    if !audit(&mut s, "REMOVE_POP", &code, f.expected_revision) {
+        return Err(error(StatusCode::CONFLICT, "OWNER_AUDIT_LIMIT"));
+    }
+    s.pops.remove(i);
+    save(&state.path, &s)
+        .map_err(|_| error(StatusCode::SERVICE_UNAVAILABLE, "OWNER_SAVE_FAILED"))?;
+    Ok((
+        super::private_lab_headers("application/json; charset=utf-8"),
+        Json(json!({"removed":true,"code":code,"durable":true})),
+    ))
+}
 fn router_at(path: PathBuf) -> Router {
     let state = OwnerState {
         path,
         guard: Arc::new(Mutex::new(())),
     };
     Router::new()
+        .route("/lab/owner/device-catalog", get(catalog))
+        .route("/lab/owner/pops", get(list_pops).post(create_pop))
+        .route(
+            "/lab/owner/pops/{code}",
+            axum::routing::put(update_pop).delete(remove_pop),
+        )
         .route("/lab/owner/devices", get(list).post(create))
         .route(
             "/lab/owner/devices/{id}",
@@ -593,6 +843,16 @@ mod tests {
         let dir = tempfile::tempdir().unwrap();
         let path = dir.path().join("owner").join("devices.json");
         let router = router_at(path.clone());
+        let (code, pop) = call(
+            &router,
+            "POST",
+            "/lab/owner/pops",
+            r#"{"code":"POP-A","display_name":"Lab A"}"#,
+            true,
+        )
+        .await;
+        assert_eq!(code, StatusCode::CREATED);
+        assert_eq!(pop["pop"]["revision"], 1);
         let (code, created) = call(&router, "POST", "/lab/owner/devices", &example(), true).await;
         assert_eq!(code, StatusCode::CREATED);
         assert_eq!(created["device"]["connection_state"], "SAVED_NOT_CONNECTED");
@@ -658,7 +918,7 @@ mod tests {
                 .iter()
                 .map(|a| a.operation.as_str())
                 .collect::<Vec<_>>(),
-            vec!["CREATE", "UPDATE", "REMOVE"]
+            vec!["CREATE_POP", "CREATE", "UPDATE", "REMOVE"]
         );
         assert!(snapshot.devices.is_empty());
         assert_eq!(
@@ -685,6 +945,223 @@ mod tests {
         .await;
         assert_eq!(code, StatusCode::NOT_FOUND);
     }
+    #[tokio::test]
+    async fn approved_pop_master_and_catalog_enforced_on_server() {
+        let temp = tempfile::tempdir().unwrap();
+        let path = temp.path().join("owner").join("devices.json");
+        let app = router_at(path.clone());
+        let (status, empty) = call(&app, "GET", "/lab/owner/pops", "", false).await;
+        assert_eq!(status, StatusCode::OK);
+        assert_eq!(empty["pops"].as_array().unwrap().len(), 0);
+        let (status, catalog) = call(&app, "GET", "/lab/owner/device-catalog", "", false).await;
+        assert_eq!(status, StatusCode::OK);
+        assert_eq!(catalog["new_device_connection_ready"], false);
+        assert_eq!(catalog["vendors"].as_array().unwrap().len(), 4);
+        let (status, denied) = call(&app, "POST", "/lab/owner/devices", &example(), true).await;
+        assert_eq!(status, StatusCode::UNPROCESSABLE_ENTITY);
+        assert_eq!(denied["error"], "POP_MUST_BE_REGISTERED");
+        let (status, pop) = call(
+            &app,
+            "POST",
+            "/lab/owner/pops",
+            r#"{"code":"POP-A","display_name":"Main POP"}"#,
+            true,
+        )
+        .await;
+        assert_eq!(status, StatusCode::CREATED);
+        assert_eq!(pop["pop"]["code"], "POP-A");
+        assert_eq!(
+            call(
+                &app,
+                "POST",
+                "/lab/owner/pops",
+                r#"{"code":"pop-a","display_name":"Duplicate"}"#,
+                true
+            )
+            .await
+            .0,
+            StatusCode::CONFLICT
+        );
+        let mut altered: Value = serde_json::from_str(&example()).unwrap();
+        altered["vendor"] = json!("FakeSupportedVendor");
+        assert_eq!(
+            call(
+                &app,
+                "POST",
+                "/lab/owner/devices",
+                &altered.to_string(),
+                true
+            )
+            .await
+            .0,
+            StatusCode::BAD_REQUEST
+        );
+        altered["vendor"] = json!("MikroTik");
+        assert_eq!(
+            call(
+                &app,
+                "POST",
+                "/lab/owner/devices",
+                &altered.to_string(),
+                true
+            )
+            .await
+            .0,
+            StatusCode::BAD_REQUEST
+        );
+        altered["vendor"] = json!("C-DATA");
+        assert_eq!(
+            call(
+                &app,
+                "POST",
+                "/lab/owner/devices",
+                &altered.to_string(),
+                true
+            )
+            .await
+            .0,
+            StatusCode::CREATED
+        );
+        assert_eq!(
+            call(
+                &app,
+                "DELETE",
+                "/lab/owner/pops/POP-A",
+                r#"{"expected_revision":1,"confirm":"REMOVE POP POP-A"}"#,
+                true
+            )
+            .await
+            .0,
+            StatusCode::CONFLICT
+        );
+        assert_eq!(
+            call(
+                &app,
+                "PUT",
+                "/lab/owner/pops/POP-A",
+                r#"{"expected_revision":1,"display_name":"Main Building"}"#,
+                true
+            )
+            .await
+            .0,
+            StatusCode::OK
+        );
+        assert_eq!(
+            call(
+                &app,
+                "PUT",
+                "/lab/owner/pops/POP-A",
+                r#"{"expected_revision":1,"display_name":"Stale"}"#,
+                true
+            )
+            .await
+            .0,
+            StatusCode::CONFLICT
+        );
+        assert_eq!(
+            call(
+                &app,
+                "DELETE",
+                "/lab/owner/devices/OWN-000001",
+                r#"{"expected_revision":1,"confirm":"REMOVE OWN-000001"}"#,
+                true
+            )
+            .await
+            .0,
+            StatusCode::OK
+        );
+        assert_eq!(
+            call(
+                &app,
+                "DELETE",
+                "/lab/owner/pops/POP-A",
+                r#"{"expected_revision":2,"confirm":"REMOVE POP POP-A"}"#,
+                true
+            )
+            .await
+            .0,
+            StatusCode::OK
+        );
+        let recovered = load(&path).unwrap();
+        assert!(recovered.pops.is_empty());
+        assert_eq!(
+            recovered
+                .audit
+                .iter()
+                .map(|e| e.operation.as_str())
+                .collect::<Vec<_>>(),
+            vec!["CREATE_POP", "CREATE", "UPDATE_POP", "REMOVE", "REMOVE_POP"]
+        );
+    }
+    #[tokio::test]
+    async fn existing_owner_snapshots_upgrade_without_losing_connected_c320() {
+        let temp = tempfile::tempdir().unwrap();
+        let parent = temp.path().join("owner");
+        fs::create_dir(&parent).unwrap();
+        fs::set_permissions(&parent, fs::Permissions::from_mode(0o700)).unwrap();
+        let path = parent.join("devices.json");
+        fs::write(&path,r#"{"next_id":3,"linked_c320_label":"OLT existing","linked_revision":1,"devices":[],"audit":[]}"#).unwrap();
+        fs::set_permissions(&path, fs::Permissions::from_mode(0o600)).unwrap();
+        let app = router_at(path.clone());
+        let (code, list) = call(&app, "GET", "/lab/owner/pops", "", false).await;
+        assert_eq!(code, StatusCode::OK);
+        assert_eq!(list["count"], 0);
+        assert_eq!(
+            call(
+                &app,
+                "POST",
+                "/lab/owner/pops",
+                r#"{"code":"JKT-01","display_name":"Jakarta West"}"#,
+                true
+            )
+            .await
+            .0,
+            StatusCode::CREATED
+        );
+        let (code, rename) = call(
+            &app,
+            "PUT",
+            "/lab/owner/devices/DEV-01",
+            r#"{"expected_revision":1,"display_name":"OLT existing","pop_id":"JKT-01"}"#,
+            true,
+        )
+        .await;
+        assert_eq!(code, StatusCode::OK);
+        assert_eq!(rename["connector_unchanged"], true);
+        let new = load(&path).unwrap();
+        assert_eq!(new.next_id, 3);
+        assert_eq!(new.linked_c320_pop.as_deref(), Some("JKT-01"));
+        assert_eq!(new.linked_revision, 2);
+        assert_eq!(
+            call(
+                &app,
+                "DELETE",
+                "/lab/owner/pops/JKT-01",
+                r#"{"expected_revision":1,"confirm":"REMOVE POP JKT-01"}"#,
+                true
+            )
+            .await
+            .0,
+            StatusCode::CONFLICT
+        );
+        assert_eq!(
+            call(
+                &app,
+                "PUT",
+                "/lab/owner/devices/DEV-01",
+                r#"{"expected_revision":2,"display_name":"OLT renamed"}"#,
+                true
+            )
+            .await
+            .0,
+            StatusCode::OK
+        );
+        assert_eq!(
+            load(&path).unwrap().linked_c320_pop.as_deref(),
+            Some("JKT-01")
+        );
+    }
+
     #[tokio::test]
     async fn denies_cross_origin_secrets_and_live_connector_removal() {
         let dir = tempfile::tempdir().unwrap();

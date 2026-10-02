@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en-US"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow,noarchive"><meta name="referrer" content="no-referrer">
+<title>IPAT Platform Admin | Domains & Public Access</title>
+<link rel="stylesheet" href="/lab/platform-admin/domains.css"><script src="/lab/platform-admin/domains.js" defer></script>
+</head><body><div class="app"><aside><a class="logo" href="/lab/dashboard-preview">IP<span>@</span>T</a>
+  <div class="nav-label">OWNER-PRIVATE ADMIN</div>
+  <nav><a href="/lab/dashboard-preview">Dashboard</a><a href="/lab/device-workbench#managed-devices">Device Manager</a>
+  <a class="active" href="/lab/platform-admin/domains">Platform Domain Control</a><a href="/lab/domain-settings">Tenant Domain Preview</a></nav>
+  <p>Owner-private configuration staging; not an authenticated public admin portal.</p></aside>
+<main><header><span>Platform / Configuration / <strong>Domain Control</strong></span><span class="private">SSH PRIVATE · NO PUBLIC ACCESS</span></header>
+<div class="content"><span class="eyebrow">IPAT NETWORK OPERATIONS</span><h1>Platform domains & public access</h1>
+<p>Prepare the future platform hostname, temporary public IP and tenant domain requests entirely within the private admin dashboard. Changes persist; they do not modify external DNS, install TLS, change the VPS firewall or activate public access.</p>
+<section class="warning" role="status"><strong>PRD PRODUCTION BLOCKER: public dashboard and tenant domains are NOT DEPLOYED.</strong>
+<span id="ipat-domain-gates">Checking verified deployment prerequisites...</span>
+<p>A domain cannot become Active until public ingress, trusted admin OIDC/MFA, PostgreSQL tenant binding, verified DNS ownership and valid HTTPS/TLS are independently deployed and tested. Keep existing SSH management DNS unchanged.</p></section>
+<section class="card" aria-labelledby="profile-heading"><div class="section-title"><div><span class="eyebrow">01 / PLATFORM CONFIGURATION</span><h2 id="profile-heading">Platform hostname & temporary IP</h2></div><span class="pill">DRAFT ONLY</span></div>
+<form id="ipat-domain-profile-form" autocomplete="off"><div class="grid">
+<div><label for="ipat-domain-platform-host">Desired platform hostname</label><input id="ipat-domain-platform-host" type="text" maxlength="253" placeholder="e.g. ipat.id — only after ownership verification" spellcheck="false"></div>
+<div><label for="ipat-domain-public-ip">Temporary public IPv4</label><input id="ipat-domain-public-ip" type="text" inputmode="decimal" maxlength="15" placeholder="e.g. 202.162.204.121 (verify assignment)" spellcheck="false"></div></div>
+<p class="muted">Enter a hostname you own and your authorized VPS public IP. The backend rejects non-public and documentation-only addresses. Saving is a plan, not a DNS or ingress change.</p>
+<div class="actions"><button id="ipat-domain-profile-save" type="submit">Save staging configuration</button><button id="ipat-domain-refresh" type="button" class="secondary">Refresh</button></div>
+<p id="ipat-domain-profile-status" role="status" aria-live="polite"></p></form>
+<div class="grid summary"><div><small>PUBLIC INGRESS</small><strong id="ipat-domain-ingress-status">NOT VERIFIED</strong></div><div><small>ADMIN AUTHENTICATION</small><strong>NOT DEPLOYED</strong></div>
+<div><small>HTTPS / TLS</small><strong id="ipat-domain-tls-status">NOT READY</strong></div><div><small>DNS OWNERSHIP</small><strong id="ipat-domain-dns-status">NOT VERIFIED</strong></div></div>
+</section>
+<section class="card" aria-labelledby="tenant-domains-heading"><div class="section-title"><div><span class="eyebrow">02 / TENANT DOMAIN PLANNING</span><h2 id="tenant-domains-heading">Managed subdomains & custom domains</h2></div><span class="pill">PENDING VERIFICATION</span></div>
+<p>Record a proposed hostname. This does <strong>not</strong> create a company account or assign it to an existing tenant: trusted tenant identity and DNS ownership verification are still required.</p>
+<form id="ipat-domain-request-form" autocomplete="off"><div class="grid">
+<div><label for="ipat-domain-tenant-ref">Proposed company slug</label><input id="ipat-domain-tenant-ref" required maxlength="48" pattern="[a-z0-9]+(?:-[a-z0-9]+)*" placeholder="e.g. kangnet"></div>
+<div><label for="ipat-domain-kind">Domain type</label><select id="ipat-domain-kind"><option value="managed_subdomain">Managed tenant subdomain</option><option value="custom_domain">Customer custom domain</option></select></div>
+<div id="ipat-domain-custom-wrap" hidden><label for="ipat-domain-custom-host">Custom hostname</label><input id="ipat-domain-custom-host" maxlength="253" placeholder="e.g. portal.customer.co.id" spellcheck="false"></div></div>
+<div class="actions"><button id="ipat-domain-request-save" type="submit">Add planning request</button></div>
+<p id="ipat-domain-request-status" role="status" aria-live="polite"></p></form>
+<div class="table-wrap"><table><thead><tr><th>Hostname</th><th>Company reference</th><th>Type</th><th>Deployment state</th><th>Actions</th></tr></thead>
+<tbody id="ipat-domain-draft-rows"><tr><td colspan="5">Loading registered plans...</td></tr></tbody></table></div>
+<div id="ipat-domain-preview" class="preview" role="status" aria-live="polite" hidden></div>
+</section>
+<section class="card"><span class="eyebrow">03 / ACTIVATION GATES</span><h2>What the platform still requires</h2>
+<ol><li>Verified platform/domain ownership and, for managed subdomains, verified platform zone control.</li>
+<li>Production ingress on public IPv4:443 with a valid TLS certificate and tested rollback.</li>
+<li>Real platform-admin and tenant-admin login through OIDC/MFA and a Host-bound session.</li>
+<li>Active PostgreSQL tenant domain registry, automated TXT ownership checks and per-tenant TLS routing.</li>
+<li>External browser, hostile Host/tenant-crossing and backup/recovery acceptance tests.</li></ol>
+<p class="muted">Do not redirect the existing lab SSH hostname or advertise domain drafts as live customer portals. The owner-private platform plan is independent of the protected tenant domain BFF.</p></section>
+</div></main></div></body></html>

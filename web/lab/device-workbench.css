@@ -127,3 +127,15 @@ footer{border-top:1px solid #253e50;margin-top:24px;padding:20px 0;color:#83a1b3
 .ipat-owner-device-detail dt{font-size:11px;color:#9dbece}
 .ipat-owner-device-detail dd{font-size:12px;margin:0;color:#e7f5f9}
 @media(max-width:720px){.ipat-owner-device-toolbar button{margin-left:0}.ipat-owner-device-detail dl{grid-template-columns:1fr}}
+
+/* R9.62 master data selectors: sites and evidence-qualified vendor catalog */
+.ipat-owner-sites{border:1px solid #3a5b6d;background:#102b39;border-radius:11px;padding:15px;margin:19px 0}
+.ipat-owner-sites h3{font-size:16px;margin:0 0 6px}
+.ipat-owner-sites table td{white-space:normal}
+.ipat-owner-sites form{padding:14px;border:1px solid #49817a;background:#112f38;border-radius:10px;margin:13px 0}
+.ipat-owner-sites h4{font-size:14px;margin:0 0 9px}
+.ipat-owner-site-field small,.ipat-owner-inventory small{display:block;color:#add7dc;font-size:11px;line-height:1.5}
+#ipat-owner-pop-inline{align-self:flex-start;min-height:31px}
+.ipat-owner-inventory select{cursor:pointer}
+
+.ipat-owner-admin-link{display:inline-flex;align-items:center;border:1px solid #4c9094;padding:10px 12px;border-radius:8px;font-size:12px;color:#a9f0e3;text-decoration:none}
