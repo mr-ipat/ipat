@@ -82,7 +82,7 @@ class NocScope(unittest.TestCase):
     def test_04_revocation_and_expiry_are_not_cached(self):
         query(f"UPDATE ipat_platform.identity_memberships SET revoked_at=now() WHERE tenant_id='{T1}' AND subject='noc'")
         self.assertEqual(granted("noc"), [])
-        query(f"UPDATE ipat_platform.identity_memberships SET revoked_at=NULL,expires_at=now()-interval '1 second' WHERE tenant_id='{T1}' AND subject='noc'")
+        query(f"UPDATE ipat_platform.identity_memberships SET revoked_at=NULL,created_at=now()-interval '10 minutes',expires_at=now()-interval '1 minute' WHERE tenant_id='{T1}' AND subject='noc'")
         self.assertEqual(granted("noc"), [])
         query(f"UPDATE ipat_platform.identity_memberships SET expires_at=now()+interval '2 hours' WHERE tenant_id='{T1}' AND subject='noc'")
 
