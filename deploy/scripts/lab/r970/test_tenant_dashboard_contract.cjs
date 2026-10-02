@@ -1,0 +1,34 @@
+'use strict';
+const fs=require('node:fs'),assert=require('node:assert/strict');
+const html=fs.readFileSync('web/console/tenant/dashboard.html','utf8');
+const js=fs.readFileSync('web/console/tenant/app.js','utf8');
+const api=fs.readFileSync('apps/control-api/src/commercial_tenant_api.rs','utf8');
+const oidc=fs.readFileSync('apps/control-api/src/commercial_oidc_issuer.rs','utf8');
+assert(html.includes('<html lang="en-US">'));
+for(const route of ['sites','devices','domains']){
+ assert(html.includes(`data-page="${route}" hidden`));
+ assert(html.includes(`data-panel="${route}" hidden`));
+ assert(js.includes(`'/api/v1/${route}'`));
+}
+assert(!js.includes('.innerHTML='));
+assert(!html.includes('onload=')&&!html.includes('onclick='));
+assert(js.includes("await api('/api/v1/capabilities')"));
+assert(js.includes("await loadCatalog()"));
+assert(js.includes('const selectedDevice='));
+assert(js.includes('state.pendingSite=d.code'));
+assert(js.includes('state.pendingSite||selectedDevice'));
+assert(js.includes("crypto.randomUUID()"));
+assert(js.includes("await api('/api/v1/logout','POST')"));
+assert(js.includes('X-IPAT-CSRF'));
+assert(api.includes('tenant_admin_ui_capability'));
+assert(api.includes('catalog_allows(&v.device_kind, &v.vendor, &v.management_transport)'));
+assert(api.includes('"/dashboard", get(dashboard)'));
+assert(api.includes('"/api/v1/logout", axum::routing::post(logout)'));
+assert(oidc.includes('SameSite=Lax'));
+assert(oidc.includes('SameSite=Strict'));
+assert(/TOKEN_RESPONSE_LIMIT\s*\+\s*1/.test(oidc));
+assert(oidc.includes('child.kill()'));
+assert(!oidc.includes('let out = child.wait_with_output()'));
+assert(oidc.includes("/auth/oidc/complete.js"));
+assert(!oidc.includes('danger_accept_user_claims'));
+console.log('R970_STATIC_DEFAULT_DENY_SAME_ORIGIN_MENU_VENDOR_CSRF_SESSION_SOURCE=PASS');

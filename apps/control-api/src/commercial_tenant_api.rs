@@ -6,6 +6,7 @@
 use axum::{
     extract::{Path, Query, State},
     http::{header, HeaderMap, HeaderName, HeaderValue, StatusCode},
+    response::{Html, IntoResponse, Response},
     routing::get,
     Json, Router,
 };
@@ -21,6 +22,136 @@ use crate::{
 };
 
 const CSRF_HEADER: HeaderName = HeaderName::from_static("x-ipat-csrf");
+const DASHBOARD_HTML: &str = include_str!("../../../web/console/tenant/dashboard.html");
+const DASHBOARD_JS: &str = include_str!("../../../web/console/tenant/app.js");
+const DASHBOARD_CSS: &str = include_str!("../../../web/console/tenant/style.css");
+// Inventory candidates, NOT verified physical driver/firmware compatibility.
+fn catalog() -> Value {
+    json!([
+        {"type":"olt","vendor":"ZTE","transports":["ssh","snmp"],"qualification":"metadata_candidate"},
+        {"type":"olt","vendor":"C-DATA","transports":["ssh","snmp"],"qualification":"metadata_candidate"},
+        {"type":"ont","vendor":"ZTE","transports":["cwmp","usp"],"qualification":"metadata_candidate"},
+        {"type":"ont","vendor":"VSOL","transports":["cwmp","usp"],"qualification":"metadata_candidate"},
+        {"type":"router","vendor":"MikroTik","transports":["ssh","snmp","routeros_api_ssl"],"qualification":"metadata_candidate"}
+    ])
+}
+fn catalog_allows(kind: &str, vendor: &str, protocol: &str) -> bool {
+    matches!(
+        (kind, vendor, protocol),
+        ("olt", "ZTE" | "C-DATA", "ssh" | "snmp")
+            | ("ont", "ZTE" | "VSOL", "cwmp" | "usp")
+            | ("router", "MikroTik", "ssh" | "snmp" | "routeros_api_ssl")
+    )
+}
+fn html_headers() -> HeaderMap {
+    let mut h = safe_headers();
+    h.insert("content-security-policy", HeaderValue::from_static(
+        "default-src 'none'; base-uri 'none'; frame-ancestors 'none'; object-src 'none'; form-action 'self'; connect-src 'self'; style-src 'self'; script-src 'self'"));
+    h.insert("x-frame-options", HeaderValue::from_static("DENY"));
+    h
+}
+async fn login_page() -> Response {
+    (StatusCode::OK,html_headers(),Html("<!doctype html><html lang=\"en-US\"><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width\"><title>IPAT sign in</title><h1>IPAT company sign in</h1><p>Use your company's approved identity provider and multi-factor authentication.</p><a href=\"/auth/oidc/start\">Sign in securely</a></html>")).into_response()
+}
+async fn dashboard(State(s): State<Arc<StateData>>, headers: HeaderMap) -> Response {
+    if actor(&s.db, &headers, false).await.is_none() {
+        return (
+            StatusCode::UNAUTHORIZED,
+            html_headers(),
+            "Sign in at /auth/oidc/start with your approved company account.",
+        )
+            .into_response();
+    }
+    (StatusCode::OK, html_headers(), Html(DASHBOARD_HTML)).into_response()
+}
+async fn js_asset() -> Response {
+    let mut h = html_headers();
+    h.insert(
+        header::CONTENT_TYPE,
+        HeaderValue::from_static("application/javascript; charset=utf-8"),
+    );
+    (StatusCode::OK, h, DASHBOARD_JS).into_response()
+}
+async fn css_asset() -> Response {
+    let mut h = html_headers();
+    h.insert(
+        header::CONTENT_TYPE,
+        HeaderValue::from_static("text/css; charset=utf-8"),
+    );
+    (StatusCode::OK, h, DASHBOARD_CSS).into_response()
+}
+async fn capabilities(
+    State(s): State<Arc<StateData>>,
+    headers: HeaderMap,
+) -> (StatusCode, HeaderMap, Json<Value>) {
+    let Some(a) = actor(&s.db, &headers, false).await else {
+        return denied(StatusCode::UNAUTHORIZED);
+    };
+    let row =
+        s.db.query_one(
+            "SELECT ipat_platform.tenant_admin_ui_capability($1,$2,$3::uuid)",
+            &[&a.issuer, &a.subject, &a.tenant_id],
+        )
+        .await;
+    let Ok(row) = row else {
+        return denied(StatusCode::SERVICE_UNAVAILABLE);
+    };
+    let admin: bool = row.get(0);
+    response(
+        StatusCode::OK,
+        json!({"ok":true,"tenant_id":a.tenant_id.to_string(),
+        "can_manage_sites":admin,"can_manage_devices":admin,"can_manage_domains":admin}),
+    )
+}
+async fn device_catalog(
+    State(s): State<Arc<StateData>>,
+    headers: HeaderMap,
+) -> (StatusCode, HeaderMap, Json<Value>) {
+    let Some(a) = actor(&s.db, &headers, false).await else {
+        return denied(StatusCode::UNAUTHORIZED);
+    };
+    let row =
+        s.db.query_one(
+            "SELECT ipat_platform.tenant_admin_ui_capability($1,$2,$3::uuid)",
+            &[&a.issuer, &a.subject, &a.tenant_id],
+        )
+        .await;
+    if !row.ok().is_some_and(|r| r.get::<_, bool>(0)) {
+        return denied(StatusCode::FORBIDDEN);
+    };
+    response(StatusCode::OK, json!({"ok":true,"catalog":catalog()}))
+}
+async fn logout(State(s): State<Arc<StateData>>, headers: HeaderMap) -> Response {
+    if actor(&s.db, &headers, true).await.is_none() {
+        return denied(StatusCode::UNAUTHORIZED).into_response();
+    }
+    let Some(h) = host(&headers) else {
+        return denied(StatusCode::UNAUTHORIZED).into_response();
+    };
+    let Some(c) = cookie(&headers) else {
+        return denied(StatusCode::UNAUTHORIZED).into_response();
+    };
+    if !durable_tenant_session::revoke(&s.db, c, &h).await {
+        return denied(StatusCode::CONFLICT).into_response();
+    }
+    let mut out = html_headers();
+    out.append(
+        header::SET_COOKIE,
+        HeaderValue::from_static(
+            "__Host-ipat_session=; Secure; HttpOnly; SameSite=Strict; Path=/; Max-Age=0",
+        ),
+    );
+    out.append(
+        header::SET_COOKIE,
+        HeaderValue::from_static("__Host-ipat_csrf=; Secure; SameSite=Strict; Path=/; Max-Age=0"),
+    );
+    (
+        StatusCode::OK,
+        out,
+        Json(json!({"ok":true,"signed_out":true})),
+    )
+        .into_response()
+}
 
 #[derive(Clone)]
 pub(super) struct StateData {
@@ -345,6 +476,7 @@ struct DeviceList {
 }
 fn valid_device_create(v: &DeviceCreate) -> bool {
     valid_code(&v.pop_id)
+        && catalog_allows(&v.device_kind, &v.vendor, &v.management_transport)
         && valid_name(&v.display_name)
         && matches!(v.device_kind.as_str(), "olt" | "ont" | "router")
         && !v.vendor.is_empty()
@@ -569,6 +701,13 @@ async fn delete_domain(
 pub(super) fn router(db: Arc<Client>) -> Router {
     let state = Arc::new(StateData { db });
     Router::new()
+        .route("/", get(login_page))
+        .route("/dashboard", get(dashboard))
+        .route("/dashboard/assets/app.js", get(js_asset))
+        .route("/dashboard/assets/style.css", get(css_asset))
+        .route("/api/v1/capabilities", get(capabilities))
+        .route("/api/v1/device-catalog", get(device_catalog))
+        .route("/api/v1/logout", axum::routing::post(logout))
         .route("/api/v1/sites", get(list_sites).post(create_site))
         .route(
             "/api/v1/sites/{code}",
@@ -592,6 +731,24 @@ pub(super) fn router(db: Arc<Client>) -> Router {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn r970_catalog_forbids_forged_or_mismatched_device_registration() {
+        assert!(catalog_allows("olt", "ZTE", "ssh"));
+        assert!(catalog_allows("ont", "VSOL", "cwmp"));
+        assert!(catalog_allows("router", "MikroTik", "routeros_api_ssl"));
+        for wrong in [
+            ("olt", "UnknownVendor", "ssh"),
+            ("olt", "MikroTik", "ssh"),
+            ("router", "VSOL", "cwmp"),
+            ("ont", "VSOL", "ssh"),
+            ("olt", "ZTE", "telnet"),
+        ] {
+            assert!(!catalog_allows(wrong.0, wrong.1, wrong.2));
+        }
+        assert!(DASHBOARD_HTML.contains("<html lang=\"en-US\">"));
+        assert!(!DASHBOARD_HTML.contains("ipt-owner-pop-form"));
+        assert!(DASHBOARD_JS.contains("'/api/v1/capabilities'"));
+    }
     #[test]
     fn cookie_and_origin_are_strict() {
         let mut h = HeaderMap::new();
@@ -690,6 +847,191 @@ mod pg_integration {
     }
     async fn body_json(r: axum::response::Response) -> Value {
         serde_json::from_slice(&to_bytes(r.into_body(), 1024 * 64).await.unwrap()).unwrap()
+    }
+
+    #[tokio::test]
+    async fn r970_real_pg_tenant_dashboard_current_role_catalog_and_logout() {
+        if std::env::var("IPAT_PG_EPHEMERAL_TEST").as_deref() != Ok("1")
+            || std::env::var("PGDATABASE").as_deref() != Ok("ipat_synthetic")
+        {
+            return;
+        }
+        let admin = connect_admin().await;
+        // 0023 is explicitly applied in the new R9.70 disposable CI step.
+        if admin.query_one("SELECT to_regprocedure('ipat_platform.tenant_admin_ui_capability(text,text,uuid)') IS NOT NULL",&[]).await.unwrap().get::<_,bool>(0)==false {return}
+        let tenant = Uuid::parse_str("70707070-7070-4070-8070-707070707071").unwrap();
+        let domain = Uuid::parse_str("71717171-7171-4171-8171-717171717171").unwrap();
+        let session_id = Uuid::parse_str("72727272-7272-4272-8272-727272727271").unwrap();
+        let issuer = "https://id.r970.synthetic.invalid/realms/ipat";
+        let subject = "r970-dashboard-admin";
+        let host = "tenant-r970.example.net";
+        admin.execute("INSERT INTO ipat_platform.tenants(id,tenant_slug,state) VALUES($1,'r970-dashboard-tenant','active') ON CONFLICT(id) DO UPDATE SET state='active'",&[&tenant]).await.unwrap();
+        admin.execute("INSERT INTO ipat_platform.identity_memberships(tenant_id,issuer,subject,role,approved_by,expires_at) VALUES($1,$2,$3,'tenant_admin','synthetic-r970-reviewer',clock_timestamp()+interval '1 day') ON CONFLICT(tenant_id,issuer,subject,role) DO UPDATE SET revoked_at=NULL,expires_at=clock_timestamp()+interval '1 day'",&[&tenant,&issuer,&subject]).await.unwrap();
+        admin.execute("INSERT INTO ipat_platform.tenant_domains(id,tenant_id,hostname,domain_type,verification_state,verification_method,verified_at,routing_mode,verification_name,verification_value,requested_by_issuer,requested_by_subject,requested_at,activation_state,ownership_verified_at,routing_ready_at,tls_ready_at,activated_at) VALUES($1,$2,$3,'custom_domain','verified','dns_txt',clock_timestamp(),'a_record',$4,$5,$6,$7,clock_timestamp(),'active',clock_timestamp(),clock_timestamp(),clock_timestamp(),clock_timestamp())",&[&domain,&tenant,&host,&format!("_ipat-verify.{host}"),&format!("ipat-domain={domain}"),&issuer,&subject]).await.unwrap();
+        let cookie = "ccccccccccccccccccccccccccccccccccccccccccc";
+        let csrf = "ddddddddddddddddddddddddddddddddddddddddddd";
+        let issuer_db = connect_admin().await;
+        issuer_db
+            .batch_execute("SET ROLE ipat_oidc_session_issuer_login")
+            .await
+            .unwrap();
+        let issued=issuer_db.query_one("SELECT ipat_platform.issue_tenant_browser_session($1,$2,$3::uuid,$4::uuid,$5::uuid,$6,$7,clock_timestamp()+interval '10 minutes')",&[&issuer,&subject,&tenant,&domain,&session_id,&hex(cookie),&hex(csrf)]).await.unwrap();
+        assert_eq!(issued.get::<_, Option<Uuid>>(0), Some(session_id));
+        let api_db = connect_admin().await;
+        api_db
+            .batch_execute("SET ROLE ipat_tenant_api_login")
+            .await
+            .unwrap();
+        let app = router(Arc::new(api_db));
+        let missing = app
+            .clone()
+            .oneshot(req("GET", "/dashboard", host, None, None, None))
+            .await
+            .unwrap();
+        assert_eq!(missing.status(), StatusCode::UNAUTHORIZED);
+        let wrong = app
+            .clone()
+            .oneshot(req(
+                "GET",
+                "/dashboard",
+                "other-r970.example.net",
+                Some(cookie),
+                None,
+                None,
+            ))
+            .await
+            .unwrap();
+        assert_eq!(wrong.status(), StatusCode::UNAUTHORIZED);
+        let dash = app
+            .clone()
+            .oneshot(req("GET", "/dashboard", host, Some(cookie), None, None))
+            .await
+            .unwrap();
+        assert_eq!(dash.status(), StatusCode::OK);
+        assert_eq!(dash.headers().get("cache-control").unwrap(), "no-store");
+        let text = String::from_utf8(
+            to_bytes(dash.into_body(), 1024 * 128)
+                .await
+                .unwrap()
+                .to_vec(),
+        )
+        .unwrap();
+        assert!(text.contains("<html lang=\"en-US\">"));
+        assert!(text.contains("id=\"device-create\""));
+        let cap = app
+            .clone()
+            .oneshot(req(
+                "GET",
+                "/api/v1/capabilities",
+                host,
+                Some(cookie),
+                None,
+                None,
+            ))
+            .await
+            .unwrap();
+        assert_eq!(cap.status(), StatusCode::OK);
+        let c = body_json(cap).await;
+        assert_eq!(c["tenant_id"], tenant.to_string());
+        assert_eq!(c["can_manage_sites"], true);
+        let catalogue = app
+            .clone()
+            .oneshot(req(
+                "GET",
+                "/api/v1/device-catalog",
+                host,
+                Some(cookie),
+                None,
+                None,
+            ))
+            .await
+            .unwrap();
+        assert_eq!(catalogue.status(), StatusCode::OK);
+        assert_eq!(
+            body_json(catalogue).await["catalog"]
+                .as_array()
+                .unwrap()
+                .len(),
+            5
+        );
+        let site = app
+            .clone()
+            .oneshot(req(
+                "POST",
+                "/api/v1/sites",
+                host,
+                Some(cookie),
+                Some(csrf),
+                Some(r#"{"code":"POP-R970","display_name":"Synthetic R970 Site"}"#),
+            ))
+            .await
+            .unwrap();
+        assert_eq!(site.status(), StatusCode::CREATED);
+        let forged=app.clone().oneshot(req("POST","/api/v1/devices",host,Some(cookie),Some(csrf),Some(r#"{"request_id":"73737373-7373-4373-8373-737373737371","pop_id":"POP-R970","display_name":"Fake vendor","device_kind":"olt","vendor":"Forged","intended_model":"C320","management_transport":"ssh","management_host":"olt-r970.invalid","management_port":22}"#))).await.unwrap();
+        assert_eq!(forged.status(), StatusCode::UNPROCESSABLE_ENTITY);
+        let wrong_transport=app.clone().oneshot(req("POST","/api/v1/devices",host,Some(cookie),Some(csrf),Some(r#"{"request_id":"73737373-7373-4373-8373-737373737372","pop_id":"POP-R970","display_name":"Invalid protocol","device_kind":"ont","vendor":"VSOL","management_transport":"ssh","management_host":"ont-r970.invalid","management_port":22}"#))).await.unwrap();
+        assert_eq!(wrong_transport.status(), StatusCode::UNPROCESSABLE_ENTITY);
+        admin.execute("UPDATE ipat_platform.identity_memberships SET revoked_at=clock_timestamp() WHERE tenant_id=$1 AND issuer=$2 AND subject=$3",&[&tenant,&issuer,&subject]).await.unwrap();
+        let revoked = app
+            .clone()
+            .oneshot(req(
+                "GET",
+                "/api/v1/capabilities",
+                host,
+                Some(cookie),
+                None,
+                None,
+            ))
+            .await
+            .unwrap();
+        assert_eq!(revoked.status(), StatusCode::UNAUTHORIZED);
+        let revoked_dash = app
+            .clone()
+            .oneshot(req("GET", "/dashboard", host, Some(cookie), None, None))
+            .await
+            .unwrap();
+        assert_eq!(revoked_dash.status(), StatusCode::UNAUTHORIZED);
+        admin.execute("UPDATE ipat_platform.identity_memberships SET revoked_at=NULL WHERE tenant_id=$1 AND issuer=$2 AND subject=$3",&[&tenant,&issuer,&subject]).await.unwrap();
+        let logout = app
+            .clone()
+            .oneshot(req(
+                "POST",
+                "/api/v1/logout",
+                host,
+                Some(cookie),
+                Some(csrf),
+                None,
+            ))
+            .await
+            .unwrap();
+        assert_eq!(logout.status(), StatusCode::OK);
+        assert_eq!(logout.headers().get_all("set-cookie").iter().count(), 2);
+        let replay = app
+            .clone()
+            .oneshot(req(
+                "GET",
+                "/api/v1/capabilities",
+                host,
+                Some(cookie),
+                None,
+                None,
+            ))
+            .await
+            .unwrap();
+        assert_eq!(replay.status(), StatusCode::UNAUTHORIZED);
+        let csrf_missing = app
+            .clone()
+            .oneshot(req(
+                "POST",
+                "/api/v1/logout",
+                host,
+                Some(cookie),
+                None,
+                None,
+            ))
+            .await
+            .unwrap();
+        assert_eq!(csrf_missing.status(), StatusCode::UNAUTHORIZED);
     }
 
     #[tokio::test]
