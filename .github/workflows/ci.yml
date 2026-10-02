@@ -202,6 +202,16 @@ jobs:
           node deploy/scripts/lab/r946/test_device_status.cjs
           python3 -m py_compile deploy/scripts/lab/r945/persistent_c320_connector.py
           python3 -m py_compile deploy/scripts/lab/r945/test_persistent_connector.py
+          python3 -m py_compile deploy/scripts/lab/r966/test_private_reader_fallback.py
+          python3 -m py_compile deploy/scripts/production/r966_private_reader_preflight.py
+          # Private actual owner r938/r940 source NEVER enters Git or CI.
+          # Only these synthetic negative tests import the cryptography-backed
+          # connector. Real no-network private bundle import was run on the
+          # isolated nonroot owner VPS and remains a separate audit gate.
+          python3 -c 'import cryptography' || { sudo apt-get update -qq && sudo apt-get install -y python3-cryptography; }
+          python3 -m unittest discover deploy/scripts/lab/r966 -p test_private_reader_fallback.py -v
+          python3 -m unittest discover deploy/scripts/lab/r945 -p test_persistent_connector.py -v
+          grep -Fq 'RECOVERY_R940_SHA256' deploy/scripts/lab/r945/persistent_c320_connector.py
           bash -n deploy/scripts/lab/r953/deploy_private_integrated_preview.sh
           grep -Fq '/lab/domain-settings' apps/control-api/src/device_workbench_lab.rs
           grep -Fq '/lab/c320-owner-connection' apps/control-api/src/c320_live_lab.rs
