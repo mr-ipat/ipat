@@ -29,5 +29,9 @@ test('Backend site resource exposes assignment counts, guarded deletion and cont
    assert.ok(siteApi.includes(item),item);
  assert.ok(siteApi.includes('get(detail_pop).put(update_pop).delete(remove_pop)'));
  assert.ok(deviceJs.includes('clear_pop:true'));
+ assert.ok(deviceJs.includes('function toggleExtraControls(linked)'));
+ assert.ok(deviceJs.includes('input.disabled=linked'));
+ assert.ok(deviceJs.includes("field('pop').disabled=false"));
+ assert.ok(deviceJs.includes('toggleExtraControls(false)'));
  assert.ok(deviceJs.includes("window.location.assign('/lab/sites?return=device')"));
 });

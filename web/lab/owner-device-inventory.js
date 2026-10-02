@@ -103,6 +103,21 @@
     populatePops(field('pop').value);
     populateVendors(field('vendor').value,protocol.value);
   }
+  // HTML validation still applies to hidden required controls unless they
+  // are disabled. A linked C320 edits ONLY its label/site; a saved candidate
+  // re-enables every metadata field when opening Add/Edit again.
+  function toggleExtraControls(linked) {
+    for (const group of document.querySelectorAll('.ipat-owner-extra')) {
+      group.hidden=linked;
+      for (const input of group.querySelectorAll('input, select')) input.disabled=linked;
+    }
+    if (linked) {
+      const siteGroup=field('pop').closest('.ipat-owner-site-field');
+      siteGroup.hidden=false;
+      field('pop').disabled=false;
+      field('pop').required=false; // empty means explicitly unassign C320
+    } else field('pop').required=true;
+  }
   function hideForms() { form.hidden = true; detail.hidden = true; editing = null; }
   function render() {
     rows.replaceChildren();
@@ -173,7 +188,7 @@
       window.location.assign('/lab/sites?return=device');
       return;
     }
-    for (const group of document.querySelectorAll('.ipat-owner-extra'))group.hidden=false;
+    toggleExtraControls(false);
     el('ipat-owner-device-form-title').textContent='Add a device';
     el('ipat-owner-device-save').textContent='Save device';
     el('ipat-owner-device-form-hint').textContent='Metadata only; no connection attempt or device command. Do not enter credentials.';
@@ -213,15 +228,13 @@
       hideForms();editing=d;form.reset();
       field('name').value=d.display_name;
       if(d.linked_live_connector){
-        for (const group of document.querySelectorAll('.ipat-owner-extra'))group.hidden=true;
-        field('pop').closest('.ipat-owner-site-field').hidden=false;
+        toggleExtraControls(true);
         populatePops(d.pop_id==='UNASSIGNED'?'':d.pop_id);
-        field('pop').required=false;
         el('ipat-owner-device-form-hint').textContent='Connected C320: display label and registered POP only. Management address, port and credentials are locked. Do not register a duplicate C320.';
         el('ipat-owner-device-form-title').textContent='Edit connected C320 display label';
       } else {
-        for (const group of document.querySelectorAll('.ipat-owner-extra'))group.hidden=false;
-        populatePops(d.pop_id);field('pop').required=true;
+        toggleExtraControls(false);
+        populatePops(d.pop_id);
         field('kind').value=d.device_kind;populateVendors(d.vendor,d.management_protocol);
         field('model').value=d.exact_model;
         field('host').value=d.management_host || '';
