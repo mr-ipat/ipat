@@ -81,3 +81,15 @@ Owner-private C320 `CONNECTED` uses an independently enrolled encrypted credenti
 | No client tenant selection / cross-host replay | DB auth function accepts cookie hash + hostname + CSRF/mutation only; test replays same cookie to tenant B and receives no row | **DISPOSABLE PASS** |
 | Revocation/staleness | Current identity membership/tenant/domain is checked each request; idle 5m, absolute max 15m, explicit revoke and max 8 live sessions | **DISPOSABLE PASS** |
 | Real confidential OIDC + MFA + public HTTPS | Identity-core already validates signed ID/access pair, nonce, at_hash, `amr=mfa`, max auth age; R9.67 adapter can only issue after `VerifiedBrowserIdentity` | **BLOCKED LIVE**: token endpoint client secret, real IdP realm/operator, TLS ingress and external browser acceptance unavailable |
+
+## R9.68 commercial tenant API audit additions
+
+| Control | Verifiable evidence | Current classification |
+|---|---|---|
+| One tenant API gets tenant only from Host-bound durable session | `apps/control-api/src/commercial_tenant_api.rs`; actual Axum+PostgreSQL disposable HTTP integration rejects cross-Host cookie replay | **SOURCE/DISPOSABLE PASS**, public mount BLOCKED |
+| Site CRUD behind same production session path | `/api/v1/sites` source calls restricted `tenant_sites` functions; missing CSRF mutation denied in real router test | **SOURCE/DISPOSABLE PASS** |
+| Device Add/List/View/Edit/Remove metadata behind same path | `/api/v1/devices`; real router test executes Create/List/View/Edit/Archive through R9.65 SQL | **SOURCE/DISPOSABLE PASS**; physical connect/decommission remains separate |
+| Customer custom-domain request/list/disable behind same path | `/api/v1/domains` invokes existing domain enrollment/lifecycle functions; cannot mark ownership/TLS active | **SOURCE/DISPOSABLE PASS**, live DNS/TLS still BLOCKED |
+| OIDC issuer cannot become tenant CRUD service | `0022_commercial_tenant_api_roles.sql`, four privilege-composition PostgreSQL tests | **DISPOSABLE PASS** |
+| Tenant API cannot issue sessions or read raw tables | `test_commercial_tenant_api_roles_integration.py` | **DISPOSABLE PASS** |
+| Actual commercial public browser/API | Router and connector remain unmounted from public Internet; local Unix DB factory requires explicit production/trusted-edge flags | **BLOCKED LIVE**: provider recovery, real IdP confidential callback, production PG, public trusted TLS and hostile tests pending |
