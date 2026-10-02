@@ -188,6 +188,9 @@ jobs:
           node deploy/scripts/lab/r963/test_standalone_sites.cjs
           python3 -m unittest deploy/scripts/production/test_r963_public_cutover_preflight.py -q
           python3 -m py_compile deploy/scripts/production/r963_public_cutover_preflight.py
+          bash -n deploy/scripts/lab/r963/rollout-private-sites.sh
+          bash -n deploy/scripts/lab/r963/rollout-private-fixed-edit.sh
+          node --check deploy/scripts/lab/r963/owner_site_browser_qa.cjs
           bash -n deploy/scripts/lab/r962/rollout_private_master_domain.sh
           node --check deploy/scripts/lab/r962/owner_browser_qa.cjs
           python3 -m py_compile deploy/scripts/lab/r962/owner_domain_preview_smoke.py
