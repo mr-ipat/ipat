@@ -553,6 +553,83 @@ async fn connection_status(
     ))
 }
 
+// Owner-private, server-derived capability catalog: NEVER an executable CLI.
+// Each enabled operation maps to an existing fixed read-only POST handler.
+// An observed live connection alone does not authorize an unqualified write.
+async fn owner_action_catalog(
+    headers: HeaderMap,
+) -> Result<(HeaderMap, Json<Value>), (StatusCode, HeaderMap, Json<Value>)> {
+    let (_, Json(connection)) = connection_status(headers).await?;
+    Ok((
+        super::private_lab_headers("application/json; charset=utf-8"),
+        Json(owner_catalog_response(&connection)),
+    ))
+}
+
+fn owner_catalog_response(connection: &Value) -> Value {
+    let connected = connection.get("connector_online").and_then(Value::as_bool) == Some(true)
+        && connection.get("credentials_enrolled").and_then(Value::as_bool) == Some(true)
+        && connection.get("device_status").and_then(Value::as_str) == Some("CONNECTED")
+        && connection.get("physical_writes_enabled").and_then(Value::as_bool) == Some(false)
+        && connection.get("production_adopted").and_then(Value::as_bool) == Some(false);
+    let read = if connected { "AVAILABLE_READ_ONLY" } else { "CONNECTION_REQUIRED" };
+    let catalog = json!([
+        {"id":"cards","group":"Chassis & Hardware","label":"Read active line cards",
+         "state":read,"operation":"READ","endpoint":"/lab/c320-owner-live-cards",
+         "scope":"Live chassis card count only; no serial or unqualified board assertions."},
+        {"id":"firmware","group":"Chassis & Hardware","label":"Read firmware inventory summary",
+         "state":read,"operation":"READ","endpoint":"/lab/c320-owner-live-firmware",
+         "scope":"Live firmware row count; board/version mapping remains unverified."},
+        {"id":"onu_counts","group":"PON & ONU","label":"Read PON 1/1/1 ONU counts",
+         "state":"DEGRADED","operation":"READ","endpoint":null,
+         "scope":"The current live test returned HTTP 503; command/parser requires repair and fresh acceptance."},
+        {"id":"onu_details","group":"PON & ONU","label":"Read per-ONU operational status",
+         "state":"NOT_QUALIFIED","operation":"READ","endpoint":null,
+         "scope":"Only historical sanitized ONU IDs exist; no current per-ONU CLI test."},
+        {"id":"optical_levels","group":"PON & ONU","label":"Read optical diagnostics",
+         "state":"NOT_QUALIFIED","operation":"READ","endpoint":null,
+         "scope":"Exact model/firmware and bounded optical command not verified."},
+        {"id":"alarms","group":"Diagnostics","label":"Read current alarms",
+         "state":"NOT_QUALIFIED","operation":"READ","endpoint":null,
+         "scope":"Alarm command/format not yet observed on the connected hardware."},
+        {"id":"traffic","group":"Diagnostics","label":"Read PON/port traffic and utilization",
+         "state":"NOT_QUALIFIED","operation":"READ","endpoint":null,
+         "scope":"Counter widths, poll interval and firmware-specific parsing need testing."},
+        {"id":"config_backup","group":"Configuration & Recovery","label":"Create device-native configuration backup",
+         "state":"NOT_IMPLEMENTED","operation":"CONTROLLED","endpoint":null,
+         "scope":"Encrypted external CLI reference backup exists; vendor-native restore has not been tested."},
+        {"id":"onu_provision","group":"Provisioning","label":"Provision an ONU / bind service profile",
+         "state":"APPROVAL_AND_DRIVER_REQUIRED","operation":"WRITE","endpoint":null,
+         "scope":"Exact ONU, PON, VLAN, bandwidth, service profile; validate dry run, backup, rollback and approvals."},
+        {"id":"onu_deprovision","group":"Provisioning","label":"Remove or migrate an ONU",
+         "state":"APPROVAL_AND_DRIVER_REQUIRED","operation":"WRITE","endpoint":null,
+         "scope":"Subscriber impact, tenant/POP rights, immutable audit and tested native recovery required."},
+        {"id":"vlan_service","group":"Provisioning","label":"Configure PON VLAN and service profiles",
+         "state":"APPROVAL_AND_DRIVER_REQUIRED","operation":"WRITE","endpoint":null,
+         "scope":"Typed, vendor-tested parameters; diff/approval and rollback; no arbitrary CLI input."},
+        {"id":"ont_cwmp","group":"ONT Management","label":"Manage ONT via TR-069/CWMP",
+         "state":"AGENT_INTEROP_REQUIRED","operation":"CONTROLLED","endpoint":null,
+         "scope":"Requires exact ONT agent model, authenticated Inform and independently tested RPC/data model."},
+        {"id":"ont_usp","group":"ONT Management","label":"Manage ONT via TR-369/USP",
+         "state":"AGENT_INTEROP_REQUIRED","operation":"CONTROLLED","endpoint":null,
+         "scope":"Requires a verified native USP Agent and authenticated controller MTP on that ONT."},
+        {"id":"reboot","group":"Device Operations","label":"Operator-initiated controlled reboot",
+         "state":"APPROVAL_AND_DRIVER_REQUIRED","operation":"WRITE","endpoint":null,
+         "scope":"Maintenance window, service-impact estimation, independent approval and recovery."},
+        {"id":"firmware_upgrade","group":"Device Operations","label":"Operator-initiated firmware upgrade",
+         "state":"APPROVAL_AND_DRIVER_REQUIRED","operation":"WRITE","endpoint":null,
+         "scope":"R9.58 workflow intent exists in source; vendor image attestation, exact board match and physical worker not ready."},
+        {"id":"config_restore","group":"Configuration & Recovery","label":"Restore native configuration",
+         "state":"APPROVAL_AND_DRIVER_REQUIRED","operation":"WRITE","endpoint":null,
+         "scope":"Full native backup/restore drill, independent approver, out-of-band recovery and post-readback required."}
+    ]);
+    json!({"target":"DEV-01","vendor":"ZTE","model":"C320",
+            "mode":"OWNER_PRIVATE_LAB_CAPABILITIES","connected":connected,
+            "last_verified_at_utc":connection.get("last_verified_at_utc").and_then(Value::as_str).unwrap_or(""),
+            "production_adopted":false,"physical_writes_enabled":false,
+            "entries":catalog})
+}
+
 pub(super) fn router() -> Router {
     Router::new()
         .route(
@@ -562,6 +639,10 @@ pub(super) fn router() -> Router {
         .route(
             "/lab/c320-owner-connection",
             axum::routing::get(connection_status),
+        )
+        .route(
+            "/lab/c320-owner-action-catalog",
+            axum::routing::get(owner_action_catalog),
         )
         .route(
             "/lab/c320-owner-save-draft",
@@ -585,6 +666,38 @@ mod tests {
     use super::*;
     use axum::{body::Body, http::Request};
     use tower::ServiceExt;
+    #[test]
+    fn owner_catalog_never_authorizes_an_unqualified_command() {
+        let connected = json!({"connector_online":true,"credentials_enrolled":true,
+            "device_status":"CONNECTED","physical_writes_enabled":false,
+            "production_adopted":false,"last_verified_at_utc":"2026-10-02T02:49:33Z"});
+        let catalog = owner_catalog_response(&connected);
+        assert_eq!(catalog["connected"], true);
+        assert_eq!(catalog["physical_writes_enabled"], false);
+        let entries = catalog["entries"].as_array().unwrap();
+        assert!(entries.len() >= 15);
+        let runnable: Vec<_> = entries.iter()
+            .filter(|entry| entry["state"] == "AVAILABLE_READ_ONLY").collect();
+        assert_eq!(runnable.len(), 2);
+        assert_eq!(runnable[0]["endpoint"], "/lab/c320-owner-live-cards");
+        assert_eq!(runnable[1]["endpoint"], "/lab/c320-owner-live-firmware");
+        for entry in entries {
+            if entry["operation"] != "READ" {
+                assert!(entry["endpoint"].is_null());
+                assert_ne!(entry["state"], "AVAILABLE_READ_ONLY");
+            }
+        }
+        let mut not_connected = connected.clone();
+        not_connected["device_status"] = json!("DISCONNECTED");
+        let denied = owner_catalog_response(&not_connected);
+        assert_eq!(denied["connected"], false);
+        assert!(denied["entries"].as_array().unwrap().iter()
+            .all(|entry| entry["state"] != "AVAILABLE_READ_ONLY"));
+        let mut writes = connected.clone();
+        writes["physical_writes_enabled"] = json!(true);
+        assert_eq!(owner_catalog_response(&writes)["connected"], false);
+    }
+
     #[test]
     fn rejects_non_numeric_and_untrusted_agent_data() {
         let mut v = json!({"mode":"OWNER_SUPERVISED_REAL_C320_READ_ONLY","snapshot_is_live":true,
