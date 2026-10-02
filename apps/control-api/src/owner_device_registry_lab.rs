@@ -93,6 +93,8 @@ struct LinkedRename {
     display_name: String,
     #[serde(default)]
     pop_id: Option<String>,
+    #[serde(default)]
+    clear_pop: bool,
 }
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -502,6 +504,9 @@ async fn update(
         if !valid_label(&new.display_name, 80) {
             return Err(error(StatusCode::BAD_REQUEST, "INVALID_DEVICE_LABEL"));
         }
+        if new.clear_pop && new.pop_id.is_some() {
+            return Err(error(StatusCode::BAD_REQUEST, "AMBIGUOUS_POP_ASSIGNMENT"));
+        }
         if let Some(code) = &new.pop_id {
             if !known_pop(&snapshot, code) {
                 return Err(error(
@@ -517,7 +522,7 @@ async fn update(
         snapshot.linked_c320_label = Some(new.display_name);
         // Explicit pop_id:null retains the legacy unassigned site; no
         // management transport/device connector fields are editable here.
-        if new.pop_id.is_some() {
+        if new.clear_pop || new.pop_id.is_some() {
             snapshot.linked_c320_pop = new.pop_id;
         }
         snapshot.linked_revision = rev;
@@ -629,6 +634,42 @@ async fn remove(
     ))
 }
 
+// The standalone Site module reads only this resource. Assignment counts
+// are calculated on the server: site UI does not read the device registry.
+fn site_view(p: &Pop, snapshot: &Snapshot) -> Value {
+    let saved = snapshot
+        .devices
+        .iter()
+        .filter(|d| d.pop_id == p.code)
+        .count();
+    let live = usize::from(snapshot.linked_c320_pop.as_deref() == Some(p.code.as_str()));
+    json!({"code":p.code,"display_name":p.display_name,"revision":p.revision,
+        "assigned_device_count":saved+live,"linked_c320_assigned":live==1,
+        "can_remove":saved+live==0})
+}
+async fn detail_pop(
+    State(state): State<OwnerState>,
+    headers: HeaderMap,
+    Path(code): Path<String>,
+) -> Result<(HeaderMap, Json<Value>), (StatusCode, HeaderMap, Json<Value>)> {
+    if !strict_owner(&headers, false) {
+        return Err(error(StatusCode::FORBIDDEN, "OWNER_TUNNEL_REQUIRED"));
+    }
+    let _lock = state.guard.lock().await;
+    let snapshot = load(&state.path)
+        .map_err(|_| error(StatusCode::SERVICE_UNAVAILABLE, "OWNER_STORE_UNAVAILABLE"))?;
+    let pop = snapshot
+        .pops
+        .iter()
+        .find(|p| p.code == code)
+        .ok_or_else(|| error(StatusCode::NOT_FOUND, "POP_NOT_FOUND"))?;
+    Ok((
+        super::private_lab_headers("application/json; charset=utf-8"),
+        Json(
+            json!({"pop":site_view(pop,&snapshot),"persistent":true,"owner_private_lab_only":true}),
+        ),
+    ))
+}
 async fn list_pops(
     State(state): State<OwnerState>,
     headers: HeaderMap,
@@ -639,10 +680,15 @@ async fn list_pops(
     let _lock = state.guard.lock().await;
     let snapshot = load(&state.path)
         .map_err(|_| error(StatusCode::SERVICE_UNAVAILABLE, "OWNER_STORE_UNAVAILABLE"))?;
+    let visible = snapshot
+        .pops
+        .iter()
+        .map(|p| site_view(p, &snapshot))
+        .collect::<Vec<_>>();
     Ok((
         super::private_lab_headers("application/json; charset=utf-8"),
         Json(
-            json!({"owner_private_lab_only":true,"persistent":true,"pops":snapshot.pops,"count":snapshot.pops.len()}),
+            json!({"owner_private_lab_only":true,"persistent":true,"pops":visible,"count":snapshot.pops.len()}),
         ),
     ))
 }
@@ -777,7 +823,7 @@ fn router_at(path: PathBuf) -> Router {
         .route("/lab/owner/pops", get(list_pops).post(create_pop))
         .route(
             "/lab/owner/pops/{code}",
-            axum::routing::put(update_pop).delete(remove_pop),
+            get(detail_pop).put(update_pop).delete(remove_pop),
         )
         .route("/lab/owner/devices", get(list).post(create))
         .route(
@@ -1093,6 +1139,90 @@ mod tests {
             vec!["CREATE_POP", "CREATE", "UPDATE_POP", "REMOVE", "REMOVE_POP"]
         );
     }
+    #[tokio::test]
+    async fn standalone_site_resource_counts_live_assignments_and_safe_unassign() {
+        let temp = tempfile::tempdir().unwrap();
+        let path = temp.path().join("owner").join("devices.json");
+        let app = router_at(path.clone());
+        assert_eq!(
+            call(
+                &app,
+                "POST",
+                "/lab/owner/pops",
+                r#"{"code":"CORE-01","display_name":"Core Location"}"#,
+                true
+            )
+            .await
+            .0,
+            StatusCode::CREATED
+        );
+        let (code, detail) = call(&app, "GET", "/lab/owner/pops/CORE-01", "", false).await;
+        assert_eq!(code, StatusCode::OK);
+        assert_eq!(detail["pop"]["assigned_device_count"], 0);
+        assert_eq!(detail["pop"]["can_remove"], true);
+        let (code, _) = call(
+            &app,
+            "PUT",
+            "/lab/owner/devices/DEV-01",
+            r#"{"expected_revision":0,"display_name":"Original C320","pop_id":"CORE-01"}"#,
+            true,
+        )
+        .await;
+        assert_eq!(code, StatusCode::OK);
+        let (_, list) = call(&app, "GET", "/lab/owner/pops", "", false).await;
+        assert_eq!(list["pops"][0]["assigned_device_count"], 1);
+        assert_eq!(list["pops"][0]["linked_c320_assigned"], true);
+        assert_eq!(list["pops"][0]["can_remove"], false);
+        assert_eq!(
+            call(
+                &app,
+                "DELETE",
+                "/lab/owner/pops/CORE-01",
+                r#"{"expected_revision":1,"confirm":"REMOVE POP CORE-01"}"#,
+                true
+            )
+            .await
+            .0,
+            StatusCode::CONFLICT
+        );
+        // No arbitrary POP/endpoint change and no ambiguous simultaneous assign+clear.
+        assert_eq!(call(&app,"PUT","/lab/owner/devices/DEV-01",
+          r#"{"expected_revision":1,"display_name":"Original C320","pop_id":"CORE-01","clear_pop":true}"#,true).await.0,StatusCode::BAD_REQUEST);
+        let (code, unassigned) = call(
+            &app,
+            "PUT",
+            "/lab/owner/devices/DEV-01",
+            r#"{"expected_revision":1,"display_name":"Original C320","clear_pop":true}"#,
+            true,
+        )
+        .await;
+        assert_eq!(code, StatusCode::OK);
+        assert_eq!(unassigned["connector_unchanged"], true);
+        assert_eq!(load(&path).unwrap().linked_c320_pop, None);
+        let (_, site) = call(
+            &router_at(path.clone()),
+            "GET",
+            "/lab/owner/pops/CORE-01",
+            "",
+            false,
+        )
+        .await;
+        assert_eq!(site["pop"]["assigned_device_count"], 0);
+        assert_eq!(site["pop"]["can_remove"], true);
+        assert_eq!(
+            call(
+                &app,
+                "DELETE",
+                "/lab/owner/pops/CORE-01",
+                r#"{"expected_revision":1,"confirm":"REMOVE POP CORE-01"}"#,
+                true
+            )
+            .await
+            .0,
+            StatusCode::OK
+        );
+    }
+
     #[tokio::test]
     async fn existing_owner_snapshots_upgrade_without_losing_connected_c320() {
         let temp = tempfile::tempdir().unwrap();

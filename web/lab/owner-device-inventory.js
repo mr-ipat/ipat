@@ -16,8 +16,6 @@
   let pops = [];
   let vendorCatalog = [];
   let mastersReady = false;
-  let popEditing = null;
-  let resumeAdd = false;
   let editing = null;
   let pending = false;
   const api = '/lab/owner/devices';
@@ -60,8 +58,8 @@
     for(const p of pops)menu.append(option(p.code,p.display_name+' ('+p.code+')'));
     if(pops.some(p=>p.code===wanted))menu.value=wanted;
     el('ipat-owner-pop-empty-hint').textContent=pops.length
-      ?'Choose an existing site. Create a new one only if the site is not registered.'
-      :'No POPs registered. Select "+ Create a new POP / Site" to create your first site.';
+      ?'Choose an existing registered Site/POP. Manage sites in the separate Sites & POPs module.'
+      :'No Sites/POPs registered. Create your first site in the independent Sites & POPs module.';
   }
   function compatibleKinds(){
     return vendorCatalog.flatMap(v=>v.kinds.map(k=>({vendor:v.id,name:v.name,...k})));
@@ -104,73 +102,6 @@
     mastersReady=true;
     populatePops(field('pop').value);
     populateVendors(field('vendor').value,protocol.value);
-    renderPops();
-  }
-  function renderPops(){
-    const body=el('ipat-owner-pop-rows');body.replaceChildren();
-    const msg=el('ipat-owner-pops-notice');
-    msg.textContent=pops.length ? pops.length+' registered POP(s). Select these in the device form.'
-      :'No sites registered. Create your first POP / Site to enable Add Device.';
-    if(!pops.length){
-      const tr=document.createElement('tr');const tdNode=td(tr,'No POP/Site registered. Use + Create POP / Site.');
-      tdNode.colSpan=4;body.append(tr);return;
-    }
-    for(const pop of pops){
-      const tr=document.createElement('tr');
-      td(tr,pop.code);td(tr,pop.display_name);
-      td(tr,items.filter(d=>d.pop_id===pop.code).length);
-      const actions=document.createElement('td');const buttons=document.createElement('div');
-      buttons.className='ipat-owner-device-actions';
-      button(buttons,'Edit',()=>showPopForm(pop));
-      button(buttons,'Remove',()=>removePop(pop));
-      actions.append(buttons);tr.append(actions);body.append(tr);
-    }
-  }
-  function showPopForm(pop=null, after=false){
-    popEditing=pop;resumeAdd=after;
-    const siteForm=el('ipat-owner-pop-form');siteForm.reset();siteForm.hidden=false;
-    el('ipat-owner-pop-form-title').textContent=pop?'Rename registered POP':'Create a new POP / Site';
-    el('ipat-owner-pop-code').value=pop?.code||'';
-    el('ipat-owner-pop-code').disabled=Boolean(pop);
-    el('ipat-owner-pop-name').value=pop?.display_name||'';
-    el('ipat-owner-pop-form-status').textContent='';
-    if(after)form.hidden=true;
-    siteForm.scrollIntoView({behavior:'smooth',block:'nearest'});
-    el('ipat-owner-pop-name').focus();
-  }
-  async function submitPop(e){
-    e.preventDefault();if(pending || !el('ipat-owner-pop-form').reportValidity())return;
-    pending=true;el('ipat-owner-pop-save').disabled=true;
-    const code=popEditing?.code||el('ipat-owner-pop-code').value.trim();
-    try{
-      const result=await call(popEditing?'/lab/owner/pops/'+encodeURIComponent(code):'/lab/owner/pops',{
-        method:popEditing?'PUT':'POST',body:JSON.stringify({
-          ...(popEditing?{expected_revision:popEditing.revision}:{code}),
-          display_name:el('ipat-owner-pop-name').value.trim()
-        })
-      });
-      const next=result.pop.code;
-      el('ipat-owner-pop-form').hidden=true;
-      pending=false;
-      await loadMasters();
-      populatePops(next);
-      report('POP / Site saved. It is now available in the device form.');
-      if(resumeAdd){resumeAdd=false;newDevice();populatePops(next);}
-    }catch(error){el('ipat-owner-pop-form-status').textContent='Unable to save site: '+error.message;}
-    finally{pending=false;el('ipat-owner-pop-save').disabled=false;}
-  }
-  async function removePop(pop){
-    if(pending)return;
-    if(!window.confirm('Remove registered POP '+pop.display_name+' ('+pop.code+')? This is blocked when devices are assigned.'))return;
-    pending=true;
-    try{
-      await call('/lab/owner/pops/'+encodeURIComponent(pop.code),{
-        method:'DELETE',body:JSON.stringify({expected_revision:pop.revision,confirm:'REMOVE POP '+pop.code})
-      });
-      pending=false;await loadMasters();
-      report('Unused POP '+pop.code+' removed. Device configuration was not changed.');
-    }catch(error){report('POP removal blocked: '+error.message);}
-    finally{pending=false;}
   }
   function hideForms() { form.hidden = true; detail.hidden = true; editing = null; }
   function render() {
@@ -213,7 +144,6 @@
           || payload.production_tenant_registry !== false || !Array.isArray(payload.devices))
         throw Error('Registry returned an unexpected response');
       items=payload.devices;
-      renderPops();
       const linked=items.find(item=>item.id==='DEV-01');
       summary.textContent=items.length+' managed records · '+(linked
         ? 'Live C320: '+linked.connection_state : 'Live C320 status unknown')
@@ -238,7 +168,11 @@
     form.reset();field('pop').required=true;populatePops(pops[0]?.code||'');
     field('kind').value='olt';populateVendors('ZTE','ssh');
     field('port').value='22';field('name').readOnly=false;
-    if(!pops.length){showPopForm(null,true);report('Create a POP / Site first; the device form will reopen automatically.');return;}
+    if(!pops.length){
+      report('No registered Sites/POPs yet. Open Sites & POPs to create the first site, then return to Add Device.');
+      window.location.assign('/lab/sites?return=device');
+      return;
+    }
     for (const group of document.querySelectorAll('.ipat-owner-extra'))group.hidden=false;
     el('ipat-owner-device-form-title').textContent='Add a device';
     el('ipat-owner-device-save').textContent='Save device';
@@ -317,7 +251,7 @@
       if(!linked && !pops.some(p=>p.code===field('pop').value))
         throw Error('Select a registered POP / Site, or create one first');
       const data=linked ? {expected_revision:editing.revision,display_name:field('name').value.trim(),
-          ...(field('pop').value?{pop_id:field('pop').value}:{})}
+          ...(field('pop').value?{pop_id:field('pop').value}:{clear_pop:true})}
         : { ...recordFields(),...(editing?.id ? {expected_revision:editing.revision}:{}) };
       const endpoint=editing?.id ? api+'/'+encodeURIComponent(editing.id) : api;
       const result=await call(endpoint,{method:editing?.id?'PUT':'POST',body:JSON.stringify(data)});
@@ -356,12 +290,6 @@
   el('ipat-owner-device-refresh').addEventListener('click',async()=>{
     try{await loadMasters();await load();}catch(error){report('Unable to refresh master lists: '+error.message);}
   });
-  el('ipat-owner-pop-create').addEventListener('click',()=>showPopForm(null,false));
-  el('ipat-owner-pop-inline').addEventListener('click',()=>showPopForm(null,true));
-  el('ipat-owner-pop-cancel').addEventListener('click',()=>{
-    el('ipat-owner-pop-form').hidden=true;popEditing=null;resumeAdd=false;
-  });
-  el('ipat-owner-pop-form').addEventListener('submit',submitPop);
   field('kind').addEventListener('change',()=>populateVendors());
   field('vendor').addEventListener('change',()=>populateProtocols());
   el('ipat-owner-device-cancel').addEventListener('click',hideForms);
@@ -369,7 +297,13 @@
   protocol.addEventListener('change',syncProtocol);
   form.addEventListener('submit',save);
   window.addEventListener('ipat-device-connection-changed',load);
-  loadMasters().then(load).catch(error=>{
+  loadMasters().then(async()=>{
+    await load();
+    if(new URLSearchParams(window.location.search).get('new-device')==='1'){
+      newDevice();
+      form.scrollIntoView({block:'nearest'});
+    }
+  }).catch(error=>{
     mastersReady=false;report('Site/vendor catalog unavailable: '+error.message);
     summary.textContent='Device master catalog unavailable. Add/Edit is disabled until it loads.';
   });
