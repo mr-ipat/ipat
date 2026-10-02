@@ -21,6 +21,19 @@ impl Challenge {
             verifier: URL_SAFE_NO_PAD.encode(bytes[2]),
         })
     }
+    /// Reconstruct only after an atomic durable PostgreSQL state+verifier
+    /// digest+exact Host match. Untrusted browser inputs never authorize a
+    /// session without the independently verified signed token pair.
+    pub fn reconstruct_after_consumption(state: &str, nonce: &str, verifier: &str) -> Option<Self> {
+        if !Self::valid_state(state) || !Self::valid_state(nonce) || !Self::valid_state(verifier) {
+            return None;
+        }
+        Some(Self {
+            state: state.into(),
+            nonce: nonce.into(),
+            verifier: verifier.into(),
+        })
+    }
     pub fn state(&self) -> &str {
         &self.state
     }
@@ -64,6 +77,29 @@ impl Challenge {
 mod tests {
     use super::*;
     use std::collections::HashSet;
+    #[test]
+    fn durable_pkce_reconstruction_requires_strict_triplet() {
+        let original = Challenge::random().unwrap();
+        let rebuilt = Challenge::reconstruct_after_consumption(
+            original.state(),
+            original.nonce(),
+            original.verifier(),
+        )
+        .unwrap();
+        assert_eq!(original.s256(), rebuilt.s256());
+        assert!(Challenge::reconstruct_after_consumption(
+            "bad",
+            original.nonce(),
+            original.verifier()
+        )
+        .is_none());
+        assert!(Challenge::reconstruct_after_consumption(
+            original.state(),
+            original.nonce(),
+            "invalid.verifier"
+        )
+        .is_none());
+    }
     #[test]
     fn crypto_rng_generates_distinct_unpadded_256_bit_values() {
         let mut states = HashSet::new();
