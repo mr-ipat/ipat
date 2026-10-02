@@ -420,6 +420,14 @@ jobs:
           grep -Fq TENANT_SITE_MIGRATION_0019_MUST_BE_VALIDATED deploy/db/migrations/0020_managed_device_metadata_crud.sql
           grep -Fq archived_site_instance_id deploy/db/migrations/0020_managed_device_metadata_crud.sql
           grep -Fq R9.65 docs/PRD_AUDIT_MATRIX.md
+      - name: R9.67 durable Host-bound tenant browser sessions and active-only domain binding (disposable ONLY)
+        run: |
+          python3 -m py_compile deploy/db/tests/test_durable_tenant_browser_sessions_integration.py
+          bash -n deploy/db/tests/r967_docker_repro.sh
+          python3 -m unittest discover deploy/db/tests -p test_durable_tenant_browser_sessions_integration.py -v
+          grep -Fq "activation_state='active'" deploy/db/migrations/0021_durable_tenant_browser_sessions.sql
+          grep -Fq authenticate_tenant_browser_session deploy/db/migrations/0021_durable_tenant_browser_sessions.sql
+          grep -Fq R9.67 docs/PRD_AUDIT_MATRIX.md
       - name: R9.1 real disposable PostgreSQL immutable adoption readiness evidence and fail-closed eligibility
         run: |
           python3 -m unittest discover deploy/db/tests -p test_device_adoption_readiness_integration.py -v
