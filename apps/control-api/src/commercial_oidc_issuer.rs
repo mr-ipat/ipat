@@ -16,6 +16,7 @@ use axum::{
 use identity_core::{browser_pkce::Challenge, PinnedIssuer};
 use serde::Deserialize;
 use serde_json::Value;
+use sha2::{Digest, Sha256};
 use std::{
     collections::HashMap,
     fs::{self, File, OpenOptions},
@@ -48,6 +49,7 @@ struct Config {
     verifier: PinnedIssuer,
     db: Arc<Client>,
     pending: Mutex<HashMap<String, Pending>>,
+    durable_pending: bool,
 }
 fn strict_host(host: &str) -> bool {
     host.len() <= 253
@@ -162,6 +164,20 @@ fn current_host(headers: &HeaderMap) -> Option<String> {
         .to_string();
     strict_host(&host).then_some(host)
 }
+fn valid_browser_state_cookie(value: &str) -> bool {
+    if Challenge::valid_state(value) {
+        return true;
+    }
+    value.split_once('.').is_some_and(|(state, verifier)| {
+        Challenge::valid_state(state) && Challenge::valid_state(verifier)
+    })
+}
+fn state_digest(state: &str) -> String {
+    Sha256::digest(state.as_bytes())
+        .iter()
+        .map(|b| format!("{b:02x}"))
+        .collect()
+}
 fn browser_cookie(headers: &HeaderMap) -> Option<&str> {
     if headers.get_all(header::COOKIE).iter().count() != 1 {
         return None;
@@ -173,7 +189,7 @@ fn browser_cookie(headers: &HeaderMap) -> Option<&str> {
             return None;
         };
         if name == STATE_COOKIE {
-            if found.is_some() || !Challenge::valid_state(value) {
+            if found.is_some() || !valid_browser_state_cookie(value) {
                 return None;
             }
             found = Some(value);
@@ -214,24 +230,43 @@ async fn start(State(cfg): State<Arc<Config>>, headers: HeaderMap) -> Response {
     };
     let state = proof.state().to_owned();
     let link = authorization_url(&cfg.issuer, &cfg.client_id, &cfg.host, &proof);
-    let mut pending = cfg.pending.lock().unwrap_or_else(|e| e.into_inner());
-    pending.retain(|_, v| v.started.elapsed() < MAX_AGE);
-    if pending.len() >= MAX_PENDING {
-        return (StatusCode::TOO_MANY_REQUESTS, safe_headers(), "OIDC_BUSY").into_response();
-    }
-    pending.insert(
-        state.clone(),
-        Pending {
-            proof,
-            started: Instant::now(),
-        },
-    );
+    let cookie = if cfg.durable_pending {
+        // PKCE verifier lives ONLY in the browser HttpOnly/Lax cookie. The
+        // shared DB stores its S256 hash, state SHA256 and nonsecret nonce.
+        // Any future replica can reconstruct proof AFTER atomic consumption.
+        let digest = state_digest(&state);
+        let result = cfg
+            .db
+            .query_one(
+                "SELECT ipat_platform.begin_oidc_pending($1,$2,$3,$4)",
+                &[&digest, &proof.s256(), &proof.nonce(), &cfg.host],
+            )
+            .await;
+        if !result.ok().is_some_and(|row| row.get::<_, bool>(0)) {
+            return (StatusCode::TOO_MANY_REQUESTS, safe_headers(), "OIDC_BUSY").into_response();
+        }
+        format!("{state}.{}", proof.verifier())
+    } else {
+        let mut pending = cfg.pending.lock().unwrap_or_else(|e| e.into_inner());
+        pending.retain(|_, v| v.started.elapsed() < MAX_AGE);
+        if pending.len() >= MAX_PENDING {
+            return (StatusCode::TOO_MANY_REQUESTS, safe_headers(), "OIDC_BUSY").into_response();
+        }
+        pending.insert(
+            state.clone(),
+            Pending {
+                proof,
+                started: Instant::now(),
+            },
+        );
+        state.clone()
+    };
     let mut h = safe_headers();
     // Lax (not Strict): IdP→app top-level callback is a cross-site GET.
     h.insert(
         header::SET_COOKIE,
         HeaderValue::from_str(&format!(
-            "{STATE_COOKIE}={state}; Secure; HttpOnly; SameSite=Lax; Path=/; Max-Age=180"
+            "{STATE_COOKIE}={cookie}; Secure; HttpOnly; SameSite=Lax; Path=/; Max-Age=180"
         ))
         .expect("bounded state"),
     );
@@ -343,21 +378,55 @@ async fn callback(
     let Some(cookie) = browser_cookie(&headers) else {
         return fail();
     };
-    if !bool::from(query.state.as_bytes().ct_eq(cookie.as_bytes())) {
-        return fail();
-    }
-    // One-time atomic state consumption BEFORE the network exchange.
-    let entry = {
-        cfg.pending
+    let proof = if cfg.durable_pending {
+        // The untrusted cookie cannot forge a verifier because a digest of
+        // the ORIGINAL server-generated verifier was inserted in PostgreSQL.
+        let Some((state, verifier)) = cookie.split_once('.') else {
+            return fail();
+        };
+        if !Challenge::valid_state(state)
+            || !Challenge::valid_state(verifier)
+            || !bool::from(query.state.as_bytes().ct_eq(state.as_bytes()))
+        {
+            return fail();
+        }
+        let result = cfg
+            .db
+            .query_opt(
+                "SELECT nonce FROM ipat_platform.consume_oidc_pending($1,$2,$3)",
+                &[
+                    &state_digest(state),
+                    &format!("{}", {
+                        use base64::{engine::general_purpose::URL_SAFE_NO_PAD, Engine};
+                        URL_SAFE_NO_PAD.encode(Sha256::digest(verifier.as_bytes()))
+                    }),
+                    &cfg.host,
+                ],
+            )
+            .await;
+        let Some(nonce) = result.ok().flatten().map(|row| row.get::<_, String>(0)) else {
+            return fail();
+        };
+        let Some(proof) = Challenge::reconstruct_after_consumption(state, &nonce, verifier) else {
+            return fail();
+        };
+        proof
+    } else {
+        if !bool::from(query.state.as_bytes().ct_eq(cookie.as_bytes())) {
+            return fail();
+        }
+        let entry = cfg
+            .pending
             .lock()
             .unwrap_or_else(|e| e.into_inner())
-            .remove(&query.state)
+            .remove(&query.state);
+        let Some(entry) = entry.filter(|entry| entry.started.elapsed() < MAX_AGE) else {
+            return fail();
+        };
+        entry.proof
     };
-    let Some(entry) = entry.filter(|entry| entry.started.elapsed() < MAX_AGE) else {
-        return fail();
-    };
-    let nonce = entry.proof.nonce().to_owned();
-    let form = token_form(&cfg, &query.code, &entry.proof);
+    let nonce = proof.nonce().to_owned();
+    let form = token_form(&cfg, &query.code, &proof);
     let token_url = format!("{}/protocol/openid-connect/token", cfg.issuer);
     let pair = tokio::task::spawn_blocking(move || exchange(token_url, form))
         .await
@@ -439,11 +508,15 @@ pub(super) fn router(cfg: Arc<Config>) -> Router {
 pub(super) async fn from_environment() -> Result<Router, &'static str> {
     if unsafe { libc::geteuid() } == 0
         || std::env::var("IPAT_R970_OIDC_ISSUER_SERVICE").as_deref() != Ok("YES")
-        || std::env::var("IPAT_R970_SINGLE_INSTANCE_OIDC").as_deref() != Ok("YES")
         || std::env::var("IPAT_TRUSTED_HTTPS_EDGE").as_deref() != Ok("YES")
         || std::env::var("IPAT_R970_VERIFIED_CONFIDENTIAL_IDP").as_deref() != Ok("YES")
     {
         return Err("separate verified issuer deployment not enabled");
+    }
+    let durable_pending = std::env::var("IPAT_R971_DURABLE_PENDING").as_deref() == Ok("YES");
+    let singleton = std::env::var("IPAT_R970_SINGLE_INSTANCE_OIDC").as_deref() == Ok("YES");
+    if durable_pending == singleton {
+        return Err("select exactly one OIDC pending-state mode");
     }
     let issuer = std::env::var("IPAT_R970_ISSUER").map_err(|_| "missing issuer")?;
     let host = std::env::var("IPAT_R970_HOST").map_err(|_| "missing verified host")?;
@@ -514,12 +587,26 @@ pub(super) async fn from_environment() -> Result<Router, &'static str> {
         verifier,
         db: Arc::new(db),
         pending: Mutex::new(HashMap::new()),
+        durable_pending,
     })))
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn durable_pending_cookie_has_strict_bounded_host_cookie_parts() {
+        let p = Challenge::random().unwrap();
+        let c = format!("{}.{}", p.state(), p.verifier());
+        assert!(valid_browser_state_cookie(&c));
+        assert_eq!(state_digest(p.state()).len(), 64);
+        assert!(!valid_browser_state_cookie(&format!(
+            "{}..{}",
+            p.state(),
+            p.verifier()
+        )));
+        assert!(!valid_browser_state_cookie("short.invalid"));
+    }
     #[test]
     fn reject_issuer_endpoint_host_injection_and_encode_form() {
         for (issuer, host) in [
@@ -570,5 +657,95 @@ mod tests {
         assert!(browser_cookie(&h).is_none());
         h.append(header::COOKIE, HeaderValue::from_static("other=2"));
         assert!(browser_cookie(&h).is_none());
+    }
+}
+
+// The disposable integration verifies that a pending login minted by one
+// service/database connection can be consumed by a DIFFERENT instance. This
+// is the HA-specific property that an in-memory HashMap cannot provide.
+#[cfg(test)]
+mod r971_pg_integration {
+    use super::*;
+    #[tokio::test]
+    async fn r971_durable_oidc_cross_instance_exact_host_one_use() {
+        if std::env::var("IPAT_PG_EPHEMERAL_TEST").as_deref() != Ok("1")
+            || std::env::var("PGDATABASE").as_deref() != Ok("ipat_synthetic")
+            || std::env::var("PGHOST").as_deref() != Ok("127.0.0.1")
+        {
+            return;
+        }
+        let mut config = PgConfig::new();
+        config
+            .host("127.0.0.1")
+            .port(
+                std::env::var("PGPORT")
+                    .ok()
+                    .and_then(|p| p.parse().ok())
+                    .unwrap_or(5432),
+            )
+            .dbname("ipat_synthetic")
+            .user("postgres");
+        if let Ok(p) = std::env::var("PGPASSWORD") {
+            config.password(p);
+        }
+        let (a, ca) = config
+            .connect(NoTls)
+            .await
+            .expect("fresh isolated synthetic database A");
+        let (b, cb) = config
+            .connect(NoTls)
+            .await
+            .expect("fresh isolated synthetic database B");
+        tokio::spawn(async move {
+            let _ = ca.await;
+        });
+        tokio::spawn(async move {
+            let _ = cb.await;
+        });
+        a.batch_execute("SET ROLE ipat_oidc_session_issuer_login")
+            .await
+            .expect("restricted issuer A");
+        b.batch_execute("SET ROLE ipat_oidc_session_issuer_login")
+            .await
+            .expect("restricted issuer B");
+        let proof = Challenge::random().unwrap();
+        let digest = state_digest(proof.state());
+        let host = "tenant-r971.synthetic.invalid";
+        assert!(a
+            .query_one(
+                "SELECT ipat_platform.begin_oidc_pending($1,$2,$3,$4)",
+                &[&digest, &proof.s256(), &proof.nonce(), &host]
+            )
+            .await
+            .unwrap()
+            .get::<_, bool>(0));
+        assert!(b
+            .query_opt(
+                "SELECT nonce FROM ipat_platform.consume_oidc_pending($1,$2,$3)",
+                &[&digest, &proof.s256(), &"other.synthetic.invalid"]
+            )
+            .await
+            .unwrap()
+            .is_none());
+        let issued = b
+            .query_one(
+                "SELECT nonce FROM ipat_platform.consume_oidc_pending($1,$2,$3)",
+                &[&digest, &proof.s256(), &host],
+            )
+            .await
+            .unwrap()
+            .get::<_, String>(0);
+        let reconstructed =
+            Challenge::reconstruct_after_consumption(proof.state(), &issued, proof.verifier())
+                .expect("bounded consumed proof");
+        assert_eq!(reconstructed.s256(), proof.s256());
+        assert!(a
+            .query_opt(
+                "SELECT nonce FROM ipat_platform.consume_oidc_pending($1,$2,$3)",
+                &[&digest, &proof.s256(), &host]
+            )
+            .await
+            .unwrap()
+            .is_none());
     }
 }
