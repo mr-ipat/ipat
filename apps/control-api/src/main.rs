@@ -5,6 +5,7 @@
 mod browser_session_lab;
 mod c320_actions_lab;
 mod c320_live_lab;
+mod commercial_tenant_api;
 mod device_review_lab;
 mod device_workbench_lab;
 mod durable_tenant_session;
