@@ -97,10 +97,24 @@ async fn capabilities(
         return denied(StatusCode::SERVICE_UNAVAILABLE);
     };
     let admin: bool = row.get(0);
+    let scoped =
+        s.db.query(
+            "SELECT pop_id FROM ipat_platform.current_noc_pop_scopes($1,$2,$3::uuid)",
+            &[&a.issuer, &a.subject, &a.tenant_id],
+        )
+        .await;
+    let Ok(scoped) = scoped else {
+        return denied(StatusCode::SERVICE_UNAVAILABLE);
+    };
+    let noc_pops = scoped
+        .into_iter()
+        .map(|r| r.get::<_, String>(0))
+        .collect::<Vec<_>>();
     response(
         StatusCode::OK,
         json!({"ok":true,"tenant_id":a.tenant_id.to_string(),
-        "can_manage_sites":admin,"can_manage_devices":admin,"can_manage_domains":admin}),
+        "can_manage_sites":admin,"can_manage_devices":admin,"can_manage_domains":admin,
+        "noc_pops":noc_pops,"can_read_noc":!noc_pops.is_empty()}),
     )
 }
 async fn device_catalog(
@@ -317,6 +331,100 @@ struct SiteEdit {
     display_name: String,
     expected_revision: i64,
 }
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct NocPopQuery {
+    pop: String,
+}
+
+async fn noc_actor_for_pop(
+    db: &Client,
+    headers: &HeaderMap,
+    pop: &str,
+) -> Result<durable_tenant_session::DurableSessionContext, StatusCode> {
+    let a = actor(db, headers, false)
+        .await
+        .ok_or(StatusCode::UNAUTHORIZED)?;
+    if !valid_code(pop) {
+        return Err(StatusCode::UNPROCESSABLE_ENTITY);
+    }
+    let rows = db
+        .query(
+            "SELECT pop_id FROM ipat_platform.current_noc_pop_scopes($1,$2,$3::uuid)",
+            &[&a.issuer, &a.subject, &a.tenant_id],
+        )
+        .await
+        .map_err(|_| StatusCode::SERVICE_UNAVAILABLE)?;
+    if !rows.iter().any(|row| row.get::<_, &str>(0) == pop) {
+        return Err(StatusCode::FORBIDDEN);
+    }
+    Ok(a)
+}
+
+async fn noc_sites(
+    State(s): State<Arc<StateData>>,
+    headers: HeaderMap,
+    Query(q): Query<NocPopQuery>,
+) -> (StatusCode, HeaderMap, Json<Value>) {
+    let a = match noc_actor_for_pop(&s.db, &headers, &q.pop).await {
+        Ok(a) => a,
+        Err(status) => return denied(status),
+    };
+    let rows = s.db.query(
+        "SELECT code,display_name,revision,assigned_devices FROM ipat_platform.list_tenant_sites($1,$2,$3::uuid,$4,NULL)",
+        &[&a.issuer, &a.subject, &a.tenant_id, &q.pop],
+    ).await;
+    let Ok(rows) = rows else {
+        return denied(StatusCode::SERVICE_UNAVAILABLE);
+    };
+    let sites = rows
+        .into_iter()
+        .map(|r| {
+            json!({
+                "code":r.get::<_,String>(0),"display_name":r.get::<_,String>(1),
+                "revision":r.get::<_,i64>(2),"assigned_devices":r.get::<_,i64>(3)
+            })
+        })
+        .collect::<Vec<_>>();
+    response(
+        StatusCode::OK,
+        json!({"ok":true,"sites":sites,"read_only":true}),
+    )
+}
+
+async fn noc_devices(
+    State(s): State<Arc<StateData>>,
+    headers: HeaderMap,
+    Query(q): Query<NocPopQuery>,
+) -> (StatusCode, HeaderMap, Json<Value>) {
+    let a = match noc_actor_for_pop(&s.db, &headers, &q.pop).await {
+        Ok(a) => a,
+        Err(status) => return denied(status),
+    };
+    let rows = s.db.query(
+        "SELECT id,pop_id,display_name,device_kind,vendor,intended_model,management_transport,lifecycle_state FROM ipat_platform.list_managed_devices($1,$2,$3::uuid,$4)",
+        &[&a.issuer, &a.subject, &a.tenant_id, &q.pop],
+    ).await;
+    let Ok(rows) = rows else {
+        return denied(StatusCode::SERVICE_UNAVAILABLE);
+    };
+    let devices = rows
+        .into_iter()
+        .map(|r| {
+            json!({
+                "id":r.get::<_,Uuid>(0).to_string(),"site":r.get::<_,String>(1),
+                "display_name":r.get::<_,String>(2),"device_kind":r.get::<_,String>(3),
+                "vendor":r.get::<_,String>(4),"intended_model":r.get::<_,Option<String>>(5),
+                "management_transport":r.get::<_,String>(6),"lifecycle_state":r.get::<_,String>(7)
+            })
+        })
+        .collect::<Vec<_>>();
+    response(
+        StatusCode::OK,
+        json!({"ok":true,"devices":devices,"read_only":true}),
+    )
+}
+
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
 struct ListSites {
@@ -706,6 +814,8 @@ pub(super) fn router(db: Arc<Client>) -> Router {
         .route("/dashboard/assets/app.js", get(js_asset))
         .route("/dashboard/assets/style.css", get(css_asset))
         .route("/api/v1/capabilities", get(capabilities))
+        .route("/api/v1/noc/sites", get(noc_sites))
+        .route("/api/v1/noc/devices", get(noc_devices))
         .route("/api/v1/device-catalog", get(device_catalog))
         .route("/api/v1/logout", axum::routing::post(logout))
         .route("/api/v1/sites", get(list_sites).post(create_site))
@@ -971,6 +1081,125 @@ mod pg_integration {
         assert_eq!(forged.status(), StatusCode::UNPROCESSABLE_ENTITY);
         let wrong_transport=app.clone().oneshot(req("POST","/api/v1/devices",host,Some(cookie),Some(csrf),Some(r#"{"request_id":"73737373-7373-4373-8373-737373737372","pop_id":"POP-R970","display_name":"Invalid protocol","device_kind":"ont","vendor":"VSOL","management_transport":"ssh","management_host":"ont-r970.invalid","management_port":22}"#))).await.unwrap();
         assert_eq!(wrong_transport.status(), StatusCode::UNPROCESSABLE_ENTITY);
+        // R9.72: exact POP NOC session on the SAME live Axum router and
+        // independently restricted PostgreSQL connection. No mutation rights.
+        let noc_subject = "r972-noc";
+        admin.execute(
+            "INSERT INTO ipat_platform.identity_memberships(tenant_id,issuer,subject,role,approved_by,expires_at) VALUES($1,$2,$3,'noc_engineer','synthetic-r972-reviewer',clock_timestamp()+interval '1 day')",
+            &[&tenant,&issuer,&noc_subject],
+        ).await.unwrap();
+        admin.execute(
+            "INSERT INTO ipat_platform.identity_pop_grants(tenant_id,issuer,subject,role,pop_id) VALUES($1,$2,$3,'noc_engineer','POP-R970')",
+            &[&tenant,&issuer,&noc_subject],
+        ).await.unwrap();
+        let noc_cookie = "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee";
+        let noc_csrf = "fffffffffffffffffffffffffffffffffffffffffff";
+        let noc_session = Uuid::parse_str("72727272-7272-4272-8272-727272727272").unwrap();
+        let noc_issued=issuer_db.query_one(
+            "SELECT ipat_platform.issue_tenant_browser_session($1,$2,$3::uuid,$4::uuid,$5::uuid,$6,$7,clock_timestamp()+interval '10 minutes')",
+            &[&issuer,&noc_subject,&tenant,&domain,&noc_session,&hex(noc_cookie),&hex(noc_csrf)]
+        ).await.unwrap();
+        assert_eq!(noc_issued.get::<_, Option<Uuid>>(0), Some(noc_session));
+        let noc_cap = app
+            .clone()
+            .oneshot(req(
+                "GET",
+                "/api/v1/capabilities",
+                host,
+                Some(noc_cookie),
+                None,
+                None,
+            ))
+            .await
+            .unwrap();
+        assert_eq!(noc_cap.status(), StatusCode::OK);
+        let noc_json = body_json(noc_cap).await;
+        assert_eq!(noc_json["can_manage_sites"], false);
+        assert_eq!(noc_json["noc_pops"], json!(["POP-R970"]));
+        let noc_sites = app
+            .clone()
+            .oneshot(req(
+                "GET",
+                "/api/v1/noc/sites?pop=POP-R970",
+                host,
+                Some(noc_cookie),
+                None,
+                None,
+            ))
+            .await
+            .unwrap();
+        assert_eq!(noc_sites.status(), StatusCode::OK);
+        assert_eq!(body_json(noc_sites).await["sites"][0]["code"], "POP-R970");
+        let noc_wrong = app
+            .clone()
+            .oneshot(req(
+                "GET",
+                "/api/v1/noc/sites?pop=OTHER-POP",
+                host,
+                Some(noc_cookie),
+                None,
+                None,
+            ))
+            .await
+            .unwrap();
+        assert_eq!(noc_wrong.status(), StatusCode::FORBIDDEN);
+        let noc_devices = app
+            .clone()
+            .oneshot(req(
+                "GET",
+                "/api/v1/noc/devices?pop=POP-R970",
+                host,
+                Some(noc_cookie),
+                None,
+                None,
+            ))
+            .await
+            .unwrap();
+        assert_eq!(noc_devices.status(), StatusCode::OK);
+        assert_eq!(body_json(noc_devices).await["read_only"], true);
+        let noc_post = app
+            .clone()
+            .oneshot(req(
+                "POST",
+                "/api/v1/sites",
+                host,
+                Some(noc_cookie),
+                Some(noc_csrf),
+                Some(r#"{"code":"NOC-CANNOT-CREATE","display_name":"Not allowed"}"#),
+            ))
+            .await
+            .unwrap();
+        assert_eq!(noc_post.status(), StatusCode::CONFLICT);
+        let noc_host_replay = app
+            .clone()
+            .oneshot(req(
+                "GET",
+                "/api/v1/noc/sites?pop=POP-R970",
+                "other-r970.example.net",
+                Some(noc_cookie),
+                None,
+                None,
+            ))
+            .await
+            .unwrap();
+        assert_eq!(noc_host_replay.status(), StatusCode::UNAUTHORIZED);
+        admin.execute(
+            "UPDATE ipat_platform.identity_memberships SET revoked_at=clock_timestamp() WHERE tenant_id=$1 AND issuer=$2 AND subject=$3",
+            &[&tenant,&issuer,&noc_subject]
+        ).await.unwrap();
+        let noc_revoked = app
+            .clone()
+            .oneshot(req(
+                "GET",
+                "/api/v1/noc/sites?pop=POP-R970",
+                host,
+                Some(noc_cookie),
+                None,
+                None,
+            ))
+            .await
+            .unwrap();
+        assert_eq!(noc_revoked.status(), StatusCode::UNAUTHORIZED);
         admin.execute("UPDATE ipat_platform.identity_memberships SET revoked_at=clock_timestamp() WHERE tenant_id=$1 AND issuer=$2 AND subject=$3",&[&tenant,&issuer,&subject]).await.unwrap();
         let revoked = app
             .clone()

@@ -77,6 +77,14 @@ jobs:
         run: |
           bash -n deploy/scripts/lab/edge-r46-gate-check.sh
           python3 -m unittest discover deploy/scripts/lab -p 'test_edge_r46_gate_review.py' -v
+      - name: R9.72 scoped NOC read-only tenant console source and SQL contract
+        run: |
+          node --check web/console/tenant/app.js
+          node deploy/scripts/lab/r970/test_tenant_dashboard_contract.cjs
+          bash -n deploy/db/tests/r972_docker_repro.sh
+          python3 -m py_compile deploy/db/tests/test_noc_scope_integration.py
+          grep -Fq "noc_pops" apps/control-api/src/commercial_tenant_api.rs
+          grep -Fq "TO ipat_tenant_api_exec" deploy/db/migrations/0025_commercial_noc_scopes.sql
       - name: R9.71 isolated one-use OIDC pending-state SQL and Rust security contract
         run: |
           bash -n deploy/db/tests/r971_docker_repro.sh
@@ -457,12 +465,14 @@ jobs:
         run: |
           psql -X -v ON_ERROR_STOP=1 -f deploy/db/migrations/0023_tenant_menu_entitlements.sql
           python3 -m unittest discover deploy/db/tests -p test_tenant_menu_entitlements_integration.py -v
+          psql -X -v ON_ERROR_STOP=1 -f deploy/db/migrations/0024_oidc_one_time_pending.sql
+          psql -X -v ON_ERROR_STOP=1 -f deploy/db/migrations/0025_commercial_noc_scopes.sql
+          python3 -m unittest discover deploy/db/tests -p test_noc_scope_integration.py -v
           cargo test --locked -p control-api commercial_tenant_api::pg_integration::r970_real_pg_tenant_dashboard_current_role_catalog_and_logout -- --exact
           grep -Fq 'TO ipat_tenant_api_exec' deploy/db/migrations/0023_tenant_menu_entitlements.sql
           grep -Fq 'IPAT_R970_VERIFIED_CONFIDENTIAL_IDP' apps/control-api/src/commercial_oidc_issuer.rs
       - name: R9.71 real disposable PostgreSQL HA-safe one-use OIDC state across Rust client instances
         run: |
-          psql -X -v ON_ERROR_STOP=1 -f deploy/db/migrations/0024_oidc_one_time_pending.sql
           python3 -m unittest discover deploy/db/tests -p test_oidc_pending_integration.py -v
           cargo test --locked -p control-api commercial_oidc_issuer::r971_pg_integration::r971_durable_oidc_cross_instance_exact_host_one_use -- --exact
           bash -n deploy/db/tests/r971_docker_repro.sh

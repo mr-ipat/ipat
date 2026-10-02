@@ -4,7 +4,7 @@
 (() => {
  const $=id=>document.getElementById(id);
  const notice=text=>{$('notice').textContent=text};
- const state={page:null,sites:[],devices:[],catalog:[],next:null,editId:null,editRevision:null,pendingSite:null};
+ const state={page:null,sites:[],devices:[],catalog:[],next:null,editId:null,editRevision:null,pendingSite:null,nocPops:[]};
  const csrf=()=>document.cookie.split(';').map(x=>x.trim()).find(x=>x.startsWith('__Host-ipat_csrf='))?.split('=')[1];
  async function api(path,method='GET',body){
   const headers={'Accept':'application/json'};
@@ -63,11 +63,24 @@
  }}
  async function refreshDomains(){const r=await api('/api/v1/domains');$('domain-rows').replaceChildren();for(const d of r.domains){const tr=document.createElement('tr');cell(tr,d.hostname);cell(tr,d.verification_name?`${d.verification_name} TXT ${d.verification_value||''}`:'Awaiting instructions');cell(tr,d.activation_state);
  const actions=cell(tr,'');actions.textContent='';btn(actions,'Disable',async()=>{if(!confirm(`Disable domain request ${d.hostname}?`))return;try{await api('/api/v1/domains/'+encodeURIComponent(d.id),'DELETE');notice('Domain request disabled.');await refreshDomains()}catch(e){notice(e.message)}});$('domain-rows').append(tr)}}
- async function page(name){if(!['sites','devices','domains'].includes(name)||$('nav-'+name)?.hidden)return;state.page=name;$('welcome').hidden=true;document.querySelectorAll('[data-panel]').forEach(p=>p.hidden=p.dataset.panel!==name);notice('Loading current tenant data…');try{if(name==='sites')await refreshSites();if(name==='devices'){await refreshSites();await refreshDevices()}if(name==='domains')await refreshDomains();notice('Data loaded. Operations remain subject to current authorization.')}catch(e){notice(e.message)}}
+ async function refreshNoc(){
+  const pop=$('noc-pop').value;
+  if(!state.nocPops.includes(pop))throw Error('Select an authorized NOC scope.');
+  const [sites,devices]=await Promise.all([
+   api('/api/v1/noc/sites?pop='+encodeURIComponent(pop)),
+   api('/api/v1/noc/devices?pop='+encodeURIComponent(pop))
+  ]);
+  $('noc-site-rows').replaceChildren();
+  for(const s of sites.sites){const tr=document.createElement('tr');cell(tr,s.code);cell(tr,s.display_name);cell(tr,s.assigned_devices);$('noc-site-rows').append(tr)}
+  $('noc-device-rows').replaceChildren();
+  for(const d of devices.devices){const tr=document.createElement('tr');cell(tr,d.display_name);cell(tr,d.site);cell(tr,d.device_kind+' / '+d.vendor);cell(tr,d.lifecycle_state==='SAVED'?'Saved — not connected':d.lifecycle_state);$('noc-device-rows').append(tr)}
+ }
+ async function page(name){if(!['sites','devices','domains','noc'].includes(name)||$('nav-'+name)?.hidden)return;state.page=name;$('welcome').hidden=true;document.querySelectorAll('[data-panel]').forEach(p=>p.hidden=p.dataset.panel!==name);notice('Loading current tenant data…');try{if(name==='sites')await refreshSites();if(name==='devices'){await refreshSites();await refreshDevices()}if(name==='domains')await refreshDomains();if(name==='noc')await refreshNoc();notice('Data loaded. Operations remain subject to current authorization.')}catch(e){notice(e.message)}}
  async function submit(form,callback){const button=form.querySelector('button[type=submit],button:not([type])');if(button)button.disabled=true;try{await callback()}catch(e){notice(e.message)}finally{if(button)button.disabled=false}}
  document.querySelectorAll('.nav').forEach(b=>{b.id='nav-'+b.dataset.page;b.addEventListener('click',()=>page(b.dataset.page))});
  $('create-site-link').addEventListener('click',e=>{e.preventDefault();page('sites')});
  $('site-more').addEventListener('click',()=>refreshSites(state.next).catch(e=>notice(e.message)));
+ $('noc-pop').addEventListener('change',()=>{if(state.page==='noc')refreshNoc().catch(e=>notice(e.message))});
  $('device-kind').addEventListener('change',syncCatalog);$('device-vendor').addEventListener('change',syncCatalog);$('device-transport').addEventListener('change',syncEndpoint);
  $('site-create').addEventListener('submit',e=>{e.preventDefault();const f=e.currentTarget;submit(f,async()=>{const d=Object.fromEntries(new FormData(f));await api('/api/v1/sites','POST',d);state.pendingSite=d.code;clearForm(f);await refreshSites();notice('Site registered successfully.')})});
  $('device-create').addEventListener('submit',e=>{e.preventDefault();const f=e.currentTarget;submit(f,async()=>{const d=Object.fromEntries(new FormData(f));if(['cwmp','usp'].includes(d.management_transport)){d.management_host=null;d.management_port=null}else{d.management_port=Number(d.management_port)};d.request_id=crypto.randomUUID();d.intended_model=d.intended_model||null;await api('/api/v1/devices','POST',d);clearForm(f);syncCatalog();await refreshDevices();notice('Device saved as metadata. Physical connection not yet established.')})});
@@ -77,6 +90,11 @@
  $('logout').addEventListener('click',async()=>{try{await api('/api/v1/logout','POST');location.assign('/auth/oidc/start')}catch(e){notice(e.message)}});
  (async()=>{try{
   const r=await api('/api/v1/capabilities');$('identity').textContent='Authorized tenant: '+r.tenant_id;
-  if(r.can_manage_sites){for(const n of ['sites','devices','domains'])$('nav-'+n).hidden=false;$('logout').hidden=false;await loadCatalog();notice('Tenant permissions verified. Select a module.')}else{notice('No tenant administration modules assigned to your current identity.');$('logout').hidden=false}
+  state.nocPops=Array.isArray(r.noc_pops)?r.noc_pops.filter(p=>typeof p==='string'):[];
+  if(state.nocPops.length){$('noc-pop').replaceChildren();for(const p of state.nocPops)option($('noc-pop'),p,p);$('nav-noc').hidden=false}
+  if(r.can_manage_sites){for(const n of ['sites','devices','domains'])$('nav-'+n).hidden=false;await loadCatalog()}
+  $('logout').hidden=false;
+  notice(r.can_manage_sites||state.nocPops.length?'Tenant permissions verified. Select a permitted module.':'No operations modules assigned to your current identity.');
+
  }catch(e){notice(e.message);$('signin').hidden=false;$('identity').textContent='Sign-in required'}})();
 })();
