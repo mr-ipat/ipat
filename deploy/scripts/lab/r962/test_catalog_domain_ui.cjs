@@ -16,11 +16,10 @@ test('Device Manager form gets POP and vendor from backed master catalogs',()=>{
  assert.match(form,/<select id="ipat-owner-pop" required>/);
  assert.match(form,/<select id="ipat-owner-vendor" required>/);
  assert.doesNotMatch(form,/<input id="ipat-owner-(pop|vendor)"/);
- for(const id of ['ipat-owner-pop-create','ipat-owner-pop-inline','ipat-owner-pop-form',
-   'ipat-owner-pop-code','ipat-owner-pop-name','ipat-owner-pop-rows','ipat-owner-vendor-capability'])
-   assert.ok(form.includes('id="'+id+'"'),id);
+ assert.ok(form.includes('id="ipat-owner-pop-inline"'));
+ assert.doesNotMatch(form,/id="ipat-owner-pop-form"|id="ipat-owner-pop-rows"/);
  assert.ok(manager.includes("call('/lab/owner/pops'),call('/lab/owner/device-catalog')"));
- assert.ok(manager.includes('showPopForm(null,true)'));
+ assert.ok(manager.includes("window.location.assign('/lab/sites?return=device')"));
  assert.match(manager,/populateVendors\(d\.vendor,d\.management_protocol\)/);
  assert.match(registry,/POP_MUST_BE_REGISTERED/);
  assert.match(registry,/fn permitted_vendor/);

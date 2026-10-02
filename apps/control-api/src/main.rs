@@ -13,6 +13,7 @@ mod oidc_browser_lab;
 mod oidc_lab;
 mod owner_device_registry_lab;
 mod owner_domain_control_lab;
+mod owner_site_ui_lab;
 mod site_a_pairing_lab;
 mod tenant_domain;
 mod tenant_domain_bff;
@@ -358,6 +359,7 @@ async fn main() {
     if owner_live_read {
         app = app.merge(c320_live_lab::router());
         app = app.merge(owner_device_registry_lab::router());
+        app = app.merge(owner_site_ui_lab::router());
         app = app.merge(owner_domain_control_lab::router());
     }
     axum::serve(listener, app).await.expect("serve API");

@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en-US"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark"><meta name="robots" content="noindex,nofollow,noarchive">
+<meta name="referrer" content="no-referrer"><title>IPAT | Sites &amp; POPs</title>
+<link rel="stylesheet" href="/lab/sites.css"><script defer src="/lab/sites.js"></script></head>
+<body><div class="shell"><aside class="sidebar">
+<a class="brand" href="/lab/dashboard-preview"><b>IP<span>@</span>T</b><small>NETWORK OPERATIONS</small></a>
+<div class="eyebrow">INVENTORY MASTER DATA</div><nav>
+<a href="/lab/dashboard-preview">Dashboard</a>
+<a class="active" href="/lab/sites" aria-current="page">Sites &amp; POPs</a>
+<a href="/lab/device-workbench#managed-devices">Device Manager</a>
+<a href="/lab/platform-admin/domains">Platform Admin · Domains</a>
+</nav><div class="footnote">Private owner workspace. Site master is independent from device creation. This is not the public tenant admin service.</div>
+</aside><div class="body"><header><span>Inventory / <strong>Sites &amp; POPs</strong></span><span>PRIVATE MASTER · OWNER</span></header>
+<main><div class="head"><span class="eyebrow">SITE ADMINISTRATION</span><h1>Sites &amp; POPs</h1>
+<p>Create, review, rename, and remove Sites/Points of Presence here. Register sites <strong>before</strong> assigning network devices. This page never connects to or configures a device.</p>
+<div class="head-actions"><button type="button" class="primary" id="ipat-sites-new">+ Create Site / POP</button>
+<a class="button" href="/lab/device-workbench#managed-devices">Open Device Manager →</a></div>
+<p class="notice" id="ipat-sites-notice" role="status" aria-live="polite">Loading site master...</p></div>
+<section class="panel" id="ipat-sites-panel" aria-labelledby="sites-title"><div class="section-title"><div><span class="eyebrow">01 / REGISTERED LOCATIONS</span>
+<h2 id="sites-title">Site directory</h2></div><button type="button" class="secondary" id="ipat-sites-refresh">Refresh</button></div>
+<p id="ipat-sites-count" role="status" aria-live="polite">Loading...</p>
+<label for="ipat-sites-filter">Search sites</label><input type="search" id="ipat-sites-filter" placeholder="Code or site name" autocomplete="off">
+<div class="table-scroll"><table><thead><tr><th>Site Code</th><th>Site Name</th><th>Assigned Devices</th><th>Status</th><th>Actions</th></tr></thead>
+<tbody id="ipat-sites-rows"><tr><td colspan="5">Loading...</td></tr></tbody></table></div>
+<p class="help">Site codes are stable identifiers. Rename a site without changing its code or device assignments. Sites with assigned devices cannot be deleted; move or unassign devices first.</p>
+</section>
+<section class="panel" id="ipat-sites-form-panel" aria-labelledby="ipat-sites-form-heading" hidden>
+<div class="section-title"><div><span class="eyebrow">02 / SITE MASTER</span><h2 id="ipat-sites-form-heading">Create a site</h2></div></div>
+<form id="ipat-sites-form" autocomplete="off"><div class="grid"><div><label for="ipat-sites-code">Permanent site code</label>
+<input id="ipat-sites-code" required maxlength="48" pattern="[A-Za-z0-9._-]+" placeholder="e.g. JKT-CORE" autocomplete="off">
+<small>Unique. Use a stable identifier independent of your address or device model.</small></div>
+<div><label for="ipat-sites-name">Display name</label><input id="ipat-sites-name" required maxlength="80" placeholder="e.g. Jakarta Core POP" autocomplete="off"></div></div>
+<div class="actions"><button type="submit" id="ipat-sites-save" class="primary">Save Site</button>
+<button type="button" id="ipat-sites-cancel" class="secondary">Cancel</button></div>
+<p id="ipat-sites-form-notice" role="status" aria-live="polite"></p></form></section>
+<section class="panel" aria-labelledby="flow-heading"><span class="eyebrow">03 / OPERATING FLOW</span><h2 id="flow-heading">Independent Site → Device relationship</h2>
+<ol><li>Create or edit your site in this standalone module.</li>
+<li>Open Device Manager and select an existing Site/POP from the list.</li>
+<li>Assign or transfer devices only with permission; connected C320 assignment changes metadata, not its sealed connector.</li>
+<li>Remove a site only after no saved or connected device references it.</li></ol>
+<p class="help">Backend validates the site reference on every device save. A manually forged site code is rejected; this UI does not confer production role privileges or change physical device configurations.</p>
+</section></main></div></div></body></html>

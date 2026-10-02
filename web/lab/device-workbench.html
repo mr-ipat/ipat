@@ -28,6 +28,7 @@
     <div class="sidelabel">LAB DEVICE WORKSPACE</div>
     <nav><a href="/lab/dashboard-preview">◈ &nbsp; Semua dashboard</a>
       <a class="active" href="/lab/device-workbench" aria-current="page">▦ &nbsp; Device Manager</a>
+      <a href="/lab/sites">⌖ &nbsp; Sites &amp; POPs</a>
       <a href="/lab/domain-settings">◎ &nbsp; Domains &amp; Branding</a>
       <a href="#connections">⛨ &nbsp; Koneksi & tunnel</a>
       <a href="#register">＋ &nbsp; Tambah kandidat</a>
@@ -55,6 +56,7 @@
         <div class="ipat-owner-device-toolbar">
           <label for="ipat-owner-device-filter">Search devices</label>
           <input type="search" id="ipat-owner-device-filter" placeholder="Name, vendor, model, POP or device ID" autocomplete="off" maxlength="80">
+          <a href="/lab/sites" class="ipat-owner-admin-link">Manage Sites &amp; POPs</a>
           <a href="/lab/platform-admin/domains" class="ipat-owner-admin-link">Platform Admin · Domains</a>
           <button type="button" class="primary" id="ipat-owner-device-add">+ Add device</button>
         </div>
@@ -62,29 +64,6 @@
           <thead><tr><th>Device</th><th>Type / Model</th><th>POP</th><th>Connection</th><th>Actions</th></tr></thead>
           <tbody id="ipat-owner-device-rows"><tr><td colspan="5">Loading...</td></tr></tbody>
         </table></div>
-        <section class="ipat-owner-sites" id="ipat-owner-sites" aria-labelledby="ipat-owner-sites-heading">
-          <div class="ipat-device-form-heading">
-            <div><h3 id="ipat-owner-sites-heading">Sites / POP Management</h3>
-              <p id="ipat-owner-pops-notice" class="ipat-ops-disclosure" role="status" aria-live="polite">Loading your registered sites...</p></div>
-            <button id="ipat-owner-pop-create" type="button" class="secondary">+ Create POP / Site</button>
-          </div>
-          <div class="table-scroll"><table aria-label="Previously registered POPs">
-            <thead><tr><th>POP / Site Code</th><th>Display name</th><th>Assigned devices</th><th>Actions</th></tr></thead>
-            <tbody id="ipat-owner-pop-rows"><tr><td colspan="4">Loading...</td></tr></tbody>
-          </table></div>
-          <form id="ipat-owner-pop-form" hidden autocomplete="off">
-            <h4 id="ipat-owner-pop-form-title">Create a site</h4>
-            <div class="ipat-device-form-grid">
-              <div class="ipat-field"><label for="ipat-owner-pop-code">POP / Site Code</label>
-                <input id="ipat-owner-pop-code" required maxlength="48" pattern="[A-Za-z0-9._-]+" placeholder="e.g. JKT-01"></div>
-              <div class="ipat-field"><label for="ipat-owner-pop-name">Site name</label>
-                <input id="ipat-owner-pop-name" required maxlength="80" placeholder="e.g. Jakarta Central POP"></div>
-            </div>
-            <div class="ipat-ops-actionbar"><button type="submit" class="primary" id="ipat-owner-pop-save">Save site</button>
-              <button type="button" class="secondary" id="ipat-owner-pop-cancel">Cancel</button></div>
-            <p id="ipat-owner-pop-form-status" role="status" aria-live="polite"></p>
-          </form>
-        </section>
         <p id="ipat-owner-device-notice" class="ipat-ops-disclosure" role="status" aria-live="polite">Removing a saved record deletes only metadata, not device configuration. Disconnecting the already enrolled C320 requires a separate owner-approved revocation procedure.</p>
         <form id="ipat-owner-device-form" class="ipat-owner-device-form" autocomplete="off" hidden>
           <h3 id="ipat-owner-device-form-title">Add device</h3>
@@ -94,8 +73,8 @@
               <input id="ipat-owner-name" required maxlength="80" placeholder="e.g. Distribution OLT - POP A" autocomplete="off"></div>
             <div class="ipat-field ipat-owner-extra ipat-owner-site-field"><label for="ipat-owner-pop">POP / Site (registered)</label>
               <select id="ipat-owner-pop" required><option value="">Loading registered sites...</option></select>
-              <button type="button" id="ipat-owner-pop-inline" class="secondary">+ Create a new POP / Site</button>
-              <small id="ipat-owner-pop-empty-hint">Choose a registered site. A new site must be created before saving a device.</small></div>
+              <a id="ipat-owner-pop-inline" class="ipat-owner-admin-link" href="/lab/sites?return=device">Manage / Create Site</a>
+              <small id="ipat-owner-pop-empty-hint">Site records are managed separately in Sites &amp; POPs.</small></div>
             <div class="ipat-field ipat-owner-extra"><label for="ipat-owner-kind">Device type</label>
               <select id="ipat-owner-kind"><option value="olt">OLT</option><option value="ont">ONT / ONU</option><option value="router">Router</option></select></div>
             <div class="ipat-field ipat-owner-extra"><label for="ipat-owner-vendor">Vendor (IPAT catalog)</label>
