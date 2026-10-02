@@ -259,13 +259,21 @@ async fn main() {
         std::env::var("IPAT_R969_COMMERCIAL_SERVICE").as_deref() == Ok("YES");
     if commercial_requested {
         let incompatible = [
-            "IPAT_RUN_K3S_LAB", "IPAT_LAB_WEB", "IPAT_LAB_OIDC_VERIFY",
-            "IPAT_R911_PRIVATE_CANARY", "IPAT_R940_PRIVATE_OWNER_READ",
-            "IPAT_R86_BROWSER_FLOW", "IPAT_LAB_SCOPED_MEMBERSHIP",
-            "IPAT_R83_REGISTRY_WRITE", "IPAT_R84_SIMULATED_REVIEW",
-            "IPAT_TENANT_DOMAIN_VERIFIER", "IPAT_TENANT_DOMAIN_RESOLVER",
+            "IPAT_RUN_K3S_LAB",
+            "IPAT_LAB_WEB",
+            "IPAT_LAB_OIDC_VERIFY",
+            "IPAT_R911_PRIVATE_CANARY",
+            "IPAT_R940_PRIVATE_OWNER_READ",
+            "IPAT_R86_BROWSER_FLOW",
+            "IPAT_LAB_SCOPED_MEMBERSHIP",
+            "IPAT_R83_REGISTRY_WRITE",
+            "IPAT_R84_SIMULATED_REVIEW",
+            "IPAT_TENANT_DOMAIN_VERIFIER",
+            "IPAT_TENANT_DOMAIN_RESOLVER",
             "IPAT_CUSTOM_DOMAIN_INSTRUCTIONS",
-        ].iter().any(|name| std::env::var(name).is_ok());
+        ]
+        .iter()
+        .any(|name| std::env::var(name).is_ok());
         assert!(
             commercial_only_mode(true, incompatible, unsafe { libc::geteuid() } == 0),
             "commercial tenant runtime cannot share lab or privileged process",
@@ -280,7 +288,9 @@ async fn main() {
         let listener = tokio::net::TcpListener::bind("127.0.0.1:3003")
             .await
             .expect("isolated loopback commercial API listener");
-        axum::serve(listener, app).await.expect("serve protected tenant API");
+        axum::serve(listener, app)
+            .await
+            .expect("serve protected tenant API");
         return;
     }
     let k3s_lab = std::env::var("IPAT_RUN_K3S_LAB").as_deref() == Ok("1");
@@ -420,7 +430,10 @@ mod tests {
         assert!(!commercial_only_mode(true, true, false));
         assert!(!commercial_only_mode(true, false, true));
         assert!(commercial_only_mode(true, false, false));
-        assert_eq!(private_canary_bind(false, true, false, true), "127.0.0.1:3002");
+        assert_eq!(
+            private_canary_bind(false, true, false, true),
+            "127.0.0.1:3002"
+        );
     }
     use axum::{body::Body, http::Request};
     use tower::ServiceExt;
