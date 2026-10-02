@@ -123,8 +123,8 @@ class OperatorFirmwareWorkflow(unittest.TestCase):
         self.assertEqual(propose(self.dev,'99000000-0000-4000-8000-000000000098',
           self.req,self.window),self.change)
         self.assertEqual(review(self.change,issuer=ISSUER,subject=SUBJECT,approve=False),'DENIED')
-        self.assertNotIn(str(self.change),result(f"""SELECT count(*)::text FROM ipat_platform.list_firmware_changes(
-          '{ISSUER}','{SUBJECT}','{TB}')"""))
+        self.assertEqual(result(f"""SELECT count(*)::text FROM ipat_platform.list_firmware_changes(
+          '{ISSUER}','{SUBJECT}','{TB}')"""),'0')
 
     def test_03_rejects_spoofed_attestation_and_unrelated_vendor(self):
         self.assertEqual(propose(self.dev,self.change,self.req,self.window),self.change)

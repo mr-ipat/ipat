@@ -93,6 +93,12 @@ CREATE ROLE ipat_fw_attestor_execute NOLOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE
 GRANT USAGE ON SCHEMA ipat_platform TO ipat_fw_workflow_owner, ipat_fw_api_execute, ipat_fw_attestor_execute;
 GRANT USAGE ON SCHEMA ipat_ops TO ipat_fw_workflow_owner;
 GRANT SELECT ON ipat_platform.tenants TO ipat_fw_workflow_owner;
+-- Existing 0004 membership lookup deliberately excludes security_admin.
+-- A NEW narrow verifier is required, not an expansion of historical API roles.
+GRANT SELECT ON ipat_platform.identity_memberships TO ipat_fw_workflow_owner;
+CREATE POLICY fw_reviewer_membership_lookup ON ipat_platform.identity_memberships
+ FOR SELECT TO ipat_fw_workflow_owner USING(true);
+
 GRANT EXECUTE ON FUNCTION ipat_platform.lookup_active_membership(text,text,uuid,text,text) TO ipat_fw_workflow_owner;
 GRANT SELECT ON ipat_ops.managed_devices TO ipat_fw_workflow_owner;
 GRANT SELECT,INSERT ON ipat_ops.firmware_artifacts TO ipat_fw_workflow_owner;
@@ -111,6 +117,26 @@ BEGIN
  END LOOP;
 END $p$;
 CREATE POLICY fw_owner_change_update ON ipat_ops.firmware_changes FOR UPDATE TO ipat_fw_workflow_owner USING(true) WITH CHECK(true);
+
+-- Security-reviewer membership is independently revalidated for every
+-- review and execution request. NO reviewer role is ever derived from Host.
+CREATE FUNCTION ipat_platform.firmware_current_reviewer(
+ p_issuer text,p_subject text,p_tenant uuid
+) RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER
+ SET search_path=pg_catalog,ipat_platform AS $fw$
+ SELECT EXISTS(
+  SELECT 1 FROM ipat_platform.identity_memberships m
+    JOIN ipat_platform.tenants t ON t.id=m.tenant_id AND t.state='active'
+  WHERE m.tenant_id=p_tenant AND m.issuer=p_issuer AND m.subject=p_subject
+    AND m.role='security_admin' AND m.revoked_at IS NULL
+    AND m.created_at <= statement_timestamp()
+    AND m.expires_at > statement_timestamp() AND length(btrim(m.approved_by)) > 0
+ );
+$fw$;
+ALTER FUNCTION ipat_platform.firmware_current_reviewer(text,text,uuid)
+ OWNER TO ipat_fw_workflow_owner;
+REVOKE ALL ON FUNCTION ipat_platform.firmware_current_reviewer(text,text,uuid) FROM PUBLIC;
+-- No caller EXECUTE grant: only the owning sealed firmware functions invoke it.
 
 -- The registered artifact is a reference, NOT a successfully uploaded or
 -- vendor-authenticated binary. Independently authenticated storage service
@@ -223,8 +249,8 @@ CREATE FUNCTION ipat_platform.review_firmware_change(
  SET search_path=pg_catalog,ipat_platform,ipat_ops AS $fw$
 DECLARE c ipat_ops.firmware_changes%ROWTYPE;
 BEGIN
- IF p_approve IS NULL OR NOT EXISTS(SELECT 1 FROM ipat_platform.lookup_active_membership(
-  p_issuer,p_subject,p_tenant,'security_admin',NULL)) THEN RETURN NULL; END IF;
+ IF p_approve IS NULL OR NOT ipat_platform.firmware_current_reviewer(
+  p_issuer,p_subject,p_tenant) THEN RETURN NULL; END IF;
  SELECT * INTO c FROM ipat_ops.firmware_changes WHERE tenant_id=p_tenant AND id=p_change FOR UPDATE;
  IF NOT FOUND OR c.state<>'AWAITING_EVIDENCE'
   OR (c.requested_by_issuer=p_issuer AND c.requested_by_subject=p_subject)
@@ -260,8 +286,8 @@ BEGIN
  IF NOT FOUND OR c.state<>'APPROVED' OR c.window_end <= statement_timestamp()
   OR c.window_start > statement_timestamp()+interval '7 days'
   OR c.reviewed_by_issuer IS NULL OR c.reviewed_by_subject IS NULL
-  OR NOT EXISTS(SELECT 1 FROM ipat_platform.lookup_active_membership(
-    c.reviewed_by_issuer,c.reviewed_by_subject,p_tenant,'security_admin',NULL))
+  OR NOT ipat_platform.firmware_current_reviewer(
+    c.reviewed_by_issuer,c.reviewed_by_subject,p_tenant)
   OR EXISTS(SELECT 1 FROM ipat_ops.firmware_evidence e WHERE e.tenant_id=p_tenant AND e.change_id=p_change
     AND ((e.evidence_kind='DEVICE_IDENTITY' AND e.attested_at < statement_timestamp()-interval '30 minutes')
       OR (e.evidence_kind<>'DEVICE_IDENTITY' AND e.attested_at < statement_timestamp()-interval '24 hours')))
@@ -290,7 +316,7 @@ CREATE FUNCTION ipat_platform.list_firmware_changes(
    ON a.tenant_id=c.tenant_id AND a.id=c.artifact_id
  WHERE c.tenant_id=p_tenant AND (
   EXISTS(SELECT 1 FROM ipat_platform.lookup_active_membership(p_issuer,p_subject,p_tenant,'tenant_admin',NULL))
-  OR EXISTS(SELECT 1 FROM ipat_platform.lookup_active_membership(p_issuer,p_subject,p_tenant,'security_admin',NULL)))
+  OR ipat_platform.firmware_current_reviewer(p_issuer,p_subject,p_tenant))
  ORDER BY c.created_at DESC,c.id LIMIT 100;
 $fw$;
 ALTER FUNCTION ipat_platform.list_firmware_changes(text,text,uuid) OWNER TO ipat_fw_workflow_owner;
