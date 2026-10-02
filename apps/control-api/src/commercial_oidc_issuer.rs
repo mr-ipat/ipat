@@ -275,6 +275,7 @@ fn exchange(token_url: String, form: String) -> Option<(String, String)> {
             "3",
             "--max-time",
             "8",
+            "--tlsv1.2",
             "--max-filesize",
             "16384",
             "--request",
@@ -290,12 +291,34 @@ fn exchange(token_url: String, form: String) -> Option<(String, String)> {
         .stderr(Stdio::null())
         .spawn()
         .ok()?;
-    child.stdin.take()?.write_all(form.as_bytes()).ok()?;
-    let out = child.wait_with_output().ok()?;
-    if !out.status.success() || out.stdout.len() > TOKEN_RESPONSE_LIMIT {
+    let mut stdin = child.stdin.take()?;
+    if stdin.write_all(form.as_bytes()).is_err() {
+        let _ = child.kill();
+        let _ = child.wait();
         return None;
     }
-    let value: Value = serde_json::from_slice(&out.stdout).ok()?;
+    drop(stdin);
+    // Do NOT wait_with_output(): chunked/malicious IdP responses may omit
+    // Content-Length, and curl's max-filesize is not a reliable heap bound.
+    // Read at most 16KiB + 1 byte; terminate/reap any oversized child.
+    let Some(stdout) = child.stdout.take() else {
+        let _ = child.kill();
+        let _ = child.wait();
+        return None;
+    };
+    let mut body = Vec::with_capacity(TOKEN_RESPONSE_LIMIT);
+    let read = stdout
+        .take((TOKEN_RESPONSE_LIMIT + 1) as u64)
+        .read_to_end(&mut body);
+    if read.is_err() || body.len() > TOKEN_RESPONSE_LIMIT {
+        let _ = child.kill();
+        let _ = child.wait();
+        return None;
+    }
+    if !child.wait().ok()?.success() {
+        return None;
+    }
+    let value: Value = serde_json::from_slice(&body).ok()?;
     if value.get("token_type")?.as_str()? != "Bearer" {
         return None;
     }
