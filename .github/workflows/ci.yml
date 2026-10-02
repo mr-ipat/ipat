@@ -184,6 +184,8 @@ jobs:
           node --check web/lab/platform-domain-admin.js
           node --check web/lab/owner-device-inventory.js
           node deploy/scripts/lab/r962/test_catalog_domain_ui.cjs
+          bash -n deploy/scripts/lab/r962/rollout_private_master_domain.sh
+          node --check deploy/scripts/lab/r962/owner_browser_qa.cjs
           bash -n deploy/scripts/lab/r961/rollout-private-inventory.sh
           python3 -m py_compile deploy/scripts/lab/r961/real-crud-smoke.py
           bash -n deploy/scripts/lab/r960/rollout_private_c320_catalog.sh
