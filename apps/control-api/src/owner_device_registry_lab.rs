@@ -120,7 +120,7 @@ fn error(status: StatusCode, code: &'static str) -> (StatusCode, HeaderMap, Json
         Json(json!({"error":code,"owner_private_lab_only":true,"device_command_sent":false})),
     )
 }
-fn strict_owner(headers: &HeaderMap, mutating: bool) -> bool {
+pub(super) fn strict_owner(headers: &HeaderMap, mutating: bool) -> bool {
     if headers.get_all(header::HOST).iter().count() != 1
         || headers.get(header::HOST).and_then(|v| v.to_str().ok()) != Some("127.0.0.1:3002")
     {
@@ -219,7 +219,7 @@ fn valid(fields: &Fields) -> bool {
             && fields.management_host.as_deref() == Some("10.10.13.233")
             && fields.management_port == Some(321))
 }
-fn private_dir(folder: &FsPath) -> std::io::Result<()> {
+pub(super) fn private_dir(folder: &FsPath) -> std::io::Result<()> {
     if !folder.exists() {
         fs::create_dir(folder)?;
         fs::set_permissions(folder, fs::Permissions::from_mode(0o700))?;
@@ -236,7 +236,7 @@ fn private_dir(folder: &FsPath) -> std::io::Result<()> {
     }
     Ok(())
 }
-fn private_file(file: &FsPath) -> std::io::Result<()> {
+pub(super) fn private_file(file: &FsPath) -> std::io::Result<()> {
     let m = file.symlink_metadata()?;
     if !m.file_type().is_file()
         || m.uid() != unsafe { libc::geteuid() }
