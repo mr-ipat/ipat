@@ -703,3 +703,7 @@ Replace the memory-only browser-session authority in the commercial path with Po
 ## ADR-061 — APPROVED SOURCE DIRECTION / PUBLIC MOUNT PENDING: one Host-bound commercial tenant API (R9.68, 2026-10-02)
 
 Consolidate commercial tenant Site, Device-metadata and custom-domain operations behind the R9.67 durable Host-bound session instead of mounting historical memory-session BFFs independently. The browser never supplies tenant or role authority. Use a composite function-only PostgreSQL execution login for tenant business API, and a separate session-issuer login for the confidential OIDC callback. Keep credentials/physical device commands outside metadata CRUD, and keep Remove as guarded metadata archive. Source and disposable real HTTP/DB tests may proceed now; public router mounting remains blocked until actual HTTPS/IdP/production PostgreSQL/recovery gates pass.
+
+## ADR-062 — APPROVED SOURCE DIRECTION / PLATFORM SESSION PENDING: company lifecycle without implicit tenant access (R9.69, 2026-10-02)
+
+Platform owner manages commercial company metadata, lifecycle, plan/quota metadata and initial tenant-admin invitations through platform-scoped functions only. Creating/suspending a company never makes platform owner a tenant member. Initial tenant admin receives an exact IdP issuer+subject invitation and must accept it as that identity before membership exists. Billing transactions remain excluded; quota enforcement is incomplete until all tenant resource paths apply it. Public Platform Admin session/UI is a separate following milestone.

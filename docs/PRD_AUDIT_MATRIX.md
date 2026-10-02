@@ -93,3 +93,14 @@ Owner-private C320 `CONNECTED` uses an independently enrolled encrypted credenti
 | OIDC issuer cannot become tenant CRUD service | `0022_commercial_tenant_api_roles.sql`, four privilege-composition PostgreSQL tests | **DISPOSABLE PASS** |
 | Tenant API cannot issue sessions or read raw tables | `test_commercial_tenant_api_roles_integration.py` | **DISPOSABLE PASS** |
 | Actual commercial public browser/API | Router and connector remain unmounted from public Internet; local Unix DB factory requires explicit production/trusted-edge flags | **BLOCKED LIVE**: provider recovery, real IdP confidential callback, production PG, public trusted TLS and hostile tests pending |
+
+## R9.69 platform company lifecycle audit additions
+
+| Control | Evidence | Current classification |
+|---|---|---|
+| Platform owner can create/list companies without tenant data access | `0023_platform_company_lifecycle.sql`, test 00/01 | **SOURCE/DISPOSABLE PASS** |
+| Commercial profile, branding and plan/quota metadata have CAS/audit | `update_company_profile`, test 03 | **SOURCE/DISPOSABLE PASS**; quota enforcement still PARTIAL |
+| Suspend/resume requires current platform owner + reason | `set_company_tenant_state`, test 02/03 | **SOURCE/DISPOSABLE PASS** |
+| Initial tenant admin is invitation acceptance, not implicit platform grant | `tenant_admin_invitations`, exact-target accept function, test 04 | **SOURCE/DISPOSABLE PASS**, real IdP acceptance HTTP still BLOCKED |
+| Platform owner automatically accesses tenant Site/Device/secret | Explicit negative test; no membership inserted on tenant create | **DENIED BY DESIGN** |
+| Public Platform Admin dashboard | No production platform browser session/UI mounted yet | **BLOCKED LIVE / next source milestone** |
