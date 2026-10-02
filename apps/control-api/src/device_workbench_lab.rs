@@ -461,7 +461,10 @@ async fn device_status_js() -> (HeaderMap, &'static str) {
     )
 }
 async fn owner_inventory_js() -> (HeaderMap, &'static str) {
-    (super::private_lab_headers("text/javascript; charset=utf-8"),OWNER_INVENTORY_JS)
+    (
+        super::private_lab_headers("text/javascript; charset=utf-8"),
+        OWNER_INVENTORY_JS,
+    )
 }
 
 async fn action_catalog_js() -> (HeaderMap, &'static str) {
