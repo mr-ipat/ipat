@@ -477,7 +477,7 @@ async fn fixed_network_probe(
     ))
 }
 
-async fn connection_status(
+pub(super) async fn connection_status(
     headers: HeaderMap,
 ) -> Result<(HeaderMap, Json<Value>), (StatusCode, HeaderMap, Json<Value>)> {
     if !strict_private(&headers, false) {
