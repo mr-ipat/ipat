@@ -11,8 +11,8 @@ use axum::{
 };
 use serde::Deserialize;
 use serde_json::{json, Value};
-use std::{fs::File, io::Read, sync::Arc};
-use tokio_postgres::Client;
+use std::{fs::File, io::Read, path::PathBuf, sync::Arc};
+use tokio_postgres::{Client, Config, NoTls};
 use uuid::Uuid;
 
 use crate::{
@@ -25,6 +25,46 @@ const CSRF_HEADER: HeaderName = HeaderName::from_static("x-ipat-csrf");
 #[derive(Clone)]
 pub(super) struct StateData {
     pub db: Arc<Client>,
+}
+
+fn safe_db_name(v: &str) -> bool {
+    !v.is_empty() && v.len() <= 63 && v.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'_')
+}
+
+/// Production connection factory. The process still must bind behind a trusted
+/// HTTPS edge on loopback/private transport; this function does not make HTTP public.
+pub(super) async fn connect_from_environment() -> Result<Arc<Client>, String> {
+    if unsafe { libc::geteuid() } == 0
+        || std::env::var("IPAT_PRODUCTION_TENANT_API").as_deref() != Ok("YES")
+        || std::env::var("IPAT_TRUSTED_HTTPS_EDGE").as_deref() != Ok("YES")
+    {
+        return Err("commercial tenant API not explicitly enabled".into());
+    }
+    let socket =
+        std::env::var("IPAT_TENANT_API_DB_SOCKET").map_err(|_| "missing tenant API DB socket")?;
+    let database =
+        std::env::var("IPAT_TENANT_API_DB_NAME").map_err(|_| "missing tenant API DB name")?;
+    let user =
+        std::env::var("IPAT_TENANT_API_DB_USER").map_err(|_| "missing tenant API DB user")?;
+    if user != "ipat_tenant_api_login" || !safe_db_name(&database) {
+        return Err("unexpected tenant API database identity".into());
+    }
+    let path = PathBuf::from(&socket);
+    if !path.is_absolute() || socket.len() > 200 || socket.contains("..") {
+        return Err("tenant API DB socket must be absolute and canonical".into());
+    }
+    let mut cfg = Config::new();
+    cfg.host_path(path);
+    cfg.user(&user);
+    cfg.dbname(&database);
+    let (client, connection) = cfg
+        .connect(NoTls)
+        .await
+        .map_err(|_| "tenant API DB unavailable")?;
+    tokio::spawn(async move {
+        let _ = connection.await;
+    });
+    Ok(Arc::new(client))
 }
 
 fn safe_headers() -> HeaderMap {
@@ -584,5 +624,305 @@ mod tests {
         assert!(!valid_code("../JKT"));
         assert!(valid_name("Distribution OLT"));
         assert!(!valid_name(" Distribution OLT"));
+    }
+}
+
+#[cfg(test)]
+mod pg_integration {
+    use super::*;
+    use axum::{
+        body::{to_bytes, Body},
+        http::Request,
+    };
+    use sha2::{Digest, Sha256};
+    use tokio_postgres::{Config, NoTls};
+    use tower::ServiceExt;
+
+    async fn connect_admin() -> Client {
+        let mut c = Config::new();
+        c.host("127.0.0.1");
+        c.port(
+            std::env::var("PGPORT")
+                .ok()
+                .and_then(|v| v.parse().ok())
+                .unwrap_or(5432),
+        );
+        c.user(std::env::var("PGUSER").as_deref().unwrap_or("postgres"));
+        if let Ok(v) = std::env::var("PGPASSWORD") {
+            c.password(v);
+        }
+        c.dbname("ipat_synthetic");
+        let (client, connection) = c.connect(NoTls).await.unwrap();
+        tokio::spawn(async move {
+            let _ = connection.await;
+        });
+        client
+    }
+    fn hex(v: &str) -> String {
+        let d = Sha256::digest(v.as_bytes());
+        d.iter().map(|b| format!("{b:02x}")).collect()
+    }
+    fn req(
+        method: &str,
+        path: &str,
+        host: &str,
+        cookie: Option<&str>,
+        csrf: Option<&str>,
+        body: Option<&str>,
+    ) -> Request<Body> {
+        let mut b = Request::builder()
+            .method(method)
+            .uri(path)
+            .header("Host", host);
+        if let Some(c) = cookie {
+            b = b.header("Cookie", format!("__Host-ipat_session={c}"));
+        }
+        if let Some(c) = csrf {
+            b = b
+                .header("Origin", format!("https://{host}"))
+                .header("X-IPAT-CSRF", c);
+        }
+        if body.is_some() {
+            b = b.header("Content-Type", "application/json");
+        }
+        b.body(Body::from(body.unwrap_or_default().to_owned()))
+            .unwrap()
+    }
+    async fn body_json(r: axum::response::Response) -> Value {
+        serde_json::from_slice(&to_bytes(r.into_body(), 1024 * 64).await.unwrap()).unwrap()
+    }
+
+    #[tokio::test]
+    async fn r968_real_pg_durable_host_session_to_site_device_domain_http() {
+        if std::env::var("IPAT_PG_EPHEMERAL_TEST").as_deref() != Ok("1")
+            || std::env::var("PGDATABASE").as_deref() != Ok("ipat_synthetic")
+        {
+            return;
+        }
+        let admin = connect_admin().await;
+        let tenant = Uuid::parse_str("78787878-7878-4878-8878-787878787871").unwrap();
+        let domain = Uuid::parse_str("79797979-7979-4979-8979-797979797971").unwrap();
+        let issuer = "https://id.r968.synthetic.invalid/realms/ipat";
+        let subject = "r968-admin";
+        let host = "tenant-r968.example.net";
+        admin.execute("INSERT INTO ipat_platform.tenants(id,tenant_slug,state) VALUES($1,'r968-tenant','active') ON CONFLICT(id) DO UPDATE SET state='active'",&[&tenant]).await.unwrap();
+        admin.execute("INSERT INTO ipat_platform.identity_memberships(tenant_id,issuer,subject,role,approved_by,expires_at) VALUES($1,$2,$3,'tenant_admin','r968-test-review',clock_timestamp()+interval '1 day') ON CONFLICT(tenant_id,issuer,subject,role) DO UPDATE SET revoked_at=NULL,expires_at=clock_timestamp()+interval '1 day'",&[&tenant,&issuer,&subject]).await.unwrap();
+        admin.execute("INSERT INTO ipat_platform.tenant_domains(id,tenant_id,hostname,domain_type,verification_state,verification_method,verified_at,routing_mode,verification_name,verification_value,requested_by_issuer,requested_by_subject,requested_at,activation_state,ownership_verified_at,routing_ready_at,tls_ready_at,activated_at) VALUES($1,$2,$3,'custom_domain','verified','dns_txt',clock_timestamp(),'a_record',$4,$5,$6,$7,clock_timestamp(),'active',clock_timestamp(),clock_timestamp(),clock_timestamp(),clock_timestamp()) ON CONFLICT(id) DO UPDATE SET verification_state='verified',disabled_at=NULL,activation_state='active',ownership_verified_at=clock_timestamp(),routing_ready_at=clock_timestamp(),tls_ready_at=clock_timestamp(),activated_at=clock_timestamp()",&[&domain,&tenant,&host,&format!("_ipat-verify.{host}"),&format!("ipat-domain={domain}"),&issuer,&subject]).await.unwrap();
+        let cookie = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+        let csrf = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb";
+        let issuer_db = connect_admin().await;
+        issuer_db
+            .batch_execute("SET ROLE ipat_oidc_session_issuer_login")
+            .await
+            .unwrap();
+        let sid = Uuid::parse_str("80808080-8080-4080-8080-808080808081").unwrap();
+        let row=issuer_db.query_one("SELECT ipat_platform.issue_tenant_browser_session($1,$2,$3::uuid,$4::uuid,$5::uuid,$6,$7,clock_timestamp()+interval '10 minutes')",&[&issuer,&subject,&tenant,&domain,&sid,&hex(cookie),&hex(csrf)]).await.unwrap();
+        assert_eq!(row.get::<_, Option<Uuid>>(0), Some(sid));
+        let api_client = connect_admin().await;
+        api_client
+            .batch_execute("SET ROLE ipat_tenant_api_login")
+            .await
+            .unwrap();
+        let app = router(Arc::new(api_client));
+
+        let no_csrf = app
+            .clone()
+            .oneshot(req(
+                "POST",
+                "/api/v1/sites",
+                host,
+                Some(cookie),
+                None,
+                Some(r#"{"code":"POP-R968","display_name":"R968 Core"}"#),
+            ))
+            .await
+            .unwrap();
+        assert_eq!(no_csrf.status(), StatusCode::UNAUTHORIZED);
+        let wrong_host = app
+            .clone()
+            .oneshot(req(
+                "GET",
+                "/api/v1/sites",
+                "other-r968.example.net",
+                Some(cookie),
+                None,
+                None,
+            ))
+            .await
+            .unwrap();
+        assert_eq!(wrong_host.status(), StatusCode::UNAUTHORIZED);
+        let create = app
+            .clone()
+            .oneshot(req(
+                "POST",
+                "/api/v1/sites",
+                host,
+                Some(cookie),
+                Some(csrf),
+                Some(r#"{"code":"POP-R968","display_name":"R968 Core"}"#),
+            ))
+            .await
+            .unwrap();
+        assert_eq!(create.status(), StatusCode::CREATED);
+        let sites = app
+            .clone()
+            .oneshot(req("GET", "/api/v1/sites", host, Some(cookie), None, None))
+            .await
+            .unwrap();
+        assert_eq!(sites.status(), StatusCode::OK);
+        assert!(body_json(sites).await["sites"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|s| s["code"] == "POP-R968"));
+
+        let request_id = "81818181-8181-4181-8181-818181818181";
+        let create_dev=app.clone().oneshot(req("POST","/api/v1/devices",host,Some(cookie),Some(csrf),Some(&format!(r#"{{"request_id":"{request_id}","pop_id":"POP-R968","display_name":"Synthetic R968 OLT","device_kind":"olt","vendor":"ZTE","intended_model":"C320","management_transport":"ssh","management_host":"olt.r968.invalid","management_port":22}}"#)))).await.unwrap();
+        assert_eq!(create_dev.status(), StatusCode::CREATED);
+        let created = body_json(create_dev).await;
+        let device_id = created["id"].as_str().unwrap().to_string();
+        let list = app
+            .clone()
+            .oneshot(req(
+                "GET",
+                "/api/v1/devices",
+                host,
+                Some(cookie),
+                None,
+                None,
+            ))
+            .await
+            .unwrap();
+        assert_eq!(list.status(), StatusCode::OK);
+        assert!(body_json(list).await["devices"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|d| d["id"] == device_id));
+        let detail = app
+            .clone()
+            .oneshot(req(
+                "GET",
+                &format!("/api/v1/devices/{device_id}"),
+                host,
+                Some(cookie),
+                None,
+                None,
+            ))
+            .await
+            .unwrap();
+        assert_eq!(detail.status(), StatusCode::OK);
+        assert_eq!(
+            body_json(detail).await["device"]["display_name"],
+            "Synthetic R968 OLT"
+        );
+        let edit=app.clone().oneshot(req("PATCH",&format!("/api/v1/devices/{device_id}"),host,Some(cookie),Some(csrf),Some(r#"{"expected_revision":1,"pop_id":"POP-R968","display_name":"Synthetic R968 OLT Renamed","intended_model":"C320","management_host":"olt.r968.invalid","management_port":22}"#))).await.unwrap();
+        assert_eq!(edit.status(), StatusCode::OK);
+
+        let domain_create = app
+            .clone()
+            .oneshot(req(
+                "POST",
+                "/api/v1/domains",
+                host,
+                Some(cookie),
+                Some(csrf),
+                Some(r#"{"hostname":"customer-r968.example.net","routing_mode":"a_record"}"#),
+            ))
+            .await
+            .unwrap();
+        assert_eq!(domain_create.status(), StatusCode::CREATED);
+        let domains = app
+            .clone()
+            .oneshot(req(
+                "GET",
+                "/api/v1/domains",
+                host,
+                Some(cookie),
+                None,
+                None,
+            ))
+            .await
+            .unwrap();
+        assert_eq!(domains.status(), StatusCode::OK);
+        assert!(body_json(domains).await["domains"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|d| d["hostname"] == "customer-r968.example.net"));
+        let archived = app
+            .clone()
+            .oneshot(req(
+                "DELETE",
+                &format!("/api/v1/devices/{device_id}?revision=2"),
+                host,
+                Some(cookie),
+                Some(csrf),
+                None,
+            ))
+            .await
+            .unwrap();
+        assert_eq!(archived.status(), StatusCode::OK);
+
+        admin
+            .execute(
+                "DELETE FROM ipat_platform.tenant_browser_sessions WHERE tenant_id=$1",
+                &[&tenant],
+            )
+            .await
+            .unwrap();
+        admin
+            .execute(
+                "DELETE FROM ipat_ops.managed_device_events WHERE tenant_id=$1",
+                &[&tenant],
+            )
+            .await
+            .unwrap();
+        admin
+            .execute(
+                "DELETE FROM ipat_ops.managed_device_audit WHERE tenant_id=$1",
+                &[&tenant],
+            )
+            .await
+            .unwrap();
+        admin
+            .execute(
+                "DELETE FROM ipat_ops.managed_devices WHERE tenant_id=$1",
+                &[&tenant],
+            )
+            .await
+            .unwrap();
+        admin
+            .execute(
+                "DELETE FROM ipat_ops.tenant_site_events WHERE tenant_id=$1",
+                &[&tenant],
+            )
+            .await
+            .unwrap();
+        admin
+            .execute(
+                "DELETE FROM ipat_ops.tenant_sites WHERE tenant_id=$1",
+                &[&tenant],
+            )
+            .await
+            .unwrap();
+        admin
+            .execute(
+                "DELETE FROM ipat_platform.tenant_domains WHERE tenant_id=$1",
+                &[&tenant],
+            )
+            .await
+            .unwrap();
+        admin
+            .execute(
+                "DELETE FROM ipat_platform.identity_memberships WHERE tenant_id=$1",
+                &[&tenant],
+            )
+            .await
+            .unwrap();
+        admin
+            .execute("DELETE FROM ipat_platform.tenants WHERE id=$1", &[&tenant])
+            .await
+            .unwrap();
     }
 }
