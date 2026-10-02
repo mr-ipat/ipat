@@ -20,3 +20,7 @@ cargo test --locked -p control-api
 ```
 
 CI must also pass the full locked workspace and disposable PostgreSQL/restore/K3s suite. A separate rootless rollback-capable private :3002 binary rollout is permitted only after reviewing the exact source SHA and the already-running canary's user-owned systemd definition. Keep previous binary intact and restart it on smoke-test failure. Never open public :443, change root firewall, alter physical OLT, copy secret into output, or modify production database as part of this UX fix.
+
+## Verified private rollout evidence (2026-10-02)
+
+The one-time exact-source `deploy/scripts/lab/r959/rollout-private-owner-ui.sh` was first run after passing isolated VPS control-api 77/77 tests and positive legacy UI contracts. It independently checked the original running r953 path, active r945 connector, trusted loopback-only :3002 bind, matching staged binary digest, no existing r959 override, unchanged old canonical git SHA, original pending C320 draft and zero physical write state. Only then did it add a USER-systemd override for the new compiled binary, smoke-test real private HTML and JS strings, live C320 pending state, old dashboard/domain and :3000 response, 401 for unauthenticated production Save/List endpoints and same :3002 loopback bind. It retained automatic rollback until all checks succeeded. Mac post-deploy HTTP rechecks observed the new UI and same real pending connector state. The script is checksum-and-old-SHA pinned to this one-time rollout, NOT a future generic deployment procedure.

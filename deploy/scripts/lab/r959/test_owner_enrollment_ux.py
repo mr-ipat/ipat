@@ -28,6 +28,16 @@ class OwnerUx(unittest.TestCase):
         self.assertIn('PERINGATAN PRD',HTML)
         self.assertIn('physical_writes_enabled',RUST)
         self.assertNotIn('localStorage',JS)
+    def test_exact_private_rollout_preserves_old_binary_and_rejects_public(self):
+        script=(ROOT/'deploy/scripts/lab/r959/rollout-private-owner-ui.sh').read_text()
+        for required in ('R959_ROLLBACK_OLD_BINARY','r953-release/control-api',
+                         '127.0.0.1:3002','R959_BASELINE_DRAFT_SAVED_NO_LIVE_AUTH',
+                         'R959_ACTUAL_PRIVATE_HTTP_UI_AND_REAL_PENDING_CONNECTOR',
+                         'physical_writes_enabled','R959_PRIVATE_OWNER_GUI_DEPLOYED'):
+            self.assertIn(required,script)
+        self.assertNotIn('bootstrap-token',script)
+        self.assertNotIn('cat /home/openai/.local/share/ipat/r945-connection',script)
+
     def test_telnet_never_impersonates_existing_pinned_ssh(self):
         self.assertIn('Port Telnet laboratorium :323',HTML)
         self.assertIn('SSH 10.10.13.233:321',HTML)
