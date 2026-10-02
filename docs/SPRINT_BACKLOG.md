@@ -988,3 +988,7 @@ DR and public commercial SaaS remain open.
 5. **Exact physical support gate:** native CWMP/USP and ZTE/C-DATA/VSOL/MikroTik per model/board/firmware qualification, verified native backup+restore before any high-impact device writes; do not infer global feature support from a Connected device.
 
 Audit `docs/PRD_AUDIT_MATRIX.md`; record exact code/test and *real* environment evidence in `docs/PROJECT_STATUS.md` after each step, without misleading release notices.
+
+## R9.65 Device CRUD P0 follow-on
+
+Source: standalone tenant Device metadata detail/edit/guarded archive and proper Site history/detach; exact PostgreSQL regression + Rust BFF; separate real HTTPS/IdP/tenant PostgreSQL release gates remain unresolved. Next P0 work: mount commercial tenant Device/Site APIs ONLY after actual provider rescue+independently restored host/DB backup, validated 0018/0019/0020 migrations, signed current operator IdP/MFA, durable cookie session with verified Host→tenant match and hostile cross-tenant API test. Then implement vendor-specific physical connection/decommission workers with independently validated exact firmware, native backups and approvals. Never set commercial Device `CONNECTED` or enable universal CLI from metadata Save.
