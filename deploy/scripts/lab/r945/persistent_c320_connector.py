@@ -25,6 +25,14 @@ from cryptography.fernet import Fernet, InvalidToken
 ROOT = Path('/home/openai/.local/share/ipat/r945-connection')
 SOCKET = Path('/home/openai/.local/share/ipat/r940-live-agent/live.sock')
 SOURCE = Path(__file__).resolve().parents[1] / 'r940' / 'owner_supervised_c320_read_agent.py'
+# Canonical repo intentionally never contains private OLT host/user/pin data.
+# ALL NEW connector startups use ONLY the previously owner-recovered
+# 0600 exact checksum-pinned bundle, ignoring even extant legacy cache
+# scripts. The currently running old connector is never restarted here.
+# private adapter and its sibling 0600 R938 parser. No env/header path input.
+RECOVERY_ROOT = Path('/home/openai/.local/share/ipat/r966-private-reader-recovery')
+RECOVERY_R940_SHA256 = '5f262daba18f57cc188f96a5af12e9d461bbcad5a000e915910c678deeb7be10'
+RECOVERY_R938_SHA256 = '9f4a6874b2236365928a55c7a74a71411f7c2e8d0cc753d01689d0e2f0e2205c'
 TOKEN = ROOT / 'bootstrap-token'
 TOKEN_HASH = ROOT / 'bootstrap-sha256'
 KEY = ROOT / 'envelope-key'
@@ -88,8 +96,31 @@ def init():
     print('R945_PRIVATE_BROWSER_BOOTSTRAP_READY_TOKEN_IN_PRIVATE_FILE_ONLY')
 
 
+def fixed_reader_source():
+    # Never prefer a mutable/unknown adjacent legacy adapter over a sealed
+    # owner-private source, even when an old stage cache happens to exist.
+    # Existing *in-progress* r945 remains unchanged until separate cutover.
+    # A new clean checkout therefore cannot depend on disposable caches.
+    # Test stable private recovery provenance BEFORE importing any Python.
+    parent = RECOVERY_ROOT.parent
+    private_dir(parent)
+    private_dir(RECOVERY_ROOT)
+    base = RECOVERY_ROOT / 'deploy'
+    lab = base / 'scripts' / 'lab'
+    for part in (base, base / 'scripts', lab, lab / 'r938', lab / 'r940'):
+        private_dir(part)
+    reader = lab / 'r940' / 'owner_supervised_c320_read_agent.py'
+    parser = lab / 'r938' / 'owner_c320_onu_first_inventory.py'
+    for path, expected in ((reader, RECOVERY_R940_SHA256),
+                           (parser, RECOVERY_R938_SHA256)):
+        private_file(path)
+        if hashlib.sha256(path.read_bytes()).hexdigest() != expected:
+            raise ValueError('fixed private reader provenance mismatch')
+    return reader
+
+
 def module():
-    spec = importlib.util.spec_from_file_location('r945_fixed_c320', SOURCE)
+    spec = importlib.util.spec_from_file_location('r945_fixed_c320', fixed_reader_source())
     if not spec or not spec.loader:
         raise ValueError('fixed real SSH adapter missing')
     reader = importlib.util.module_from_spec(spec)
