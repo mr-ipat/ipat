@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<meta name="referrer" content="no-referrer">
+<title>IPAT • Firmware Management</title>
+<link rel="stylesheet" href="/console/firmware/firmware.css">
+<script defer src="/console/firmware/firmware.js"></script>
+</head>
+<body>
+<main class="shell">
+  <header><span class="mark">IP<span>@</span></span><div><h1>Firmware Management</h1><p>Perubahan dijalankan atas perintah operator, sesuai izin dan kompatibilitas perangkat.</p></div></header>
+  <div id="security-status" class="notice" role="status" aria-live="polite">Memeriksa sesi dan izin tenant...</div>
+  <section id="operator-form" hidden aria-labelledby="operator-title">
+    <h2 id="operator-title">Buat permintaan pembaruan</h2>
+    <p>Firmware resmi harus terverifikasi secara independen. Permintaan tidak otomatis mengubah perangkat.</p>
+    <form id="firmware-form" autocomplete="off">
+      <label for="device">Perangkat terdaftar</label><select id="device" required></select>
+      <label for="firmware-file">Berkas firmware resmi</label><input id="firmware-file" type="file" required>
+      <label for="vendor-release">Referensi rilis vendor</label><input id="vendor-release" required maxlength="180" autocomplete="off">
+      <label for="version">Versi tujuan</label><input id="version" required maxlength="128" autocomplete="off">
+      <label for="reason">Alasan perubahan</label><textarea id="reason" required minlength="12" maxlength="180"></textarea>
+      <label for="start">Mulai pemeliharaan</label><input id="start" type="datetime-local" required>
+      <label for="end">Selesai pemeliharaan</label><input id="end" type="datetime-local" required>
+      <button type="submit" disabled id="create">Simpan &amp; ajukan pemeriksaan</button>
+    </form>
+    <p id="file-notice" role="status">Unggah berkas aktif hanya setelah penyimpanan artefak privat dan autentikasi tersedia.</p>
+  </section>
+  <section id="review-form" hidden aria-labelledby="review-title">
+    <h2 id="review-title">Persetujuan terpisah</h2>
+    <p>Peninjau tidak boleh menyetujui permintaan yang dia buat sendiri. Semua bukti independen diperlukan sebelum persetujuan.</p>
+    <div id="review-list"></div>
+  </section>
+  <section id="jobs" hidden><h2>Status pekerjaan dan audit</h2><div id="jobs-list"></div></section>
+  <p class="foot">IPAT tidak menampilkan tombol eksekusi untuk adapter, izin atau versi yang belum terverifikasi.</p>
+</main>
+</body>
+</html>

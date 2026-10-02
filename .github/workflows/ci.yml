@@ -362,6 +362,10 @@ jobs:
       - name: R8.4 real disposable PostgreSQL maker-checker separate security admin, row-locked pending and append-only audit
         run: |
           python3 -m unittest discover deploy/db/tests -p test_device_maker_checker_integration.py -v
+      - name: R9.58 operator-initiated sealed firmware workflow on disposable PostgreSQL
+        run: |
+          python3 -m py_compile deploy/db/tests/test_operator_firmware_workflow_integration.py
+          python3 -m unittest discover deploy/db/tests -p test_operator_firmware_workflow_integration.py -v
       - name: R9.1 real disposable PostgreSQL immutable adoption readiness evidence and fail-closed eligibility
         run: |
           python3 -m unittest discover deploy/db/tests -p test_device_adoption_readiness_integration.py -v
