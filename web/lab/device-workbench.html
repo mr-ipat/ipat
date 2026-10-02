@@ -12,6 +12,7 @@
   <script src="/lab/c320-first-real-inventory.js" defer></script>
   <script src="/lab/c320-operator-console.js" defer></script>
   <script src="/lab/c320-action-catalog.js" defer></script>
+  <script src="/lab/owner-device-inventory.js" defer></script>
   <script src="/lab/c320-connection-setup.js" defer></script>
   <script src="/lab/device-status-indicators.js" defer></script>
 </head>
@@ -44,6 +45,53 @@
         <h1>Kelola perangkat <em>langsung dari IPAT.</em></h1>
         <p>Daftarkan koneksi ZTE C320 satu kali, lihat status, dan jalankan pembacaan langsung. Diagnostik pengembangan dipindahkan ke bagian opsional di bawah.</p>
       </div>
+      <section lang="en" class="panel ipat-owner-inventory" id="managed-devices" aria-labelledby="ipat-owner-inventory-heading">
+        <div class="section-top"><div>
+          <span class="eyebrow">PERSISTENT DEVICE INVENTORY</span>
+          <h2 id="ipat-owner-inventory-heading">Managed Devices</h2>
+          <p class="ipat-ops-disclosure">Add, view, edit and remove saved network device records. Changes are stored on the owner VPS and survive dashboard restarts. The connected C320 appears automatically; editing its label never changes its live SSH credentials. Other devices stay Saved / Not connected until a qualified adapter is available.</p>
+        </div><button type="button" class="secondary" id="ipat-owner-device-refresh">Refresh devices</button></div>
+        <p id="ipat-owner-device-summary" role="status" aria-live="polite">Loading server inventory...</p>
+        <div class="ipat-owner-device-toolbar">
+          <label for="ipat-owner-device-filter">Search devices</label>
+          <input type="search" id="ipat-owner-device-filter" placeholder="Name, vendor, model, POP or device ID" autocomplete="off" maxlength="80">
+          <button type="button" class="primary" id="ipat-owner-device-add">+ Add device</button>
+        </div>
+        <div class="table-scroll"><table aria-label="Durable private inventory and actual device connectivity">
+          <thead><tr><th>Device</th><th>Type / Model</th><th>POP</th><th>Connection</th><th>Actions</th></tr></thead>
+          <tbody id="ipat-owner-device-rows"><tr><td colspan="5">Loading...</td></tr></tbody>
+        </table></div>
+        <p id="ipat-owner-device-notice" class="ipat-ops-disclosure" role="status" aria-live="polite">Removing a saved record deletes only metadata, not device configuration. Disconnecting the already enrolled C320 requires a separate owner-approved revocation procedure.</p>
+        <form id="ipat-owner-device-form" class="ipat-owner-device-form" autocomplete="off" hidden>
+          <h3 id="ipat-owner-device-form-title">Add device</h3>
+          <input type="hidden" id="ipat-owner-edit-id">
+          <div class="ipat-device-form-grid">
+            <div class="ipat-field"><label for="ipat-owner-name">Display name</label>
+              <input id="ipat-owner-name" required maxlength="80" placeholder="e.g. Distribution OLT - POP A" autocomplete="off"></div>
+            <div class="ipat-field ipat-owner-extra"><label for="ipat-owner-pop">POP / Site</label>
+              <input id="ipat-owner-pop" required maxlength="48" value="POP-A" pattern="[A-Za-z0-9._-]+" autocomplete="off"></div>
+            <div class="ipat-field ipat-owner-extra"><label for="ipat-owner-kind">Device type</label>
+              <select id="ipat-owner-kind"><option value="olt">OLT</option><option value="ont">ONT / ONU</option><option value="router">Router</option><option value="switch">Switch</option><option value="other">Other</option></select></div>
+            <div class="ipat-field ipat-owner-extra"><label for="ipat-owner-vendor">Vendor</label>
+              <input id="ipat-owner-vendor" required maxlength="48" value="ZTE" pattern="[A-Za-z0-9._-]+" autocomplete="off"></div>
+            <div class="ipat-field ipat-owner-extra"><label for="ipat-owner-model">Exact model</label>
+              <input id="ipat-owner-model" required maxlength="80" placeholder="Observed model (or MODEL-UNKNOWN)" autocomplete="off"></div>
+            <div class="ipat-field ipat-owner-extra"><label for="ipat-owner-protocol">Management protocol</label>
+              <select id="ipat-owner-protocol"><option value="ssh">SSH</option><option value="snmp">SNMP</option><option value="api-ssl">RouterOS API-SSL</option><option value="https">HTTPS</option><option value="cwmp">TR-069 / CWMP</option><option value="usp">TR-369 / USP</option></select></div>
+            <div class="ipat-field ipat-owner-extra ipat-owner-address"><label for="ipat-owner-host">Management address (metadata)</label>
+              <input id="ipat-owner-host" maxlength="253" placeholder="192.0.2.10" autocomplete="off" spellcheck="false"></div>
+            <div class="ipat-field ipat-owner-extra ipat-owner-address"><label for="ipat-owner-port">Management port</label>
+              <input id="ipat-owner-port" type="number" min="1" max="65535" value="22"></div>
+          </div>
+          <p class="ipat-ops-disclosure" id="ipat-owner-device-form-hint">Only inventory metadata is accepted here. Do not enter device passwords, subscriber identifiers or secrets. Device connectivity is never inferred from Save.</p>
+          <div class="ipat-ops-actionbar">
+            <button type="submit" class="primary" id="ipat-owner-device-save">Save device</button>
+            <button type="button" class="secondary" id="ipat-owner-device-cancel">Cancel</button>
+          </div>
+        </form>
+        <div id="ipat-owner-device-detail" class="ipat-owner-device-detail" aria-live="polite" hidden></div>
+        <p class="ipat-ops-disclosure">Private owner pilot: no production tenant login or role-granted inventory is implied. Tenant production CRUD will use the separately restricted PostgreSQL registry after identity and domain verification.</p>
+      </section>
       <section class="panel ipat-ops-console" id="ipat-c320-console" aria-labelledby="ipat-c320-console-heading">
   <div class="section-top"><div><span class="eyebrow">IPAT OLT OPERATIONS · LAB PRIVAT R9.44</span>
   <h2 id="ipat-c320-console-heading">ZTE C320 · Konsol Operasional</h2>

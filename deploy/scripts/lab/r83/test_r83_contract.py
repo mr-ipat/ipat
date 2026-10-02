@@ -40,6 +40,7 @@ class DeviceManagerContract(unittest.TestCase):
             "/lab/c320-first-real-inventory.js",
             "/lab/c320-operator-console.js",
             "/lab/c320-action-catalog.js",
+            "/lab/owner-device-inventory.js",
             "/lab/c320-connection-setup.js",
             "/lab/device-status-indicators.js",
         ]
