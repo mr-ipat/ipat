@@ -18,3 +18,13 @@
 - `deploy/db/tests/test_tenant_sites_integration.py`, explicitly gated by `IPAT_PG_EPHEMERAL_TEST=1`, `PGDATABASE=ipat_synthetic`, `PGHOST=127.0.0.1`, synthetic password marker and the ordered disposable CI migrations. The existing R9.57 and R9.58 test suites run before it so it can prove rejection of 0019 with preexisting device rows, followed by explicitly synthetic tenant-approved backfill and successful validation. Never configure real credentials in the test environment.
 - The `control-api` Rust unit suite covers strict Site ID/name validation in `tenant_site_bff.rs`; the physical read-only connector continues independently. This is an unmounted, commercial-path source boundary, **not** a real public Session↔Host↔tenant authorization test.
 - The current R9.63 VPS running state and public prerequisites are documented in `docs/R963_PRODUCTION_RELEASE_GATE.md` and the PRD-wide audit matrix `docs/PRD_AUDIT_MATRIX.md`. No production PostgreSQL migration, OLT write, external firewall change or DNS repointing is performed by R9.64.
+
+### Independent local reproduction without a VPS or production credentials
+
+On a lab computer with Docker and Python, execute from the canonical repository:
+
+```bash
+IPAT_R964_SYNTHETIC_DOCKER=YES bash deploy/db/tests/r964_docker_repro.sh
+```
+
+The archived runner starts a newly named disposable PostgreSQL 16 container with **no published ports**, bind-mounts the exact audited source tree as read-only, seeds only `deploy/db/tests/r964_synthetic_seed.sql` identifiers under `.invalid`, executes the same seven integration tests through a process-specific restricted `psql` wrapper, and destroys the isolated container on exit. It never uses a real PostgreSQL DSN, reads real tenant records or modifies the owner VPS. If a machine cannot run Docker, rely on the separate exact GitHub CI disposable PostgreSQL job rather than attempting to run these migration tests against actual data. A clean `bash -n` script syntax result is not a substitute for seven passing real SQL tests.
