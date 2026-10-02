@@ -11,6 +11,7 @@
   <script src="/lab/device-workbench.js" defer></script>
   <script src="/lab/c320-first-real-inventory.js" defer></script>
   <script src="/lab/c320-operator-console.js" defer></script>
+  <script src="/lab/c320-action-catalog.js" defer></script>
   <script src="/lab/c320-connection-setup.js" defer></script>
   <script src="/lab/device-status-indicators.js" defer></script>
 </head>
@@ -122,6 +123,23 @@
   </section>
   <p id="ipat-c320-signal-detail" class="ipat-ops-disclosure">Menunggu pemeriksaan koneksi C320...</p>
   <p id="ipat-c320-connectivity" role="status" aria-live="polite">Mengecek sesi agen OLT...</p>
+  <section lang="en" class="ipat-c320-capability-panel" id="c320-capabilities" aria-labelledby="ipat-capability-heading">
+    <div class="ipat-device-form-heading">
+      <div><span class="eyebrow">LIVE DEVICE OPERATIONS</span>
+        <h3 id="ipat-capability-heading">ZTE C320 · Capability &amp; Execution Center</h3>
+        <p class="ipat-ops-disclosure">English (international default). An action becomes executable only after its exact device operation and required authorization are verified.</p>
+      </div>
+      <button id="ipat-c320-refresh-capabilities" type="button" class="secondary">Refresh Capabilities</button>
+    </div>
+    <p id="ipat-c320-capabilities-state" aria-live="polite">Loading verified device capabilities...</p>
+    <div class="table-scroll"><table aria-label="ZTE C320 operation availability and execution">
+      <thead><tr><th>Category</th><th>Operation</th><th>Status</th><th>Action</th></tr></thead>
+      <tbody id="ipat-c320-capabilities-rows"><tr><td colspan="4">Checking server-side device permissions...</td></tr></tbody>
+    </table></div>
+    <p id="ipat-c320-capability-detail" role="status" aria-live="polite">Select an operation to inspect its requirements or run a verified read.</p>
+    <ol id="ipat-c320-capability-events" aria-label="Live read-only operation results"></ol>
+    <p class="ipat-ops-disclosure">Device configuration and firmware execution require additional vendor verification, native recovery, scoped authorization and independent approval. They cannot be enabled by changing browser settings.</p>
+  </section>
   <div class="ipat-ops-tabs" aria-label="Kategori fungsi OLT">
     <span class="ipat-ops-tab active">Ringkasan & ONU</span>
     <span class="ipat-ops-tab">Kartu perangkat</span>

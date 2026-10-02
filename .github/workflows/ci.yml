@@ -177,6 +177,9 @@ jobs:
           node --check web/lab/c320-connection-setup.js
           node --check web/lab/device-workbench.js
           node deploy/scripts/lab/r947/test_add_device.cjs
+          node --check web/lab/c320-action-catalog.js
+          node deploy/scripts/lab/r960/test_operator_capabilities.cjs
+          bash -n deploy/scripts/lab/r960/rollout_private_c320_catalog.sh
           bash -n deploy/scripts/lab/r959/rollout-private-owner-ui.sh
           python3 -m unittest discover deploy/scripts/lab/r959 -p test_owner_enrollment_ux.py -v
           node deploy/scripts/lab/r946/test_device_status.cjs
