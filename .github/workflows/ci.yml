@@ -402,6 +402,14 @@ jobs:
           assert all(f'AC-{n:02d}' in p for n in range(1,18)) and 'AC-FW' in p
           print('R964_ALL_PRD_GATES_IN_AUDIT_MATRIX=PASS')
           PY
+      - name: R9.65 restricted commercial Device View CAS Edit guarded metadata Archive and historic Site instance (disposable ONLY)
+        run: |
+          python3 -m py_compile deploy/db/tests/test_managed_device_metadata_crud_integration.py
+          bash -n deploy/db/tests/r965_docker_repro.sh
+          python3 -m unittest discover deploy/db/tests -p test_managed_device_metadata_crud_integration.py -v
+          grep -Fq TENANT_SITE_MIGRATION_0019_MUST_BE_VALIDATED deploy/db/migrations/0020_managed_device_metadata_crud.sql
+          grep -Fq archived_site_instance_id deploy/db/migrations/0020_managed_device_metadata_crud.sql
+          grep -Fq R9.65 docs/PRD_AUDIT_MATRIX.md
       - name: R9.1 real disposable PostgreSQL immutable adoption readiness evidence and fail-closed eligibility
         run: |
           python3 -m unittest discover deploy/db/tests -p test_device_adoption_readiness_integration.py -v
