@@ -978,3 +978,13 @@ and atomic per-device lease with fresh
 readiness rechecks. Firmware and writes
 stay disabled. Full independent production
 DR and public commercial SaaS remain open.
+
+## R9.64 P0 production release backlog and audit scope (2026-10-02)
+
+1. **Source complete / deployment blocked:** commercial tenant Site master source `0018` + explicit human-reviewed `0019` migration and restrictive Rust session-bound BFF; disposable concurrency/cross-tenant regression. Actual tenant DB migration and BFF mounting MUST wait for real signed IdP/MFA, exact Host→tenant binding, backup and current authorized operator.
+2. **External owner prerequisite:** independently working VPS provider rescue-console root login and separately restorable encrypted host/PostgreSQL PITR backup; demonstrate rollback without supplying secrets to ChatGPT.
+3. **Deployment executable after gate 2:** provision isolated production PostgreSQL/IdP/MFA + namespace/tenant/POP roles, per-tenant Site/Device/domain registry, tested backup and narrow runtime role; then private authenticated prod API negative tests.
+4. **Public cutover after gate 3:** reviewed narrow HTTPS ingress on verified owner-controlled hostname/approved public-IP certificate, hostile Host/SNI/CSRF/cookie tests, current tenant session and audited domain reconciliation; never publish the existing unauthenticated owner-private :3002.
+5. **Exact physical support gate:** native CWMP/USP and ZTE/C-DATA/VSOL/MikroTik per model/board/firmware qualification, verified native backup+restore before any high-impact device writes; do not infer global feature support from a Connected device.
+
+Audit `docs/PRD_AUDIT_MATRIX.md`; record exact code/test and *real* environment evidence in `docs/PROJECT_STATUS.md` after each step, without misleading release notices.
