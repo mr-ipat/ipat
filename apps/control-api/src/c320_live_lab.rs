@@ -568,11 +568,24 @@ async fn owner_action_catalog(
 
 fn owner_catalog_response(connection: &Value) -> Value {
     let connected = connection.get("connector_online").and_then(Value::as_bool) == Some(true)
-        && connection.get("credentials_enrolled").and_then(Value::as_bool) == Some(true)
+        && connection
+            .get("credentials_enrolled")
+            .and_then(Value::as_bool)
+            == Some(true)
         && connection.get("device_status").and_then(Value::as_str) == Some("CONNECTED")
-        && connection.get("physical_writes_enabled").and_then(Value::as_bool) == Some(false)
-        && connection.get("production_adopted").and_then(Value::as_bool) == Some(false);
-    let read = if connected { "AVAILABLE_READ_ONLY" } else { "CONNECTION_REQUIRED" };
+        && connection
+            .get("physical_writes_enabled")
+            .and_then(Value::as_bool)
+            == Some(false)
+        && connection
+            .get("production_adopted")
+            .and_then(Value::as_bool)
+            == Some(false);
+    let read = if connected {
+        "AVAILABLE_READ_ONLY"
+    } else {
+        "CONNECTION_REQUIRED"
+    };
     let catalog = json!([
         {"id":"cards","group":"Chassis & Hardware","label":"Read active line cards",
          "state":read,"operation":"READ","endpoint":"/lab/c320-owner-live-cards",
@@ -676,8 +689,10 @@ mod tests {
         assert_eq!(catalog["physical_writes_enabled"], false);
         let entries = catalog["entries"].as_array().unwrap();
         assert!(entries.len() >= 15);
-        let runnable: Vec<_> = entries.iter()
-            .filter(|entry| entry["state"] == "AVAILABLE_READ_ONLY").collect();
+        let runnable: Vec<_> = entries
+            .iter()
+            .filter(|entry| entry["state"] == "AVAILABLE_READ_ONLY")
+            .collect();
         assert_eq!(runnable.len(), 2);
         assert_eq!(runnable[0]["endpoint"], "/lab/c320-owner-live-cards");
         assert_eq!(runnable[1]["endpoint"], "/lab/c320-owner-live-firmware");
@@ -691,7 +706,10 @@ mod tests {
         not_connected["device_status"] = json!("DISCONNECTED");
         let denied = owner_catalog_response(&not_connected);
         assert_eq!(denied["connected"], false);
-        assert!(denied["entries"].as_array().unwrap().iter()
+        assert!(denied["entries"]
+            .as_array()
+            .unwrap()
+            .iter()
             .all(|entry| entry["state"] != "AVAILABLE_READ_ONLY"));
         let mut writes = connected.clone();
         writes["physical_writes_enabled"] = json!(true);

@@ -460,7 +460,10 @@ async fn device_status_js() -> (HeaderMap, &'static str) {
     )
 }
 async fn action_catalog_js() -> (HeaderMap, &'static str) {
-    (super::private_lab_headers("text/javascript; charset=utf-8"), C320_CATALOG_JS)
+    (
+        super::private_lab_headers("text/javascript; charset=utf-8"),
+        C320_CATALOG_JS,
+    )
 }
 
 async fn connection_setup_js() -> (HeaderMap, &'static str) {
