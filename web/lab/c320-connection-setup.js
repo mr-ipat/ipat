@@ -19,6 +19,9 @@
   const owner=get('ipat-c320-bootstrap');
   const name=get('ipat-device-name');
   const notice=get('ipat-device-profile-notice');
+  const ownerStep=get('ipat-owner-step-status');
+  const ownerFeedback=get('ipat-owner-command-feedback');
+  const deploymentAlert=get('ipat-live-deployment-alert');
   const saveStage=get('ipat-device-save-stage');
   const connectStage=get('ipat-device-connect-stage');
   const diagnostic=get('ipat-device-diagnostic');
@@ -76,6 +79,11 @@
     connectorOnline=v.connector_online;
     enrolled=v.credentials_enrolled;
     if(enrolled){
+      waitingForOwner=false;
+      if(ownerStep)ownerStep.textContent='Kredensial perangkat telah tersimpan di konektor privat; tidak perlu memasukkan kode lagi.';
+      if(deploymentAlert)deploymentAlert.textContent=v.device_status==='CONNECTED'
+        ? 'UJI KONEKSI FISIK BACA-SAJA AKTIF. Belum berarti adopsi produksi atau konfigurasi OLT/ONT diizinkan.'
+        : 'KREDENSIAL TERSIMPAN, TETAPI PEMBACAAN PERANGKAT TERKINI BELUM TERBUKTI. Periksa koneksi; tidak ada akses konfigurasi.';
       setState(v.device_status==='CONNECTED'?'CONNECTED':'CREDENTIALS SAVED');
       showStage('Saved to Device List',v.device_status==='CONNECTED'?'Connected · Read-only':'Credentials stored · Checking device');
       form.hidden=true;
@@ -84,12 +92,26 @@
       form.hidden=false;
       setState(connectorOnline?'READY TO CONNECT':'CONNECTOR OFFLINE');
       if(v.draft_saved===true){
-        if(!busy)showStage('Saved to Device List',waitingForOwner?'Pending · One-time lab verification required':connectorOnline?'Pending · Authentication required':'Pending · Connector unavailable');
+        // A browser reload must NOT forget the durable saved draft or make
+        // the operator believe the first Save had no effect.
+        waitingForOwner=connectorOnline;
+        if(!busy){
+          button.textContent='Lanjutkan Koneksi SSH · OLT Sudah Tersimpan';
+          output.textContent='OLT SUDAH TERSIMPAN. Masukkan Password SSH perangkat dan One-Time Owner Code; tekan tombol Lanjutkan Koneksi SSH. Jangan tambahkan OLT kedua.';
+          if(ownerStep)ownerStep.textContent='Langkah berikutnya: jalankan Copy Command di Terminal, tempelkan KODE ke kolom di bawah, masukkan password SSH OLT, lalu Lanjutkan Koneksi SSH.';
+          if(deploymentAlert)deploymentAlert.textContent='OLT TERSIMPAN SEBAGAI DRAFT; belum ada autentikasi SSH baru. Akses konfigurasi/firmware masih terkunci.';
+        }
+        if(!busy)showStage('Saved to Device List',connectorOnline?'Pending · Owner Code dan password SSH':'Pending · Connector unavailable');
         if(!networkChecked && connectorOnline){
           networkChecked=true;
           void probe().then(message=>{diagnostic.textContent=message;});
         }
-      }else showStage('Not Saved',connectorOnline?'Awaiting device registration':'Connector unavailable');
+      }else{
+        waitingForOwner=false;
+        button.textContent='Simpan & Hubungkan OLT';
+        if(deploymentAlert)deploymentAlert.textContent='Tidak ada draft OLT aktif. Simpan perangkat dahulu; status koneksi tetap Pending sampai autentikasi berhasil.';
+        showStage('Not Saved',connectorOnline?'Awaiting device registration':'Connector unavailable');
+      }
       validateProfile();
     }
   }
@@ -264,6 +286,18 @@
     waitingForOwner=false;
     form.requestSubmit();
   };
+  // The command itself is never a bootstrap code. Fail locally instead of
+  // sending a terminal command or unrelated clipboard content to the server.
+  owner.addEventListener('input',()=>{
+    const pasted=owner.value.trim();
+    const looksLikeCommand=pasted.startsWith('ssh ') || pasted.startsWith('set -o ')
+      || pasted.includes('| pbcopy') || pasted.includes('bootstrap-token');
+    owner.setCustomValidity(looksLikeCommand?'Paste KODE hasil perintah, bukan perintah Terminal.':'');
+    if(ownerFeedback){
+      if(looksLikeCommand)ownerFeedback.textContent='SALAH: yang ditempel adalah PERINTAH, bukan kode. Jalankan perintah di Terminal dahulu.';
+      else if(pasted.length>=32)ownerFeedback.textContent='Format kode sudah terisi. Sistem baru akan memverifikasi kode saat Anda menghubungkan OLT.';
+    }
+  });
   owner.addEventListener('change',resumeAfterVerification);
   owner.addEventListener('paste',()=>setTimeout(resumeAfterVerification,0));
   redrawModels();

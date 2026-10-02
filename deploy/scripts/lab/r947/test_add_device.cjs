@@ -15,7 +15,7 @@ test('Add Device exposes coherent international network-management fields',()=>{
    assert.match(ui,new RegExp("'"+id+"'"));
  }
  for(const label of ['Add Device','Device Name','Device Type','Vendor / Model',
-   'Management Protocol','Management IP','SSH Port','Username','Password','Save Device &amp; Connect'])
+   'Management Protocol','Management IP','SSH Port','Username','Password','Simpan &amp; Hubungkan OLT'])
    assert.ok(html.includes(label),label);
  assert.match(css,/\.ipat-device-form-grid\{/);
  assert.match(css,/@media\(max-width:700px\)/);
@@ -33,7 +33,7 @@ test('unsupported vendor and network targets must never accidentally enroll',()=
  assert.doesNotMatch(ui,/innerHTML|localStorage|sessionStorage|eval\(/);
 });
 test('one-time owner verification remains separate from main operator form',()=>{
- assert.match(html,/<details class="ipat-device-security">/);
+ assert.match(html,/<details class="ipat-device-security" open>/);
  assert.match(html,/One-Time Owner Code/);
  assert.match(ui,/bootstrap_code:bootstrap/);
  assert.match(ui,/password\.value='';owner\.value='';/);
@@ -79,4 +79,18 @@ test('lab setup step clearly explains the one-time code and can copy instruction
   assert.match(ui,/copyButton\.addEventListener\('click'/);
   assert.match(ui,/navigator\.clipboard\.writeText\(source\.textContent\)/);
   assert.match(ui,/LAB_SETUP_CODE_REQUIRED/);
+});
+
+test('R9.59 refreshed owner-code UX displays actionable clipboard acknowledgement and saved draft',()=>{
+ assert.match(html,/IPAT: KODE TERSALIN/);
+ assert.match(html,/set -o pipefail/);
+ assert.match(html,/id="ipat-owner-step-status"/);
+ assert.match(html,/Port Telnet laboratorium :323/);
+ assert.match(html,/SSH 10\.10\.13\.233:321/);
+ assert.match(ui,/OLT SUDAH TERSIMPAN/);
+ assert.match(ui,/owner\.setCustomValidity/);
+ assert.match(ui,/looksLikeCommand/);
+ assert.match(ui,/Lanjutkan Koneksi SSH/);
+ assert.match(ui,/v\.device_status==='CONNECTED'/);
+ assert.doesNotMatch(ui,/localStorage|sessionStorage|innerHTML/);
 });

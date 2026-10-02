@@ -16,8 +16,8 @@
 </head>
 <body>
 <a href="#main" class="skip">Ke konten</a>
-<div class="alert" role="alert"><strong>PERINGATAN PRD — LAB FISIK TERBACA, ADOPSI OTOMATIS BELUM AKTIF</strong>
-  Dashboard ini LAB privat. ZTE C320 nyata SUDAH berhasil login dan dibaca lewat SSH/Telnet; backup konfigurasi CLI eksternal Restic terenkripsi dan pemulihan bit-identik SUDAH terverifikasi. Inventaris kandidat tambah/hapus tetap sintetis. Identitas POP independen, akun perangkat minimum-privilege, tenant MFA, worker otomatis, impor konfigurasi asli vendor dan fitur firmware belum dibuktikan.
+<div class="alert" id="ipat-live-deployment-alert" role="alert"><strong>PERINGATAN PRD — STATUS PERANGKAT HARUS DIVERIFIKASI ULANG</strong>
+  Riwayat uji OLT dan backup CLI telah dicatat, tetapi bukan bukti koneksi saat ini. Lihat status konektor langsung di bawah; sampai kredensial owner ditambahkan dan pembacaan baru berhasil, perangkat tetap Pending. Adopsi produksi, konfigurasi perangkat, dan upgrade firmware belum diaktifkan.
 </div>
 <div class="shell">
   <aside class="sidebar" aria-label="Navigasi">
@@ -32,7 +32,7 @@
       <a href="#inventory">☷ &nbsp; Daftar perangkat</a>
       <a href="#readiness">◈ &nbsp; Adopsi & status</a>
     </nav>
-    <div class="sidebottom"><strong>LABORATORIUM PRIVAT</strong><p>C320 LAB nyata: login dan pembacaan kartu/versi berhasil, backup eksternal terenkripsi sukses. ADOPSI OTOMATIS tetap terkunci. Jangan isi IP, serial atau password nyata di form demo.</p></div>
+    <div class="sidebottom"><strong>LABORATORIUM PRIVAT</strong><p>RIWAYAT UJI LAB: C320 pernah terbaca dan backup eksternal terenkripsi telah diuji. Koneksi saat ini masih harus dibuktikan. Jangan masukkan password nyata ke formulir DEMO di bagian diagnostik; formulir owner yang privat di atas merupakan alur terpisah.</p></div>
     <p class="copyright">IPAT · Developed by Mr. iPat</p>
   </aside>
   <div class="main">
@@ -86,22 +86,23 @@
           <input id="ipat-c320-device-password" type="password" autocomplete="new-password" maxlength="128" placeholder="Required for connection; optional to save device"></div>
       </div>
       <div id="ipat-device-profile-notice" class="ipat-profile-info" role="status">ZTE C320: pinned SSH identity, read-only connection profile. Other models require their own verified adapters.</div>
-      <details class="ipat-device-security">
-        <summary>Lab Setup Verification · Required Once</summary>
+      <details class="ipat-device-security" open>
+        <summary>LANGKAH WAJIB · Verifikasi Pemilik (satu kali)</summary>
+        <p id="ipat-owner-step-status" role="status"><strong>OLT sudah bisa dicatat di daftar perangkat.</strong> Untuk koneksi SSH nyata, isi password perangkat dan kode pemilik melalui halaman ini. Jangan kirim keduanya ke ChatGPT.</p>
         <p><strong>Why is this required?</strong> This private lab preview is not yet protected by the production IPAT Admin login. This temporary code proves access to the owner VPS before IPAT sends your SSH password to the OLT. It is <strong>not</strong> the OLT password and is invalidated after the first successful device verification.</p>
-        <p><strong>Where do I get the code?</strong> On the Mac already connected to your IPAT lab, copy the command below, paste it into your own Terminal, then paste the resulting clipboard contents into this field. The code stays between your Mac and private VPS; do not send it through chat or GitHub.</p>
+        <p><strong>Cara mendapatkan kode:</strong> Tekan Copy Command, jalankan perintah tersebut di Terminal Mac Anda. Terminal akan menampilkan pesan <strong>IPAT: KODE TERSALIN</strong>, bukan kodenya. Langsung kembali ke kolom di bawah dan tekan <strong>Command + V</strong>; jangan menyalin teks lain setelah menjalankan perintah. Bila Terminal menampilkan kesalahan SSH atau tidak menampilkan pesan berhasil, jangan lanjutkan koneksi.</p>
         <div class="ipat-owner-command">
-          <code id="ipat-owner-code-command">ssh -o BatchMode=yes ipat-lab 'cat /home/openai/.local/share/ipat/r945-connection/bootstrap-token' | pbcopy</code>
+          <code id="ipat-owner-code-command">set -o pipefail; ssh -o BatchMode=yes -o ConnectTimeout=8 ipat-lab 'cat /home/openai/.local/share/ipat/r945-connection/bootstrap-token' | pbcopy &amp;&amp; printf 'IPAT: KODE TERSALIN. Kembali ke browser dan tekan Command+V di kolom Owner Code.\n'</code>
           <button type="button" id="ipat-copy-owner-command" class="secondary">Copy Command</button>
         </div>
-        <p id="ipat-owner-command-feedback" role="status" aria-live="polite">This command copies the private code to your Mac clipboard without printing it in the chat. If your SSH alias differs, use your existing authorized VPS connection.</p>
+        <p id="ipat-owner-command-feedback" role="status" aria-live="polite">Copy Command hanya menyalin PERINTAH. Setelah perintah dijalankan di Terminal, clipboard berisi KODE. Perintah tidak menampilkan kode atau password.</p>
         <label for="ipat-c320-bootstrap">One-Time Owner Code (Lab Only)</label>
-        <input id="ipat-c320-bootstrap" type="password" autocomplete="off" minlength="32" maxlength="128" placeholder="Paste the private setup code here">
+        <input id="ipat-c320-bootstrap" type="password" autocomplete="off" minlength="32" maxlength="128" placeholder="Command + V untuk menempelkan KODE (bukan perintah Terminal)">
         <p><strong>Future production flow:</strong> a verified IPAT Admin session with tenant permissions will replace this temporary lab-only step.</p>
       </details>
       <div class="ipat-ops-actionbar">
-        <button type="submit" id="ipat-c320-enroll-button" class="secondary">Save Device &amp; Connect</button>
-        <span class="ipat-ops-disclosure">Only the verified C320 lab profile can connect in this release.</span>
+        <button type="submit" id="ipat-c320-enroll-button" class="secondary">Simpan &amp; Hubungkan OLT</button>
+        <span class="ipat-ops-disclosure">Profil yang diuji di halaman ini hanya SSH 10.10.13.233:321. Port Telnet laboratorium :323 adalah layanan berbeda dan belum menjadi adapter koneksi otomatis. Aksi perangkat fisik tetap baca-saja.</span>
       </div>
     </form>
     <div id="ipat-device-connection-summary" class="ipat-connection-summary" aria-live="polite">
