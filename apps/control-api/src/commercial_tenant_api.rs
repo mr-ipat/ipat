@@ -108,12 +108,29 @@ async fn capabilities(
         .into_iter()
         .map(|r| r.get::<_, String>(0))
         .collect::<Vec<_>>();
+    // A separate typed REAL POP grant never inherits the legacy exact-Site
+    // identity_pop_grants column. Failure is deny-all, not legacy fallback.
+    let real_scoped =
+        s.db.query(
+            "SELECT pop_code FROM ipat_platform.current_noc_real_pop_scopes($1,$2,$3::uuid)",
+            &[&a.issuer, &a.subject, &a.tenant_id],
+        )
+        .await;
+    let Ok(real_scoped) = real_scoped else {
+        return denied(StatusCode::SERVICE_UNAVAILABLE);
+    };
+    let real_noc_pops = real_scoped
+        .into_iter()
+        .map(|r| r.get::<_, String>(0))
+        .collect::<Vec<_>>();
+    let can_read_noc = !noc_pops.is_empty() || !real_noc_pops.is_empty();
     response(
         StatusCode::OK,
         json!({"ok":true,"tenant_id":a.tenant_id.to_string(),
         "can_manage_sites":admin,"can_manage_pops":admin,
         "can_manage_devices":admin,"can_manage_domains":admin,
-        "noc_pops":noc_pops,"can_read_noc":!noc_pops.is_empty()}),
+        "noc_pops":noc_pops,"real_noc_pops":real_noc_pops,
+        "can_read_noc":can_read_noc}),
     )
 }
 async fn device_catalog(
@@ -470,6 +487,98 @@ async fn noc_devices(
     response(
         StatusCode::OK,
         json!({"ok":true,"devices":devices,"read_only":true}),
+    )
+}
+
+// True POP-scoped NOC read path, explicitly distinct from historical exact-
+// Site grants. Both HTTP authorization AND SQL functions independently check
+// the current typed grant, current approved NOC membership and active tenant.
+async fn noc_real_actor_for_pop(
+    db: &Client,
+    headers: &HeaderMap,
+    pop: &str,
+) -> Result<durable_tenant_session::DurableSessionContext, StatusCode> {
+    let a = actor(db, headers, false)
+        .await
+        .ok_or(StatusCode::UNAUTHORIZED)?;
+    if !valid_code(pop) {
+        return Err(StatusCode::UNPROCESSABLE_ENTITY);
+    }
+    let rows = db
+        .query(
+            "SELECT pop_code FROM ipat_platform.current_noc_real_pop_scopes($1,$2,$3::uuid)",
+            &[&a.issuer, &a.subject, &a.tenant_id],
+        )
+        .await
+        .map_err(|_| StatusCode::SERVICE_UNAVAILABLE)?;
+    if !rows.iter().any(|r| r.get::<_, &str>(0) == pop) {
+        return Err(StatusCode::FORBIDDEN);
+    }
+    Ok(a)
+}
+async fn noc_real_sites(
+    State(s): State<Arc<StateData>>,
+    headers: HeaderMap,
+    Query(q): Query<NocPopQuery>,
+) -> (StatusCode, HeaderMap, Json<Value>) {
+    let a = match noc_real_actor_for_pop(&s.db, &headers, &q.pop).await {
+        Ok(a) => a,
+        Err(status) => return denied(status),
+    };
+    let rows=s.db.query(
+  "SELECT code,display_name,revision,assigned_devices FROM ipat_platform.list_noc_real_pop_sites($1,$2,$3::uuid,$4)",
+  &[&a.issuer,&a.subject,&a.tenant_id,&q.pop]
+ ).await;
+    let Ok(rows) = rows else {
+        return denied(StatusCode::SERVICE_UNAVAILABLE);
+    };
+    let sites = rows
+        .into_iter()
+        .map(|r| {
+            json!({
+             "code":r.get::<_,String>(0),"display_name":r.get::<_,String>(1),
+             "revision":r.get::<_,i64>(2),"assigned_devices":r.get::<_,i64>(3)
+            })
+        })
+        .collect::<Vec<_>>();
+    response(
+        StatusCode::OK,
+        json!({"ok":true,"sites":sites,
+  "read_only":true,"scope_type":"real_pop"}),
+    )
+}
+async fn noc_real_devices(
+    State(s): State<Arc<StateData>>,
+    headers: HeaderMap,
+    Query(q): Query<NocPopQuery>,
+) -> (StatusCode, HeaderMap, Json<Value>) {
+    let a = match noc_real_actor_for_pop(&s.db, &headers, &q.pop).await {
+        Ok(a) => a,
+        Err(status) => return denied(status),
+    };
+    let rows=s.db.query(
+  "SELECT id,site_code,display_name,device_kind,vendor,intended_model,management_transport,lifecycle_state FROM ipat_platform.list_noc_real_pop_devices($1,$2,$3::uuid,$4)",
+  &[&a.issuer,&a.subject,&a.tenant_id,&q.pop]
+ ).await;
+    let Ok(rows) = rows else {
+        return denied(StatusCode::SERVICE_UNAVAILABLE);
+    };
+    let devices = rows
+        .into_iter()
+        .map(|r| {
+            json!({
+             "id":r.get::<_,Uuid>(0).to_string(),"site":r.get::<_,String>(1),
+             "display_name":r.get::<_,String>(2),"device_kind":r.get::<_,String>(3),
+             "vendor":r.get::<_,String>(4),"intended_model":r.get::<_,Option<String>>(5),
+             "management_transport":r.get::<_,String>(6),
+             "lifecycle_state":r.get::<_,String>(7)
+            })
+        })
+        .collect::<Vec<_>>();
+    response(
+        StatusCode::OK,
+        json!({"ok":true,"devices":devices,
+  "read_only":true,"scope_type":"real_pop"}),
     )
 }
 
@@ -1053,6 +1162,8 @@ pub(super) fn router(db: Arc<Client>) -> Router {
         .route("/api/v1/capabilities", get(capabilities))
         .route("/api/v1/noc/sites", get(noc_sites))
         .route("/api/v1/noc/devices", get(noc_devices))
+        .route("/api/v1/noc/real/sites", get(noc_real_sites))
+        .route("/api/v1/noc/real/devices", get(noc_real_devices))
         .route("/api/v1/device-catalog", get(device_catalog))
         .route("/api/v1/logout", axum::routing::post(logout))
         .route("/api/v1/pops", get(list_pops).post(create_pop))
@@ -1435,6 +1546,7 @@ mod pg_integration {
         assert_eq!(noc_json["can_manage_sites"], false);
         assert_eq!(noc_json["can_manage_pops"], false);
         assert_eq!(noc_json["noc_pops"], json!(["POP-R970"]));
+        assert_eq!(noc_json["real_noc_pops"], json!([]));
         let noc_direct_pops = app
             .clone()
             .oneshot(req(
@@ -1462,6 +1574,69 @@ mod pg_integration {
             .unwrap();
         assert_eq!(noc_sites.status(), StatusCode::OK);
         assert_eq!(body_json(noc_sites).await["sites"][0]["code"], "POP-R970");
+        // R9.77 typed real POP scope is explicit and does not inherit legacy Site grants.
+        admin.execute(
+            "INSERT INTO ipat_platform.noc_real_pop_grants(tenant_id,issuer,subject,role,pop_code,requested_by_issuer,requested_by_subject,approved_by_issuer,approved_by_subject,created_at,expires_at) VALUES($1,$2,$3,'noc_engineer','DC-R976',$2,'synthetic-requester',$2,'synthetic-independent-reviewer',clock_timestamp()-interval '1 minute',clock_timestamp()+interval '1 day')",
+            &[&tenant,&issuer,&noc_subject],
+        ).await.unwrap();
+        let real_cap = app
+            .clone()
+            .oneshot(req(
+                "GET",
+                "/api/v1/capabilities",
+                host,
+                Some(noc_cookie),
+                None,
+                None,
+            ))
+            .await
+            .unwrap();
+        assert_eq!(real_cap.status(), StatusCode::OK);
+        let real_cap_json = body_json(real_cap).await;
+        assert_eq!(real_cap_json["noc_pops"], json!(["POP-R970"]));
+        assert_eq!(real_cap_json["real_noc_pops"], json!(["DC-R976"]));
+        let real_sites = app
+            .clone()
+            .oneshot(req(
+                "GET",
+                "/api/v1/noc/real/sites?pop=DC-R976",
+                host,
+                Some(noc_cookie),
+                None,
+                None,
+            ))
+            .await
+            .unwrap();
+        assert_eq!(real_sites.status(), StatusCode::OK);
+        let real_sites_json = body_json(real_sites).await;
+        assert_eq!(real_sites_json["scope_type"], "real_pop");
+        assert_eq!(real_sites_json["sites"][0]["code"], "POP-R970");
+        let real_wrong = app
+            .clone()
+            .oneshot(req(
+                "GET",
+                "/api/v1/noc/real/sites?pop=OTHER-POP",
+                host,
+                Some(noc_cookie),
+                None,
+                None,
+            ))
+            .await
+            .unwrap();
+        assert_eq!(real_wrong.status(), StatusCode::FORBIDDEN);
+        let legacy_never_real = app
+            .clone()
+            .oneshot(req(
+                "GET",
+                "/api/v1/noc/real/sites?pop=POP-R970",
+                host,
+                Some(noc_cookie),
+                None,
+                None,
+            ))
+            .await
+            .unwrap();
+        assert_eq!(legacy_never_real.status(), StatusCode::FORBIDDEN);
         let noc_wrong = app
             .clone()
             .oneshot(req(

@@ -478,6 +478,7 @@ jobs:
           psql -X -v ON_ERROR_STOP=1 -f deploy/db/migrations/0024_oidc_one_time_pending.sql
           psql -X -v ON_ERROR_STOP=1 -f deploy/db/migrations/0025_commercial_noc_scopes.sql
           python3 -m unittest discover deploy/db/tests -p test_noc_scope_integration.py -v
+          psql -X -v ON_ERROR_STOP=1 -f deploy/db/migrations/0030_typed_noc_real_pop_scope.sql
           cargo test --locked -p control-api commercial_tenant_api::pg_integration::r970_real_pg_tenant_dashboard_current_role_catalog_and_logout -- --exact
           grep -Fq 'TO ipat_tenant_api_exec' deploy/db/migrations/0023_tenant_menu_entitlements.sql
           grep -Fq 'IPAT_R970_VERIFIED_CONFIDENTIAL_IDP' apps/control-api/src/commercial_oidc_issuer.rs
@@ -502,6 +503,14 @@ jobs:
           node deploy/scripts/lab/r970/test_tenant_dashboard_contract.cjs
           grep -Fq 'CREATE TABLE ipat_ops.tenant_pops' deploy/db/migrations/0028_independent_pop_master.sql
           grep -Fq 'VALIDATE CONSTRAINT tenant_sites_parent_tenant_pop' deploy/db/migrations/0029_validate_tenant_pop_site_fk.sql
+      - name: R9.77 typed real-POP NOC scope never inherits legacy Site grants
+        run: |
+          python3 -m unittest discover deploy/db/tests -p test_typed_noc_real_pop_scope_integration.py -v
+          bash -n deploy/db/tests/r977_docker_repro.sh
+          node --check web/console/tenant/app.js
+          node deploy/scripts/lab/r970/test_tenant_dashboard_contract.cjs
+          grep -Fq noc_real_pop_grants deploy/db/migrations/0030_typed_noc_real_pop_scope.sql
+          grep -Fq real_noc_pops apps/control-api/src/commercial_tenant_api.rs
       - name: R9.71 real disposable PostgreSQL HA-safe one-use OIDC state across Rust client instances
         run: |
           python3 -m unittest discover deploy/db/tests -p test_oidc_pending_integration.py -v
