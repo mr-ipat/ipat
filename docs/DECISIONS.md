@@ -721,3 +721,6 @@ NOC dashboard receives only exact current POP scopes through a least-privilege f
 
 ## ADR-086 — R9.73 platform company reservation cannot activate company (2026-10-03)
 Separate platform owner principal and NOLOGIN executor from all tenant API/OIDC identities. Initial operation is only an idempotent, actor-attributed Suspended company reservation. Do not auto-create tenant-admin membership, turn on DNS or access tenant secrets. Later audited contract/invitation/domain/TLS activation is a separate privilege and execution path. SQL acceptance does not imply real platform operator login or public production.
+
+## ADR-087 — Platform SQL catalog is authoritative for new device metadata (2026-10-03)
+Dynamic tenant-admin catalog listing and an independent FORCE-RLS guarded DB INSERT are the authoritative source. Rust category matching is only a syntax/protocol envelope; disabling a catalog row must immediately stop new registration. All seeded entries are metadata candidates, never verified model/firmware interoperability. Tenant and OIDC issuer roles cannot directly manage global catalog; approved separate platform catalog-edit workflow is not mounted.

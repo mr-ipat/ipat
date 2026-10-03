@@ -1165,3 +1165,6 @@ MUST: NOC sees read-only Site/Device inventory for exact currently granted POPs 
 
 ## R9.73 — Platform Owner safe initial company reservation (2026-10-03)
 MUST: verified Platform Owner is NOT a tenant principal. A separate authenticated platform service may reserve a company slug only with an immutable request UUID, strict exact idempotency, current approved platform-principal check and least-privilege SQL. New company starts Suspended with zero implicit membership, domain routing or access to existing tenants. Tenant API and OIDC session issuer cannot gain platform provisioning rights. OPEN: independently verified platform IdP/MFA/Host-bound session, protected dashboard, invitation acceptance, audited activation, real DNS/TLS, commercial DB and external two-tenant browser acceptance.
+
+## R9.75 — Server-curated vendor selector (2026-10-03)
+MUST: Device Add offers platform-curated type/vendor/transport metadata combinations from restricted PostgreSQL and clearly labels each unverified physical qualification; server admission and database INSERT trigger both consult the current catalog. Disabled/unknown combinations cannot create new metadata even through legacy SQL functions. Existing inventory remains intact. Platform catalog admin UI and firmware-qualified physical vendor/model/protocol support are separate future acceptance gates.

@@ -45,13 +45,20 @@
   }
   fillSiteChoices('device-site',state.pendingSite||selectedDevice);fillSiteChoices('edit-site',selectedEdit);state.pendingSite=null;
  }
- async function loadCatalog(){const r=await api('/api/v1/device-catalog');state.catalog=r.catalog;const types=[...new Set(state.catalog.map(v=>v.type))];$('device-kind').replaceChildren();types.forEach(t=>option($('device-kind'),t.toUpperCase(),t));syncCatalog()}
+ async function loadCatalog(){const r=await api('/api/v1/device-catalog');state.catalog=r.catalog;
+  if(r.catalog_semantics!=='platform_curated_metadata_only_not_verified_physical_support')throw Error('Catalog identity not verified; registration disabled.');const types=[...new Set(state.catalog.map(v=>v.type))];$('device-kind').replaceChildren();types.forEach(t=>option($('device-kind'),t.toUpperCase(),t));syncCatalog()}
  function syncCatalog(){
   const type=$('device-kind').value;const list=state.catalog.filter(x=>x.type===type);
   const vendor=$('device-vendor');const old=vendor.value;vendor.replaceChildren();list.forEach(x=>option(vendor,x.vendor,x.vendor));if(list.some(x=>x.vendor===old))vendor.value=old;
   const match=list.find(x=>x.vendor===vendor.value);const transport=$('device-transport');transport.replaceChildren();(match?.transports||[]).forEach(x=>option(transport,x.toUpperCase(),x));syncEndpoint();
  }
- function syncEndpoint(){const remote=['cwmp','usp'].includes($('device-transport').value);for(const id of ['device-host','device-port']){$(id).disabled=remote;$(id).required=!remote;if(remote)$(id).value='';else if(id==='device-port'&&!$(id).value)$(id).value='22'}}
+ function syncEndpoint(){
+  const entry=state.catalog.find(x=>x.type===$('device-kind').value&&x.vendor===$('device-vendor').value);
+  const selected=(entry?.protocols||[]).find(p=>p.transport===$('device-transport').value);
+  $('device-catalog-note').textContent=selected
+   ?'Registration allowed for metadata only. '+selected.description+' No automatic physical connection or firmware action.'
+   :'Choose a catalog-listed vendor and transport; compatibility is not established.';
+  const remote=['cwmp','usp'].includes($('device-transport').value);for(const id of ['device-host','device-port']){$(id).disabled=remote;$(id).required=!remote;if(remote)$(id).value='';else if(id==='device-port'&&!$(id).value)$(id).value='22'}}
  async function refreshDevices(){const r=await api('/api/v1/devices');state.devices=r.devices;$('device-rows').replaceChildren();for(const d of state.devices){
   const tr=document.createElement('tr');cell(tr,d.display_name);cell(tr,d.site);cell(tr,`${d.device_kind} / ${d.vendor}`);cell(tr,d.lifecycle_state==='SAVED'?'Saved — not connected':d.lifecycle_state);
   const actions=cell(tr,'');actions.textContent='';btn(actions,'View',async()=>{try{const x=(await api('/api/v1/devices/'+encodeURIComponent(d.id))).device;notice(`${x.display_name} · ${x.vendor} ${x.intended_model||''} · ${x.lifecycle_state} · Revision ${x.revision}. No physical action available.`)}catch(e){notice(e.message)}});
