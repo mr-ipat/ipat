@@ -133,3 +133,6 @@ No production acceptance gate changes. Read-only preflight now distinguishes una
 
 ## R9.74 final evidence after merge
 Corrected readiness preflight is canonical main 1941507, PR #165 exact-head CI 37085429259 four-of-four SUCCESS, owner-Mac 5/5 synthetic tests and actual owner-VPS read-only HTTP through key-only SSH observed C320 CONNECTED and private domain plan not HTTPS-ready. Distinguish source-of-observation from current physical command verification. The report remains unconditional public NO_GO; no AC-01..17 or commercial production acceptance is upgraded.
+
+## R9.75 — Vendor catalog source/disposable evidence
+Restricted PostgreSQL platform device metadata candidate catalog and mandatory database enrollment guard passed owner-Mac disposable 22/22 role/catalog/disable tests. Commercial API and tenant device selectors are migrated to that source. DO NOT interpret the seeded protocol candidates as firmware-validated hardware support. Exact CI/real Axum+DB and public production device interoperability remain separate acceptance gates.

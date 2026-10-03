@@ -25,23 +25,21 @@ const CSRF_HEADER: HeaderName = HeaderName::from_static("x-ipat-csrf");
 const DASHBOARD_HTML: &str = include_str!("../../../web/console/tenant/dashboard.html");
 const DASHBOARD_JS: &str = include_str!("../../../web/console/tenant/app.js");
 const DASHBOARD_CSS: &str = include_str!("../../../web/console/tenant/style.css");
-// Inventory candidates, NOT verified physical driver/firmware compatibility.
-fn catalog() -> Value {
-    json!([
-        {"type":"olt","vendor":"ZTE","transports":["ssh","snmp"],"qualification":"metadata_candidate"},
-        {"type":"olt","vendor":"C-DATA","transports":["ssh","snmp"],"qualification":"metadata_candidate"},
-        {"type":"ont","vendor":"ZTE","transports":["cwmp","usp"],"qualification":"metadata_candidate"},
-        {"type":"ont","vendor":"VSOL","transports":["cwmp","usp"],"qualification":"metadata_candidate"},
-        {"type":"router","vendor":"MikroTik","transports":["ssh","snmp","routeros_api_ssl"],"qualification":"metadata_candidate"}
-    ])
-}
+// This is only a syntax/transport envelope; the PostgreSQL catalog INSERT
+// trigger is the authoritative platform-controlled allow/deny decision.
+// No vendor name here can imply verified physical model/firmware support.
 fn catalog_allows(kind: &str, vendor: &str, protocol: &str) -> bool {
-    matches!(
-        (kind, vendor, protocol),
-        ("olt", "ZTE" | "C-DATA", "ssh" | "snmp")
-            | ("ont", "ZTE" | "VSOL", "cwmp" | "usp")
-            | ("router", "MikroTik", "ssh" | "snmp" | "routeros_api_ssl")
-    )
+    !vendor.is_empty()
+        && vendor.len() <= 64
+        && vendor
+            .bytes()
+            .all(|b| b.is_ascii_alphanumeric() || matches!(b, b'_' | b'-' | b'.'))
+        && matches!(
+            (kind, protocol),
+            ("olt", "ssh" | "snmp")
+                | ("ont", "cwmp" | "usp")
+                | ("router", "ssh" | "snmp" | "routeros_api_ssl")
+        )
 }
 fn html_headers() -> HeaderMap {
     let mut h = safe_headers();
@@ -133,7 +131,49 @@ async fn device_catalog(
     if !row.ok().is_some_and(|r| r.get::<_, bool>(0)) {
         return denied(StatusCode::FORBIDDEN);
     };
-    response(StatusCode::OK, json!({"ok":true,"catalog":catalog()}))
+    // Current approved tenant membership is checked AGAIN inside the sealed
+    // SQL catalog function. A missing migration or revoked role fails closed.
+    let rows = s.db.query(
+        "SELECT device_kind,vendor,management_transport,qualification,description FROM ipat_platform.list_tenant_vendor_catalog($1,$2,$3::uuid)",
+        &[&a.issuer, &a.subject, &a.tenant_id],
+    ).await;
+    let Ok(rows) = rows else {
+        return denied(StatusCode::SERVICE_UNAVAILABLE);
+    };
+    let mut catalog: Vec<Value> = Vec::new();
+    for row in rows {
+        let kind: String = row.get(0);
+        let vendor: String = row.get(1);
+        let transport: String = row.get(2);
+        let qualification: String = row.get(3);
+        let description: String = row.get(4);
+        let item = json!({
+            "transport":transport,"qualification":qualification,
+            "description":description
+        });
+        if let Some(existing) = catalog
+            .iter_mut()
+            .find(|entry| entry["type"] == kind && entry["vendor"] == vendor)
+        {
+            if let Some(options) = existing["protocols"].as_array_mut() {
+                options.push(item);
+            }
+            if let Some(transports) = existing["transports"].as_array_mut() {
+                transports.push(json!(transport));
+            }
+        } else {
+            catalog.push(json!({
+                "type":kind,"vendor":vendor,
+                "qualification":"metadata_candidate",
+                "transports":[transport],"protocols":[item]
+            }));
+        }
+    }
+    response(
+        StatusCode::OK,
+        json!({"ok":true,"catalog":catalog,
+        "catalog_semantics":"platform_curated_metadata_only_not_verified_physical_support"}),
+    )
 }
 async fn logout(State(s): State<Arc<StateData>>, headers: HeaderMap) -> Response {
     if actor(&s.db, &headers, true).await.is_none() {
@@ -633,6 +673,19 @@ async fn create_device(
     if !valid_device_create(&q) {
         return denied(StatusCode::UNPROCESSABLE_ENTITY);
     };
+    // Form and HTTP admission use the SAME current platform-maintained
+    // catalog. A database trigger rechecks the row at transaction time so
+    // concurrent catalog disable cannot create a stale admission bypass.
+    let current_catalog = s.db.query(
+        "SELECT 1 FROM ipat_platform.list_tenant_vendor_catalog($1,$2,$3::uuid) WHERE device_kind=$4 AND vendor=$5 AND management_transport=$6 LIMIT 1",
+        &[&a.issuer, &a.subject, &a.tenant_id, &q.device_kind,
+          &q.vendor, &q.management_transport],
+    ).await;
+    match current_catalog {
+        Ok(rows) if rows.is_empty() => return denied(StatusCode::UNPROCESSABLE_ENTITY),
+        Err(_) => return denied(StatusCode::SERVICE_UNAVAILABLE),
+        _ => {}
+    };
     let Ok(request_id) = Uuid::parse_str(&q.request_id) else {
         return denied(StatusCode::UNPROCESSABLE_ENTITY);
     };
@@ -844,11 +897,12 @@ mod tests {
     #[test]
     fn r970_catalog_forbids_forged_or_mismatched_device_registration() {
         assert!(catalog_allows("olt", "ZTE", "ssh"));
+        assert!(catalog_allows("olt", "FutureCatalogVendor", "ssh"));
         assert!(catalog_allows("ont", "VSOL", "cwmp"));
         assert!(catalog_allows("router", "MikroTik", "routeros_api_ssl"));
         for wrong in [
-            ("olt", "UnknownVendor", "ssh"),
-            ("olt", "MikroTik", "ssh"),
+            ("olt", "bad vendor space", "ssh"),
+            ("router", "MikroTik", "cwmp"),
             ("router", "VSOL", "cwmp"),
             ("ont", "VSOL", "ssh"),
             ("olt", "ZTE", "telnet"),
@@ -1057,13 +1111,20 @@ mod pg_integration {
             .await
             .unwrap();
         assert_eq!(catalogue.status(), StatusCode::OK);
+        let verified_catalog = body_json(catalogue).await;
         assert_eq!(
-            body_json(catalogue).await["catalog"]
-                .as_array()
-                .unwrap()
-                .len(),
-            5
+            verified_catalog["catalog_semantics"],
+            "platform_curated_metadata_only_not_verified_physical_support"
         );
+        assert_eq!(verified_catalog["catalog"].as_array().unwrap().len(), 5);
+        let zte_olt = verified_catalog["catalog"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|entry| entry["type"] == "olt" && entry["vendor"] == "ZTE")
+            .unwrap();
+        assert_eq!(zte_olt["qualification"], "metadata_candidate");
+        assert_eq!(zte_olt["protocols"].as_array().unwrap().len(), 2);
         let site = app
             .clone()
             .oneshot(req(

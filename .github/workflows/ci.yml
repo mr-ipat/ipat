@@ -464,6 +464,9 @@ jobs:
           python3 -m unittest discover deploy/db/tests -p test_commercial_tenant_api_roles_integration.py -v
           grep -Fq ipat_tenant_api_exec deploy/db/migrations/0022_commercial_tenant_api_roles.sql
           grep -Fq ipat_oidc_session_issuer_login deploy/db/migrations/0022_commercial_tenant_api_roles.sql
+          # Catalog depends on 0022 only; migration 0027 is installed early
+          # for BOTH R968 and R970 Axum tests. Disposable-only CI environment.
+          psql -X -v ON_ERROR_STOP=1 -f deploy/db/migrations/0027_vendor_transport_catalog.sql
           cargo test --locked -p control-api commercial_tenant_api::pg_integration::r968_real_pg_durable_host_session_to_site_device_domain_http -- --exact
           grep -Fq R9.68 docs/PRD_AUDIT_MATRIX.md
       - name: R9.70 actual disposable current PostgreSQL tenant menu and Axum protected dashboard session
@@ -481,6 +484,14 @@ jobs:
           psql -X -v ON_ERROR_STOP=1 -f deploy/db/migrations/0026_platform_tenant_onboarding.sql
           python3 -m unittest discover deploy/db/tests -p test_platform_tenant_onboarding_integration.py -v
           grep -Fq "R9.73" docs/PROJECT_STATUS.md
+      - name: R9.75 platform-managed vendor/transport catalog and disabled-category DB guard
+        run: |
+          python3 -m unittest discover deploy/db/tests -p test_vendor_transport_catalog_integration.py -v
+          bash -n deploy/db/tests/r975_docker_repro.sh
+          node --check web/console/tenant/app.js
+          node deploy/scripts/lab/r970/test_tenant_dashboard_contract.cjs
+          grep -Fq 'managed_catalog_enrollment_guard' deploy/db/migrations/0027_vendor_transport_catalog.sql
+          grep -Fq 'list_tenant_vendor_catalog' apps/control-api/src/commercial_tenant_api.rs
       - name: R9.71 real disposable PostgreSQL HA-safe one-use OIDC state across Rust client instances
         run: |
           python3 -m unittest discover deploy/db/tests -p test_oidc_pending_integration.py -v
