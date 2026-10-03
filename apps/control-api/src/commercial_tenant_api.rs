@@ -111,7 +111,8 @@ async fn capabilities(
     response(
         StatusCode::OK,
         json!({"ok":true,"tenant_id":a.tenant_id.to_string(),
-        "can_manage_sites":admin,"can_manage_devices":admin,"can_manage_domains":admin,
+        "can_manage_sites":admin,"can_manage_pops":admin,
+        "can_manage_devices":admin,"can_manage_domains":admin,
         "noc_pops":noc_pops,"can_read_noc":!noc_pops.is_empty()}),
     )
 }
@@ -364,11 +365,18 @@ fn valid_host(v: &str) -> bool {
 struct SiteCreate {
     code: String,
     display_name: String,
+    parent_pop_code: Option<String>,
 }
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
 struct SiteEdit {
     display_name: String,
+    expected_revision: i64,
+}
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct ParentPopAssign {
+    parent_pop_code: Option<String>,
     expected_revision: i64,
 }
 #[derive(Deserialize)]
@@ -489,7 +497,7 @@ async fn list_sites(
     {
         return denied(StatusCode::UNPROCESSABLE_ENTITY);
     }
-    let rows=s.db.query("SELECT code,display_name,revision,assigned_devices FROM ipat_platform.list_tenant_sites($1,$2,$3::uuid,$4,$5)",&[&a.issuer,&a.subject,&a.tenant_id,&q.pop.as_deref(),&q.after.as_deref()]).await;
+    let rows=s.db.query("SELECT code,display_name,revision,assigned_devices,parent_pop_code FROM ipat_platform.list_tenant_sites_with_parent_pop($1,$2,$3::uuid,$4,$5)",&[&a.issuer,&a.subject,&a.tenant_id,&q.pop.as_deref(),&q.after.as_deref()]).await;
     let Ok(rows) = rows else {
         return denied(StatusCode::SERVICE_UNAVAILABLE);
     };
@@ -499,7 +507,7 @@ async fn list_sites(
     let has_more = rows.len() == 101;
     let mut out = Vec::new();
     for r in rows.into_iter().take(100) {
-        out.push(json!({"code":r.get::<_,String>(0),"display_name":r.get::<_,String>(1),"revision":r.get::<_,i64>(2),"assigned_devices":r.get::<_,i64>(3)}));
+        out.push(json!({"code":r.get::<_,String>(0),"display_name":r.get::<_,String>(1),"revision":r.get::<_,i64>(2),"assigned_devices":r.get::<_,i64>(3),"parent_pop_code":r.get::<_,Option<String>>(4)}));
     }
     let next = if has_more {
         out.last().and_then(|v| v.get("code")).cloned()
@@ -519,18 +527,22 @@ async fn create_site(
     let Some(a) = actor(&s.db, &headers, true).await else {
         return denied(StatusCode::UNAUTHORIZED);
     };
-    if !valid_code(&q.code) || !valid_name(&q.display_name) {
+    if !valid_code(&q.code)
+        || !valid_name(&q.display_name)
+        || q.parent_pop_code.as_deref().is_some_and(|v| !valid_code(v))
+    {
         return denied(StatusCode::UNPROCESSABLE_ENTITY);
     }
     let r =
         s.db.query_one(
-            "SELECT ipat_platform.create_tenant_site($1,$2,$3::uuid,$4,$5)",
+            "SELECT ipat_platform.create_tenant_site_with_pop($1,$2,$3::uuid,$4,$5,$6)",
             &[
                 &a.issuer,
                 &a.subject,
                 &a.tenant_id,
                 &q.code,
                 &q.display_name,
+                &q.parent_pop_code,
             ],
         )
         .await;
@@ -591,6 +603,178 @@ async fn delete_site(
         response(StatusCode::OK, json!({"ok":true}))
     } else {
         denied(StatusCode::CONFLICT)
+    }
+}
+
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct PopPage {
+    after: Option<String>,
+}
+
+async fn list_pops(
+    State(s): State<Arc<StateData>>,
+    headers: HeaderMap,
+    Query(q): Query<PopPage>,
+) -> (StatusCode, HeaderMap, Json<Value>) {
+    let Some(a) = actor(&s.db, &headers, false).await else {
+        return denied(StatusCode::UNAUTHORIZED);
+    };
+    if q.after.as_deref().is_some_and(|v| !valid_code(v)) {
+        return denied(StatusCode::UNPROCESSABLE_ENTITY);
+    }
+    let admin =
+        s.db.query_one(
+            "SELECT ipat_platform.tenant_admin_ui_capability($1,$2,$3::uuid)",
+            &[&a.issuer, &a.subject, &a.tenant_id],
+        )
+        .await;
+    match admin {
+        Ok(row) if !row.get::<_, bool>(0) => return denied(StatusCode::FORBIDDEN),
+        Err(_) => return denied(StatusCode::SERVICE_UNAVAILABLE),
+        _ => {}
+    }
+    let rows=s.db.query(
+        "SELECT code,display_name,revision,assigned_sites FROM ipat_platform.list_tenant_pops($1,$2,$3::uuid,$4)",
+        &[&a.issuer,&a.subject,&a.tenant_id,&q.after.as_deref()],
+    ).await;
+    let Ok(rows) = rows else {
+        return denied(StatusCode::SERVICE_UNAVAILABLE);
+    };
+    if rows.len() > 101 {
+        return denied(StatusCode::SERVICE_UNAVAILABLE);
+    }
+    let more = rows.len() == 101;
+    let mut pops = Vec::new();
+    for r in rows.into_iter().take(100) {
+        pops.push(json!({"code":r.get::<_,String>(0),
+            "display_name":r.get::<_,String>(1),
+            "revision":r.get::<_,i64>(2),
+            "assigned_sites":r.get::<_,i64>(3)}));
+    }
+    let next = if more {
+        pops.last().and_then(|v| v.get("code")).cloned()
+    } else {
+        None
+    };
+    response(
+        StatusCode::OK,
+        json!({"ok":true,"pops":pops,"next_after":next}),
+    )
+}
+async fn create_pop(
+    State(s): State<Arc<StateData>>,
+    headers: HeaderMap,
+    Json(q): Json<SiteCreate>,
+) -> (StatusCode, HeaderMap, Json<Value>) {
+    let Some(a) = actor(&s.db, &headers, true).await else {
+        return denied(StatusCode::UNAUTHORIZED);
+    };
+    if !valid_code(&q.code) || !valid_name(&q.display_name) || q.parent_pop_code.is_some() {
+        return denied(StatusCode::UNPROCESSABLE_ENTITY);
+    }
+    let r =
+        s.db.query_one(
+            "SELECT ipat_platform.create_tenant_pop($1,$2,$3::uuid,$4,$5)",
+            &[
+                &a.issuer,
+                &a.subject,
+                &a.tenant_id,
+                &q.code,
+                &q.display_name,
+            ],
+        )
+        .await;
+    match r.ok().and_then(|r| r.get::<_, Option<String>>(0)) {
+        Some(code) => response(StatusCode::CREATED, json!({"ok":true,"code":code})),
+        None => denied(StatusCode::CONFLICT),
+    }
+}
+async fn edit_pop(
+    State(s): State<Arc<StateData>>,
+    headers: HeaderMap,
+    Path(code): Path<String>,
+    Json(q): Json<SiteEdit>,
+) -> (StatusCode, HeaderMap, Json<Value>) {
+    let Some(a) = actor(&s.db, &headers, true).await else {
+        return denied(StatusCode::UNAUTHORIZED);
+    };
+    if !valid_code(&code) || !valid_name(&q.display_name) || q.expected_revision < 1 {
+        return denied(StatusCode::UNPROCESSABLE_ENTITY);
+    }
+    let r =
+        s.db.query_one(
+            "SELECT ipat_platform.rename_tenant_pop($1,$2,$3::uuid,$4,$5,$6::bigint)",
+            &[
+                &a.issuer,
+                &a.subject,
+                &a.tenant_id,
+                &code,
+                &q.display_name,
+                &q.expected_revision,
+            ],
+        )
+        .await;
+    match r.ok().and_then(|r| r.get::<_, Option<i64>>(0)) {
+        Some(revision) => response(StatusCode::OK, json!({"ok":true,"revision":revision})),
+        None => denied(StatusCode::CONFLICT),
+    }
+}
+async fn delete_pop(
+    State(s): State<Arc<StateData>>,
+    headers: HeaderMap,
+    Path(code): Path<String>,
+    Query(q): Query<Revision>,
+) -> (StatusCode, HeaderMap, Json<Value>) {
+    let Some(a) = actor(&s.db, &headers, true).await else {
+        return denied(StatusCode::UNAUTHORIZED);
+    };
+    if !valid_code(&code) || q.revision < 1 {
+        return denied(StatusCode::UNPROCESSABLE_ENTITY);
+    }
+    let r =
+        s.db.query_one(
+            "SELECT ipat_platform.delete_unused_tenant_pop($1,$2,$3::uuid,$4,$5::bigint)",
+            &[&a.issuer, &a.subject, &a.tenant_id, &code, &q.revision],
+        )
+        .await;
+    if r.ok().is_some_and(|r| r.get::<_, bool>(0)) {
+        response(StatusCode::OK, json!({"ok":true}))
+    } else {
+        denied(StatusCode::CONFLICT)
+    }
+}
+async fn assign_site_pop(
+    State(s): State<Arc<StateData>>,
+    headers: HeaderMap,
+    Path(code): Path<String>,
+    Json(q): Json<ParentPopAssign>,
+) -> (StatusCode, HeaderMap, Json<Value>) {
+    let Some(a) = actor(&s.db, &headers, true).await else {
+        return denied(StatusCode::UNAUTHORIZED);
+    };
+    if !valid_code(&code)
+        || q.expected_revision < 1
+        || q.parent_pop_code.as_deref().is_some_and(|p| !valid_code(p))
+    {
+        return denied(StatusCode::UNPROCESSABLE_ENTITY);
+    }
+    let r =
+        s.db.query_one(
+            "SELECT ipat_platform.assign_tenant_site_to_pop($1,$2,$3::uuid,$4,$5,$6::bigint)",
+            &[
+                &a.issuer,
+                &a.subject,
+                &a.tenant_id,
+                &code,
+                &q.parent_pop_code,
+                &q.expected_revision,
+            ],
+        )
+        .await;
+    match r.ok().and_then(|r| r.get::<_, Option<i64>>(0)) {
+        Some(revision) => response(StatusCode::OK, json!({"ok":true,"revision":revision})),
+        None => denied(StatusCode::CONFLICT),
     }
 }
 
@@ -871,6 +1055,17 @@ pub(super) fn router(db: Arc<Client>) -> Router {
         .route("/api/v1/noc/devices", get(noc_devices))
         .route("/api/v1/device-catalog", get(device_catalog))
         .route("/api/v1/logout", axum::routing::post(logout))
+        .route("/api/v1/pops", get(list_pops).post(create_pop))
+        .route(
+            "/api/v1/pops/{code}",
+            get(|| async { StatusCode::METHOD_NOT_ALLOWED })
+                .patch(edit_pop)
+                .delete(delete_pop),
+        )
+        .route(
+            "/api/v1/sites/{code}/pop",
+            axum::routing::patch(assign_site_pop),
+        )
         .route("/api/v1/sites", get(list_sites).post(create_site))
         .route(
             "/api/v1/sites/{code}",
@@ -1125,6 +1320,39 @@ mod pg_integration {
             .unwrap();
         assert_eq!(zte_olt["qualification"], "metadata_candidate");
         assert_eq!(zte_olt["protocols"].as_array().unwrap().len(), 2);
+        // R9.76: independently managed POP, atomic Site-to-POP creation
+        // and no implicit expansion of old exact-site NOC grants.
+        let initial_pops = app
+            .clone()
+            .oneshot(req("GET", "/api/v1/pops", host, Some(cookie), None, None))
+            .await
+            .unwrap();
+        assert_eq!(initial_pops.status(), StatusCode::OK);
+        assert_eq!(
+            body_json(initial_pops).await["pops"]
+                .as_array()
+                .unwrap()
+                .len(),
+            0
+        );
+        let created_pop = app
+            .clone()
+            .oneshot(req(
+                "POST",
+                "/api/v1/pops",
+                host,
+                Some(cookie),
+                Some(csrf),
+                Some(r#"{"code":"DC-R976","display_name":"R976 synthetic POP"}"#),
+            ))
+            .await
+            .unwrap();
+        assert_eq!(created_pop.status(), StatusCode::CREATED);
+        let invalid_pop_site=app.clone().oneshot(req(
+            "POST","/api/v1/sites",host,Some(cookie),Some(csrf),
+            Some(r#"{"code":"BAD-R976","display_name":"No parent","parent_pop_code":"NONEXISTENT"}"#)
+        )).await.unwrap();
+        assert_eq!(invalid_pop_site.status(), StatusCode::CONFLICT);
         let site = app
             .clone()
             .oneshot(req(
@@ -1133,11 +1361,40 @@ mod pg_integration {
                 host,
                 Some(cookie),
                 Some(csrf),
-                Some(r#"{"code":"POP-R970","display_name":"Synthetic R970 Site"}"#),
+                Some(r#"{"code":"POP-R970","display_name":"Synthetic R970 Site","parent_pop_code":"DC-R976"}"#),
             ))
             .await
             .unwrap();
         assert_eq!(site.status(), StatusCode::CREATED);
+        let linked_sites = app
+            .clone()
+            .oneshot(req("GET", "/api/v1/sites", host, Some(cookie), None, None))
+            .await
+            .unwrap();
+        assert_eq!(linked_sites.status(), StatusCode::OK);
+        assert_eq!(
+            body_json(linked_sites).await["sites"][0]["parent_pop_code"],
+            "DC-R976"
+        );
+        let linked_pops = app
+            .clone()
+            .oneshot(req("GET", "/api/v1/pops", host, Some(cookie), None, None))
+            .await
+            .unwrap();
+        assert_eq!(body_json(linked_pops).await["pops"][0]["assigned_sites"], 1);
+        let deny_assigned_pop_deletion = app
+            .clone()
+            .oneshot(req(
+                "DELETE",
+                "/api/v1/pops/DC-R976?revision=1",
+                host,
+                Some(cookie),
+                Some(csrf),
+                None,
+            ))
+            .await
+            .unwrap();
+        assert_eq!(deny_assigned_pop_deletion.status(), StatusCode::CONFLICT);
         let forged=app.clone().oneshot(req("POST","/api/v1/devices",host,Some(cookie),Some(csrf),Some(r#"{"request_id":"73737373-7373-4373-8373-737373737371","pop_id":"POP-R970","display_name":"Fake vendor","device_kind":"olt","vendor":"Forged","intended_model":"C320","management_transport":"ssh","management_host":"olt-r970.invalid","management_port":22}"#))).await.unwrap();
         assert_eq!(forged.status(), StatusCode::UNPROCESSABLE_ENTITY);
         let wrong_transport=app.clone().oneshot(req("POST","/api/v1/devices",host,Some(cookie),Some(csrf),Some(r#"{"request_id":"73737373-7373-4373-8373-737373737372","pop_id":"POP-R970","display_name":"Invalid protocol","device_kind":"ont","vendor":"VSOL","management_transport":"ssh","management_host":"ont-r970.invalid","management_port":22}"#))).await.unwrap();
@@ -1176,7 +1433,21 @@ mod pg_integration {
         assert_eq!(noc_cap.status(), StatusCode::OK);
         let noc_json = body_json(noc_cap).await;
         assert_eq!(noc_json["can_manage_sites"], false);
+        assert_eq!(noc_json["can_manage_pops"], false);
         assert_eq!(noc_json["noc_pops"], json!(["POP-R970"]));
+        let noc_direct_pops = app
+            .clone()
+            .oneshot(req(
+                "GET",
+                "/api/v1/pops",
+                host,
+                Some(noc_cookie),
+                None,
+                None,
+            ))
+            .await
+            .unwrap();
+        assert_eq!(noc_direct_pops.status(), StatusCode::FORBIDDEN);
         let noc_sites = app
             .clone()
             .oneshot(req(

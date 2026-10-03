@@ -5,7 +5,7 @@ const js=fs.readFileSync('web/console/tenant/app.js','utf8');
 const api=fs.readFileSync('apps/control-api/src/commercial_tenant_api.rs','utf8');
 const oidc=fs.readFileSync('apps/control-api/src/commercial_oidc_issuer.rs','utf8');
 assert(html.includes('<html lang="en-US">'));
-for(const route of ['sites','devices','domains']){
+for(const route of ['pops','sites','devices','domains']){
  assert(html.includes(`data-page="${route}" hidden`));
  assert(html.includes(`data-panel="${route}" hidden`));
  assert(js.includes(`'/api/v1/${route}'`));
@@ -14,6 +14,11 @@ assert(!js.includes('.innerHTML='));
 assert(!html.includes('onload=')&&!html.includes('onclick='));
 assert(js.includes("await api('/api/v1/capabilities')"));
 assert(js.includes("await loadCatalog()"));
+assert(js.includes("state.pops"));
+assert(js.includes("parent_pop_code"));
+assert(api.includes("list_tenant_sites_with_parent_pop"));
+assert(api.includes("create_tenant_site_with_pop"));
+assert(api.includes("assign_tenant_site_to_pop"));
 assert(js.includes('const selectedDevice='));
 assert(js.includes('state.pendingSite=d.code'));
 assert(js.includes('state.pendingSite||selectedDevice'));

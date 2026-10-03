@@ -467,6 +467,8 @@ jobs:
           # Catalog depends on 0022 only; migration 0027 is installed early
           # for BOTH R968 and R970 Axum tests. Disposable-only CI environment.
           psql -X -v ON_ERROR_STOP=1 -f deploy/db/migrations/0027_vendor_transport_catalog.sql
+          psql -X -v ON_ERROR_STOP=1 -f deploy/db/migrations/0028_independent_pop_master.sql
+          psql -X -v ON_ERROR_STOP=1 -f deploy/db/migrations/0029_validate_tenant_pop_site_fk.sql
           cargo test --locked -p control-api commercial_tenant_api::pg_integration::r968_real_pg_durable_host_session_to_site_device_domain_http -- --exact
           grep -Fq R9.68 docs/PRD_AUDIT_MATRIX.md
       - name: R9.70 actual disposable current PostgreSQL tenant menu and Axum protected dashboard session
@@ -492,6 +494,14 @@ jobs:
           node deploy/scripts/lab/r970/test_tenant_dashboard_contract.cjs
           grep -Fq 'managed_catalog_enrollment_guard' deploy/db/migrations/0027_vendor_transport_catalog.sql
           grep -Fq 'list_tenant_vendor_catalog' apps/control-api/src/commercial_tenant_api.rs
+      - name: R9.76 independent POP/Site relationship and role/legacy-NOC regression
+        run: |
+          python3 -m unittest discover deploy/db/tests -p test_independent_pop_master_integration.py -v
+          bash -n deploy/db/tests/r976_docker_repro.sh
+          node --check web/console/tenant/app.js
+          node deploy/scripts/lab/r970/test_tenant_dashboard_contract.cjs
+          grep -Fq 'CREATE TABLE ipat_ops.tenant_pops' deploy/db/migrations/0028_independent_pop_master.sql
+          grep -Fq 'VALIDATE CONSTRAINT tenant_sites_parent_tenant_pop' deploy/db/migrations/0029_validate_tenant_pop_site_fk.sql
       - name: R9.71 real disposable PostgreSQL HA-safe one-use OIDC state across Rust client instances
         run: |
           python3 -m unittest discover deploy/db/tests -p test_oidc_pending_integration.py -v
