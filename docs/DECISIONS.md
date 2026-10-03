@@ -733,3 +733,6 @@ Never reinterpret identity_pop_grants.pop_id as a real POP. Use a separate tenan
 
 ## ADR-090 — Real-POP NOC grants require distinct tenant-admin maker/checker (2026-10-03)
 A typed real-POP grant cannot be written from the NOC inventory UI or from the OIDC issuer. A current Tenant Admin creates a bounded request; a different current Tenant Admin must review it. Approval revalidates the target NOC membership, active tenant, registered real POP and expiry. Revocation is immediate and auditable. A failed approval due to target ineligibility remains Pending until explicitly rejected so security state is never silently discarded. Browser supplies duration only; server/DB calculate authoritative expiry. Tenant API gets only function execution, not raw grant/request/event tables.
+
+## ADR-091 — Production security_admin role is schema-only, not a tenant business role (2026-10-03)
+Do not import lab migration 0007 into the commercial chain merely to obtain security_admin. Add a dedicated production migration that replaces only the identity membership role CHECK after validation. Keep lookup_active_membership unchanged so security_admin cannot acquire ordinary tenant menus or business APIs. Only the existing firmware-specific sealed reviewer predicate recognizes it. Identity provisioning, reviewer MFA and high-risk firmware execution remain independently gated.
