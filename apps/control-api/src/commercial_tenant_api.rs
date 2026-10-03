@@ -1371,9 +1371,18 @@ pub(super) fn router(db: Arc<Client>) -> Router {
         .route("/api/v1/noc/real/sites", get(noc_real_sites))
         .route("/api/v1/noc/real/devices", get(noc_real_devices))
         .route("/api/v1/noc-access", get(list_noc_access))
-        .route("/api/v1/noc-access/requests", axum::routing::post(create_noc_access_request))
-        .route("/api/v1/noc-access/requests/{id}/review", axum::routing::post(review_noc_access_request))
-        .route("/api/v1/noc-access/revoke", axum::routing::post(revoke_noc_access))
+        .route(
+            "/api/v1/noc-access/requests",
+            axum::routing::post(create_noc_access_request),
+        )
+        .route(
+            "/api/v1/noc-access/requests/{id}/review",
+            axum::routing::post(review_noc_access_request),
+        )
+        .route(
+            "/api/v1/noc-access/revoke",
+            axum::routing::post(revoke_noc_access),
+        )
         .route("/api/v1/device-catalog", get(device_catalog))
         .route("/api/v1/logout", axum::routing::post(logout))
         .route("/api/v1/pops", get(list_pops).post(create_pop))
@@ -1865,19 +1874,36 @@ mod pg_integration {
         assert_eq!(revoke_fixture.status(), StatusCode::OK);
         let noc_admin_denied = app
             .clone()
-            .oneshot(req("GET", "/api/v1/noc-access", host, Some(noc_cookie), None, None))
+            .oneshot(req(
+                "GET",
+                "/api/v1/noc-access",
+                host,
+                Some(noc_cookie),
+                None,
+                None,
+            ))
             .await
             .unwrap();
         assert_eq!(noc_admin_denied.status(), StatusCode::FORBIDDEN);
 
         let access_list = app
             .clone()
-            .oneshot(req("GET", "/api/v1/noc-access", host, Some(cookie), None, None))
+            .oneshot(req(
+                "GET",
+                "/api/v1/noc-access",
+                host,
+                Some(cookie),
+                None,
+                None,
+            ))
             .await
             .unwrap();
         assert_eq!(access_list.status(), StatusCode::OK);
         let access_json = body_json(access_list).await;
-        assert!(access_json["members"].as_array().unwrap().iter()
+        assert!(access_json["members"]
+            .as_array()
+            .unwrap()
+            .iter()
             .any(|m| m["subject"] == noc_subject));
 
         let grant_request = "78787878-7878-4787-8787-787878787899";
@@ -1919,14 +1945,16 @@ mod pg_integration {
         ).await.unwrap();
         let checker_cookie = "a".repeat(43);
         let checker_csrf = "b".repeat(43);
-        let checker_session =
-            Uuid::parse_str("78787878-7878-4787-8787-787878787898").unwrap();
+        let checker_session = Uuid::parse_str("78787878-7878-4787-8787-787878787898").unwrap();
         let checker_issued = issuer_db.query_one(
             "SELECT ipat_platform.issue_tenant_browser_session($1,$2,$3::uuid,$4::uuid,$5::uuid,$6,$7,clock_timestamp()+interval '10 minutes')",
             &[&issuer,&checker_subject,&tenant,&domain,&checker_session,
               &hex(&checker_cookie),&hex(&checker_csrf)],
         ).await.unwrap();
-        assert_eq!(checker_issued.get::<_,Option<Uuid>>(0),Some(checker_session));
+        assert_eq!(
+            checker_issued.get::<_, Option<Uuid>>(0),
+            Some(checker_session)
+        );
         let approved = app
             .clone()
             .oneshot(req(
@@ -1986,7 +2014,10 @@ mod pg_integration {
             ))
             .await
             .unwrap();
-        assert_eq!(body_json(noc_after_revoke).await["real_noc_pops"], json!([]));
+        assert_eq!(
+            body_json(noc_after_revoke).await["real_noc_pops"],
+            json!([])
+        );
 
         let noc_wrong = app
             .clone()
