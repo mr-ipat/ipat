@@ -124,3 +124,6 @@ Code merged to canonical main 95ea123 (PR #163), GitHub final exact-head CI 3703
 
 ## R9.73 independent platform reservation proof
 Migration 0026 adds only restricted current-owner, exact-idempotent Suspended company reservation. Disposable PostgreSQL tests cover expired/revoked/missing/forged owner, exact replay conflicts, zero implicit admin/domain and explicit denial of existing tenant API and OIDC issuer. This closes part of the source gap but AC-16 remains BLOCKED until real platform IdP/MFA, protected HTTP/UI, independently approved activation/invitation, production PG, public HTTPS and external two-tenant tests.
+
+## R9.73 final-source evidence after exact CI
+PR #164 reviewed head d043237, four-of-four GitHub Actions run 37085008746 SUCCESS, canonical squash merge 6f1c4ca. Owner-Mac isolated synthetic PostgreSQL16 tests 17/17 PASS. Exact Platform Owner principal gate, idempotent Suspended tenant reservation, zero implicit membership/domain and separation from tenant API/OIDC issuer are implemented and covered within disposable test. No actual Platform Admin browser login, real MFA, tenant invitation acceptance or activation has been executed; AC-16 and entire public PRD remain blocked. Owner-VPS private C320 independent read-only localhost HTTP returned CONNECTED; an absent owner-Mac SSH loopback tunnel must not be misclassified as an OLT outage.
