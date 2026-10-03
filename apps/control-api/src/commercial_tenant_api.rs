@@ -401,6 +401,212 @@ struct ParentPopAssign {
 struct NocPopQuery {
     pop: String,
 }
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct NocGrantRequest {
+    request_id: String,
+    target_issuer: String,
+    target_subject: String,
+    pop_code: String,
+    expires_in_hours: i32,
+}
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct NocGrantReview {
+    approve: bool,
+}
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct NocGrantRevoke {
+    target_issuer: String,
+    target_subject: String,
+    pop_code: String,
+}
+
+async fn tenant_admin_actor(
+    db: &Client,
+    headers: &HeaderMap,
+    mutation: bool,
+) -> Result<durable_tenant_session::DurableSessionContext, StatusCode> {
+    let a = actor(db, headers, mutation)
+        .await
+        .ok_or(StatusCode::UNAUTHORIZED)?;
+    let row = db
+        .query_one(
+            "SELECT ipat_platform.tenant_admin_ui_capability($1,$2,$3::uuid)",
+            &[&a.issuer, &a.subject, &a.tenant_id],
+        )
+        .await
+        .map_err(|_| StatusCode::SERVICE_UNAVAILABLE)?;
+    if !row.get::<_, bool>(0) {
+        return Err(StatusCode::FORBIDDEN);
+    }
+    Ok(a)
+}
+
+async fn list_noc_access(
+    State(s): State<Arc<StateData>>,
+    headers: HeaderMap,
+) -> (StatusCode, HeaderMap, Json<Value>) {
+    let a = match tenant_admin_actor(&s.db, &headers, false).await {
+        Ok(a) => a,
+        Err(status) => return denied(status),
+    };
+    let members = s
+        .db
+        .query(
+            "SELECT issuer,subject,expires_at::text FROM ipat_platform.list_current_noc_members_for_admin($1,$2,$3::uuid)",
+            &[&a.issuer, &a.subject, &a.tenant_id],
+        )
+        .await;
+    let access = s
+        .db
+        .query(
+            "SELECT kind,request_id,target_issuer,target_subject,pop_code,state,expires_at::text,requested_by,reviewed_by FROM ipat_platform.list_noc_real_pop_access_for_admin($1,$2,$3::uuid)",
+            &[&a.issuer, &a.subject, &a.tenant_id],
+        )
+        .await;
+    let (Ok(members), Ok(access)) = (members, access) else {
+        return denied(StatusCode::SERVICE_UNAVAILABLE);
+    };
+    let members = members
+        .into_iter()
+        .map(|r| {
+            json!({
+                "issuer":r.get::<_,String>(0),
+                "subject":r.get::<_,String>(1),
+                "expires_at":r.get::<_,String>(2)
+            })
+        })
+        .collect::<Vec<_>>();
+    let access = access
+        .into_iter()
+        .map(|r| {
+            json!({
+                "kind":r.get::<_,String>(0),
+                "request_id":r.get::<_,Option<Uuid>>(1).map(|v|v.to_string()),
+                "target_issuer":r.get::<_,String>(2),
+                "target_subject":r.get::<_,String>(3),
+                "pop_code":r.get::<_,String>(4),
+                "state":r.get::<_,String>(5),
+                "expires_at":r.get::<_,String>(6),
+                "requested_by":r.get::<_,String>(7),
+                "reviewed_by":r.get::<_,Option<String>>(8)
+            })
+        })
+        .collect::<Vec<_>>();
+    response(
+        StatusCode::OK,
+        json!({"ok":true,"members":members,"access":access}),
+    )
+}
+
+async fn create_noc_access_request(
+    State(s): State<Arc<StateData>>,
+    headers: HeaderMap,
+    Json(q): Json<NocGrantRequest>,
+) -> (StatusCode, HeaderMap, Json<Value>) {
+    let a = match tenant_admin_actor(&s.db, &headers, true).await {
+        Ok(a) => a,
+        Err(status) => return denied(status),
+    };
+    if !valid_code(&q.pop_code)
+        || q.expires_in_hours < 1
+        || q.expires_in_hours > 2160
+        || q.target_issuer.len() < 10
+        || q.target_issuer.len() > 512
+        || !q.target_issuer.starts_with("https://")
+        || q.target_subject.is_empty()
+        || q.target_subject.len() > 128
+    {
+        return denied(StatusCode::UNPROCESSABLE_ENTITY);
+    }
+    let Ok(request_id) = Uuid::parse_str(&q.request_id) else {
+        return denied(StatusCode::UNPROCESSABLE_ENTITY);
+    };
+    let row = s
+        .db
+        .query_one(
+            "SELECT ipat_platform.request_noc_real_pop_grant($1,$2,$3::uuid,$4::uuid,$5,$6,$7,statement_timestamp()+make_interval(hours=>$8::int))",
+            &[
+                &a.issuer,
+                &a.subject,
+                &a.tenant_id,
+                &request_id,
+                &q.target_issuer,
+                &q.target_subject,
+                &q.pop_code,
+                &q.expires_in_hours,
+            ],
+        )
+        .await;
+    match row.ok().and_then(|r| r.get::<_, Option<Uuid>>(0)) {
+        Some(id) => response(
+            StatusCode::CREATED,
+            json!({"ok":true,"request_id":id.to_string()}),
+        ),
+        None => denied(StatusCode::CONFLICT),
+    }
+}
+
+async fn review_noc_access_request(
+    State(s): State<Arc<StateData>>,
+    headers: HeaderMap,
+    Path(id): Path<String>,
+    Json(q): Json<NocGrantReview>,
+) -> (StatusCode, HeaderMap, Json<Value>) {
+    let a = match tenant_admin_actor(&s.db, &headers, true).await {
+        Ok(a) => a,
+        Err(status) => return denied(status),
+    };
+    let Ok(id) = Uuid::parse_str(&id) else {
+        return denied(StatusCode::UNPROCESSABLE_ENTITY);
+    };
+    let row = s
+        .db
+        .query_one(
+            "SELECT ipat_platform.review_noc_real_pop_grant($1,$2,$3::uuid,$4::uuid,$5)",
+            &[&a.issuer, &a.subject, &a.tenant_id, &id, &q.approve],
+        )
+        .await;
+    match row.ok().and_then(|r| r.get::<_, Option<String>>(0)) {
+        Some(state) => response(StatusCode::OK, json!({"ok":true,"state":state})),
+        None => denied(StatusCode::CONFLICT),
+    }
+}
+
+async fn revoke_noc_access(
+    State(s): State<Arc<StateData>>,
+    headers: HeaderMap,
+    Json(q): Json<NocGrantRevoke>,
+) -> (StatusCode, HeaderMap, Json<Value>) {
+    let a = match tenant_admin_actor(&s.db, &headers, true).await {
+        Ok(a) => a,
+        Err(status) => return denied(status),
+    };
+    if !valid_code(&q.pop_code) || q.target_issuer.is_empty() || q.target_subject.is_empty() {
+        return denied(StatusCode::UNPROCESSABLE_ENTITY);
+    }
+    let row = s
+        .db
+        .query_one(
+            "SELECT ipat_platform.revoke_noc_real_pop_grant($1,$2,$3::uuid,$4,$5,$6)",
+            &[
+                &a.issuer,
+                &a.subject,
+                &a.tenant_id,
+                &q.target_issuer,
+                &q.target_subject,
+                &q.pop_code,
+            ],
+        )
+        .await;
+    if row.ok().is_some_and(|r| r.get::<_, bool>(0)) {
+        response(StatusCode::OK, json!({"ok":true,"revoked":true}))
+    } else {
+        denied(StatusCode::CONFLICT)
+    }
+}
 
 async fn noc_actor_for_pop(
     db: &Client,
@@ -1164,6 +1370,19 @@ pub(super) fn router(db: Arc<Client>) -> Router {
         .route("/api/v1/noc/devices", get(noc_devices))
         .route("/api/v1/noc/real/sites", get(noc_real_sites))
         .route("/api/v1/noc/real/devices", get(noc_real_devices))
+        .route("/api/v1/noc-access", get(list_noc_access))
+        .route(
+            "/api/v1/noc-access/requests",
+            axum::routing::post(create_noc_access_request),
+        )
+        .route(
+            "/api/v1/noc-access/requests/{id}/review",
+            axum::routing::post(review_noc_access_request),
+        )
+        .route(
+            "/api/v1/noc-access/revoke",
+            axum::routing::post(revoke_noc_access),
+        )
         .route("/api/v1/device-catalog", get(device_catalog))
         .route("/api/v1/logout", axum::routing::post(logout))
         .route("/api/v1/pops", get(list_pops).post(create_pop))
@@ -1637,6 +1856,169 @@ mod pg_integration {
             .await
             .unwrap();
         assert_eq!(legacy_never_real.status(), StatusCode::FORBIDDEN);
+
+        // R9.78 maker/checker lifecycle through the same Host-bound router.
+        // Revoke the R9.77 fixture grant so a fresh request is required.
+        let revoke_fixture = app
+            .clone()
+            .oneshot(req(
+                "POST",
+                "/api/v1/noc-access/revoke",
+                host,
+                Some(cookie),
+                Some(csrf),
+                Some(r#"{"target_issuer":"https://id.r970.synthetic.invalid/realms/ipat","target_subject":"r972-noc","pop_code":"DC-R976"}"#),
+            ))
+            .await
+            .unwrap();
+        assert_eq!(revoke_fixture.status(), StatusCode::OK);
+        let noc_admin_denied = app
+            .clone()
+            .oneshot(req(
+                "GET",
+                "/api/v1/noc-access",
+                host,
+                Some(noc_cookie),
+                None,
+                None,
+            ))
+            .await
+            .unwrap();
+        assert_eq!(noc_admin_denied.status(), StatusCode::FORBIDDEN);
+
+        let access_list = app
+            .clone()
+            .oneshot(req(
+                "GET",
+                "/api/v1/noc-access",
+                host,
+                Some(cookie),
+                None,
+                None,
+            ))
+            .await
+            .unwrap();
+        assert_eq!(access_list.status(), StatusCode::OK);
+        let access_json = body_json(access_list).await;
+        assert!(access_json["members"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|m| m["subject"] == noc_subject));
+
+        let grant_request = "78787878-7878-4787-8787-787878787899";
+        let request_body = format!(
+            r#"{{"request_id":"{grant_request}","target_issuer":"{issuer}","target_subject":"{noc_subject}","pop_code":"DC-R976","expires_in_hours":8}}"#
+        );
+        let requested = app
+            .clone()
+            .oneshot(req(
+                "POST",
+                "/api/v1/noc-access/requests",
+                host,
+                Some(cookie),
+                Some(csrf),
+                Some(&request_body),
+            ))
+            .await
+            .unwrap();
+        assert_eq!(requested.status(), StatusCode::CREATED);
+        let review_path = format!("/api/v1/noc-access/requests/{grant_request}/review");
+        let self_review = app
+            .clone()
+            .oneshot(req(
+                "POST",
+                &review_path,
+                host,
+                Some(cookie),
+                Some(csrf),
+                Some(r#"{"approve":true}"#),
+            ))
+            .await
+            .unwrap();
+        assert_eq!(self_review.status(), StatusCode::CONFLICT);
+
+        let checker_subject = "r978-checker-admin";
+        admin.execute(
+            "INSERT INTO ipat_platform.identity_memberships(tenant_id,issuer,subject,role,approved_by,expires_at) VALUES($1,$2,$3,'tenant_admin','synthetic-r978-independent-reviewer',clock_timestamp()+interval '1 day')",
+            &[&tenant,&issuer,&checker_subject],
+        ).await.unwrap();
+        let checker_cookie = "a".repeat(43);
+        let checker_csrf = "b".repeat(43);
+        let checker_session = Uuid::parse_str("78787878-7878-4787-8787-787878787898").unwrap();
+        let checker_issued = issuer_db.query_one(
+            "SELECT ipat_platform.issue_tenant_browser_session($1,$2,$3::uuid,$4::uuid,$5::uuid,$6,$7,clock_timestamp()+interval '10 minutes')",
+            &[&issuer,&checker_subject,&tenant,&domain,&checker_session,
+              &hex(&checker_cookie),&hex(&checker_csrf)],
+        ).await.unwrap();
+        assert_eq!(
+            checker_issued.get::<_, Option<Uuid>>(0),
+            Some(checker_session)
+        );
+        let approved = app
+            .clone()
+            .oneshot(req(
+                "POST",
+                &review_path,
+                host,
+                Some(checker_cookie.as_str()),
+                Some(checker_csrf.as_str()),
+                Some(r#"{"approve":true}"#),
+            ))
+            .await
+            .unwrap();
+        assert_eq!(approved.status(), StatusCode::OK);
+        assert_eq!(body_json(approved).await["state"], "APPROVED");
+
+        let noc_after_approval = app
+            .clone()
+            .oneshot(req(
+                "GET",
+                "/api/v1/capabilities",
+                host,
+                Some(noc_cookie),
+                None,
+                None,
+            ))
+            .await
+            .unwrap();
+        assert_eq!(
+            body_json(noc_after_approval).await["real_noc_pops"],
+            json!(["DC-R976"])
+        );
+        let revoke_body = format!(
+            r#"{{"target_issuer":"{issuer}","target_subject":"{noc_subject}","pop_code":"DC-R976"}}"#
+        );
+        let revoked_access = app
+            .clone()
+            .oneshot(req(
+                "POST",
+                "/api/v1/noc-access/revoke",
+                host,
+                Some(cookie),
+                Some(csrf),
+                Some(&revoke_body),
+            ))
+            .await
+            .unwrap();
+        assert_eq!(revoked_access.status(), StatusCode::OK);
+        let noc_after_revoke = app
+            .clone()
+            .oneshot(req(
+                "GET",
+                "/api/v1/capabilities",
+                host,
+                Some(noc_cookie),
+                None,
+                None,
+            ))
+            .await
+            .unwrap();
+        assert_eq!(
+            body_json(noc_after_revoke).await["real_noc_pops"],
+            json!([])
+        );
+
         let noc_wrong = app
             .clone()
             .oneshot(req(

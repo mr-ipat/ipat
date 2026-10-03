@@ -730,3 +730,6 @@ Create independent tenant-scoped POP CRUD and protected Site.parent_pop_code FK,
 
 ## ADR-089 — Typed real POP NOC grants are separate from legacy exact-Site grants (2026-10-03)
 Never reinterpret identity_pop_grants.pop_id as a real POP. Use a separate tenant+identity+real-POP typed grant with current membership, expiry/revocation and independent requester/approver attribution. Existing NOC Site endpoints preserve historical exact-Site semantics; distinct real-POP endpoints join through current Site.parent_pop_code. Reassociation changes real-POP visibility but cannot widen legacy Site access. R9.77 authorizes no runtime grant writer.
+
+## ADR-090 — Real-POP NOC grants require distinct tenant-admin maker/checker (2026-10-03)
+A typed real-POP grant cannot be written from the NOC inventory UI or from the OIDC issuer. A current Tenant Admin creates a bounded request; a different current Tenant Admin must review it. Approval revalidates the target NOC membership, active tenant, registered real POP and expiry. Revocation is immediate and auditable. A failed approval due to target ineligibility remains Pending until explicitly rejected so security state is never silently discarded. Browser supplies duration only; server/DB calculate authoritative expiry. Tenant API gets only function execution, not raw grant/request/event tables.
