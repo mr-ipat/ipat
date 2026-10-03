@@ -1796,6 +1796,147 @@ mod pg_integration {
             .await
             .unwrap();
         assert_eq!(legacy_never_real.status(), StatusCode::FORBIDDEN);
+
+        // R9.78 maker/checker lifecycle through the same Host-bound router.
+        // Revoke the R9.77 fixture grant so a fresh request is required.
+        let revoke_fixture = app
+            .clone()
+            .oneshot(req(
+                "POST",
+                "/api/v1/noc-access/revoke",
+                host,
+                Some(cookie),
+                Some(csrf),
+                Some(r#"{"target_issuer":"https://id.r970.synthetic.invalid/realms/ipat","target_subject":"r972-noc","pop_code":"DC-R976"}"#),
+            ))
+            .await
+            .unwrap();
+        assert_eq!(revoke_fixture.status(), StatusCode::OK);
+        let noc_admin_denied = app
+            .clone()
+            .oneshot(req("GET", "/api/v1/noc-access", host, Some(noc_cookie), None, None))
+            .await
+            .unwrap();
+        assert_eq!(noc_admin_denied.status(), StatusCode::FORBIDDEN);
+
+        let access_list = app
+            .clone()
+            .oneshot(req("GET", "/api/v1/noc-access", host, Some(cookie), None, None))
+            .await
+            .unwrap();
+        assert_eq!(access_list.status(), StatusCode::OK);
+        let access_json = body_json(access_list).await;
+        assert!(access_json["members"].as_array().unwrap().iter()
+            .any(|m| m["subject"] == noc_subject));
+
+        let grant_request = "78787878-7878-4787-8787-787878787899";
+        let request_body = format!(
+            r#"{{"request_id":"{grant_request}","target_issuer":"{issuer}","target_subject":"{noc_subject}","pop_code":"DC-R976","expires_in_hours":8}}"#
+        );
+        let requested = app
+            .clone()
+            .oneshot(req(
+                "POST",
+                "/api/v1/noc-access/requests",
+                host,
+                Some(cookie),
+                Some(csrf),
+                Some(&request_body),
+            ))
+            .await
+            .unwrap();
+        assert_eq!(requested.status(), StatusCode::CREATED);
+        let review_path = format!("/api/v1/noc-access/requests/{grant_request}/review");
+        let self_review = app
+            .clone()
+            .oneshot(req(
+                "POST",
+                &review_path,
+                host,
+                Some(cookie),
+                Some(csrf),
+                Some(r#"{"approve":true}"#),
+            ))
+            .await
+            .unwrap();
+        assert_eq!(self_review.status(), StatusCode::CONFLICT);
+
+        let checker_subject = "r978-checker-admin";
+        admin.execute(
+            "INSERT INTO ipat_platform.identity_memberships(tenant_id,issuer,subject,role,approved_by,expires_at) VALUES($1,$2,$3,'tenant_admin','synthetic-r978-independent-reviewer',clock_timestamp()+interval '1 day')",
+            &[&tenant,&issuer,&checker_subject],
+        ).await.unwrap();
+        let checker_cookie = "a".repeat(43);
+        let checker_csrf = "b".repeat(43);
+        let checker_session =
+            Uuid::parse_str("78787878-7878-4787-8787-787878787898").unwrap();
+        let checker_issued = issuer_db.query_one(
+            "SELECT ipat_platform.issue_tenant_browser_session($1,$2,$3::uuid,$4::uuid,$5::uuid,$6,$7,clock_timestamp()+interval '10 minutes')",
+            &[&issuer,&checker_subject,&tenant,&domain,&checker_session,
+              &hex(&checker_cookie),&hex(&checker_csrf)],
+        ).await.unwrap();
+        assert_eq!(checker_issued.get::<_,Option<Uuid>>(0),Some(checker_session));
+        let approved = app
+            .clone()
+            .oneshot(req(
+                "POST",
+                &review_path,
+                host,
+                Some(checker_cookie.as_str()),
+                Some(checker_csrf.as_str()),
+                Some(r#"{"approve":true}"#),
+            ))
+            .await
+            .unwrap();
+        assert_eq!(approved.status(), StatusCode::OK);
+        assert_eq!(body_json(approved).await["state"], "APPROVED");
+
+        let noc_after_approval = app
+            .clone()
+            .oneshot(req(
+                "GET",
+                "/api/v1/capabilities",
+                host,
+                Some(noc_cookie),
+                None,
+                None,
+            ))
+            .await
+            .unwrap();
+        assert_eq!(
+            body_json(noc_after_approval).await["real_noc_pops"],
+            json!(["DC-R976"])
+        );
+        let revoke_body = format!(
+            r#"{{"target_issuer":"{issuer}","target_subject":"{noc_subject}","pop_code":"DC-R976"}}"#
+        );
+        let revoked_access = app
+            .clone()
+            .oneshot(req(
+                "POST",
+                "/api/v1/noc-access/revoke",
+                host,
+                Some(cookie),
+                Some(csrf),
+                Some(&revoke_body),
+            ))
+            .await
+            .unwrap();
+        assert_eq!(revoked_access.status(), StatusCode::OK);
+        let noc_after_revoke = app
+            .clone()
+            .oneshot(req(
+                "GET",
+                "/api/v1/capabilities",
+                host,
+                Some(noc_cookie),
+                None,
+                None,
+            ))
+            .await
+            .unwrap();
+        assert_eq!(body_json(noc_after_revoke).await["real_noc_pops"], json!([]));
+
         let noc_wrong = app
             .clone()
             .oneshot(req(
