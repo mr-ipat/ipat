@@ -1162,3 +1162,6 @@ R9.70's memory-only `state/nonce/verifier` map is unacceptable for multi-replica
 
 ## R9.72 — Commercial NOC per-POP dashboard (2 Oct 2026)
 MUST: NOC sees read-only Site/Device inventory for exact currently granted POPs from Host-bound authenticated session; unauthorized menus hidden and direct API denied. Revoke/expiry/suspension, unknown POP, cross-tenant and Host replay tests required. Actual public IdP/TLS/PG and physical device acceptance remain separate gates.
+
+## R9.73 — Platform Owner safe initial company reservation (2026-10-03)
+MUST: verified Platform Owner is NOT a tenant principal. A separate authenticated platform service may reserve a company slug only with an immutable request UUID, strict exact idempotency, current approved platform-principal check and least-privilege SQL. New company starts Suspended with zero implicit membership, domain routing or access to existing tenants. Tenant API and OIDC session issuer cannot gain platform provisioning rights. OPEN: independently verified platform IdP/MFA/Host-bound session, protected dashboard, invitation acceptance, audited activation, real DNS/TLS, commercial DB and external two-tenant browser acceptance.
