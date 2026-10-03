@@ -130,3 +130,6 @@ PR #164 reviewed head d043237, four-of-four GitHub Actions run 37085008746 SUCCE
 
 ## R9.74 owner-private readiness observation integrity
 No production acceptance gate changes. Read-only preflight now distinguishes unavailable owner-Mac SSH forwarding from the direct key-only SSH verified VPS localhost owner-private C320 state, plus sourced private domain-plan booleans. Real owner-VPS verification observed DEV-01 CONNECTED and HTTPS/pointing false, public GO still false. The result does NOT prove current physical link-layer health, real device firmware/command interoperability, public HTTPS/DNS, off-host restore or production tenant readiness.
+
+## R9.74 final evidence after merge
+Corrected readiness preflight is canonical main 1941507, PR #165 exact-head CI 37085429259 four-of-four SUCCESS, owner-Mac 5/5 synthetic tests and actual owner-VPS read-only HTTP through key-only SSH observed C320 CONNECTED and private domain plan not HTTPS-ready. Distinguish source-of-observation from current physical command verification. The report remains unconditional public NO_GO; no AC-01..17 or commercial production acceptance is upgraded.
