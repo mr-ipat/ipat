@@ -480,6 +480,7 @@ jobs:
           python3 -m unittest discover deploy/db/tests -p test_noc_scope_integration.py -v
           psql -X -v ON_ERROR_STOP=1 -f deploy/db/migrations/0030_typed_noc_real_pop_scope.sql
           psql -X -v ON_ERROR_STOP=1 -f deploy/db/migrations/0031_noc_real_pop_grant_lifecycle.sql
+          psql -X -v ON_ERROR_STOP=1 -f deploy/db/migrations/0032_production_security_admin_role.sql
           cargo test --locked -p control-api commercial_tenant_api::pg_integration::r970_real_pg_tenant_dashboard_current_role_catalog_and_logout -- --exact
           grep -Fq 'TO ipat_tenant_api_exec' deploy/db/migrations/0023_tenant_menu_entitlements.sql
           grep -Fq 'IPAT_R970_VERIFIED_CONFIDENTIAL_IDP' apps/control-api/src/commercial_oidc_issuer.rs
@@ -520,6 +521,12 @@ jobs:
           node deploy/scripts/lab/r970/test_tenant_dashboard_contract.cjs
           grep -Fq request_noc_real_pop_grant deploy/db/migrations/0031_noc_real_pop_grant_lifecycle.sql
           grep -Fq /api/v1/noc-access apps/control-api/src/commercial_tenant_api.rs
+      - name: R9.79 production security-admin reviewer role without lab migration
+        run: |
+          python3 -m unittest discover deploy/db/tests -p test_production_security_admin_role_integration.py -v
+          bash -n deploy/db/tests/r979_docker_repro.sh
+          grep -Fq security_admin deploy/db/migrations/0032_production_security_admin_role.sql
+          grep -Fq "role IN ('tenant_admin','noc_engineer','helpdesk','auditor','security_admin')" deploy/db/migrations/0032_production_security_admin_role.sql
       - name: R9.71 real disposable PostgreSQL HA-safe one-use OIDC state across Rust client instances
         run: |
           python3 -m unittest discover deploy/db/tests -p test_oidc_pending_integration.py -v
