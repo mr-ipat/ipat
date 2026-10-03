@@ -16,7 +16,7 @@ ALTER TABLE ipat_platform.vendor_transport_catalog OWNER TO ipat_schema_owner;
 ALTER TABLE ipat_platform.vendor_transport_catalog ENABLE ROW LEVEL SECURITY;
 ALTER TABLE ipat_platform.vendor_transport_catalog FORCE ROW LEVEL SECURITY;
 REVOKE ALL ON ipat_platform.vendor_transport_catalog FROM PUBLIC,ipat_app_runtime,
- ipat_tenant_api_exec,ipat_oidc_session_issuer_login,ipat_platform_onboard_exec;
+ ipat_tenant_api_exec,ipat_oidc_session_issuer_login;
 CREATE ROLE ipat_vendor_catalog_owner NOLOGIN NOSUPERUSER NOCREATEDB
  NOCREATEROLE NOREPLICATION NOBYPASSRLS NOINHERIT;
 GRANT USAGE ON SCHEMA ipat_platform TO ipat_vendor_catalog_owner;
@@ -58,7 +58,7 @@ $body$;
 ALTER FUNCTION ipat_platform.list_tenant_vendor_catalog(text,text,uuid)
  OWNER TO ipat_vendor_catalog_owner;
 REVOKE ALL ON FUNCTION ipat_platform.list_tenant_vendor_catalog(text,text,uuid)
- FROM PUBLIC,ipat_app_runtime,ipat_oidc_session_issuer_login,ipat_platform_onboard_exec;
+ FROM PUBLIC,ipat_app_runtime,ipat_oidc_session_issuer_login;
 GRANT EXECUTE ON FUNCTION ipat_platform.list_tenant_vendor_catalog(text,text,uuid)
  TO ipat_tenant_api_exec;
 
