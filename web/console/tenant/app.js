@@ -4,7 +4,7 @@
 (() => {
  const $=id=>document.getElementById(id);
  const notice=text=>{$('notice').textContent=text};
- const state={page:null,sites:[],devices:[],catalog:[],next:null,editId:null,editRevision:null,pendingSite:null,nocPops:[]};
+ const state={page:null,sites:[],pops:[],popNext:null,devices:[],catalog:[],next:null,editId:null,editRevision:null,pendingSite:null,nocPops:[]};
  const csrf=()=>document.cookie.split(';').map(x=>x.trim()).find(x=>x.startsWith('__Host-ipat_csrf='))?.split('=')[1];
  async function api(path,method='GET',body){
   const headers={'Accept':'application/json'};
@@ -22,6 +22,35 @@
  const btn=(parent,text,callback)=>{const b=document.createElement('button');b.type='button';b.textContent=text;b.addEventListener('click',callback);parent.append(b);return b};
  const option=(parent,label,value)=>{const o=document.createElement('option');o.value=value;o.textContent=label;parent.append(o)};
  function clearForm(form){form.reset()}
+ function fillPopChoices(id,selected){const sel=$(id);sel.replaceChildren();option(sel,'Unassigned — no POP','');state.pops.forEach(p=>option(sel,p.display_name+' ('+p.code+')',p.code));sel.value=selected||''}
+ async function refreshPops(after){
+  const r=await api('/api/v1/pops'+(after?'?after='+encodeURIComponent(after):''));
+  if(!after)state.pops=[];
+  state.pops.push(...r.pops);state.popNext=r.next_after||null;
+  $('pop-more').hidden=!state.popNext;
+  $('pop-rows').replaceChildren();
+  for(const p of state.pops){
+   const tr=document.createElement('tr');
+   cell(tr,p.code);cell(tr,p.display_name);cell(tr,p.assigned_sites);cell(tr,p.revision);
+   const actions=cell(tr,'');actions.textContent='';
+   btn(actions,'Rename',async()=>{
+    const name=prompt('New POP display name',p.display_name);if(name===null)return;
+    try{await api('/api/v1/pops/'+encodeURIComponent(p.code),'PATCH',
+      {display_name:name,expected_revision:p.revision});
+      await refreshPops();await refreshSites();notice('POP renamed; Site associations preserved.');
+    }catch(e){notice(e.message)}
+   });
+   const remove=btn(actions,'Remove',async()=>{
+    if(!confirm('Remove unused POP '+p.code+'? Assigned Sites are never removed.'))return;
+    try{await api('/api/v1/pops/'+encodeURIComponent(p.code)+'?revision='+p.revision,'DELETE');
+      await refreshPops();notice('Unused POP removed; audit retained.');
+    }catch(e){notice(e.message)}
+   });
+   remove.disabled=p.assigned_sites>0;
+   $('pop-rows').append(tr);
+  }
+  fillPopChoices('site-parent-pop',$('site-parent-pop').value);
+ }
  function fillSiteChoices(id,selected){const select=$(id);select.replaceChildren();option(select,'Select a registered Site','');state.sites.forEach(s=>option(select,`${s.display_name} (${s.code})`,s.code));select.value=selected||''}
  async function refreshSites(after){
   // Preserve a user's current selection while a navigation-triggered fetch
@@ -36,8 +65,19 @@
   $('site-more').hidden=!state.next;
   $('site-rows').replaceChildren();
   for(const site of state.sites){
-   const tr=document.createElement('tr');cell(tr,site.code);cell(tr,site.display_name);cell(tr,site.assigned_devices);cell(tr,site.revision);
+   const tr=document.createElement('tr');cell(tr,site.code);cell(tr,site.display_name);cell(tr,site.parent_pop_code||'Unassigned');cell(tr,site.assigned_devices);cell(tr,site.revision);
    const actions=cell(tr,'');actions.textContent='';
+   const parent=document.createElement('select');parent.setAttribute('aria-label','Parent POP for Site '+site.code);
+   option(parent,'Unassigned','');state.pops.forEach(p=>option(parent,p.display_name+' ('+p.code+')',p.code));
+   parent.value=site.parent_pop_code||'';actions.append(parent);
+   btn(actions,'Assign POP',async()=>{
+    try{const selected=parent.value||null;
+     await api('/api/v1/sites/'+encodeURIComponent(site.code)+'/pop','PATCH',
+       {parent_pop_code:selected,expected_revision:site.revision});
+     await refreshPops();await refreshSites();
+     notice(selected?'Site assigned to registered POP.':'Site unassigned from POP; device metadata unchanged.');
+    }catch(e){notice(e.message)}
+   });
    btn(actions,'Rename',async()=>{const name=prompt('New Site display name',site.display_name);if(name===null)return;try{await api('/api/v1/sites/'+encodeURIComponent(site.code),'PATCH',{display_name:name,expected_revision:site.revision});notice('Site renamed.');await refreshSites()}catch(e){notice(e.message)}});
    const remove=btn(actions,'Remove',async()=>{if(!confirm(`Remove unused Site ${site.code}? This does not delete physical equipment.`))return;try{await api('/api/v1/sites/'+encodeURIComponent(site.code)+'?revision='+site.revision,'DELETE');notice('Unused Site removed.');await refreshSites()}catch(e){notice(e.message)}});
    remove.disabled=site.assigned_devices>0;
@@ -82,14 +122,22 @@
   $('noc-device-rows').replaceChildren();
   for(const d of devices.devices){const tr=document.createElement('tr');cell(tr,d.display_name);cell(tr,d.site);cell(tr,d.device_kind+' / '+d.vendor);cell(tr,d.lifecycle_state==='SAVED'?'Saved — not connected':d.lifecycle_state);$('noc-device-rows').append(tr)}
  }
- async function page(name){if(!['sites','devices','domains','noc'].includes(name)||$('nav-'+name)?.hidden)return;state.page=name;$('welcome').hidden=true;document.querySelectorAll('[data-panel]').forEach(p=>p.hidden=p.dataset.panel!==name);notice('Loading current tenant data…');try{if(name==='sites')await refreshSites();if(name==='devices'){await refreshSites();await refreshDevices()}if(name==='domains')await refreshDomains();if(name==='noc')await refreshNoc();notice('Data loaded. Operations remain subject to current authorization.')}catch(e){notice(e.message)}}
+ async function page(name){if(!['pops','sites','devices','domains','noc'].includes(name)||$('nav-'+name)?.hidden)return;state.page=name;$('welcome').hidden=true;document.querySelectorAll('[data-panel]').forEach(p=>p.hidden=p.dataset.panel!==name);notice('Loading current tenant data…');try{if(name==='pops')await refreshPops();if(name==='sites'){await refreshPops();await refreshSites()}if(name==='devices'){await refreshPops();await refreshSites();await refreshDevices()}if(name==='domains')await refreshDomains();if(name==='noc')await refreshNoc();notice('Data loaded. Operations remain subject to current authorization.')}catch(e){notice(e.message)}}
  async function submit(form,callback){const button=form.querySelector('button[type=submit],button:not([type])');if(button)button.disabled=true;try{await callback()}catch(e){notice(e.message)}finally{if(button)button.disabled=false}}
  document.querySelectorAll('.nav').forEach(b=>{b.id='nav-'+b.dataset.page;b.addEventListener('click',()=>page(b.dataset.page))});
  $('create-site-link').addEventListener('click',e=>{e.preventDefault();page('sites')});
+ $('manage-pops-link').addEventListener('click',e=>{e.preventDefault();page('pops')});
+ $('pop-more').addEventListener('click',()=>refreshPops(state.popNext).catch(e=>notice(e.message)));
+ $('pop-create').addEventListener('submit',e=>{e.preventDefault();const f=e.currentTarget;submit(f,async()=>{
+  const d=Object.fromEntries(new FormData(f));await api('/api/v1/pops','POST',d);
+  clearForm(f);await refreshPops();notice('POP registered independently. Create or associate a Site next.');
+ })});
  $('site-more').addEventListener('click',()=>refreshSites(state.next).catch(e=>notice(e.message)));
  $('noc-pop').addEventListener('change',()=>{if(state.page==='noc')refreshNoc().catch(e=>notice(e.message))});
  $('device-kind').addEventListener('change',syncCatalog);$('device-vendor').addEventListener('change',syncCatalog);$('device-transport').addEventListener('change',syncEndpoint);
- $('site-create').addEventListener('submit',e=>{e.preventDefault();const f=e.currentTarget;submit(f,async()=>{const d=Object.fromEntries(new FormData(f));await api('/api/v1/sites','POST',d);state.pendingSite=d.code;clearForm(f);await refreshSites();notice('Site registered successfully.')})});
+ $('site-create').addEventListener('submit',e=>{e.preventDefault();const f=e.currentTarget;submit(f,async()=>{const d=Object.fromEntries(new FormData(f));d.parent_pop_code=d.parent_pop_code||null;
+  await api('/api/v1/sites','POST',d);state.pendingSite=d.code;clearForm(f);
+  await refreshPops();await refreshSites();notice('Site registered successfully.')})});
  $('device-create').addEventListener('submit',e=>{e.preventDefault();const f=e.currentTarget;submit(f,async()=>{const d=Object.fromEntries(new FormData(f));if(['cwmp','usp'].includes(d.management_transport)){d.management_host=null;d.management_port=null}else{d.management_port=Number(d.management_port)};d.request_id=crypto.randomUUID();d.intended_model=d.intended_model||null;await api('/api/v1/devices','POST',d);clearForm(f);syncCatalog();await refreshDevices();notice('Device saved as metadata. Physical connection not yet established.')})});
  $('device-edit').addEventListener('submit',e=>{e.preventDefault();const f=e.currentTarget;submit(f,async()=>{const d=Object.fromEntries(new FormData(f));d.expected_revision=state.editRevision;d.intended_model=d.intended_model||null;d.management_host=d.management_host||null;d.management_port=d.management_port?Number(d.management_port):null;await api('/api/v1/devices/'+encodeURIComponent(state.editId),'PATCH',d);$('device-edit-panel').hidden=true;state.editId=null;await refreshDevices();notice('Saved device metadata updated.')})});
  $('edit-cancel').addEventListener('click',()=>{$('device-edit-panel').hidden=true;state.editId=null});
@@ -99,7 +147,7 @@
   const r=await api('/api/v1/capabilities');$('identity').textContent='Authorized tenant: '+r.tenant_id;
   state.nocPops=Array.isArray(r.noc_pops)?r.noc_pops.filter(p=>typeof p==='string'):[];
   if(state.nocPops.length){$('noc-pop').replaceChildren();for(const p of state.nocPops)option($('noc-pop'),p,p);$('nav-noc').hidden=false}
-  if(r.can_manage_sites){for(const n of ['sites','devices','domains'])$('nav-'+n).hidden=false;await loadCatalog()}
+  if(r.can_manage_sites){for(const n of ['pops','sites','devices','domains'])$('nav-'+n).hidden=false;await loadCatalog()}
   $('logout').hidden=false;
   notice(r.can_manage_sites||state.nocPops.length?'Tenant permissions verified. Select a permitted module.':'No operations modules assigned to your current identity.');
 

@@ -724,3 +724,6 @@ Separate platform owner principal and NOLOGIN executor from all tenant API/OIDC 
 
 ## ADR-087 — Platform SQL catalog is authoritative for new device metadata (2026-10-03)
 Dynamic tenant-admin catalog listing and an independent FORCE-RLS guarded DB INSERT are the authoritative source. Rust category matching is only a syntax/protocol envelope; disabling a catalog row must immediately stop new registration. All seeded entries are metadata candidates, never verified model/firmware interoperability. Tenant and OIDC issuer roles cannot directly manage global catalog; approved separate platform catalog-edit workflow is not mounted.
+
+## ADR-088 — Independent POP master with explicit staged Site parent and no implicit NOC promotion (2026-10-03)
+Create independent tenant-scoped POP CRUD and protected Site.parent_pop_code FK, staging 0028 and explicitly reviewed second-phase FK validation 0029. Preserve existing legacy managed-device Site code references and exact Site-code NOC grants, even after linking a Site to a new real POP. No automatic historic mapping, broadening of NOC authorization, device move or hardware operation. POP code tombstones protect audit identity after deletion. Typed real-POP NOC grants and reviewed reassignment require a future separately privileged workflow.
