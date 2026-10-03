@@ -77,6 +77,11 @@ jobs:
         run: |
           bash -n deploy/scripts/lab/edge-r46-gate-check.sh
           python3 -m unittest discover deploy/scripts/lab -p 'test_edge_r46_gate_review.py' -v
+      - name: R9.73 platform-only suspended tenant reservation SQL and role contract
+        run: |
+          bash -n deploy/db/tests/r973_docker_repro.sh
+          python3 -m py_compile deploy/db/tests/test_platform_tenant_onboarding_integration.py
+          grep -Fq 'TO ipat_platform_onboard_exec' deploy/db/migrations/0026_platform_tenant_onboarding.sql
       - name: R9.72 scoped NOC read-only tenant console source and SQL contract
         run: |
           node --check web/console/tenant/app.js
@@ -471,6 +476,11 @@ jobs:
           cargo test --locked -p control-api commercial_tenant_api::pg_integration::r970_real_pg_tenant_dashboard_current_role_catalog_and_logout -- --exact
           grep -Fq 'TO ipat_tenant_api_exec' deploy/db/migrations/0023_tenant_menu_entitlements.sql
           grep -Fq 'IPAT_R970_VERIFIED_CONFIDENTIAL_IDP' apps/control-api/src/commercial_oidc_issuer.rs
+      - name: R9.73 isolated platform-owner tenant reservation and negative-role tests
+        run: |
+          psql -X -v ON_ERROR_STOP=1 -f deploy/db/migrations/0026_platform_tenant_onboarding.sql
+          python3 -m unittest discover deploy/db/tests -p test_platform_tenant_onboarding_integration.py -v
+          grep -Fq "R9.73" docs/PROJECT_STATUS.md
       - name: R9.71 real disposable PostgreSQL HA-safe one-use OIDC state across Rust client instances
         run: |
           python3 -m unittest discover deploy/db/tests -p test_oidc_pending_integration.py -v

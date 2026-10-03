@@ -718,3 +718,6 @@ Use independent, host-bound PostgreSQL atomic consumed state to support confiden
 
 ## ADR-085 — R9.72 commercial NOC exact POP read-only access (2 Oct 2026)
 NOC dashboard receives only exact current POP scopes through a least-privilege function and a signed Host-bound session; dedicated GET-only NOC Site/Device endpoints independently authorize every POP. Admin CRUD endpoints keep their own SQL checks. No credential/endpoint exposure, physical writes or implicit tenant-admin privilege.
+
+## ADR-086 — R9.73 platform company reservation cannot activate company (2026-10-03)
+Separate platform owner principal and NOLOGIN executor from all tenant API/OIDC identities. Initial operation is only an idempotent, actor-attributed Suspended company reservation. Do not auto-create tenant-admin membership, turn on DNS or access tenant secrets. Later audited contract/invitation/domain/TLS activation is a separate privilege and execution path. SQL acceptance does not imply real platform operator login or public production.
