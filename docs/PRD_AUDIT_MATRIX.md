@@ -142,3 +142,6 @@ PR #166 tested exact head 3b5ca410, GitHub workflow 37088201612 SUCCESS 4/4, mai
 
 ## R9.76 independent POP hierarchy source/disposable cut-line
 New 0028 master separates tenant POP codes from historical Site codes; 0029 is an explicit FK validation phase. Admin Site association is optional and explicit; legacy NOC grants remain exact Site codes and must not inherit child Sites or new real POP ownership. Security and production completeness remain BLOCKED until current Host-bound HTTP tests and CI pass, and a separately approved future typed real POP scope and actual public/operator/hardware acceptance are executed.
+
+## R9.76 final source milestone after exact CI
+Canonical main 8cc8ddb after PR #167; exact-head workflow 37089136670 succeeded 4/4; Mac disposable PG16 29/29, isolated owner-VPS Rust 102/102, Node static dashboard plus GitHub isolated real Axum/PG16 commercial Host-bound and 0028/0029 FK tests passed. Independent POP CRUD and explicit optional Site-parent association are SOURCE/DISPOSABLE PASS. Legacy exact-Site NOC permissions intentionally do NOT expand to linked real POP descendants; typed real POP grants, hardware topology, true public commercial operator access, migration rollback on recovered live infrastructure and all other independent PRD gates remain BLOCKED.
