@@ -404,7 +404,7 @@ struct NocPopQuery {
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
 struct NocGrantRequest {
-    request_id: Uuid,
+    request_id: String,
     target_issuer: String,
     target_subject: String,
     pop_code: String,
@@ -499,9 +499,12 @@ async fn create_noc_access_request(
     {
         return denied(StatusCode::UNPROCESSABLE_ENTITY);
     }
+    let Ok(request_id) = Uuid::parse_str(&q.request_id) else {
+        return denied(StatusCode::UNPROCESSABLE_ENTITY);
+    };
     let row = s.db.query_one(
         "SELECT ipat_platform.request_noc_real_pop_grant($1,$2,$3::uuid,$4::uuid,$5,$6,$7,statement_timestamp()+make_interval(hours=>$8::int))",
-        &[&a.issuer,&a.subject,&a.tenant_id,&q.request_id,
+        &[&a.issuer,&a.subject,&a.tenant_id,&request_id,
           &q.target_issuer,&q.target_subject,&q.pop_code,&q.expires_in_hours],
     ).await;
     match row.ok().and_then(|r|r.get::<_,Option<Uuid>>(0)) {
