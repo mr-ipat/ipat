@@ -1,0 +1,7 @@
+# R9.74 — Do not report C320 disconnected because Mac tunnel is missing
+
+Read-only production preflight first authenticates with existing key-only, strict-known-host SSH to the owner VPS and reads the existing owner-private loopback Device API and platform-domain staging API. The SSH command emits ONLY a narrowly allowlisted C320 connected/unconnected observation and public-IP/HTTPS/pointing-plan booleans; no credentials or raw device records are exported. The VPS localhost observation is authoritative even when optional Mac localhost:3002 SSH tunnel is absent.
+
+In the report, private_c320_observation has distinct CONNECTED, NOT_CONNECTED and UNVERIFIED VPS-local states; mac_private_tunnel_responsive is separate provenance, not device health. Domain plan provenance is also explicit and never substitutes for independent DNS-zone ownership, certificate, trusted ingress or site recovery proof. Public GO remains unconditionally false and the preflight return code stays 3. The command performs no OLT CLI, firewall, DNS, package installation, service restart or tenant write.
+
+Reproduce: python3 -m unittest deploy/scripts/production/test_r963_public_cutover_preflight.py -v; python3 deploy/scripts/production/r963_public_cutover_preflight.py (read-only; exits 3). When a private authenticated SSH route is unavailable the report must state UNVERIFIED_VPS_LOOPBACK, never assert an OLT outage based on the Mac port alone.

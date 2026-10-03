@@ -1,4 +1,6 @@
 import importlib.util, unittest
+from unittest.mock import patch
+from types import SimpleNamespace
 from pathlib import Path
 p=Path(__file__).resolve().parent/'r963_public_cutover_preflight.py'
 spec=importlib.util.spec_from_file_location('r963_preflight',p)
@@ -17,6 +19,40 @@ class TestPreflight(unittest.TestCase):
         self.assertEqual(r['production_status'],'BLOCKED')
         self.assertEqual(r['gates']['actual_dns_zone_ownership_and_txt'],'UNVERIFIED')
         self.assertEqual(r['gates']['commercial_postgresql_runtime_and_pitr'],'UNVERIFIED')
+    def test_vps_verified_private_c320_survives_missing_mac_tunnel(self):
+        vps={'available':True,'PRIVATE_C320':'CONNECTED',
+             'PRIVATE_DOMAIN_IP':'198.51.100.9','PRIVATE_DOMAIN_HTTPS':'False',
+             'PRIVATE_DOMAIN_SAFE_TO_POINT':'False','PORT443':'0',
+             'PRIVILEGED_ADMIN':'NOT_AVAILABLE'}
+        r=mod.snapshot(vps,None,None)
+        self.assertTrue(r['gates']['private_c320_live_read_only'])
+        self.assertEqual(r['private_c320_observation'],'VPS_LOOPBACK_CONNECTED')
+        self.assertFalse(r['mac_private_tunnel_responsive'])
+        self.assertEqual(r['private_domain_plan_source'],'VPS_LOOPBACK')
+        self.assertTrue(r['public_target_ipv4_configured'])
+        self.assertFalse(r['public_go'])
+
+    def test_remote_negative_beats_mac_stale_and_unknown_does_not_claim_down(self):
+        stale={'devices':[{'id':'DEV-01','connection_state':'CONNECTED'}]}
+        vps={'available':True,'PRIVATE_C320':'NOT_CONNECTED','PORT443':'0'}
+        r=mod.snapshot(vps,{'platform':{}},stale)
+        self.assertFalse(r['gates']['private_c320_live_read_only'])
+        self.assertEqual(r['private_c320_observation'],'VPS_LOOPBACK_NOT_CONNECTED')
+        vps['PRIVATE_C320']='UNVERIFIED'
+        r=mod.snapshot(vps,{'platform':{}},stale)
+        self.assertFalse(r['gates']['private_c320_live_read_only'])
+        self.assertEqual(r['private_c320_observation'],'UNVERIFIED_VPS_LOOPBACK')
+
+    def test_ssh_remote_readonly_provenance_filters_output(self):
+        out='OS=ubuntu:26.04\nPRIVATE_C320=CONNECTED\nPRIVATE_DOMAIN_IP=198.51.100.9\nPRIVATE_DOMAIN_HTTPS=False\nPRIVATE_DOMAIN_SAFE_TO_POINT=False\nSECRET=NEVER_RECORD\n'
+        with patch.object(mod.subprocess,'run',return_value=SimpleNamespace(returncode=0,stdout=out)) as run:
+            result=mod.remote()
+        args=run.call_args.args[0]
+        self.assertIn('BatchMode=yes',args)
+        self.assertIn('StrictHostKeyChecking=yes',args)
+        self.assertIn('http://127.0.0.1:3002/lab/owner/devices',args[-1])
+        self.assertEqual(result['PRIVATE_C320'],'CONNECTED')
+        self.assertNotIn('SECRET',result)
     def test_host_without_sudo_and_443_returns_blocked(self):
         fake={'available':True,'PORT443':'0','PRIVILEGED_ADMIN':'NOT_AVAILABLE'}
         r=mod.snapshot(fake,{'platform':{}},{'devices':[]})
