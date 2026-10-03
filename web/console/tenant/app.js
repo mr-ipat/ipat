@@ -4,7 +4,7 @@
 (() => {
  const $=id=>document.getElementById(id);
  const notice=text=>{$('notice').textContent=text};
- const state={page:null,sites:[],pops:[],popNext:null,devices:[],catalog:[],next:null,editId:null,editRevision:null,pendingSite:null,nocPops:[]};
+ const state={page:null,sites:[],pops:[],popNext:null,devices:[],catalog:[],next:null,editId:null,editRevision:null,pendingSite:null,nocPops:[],realNocPops:[]};
  const csrf=()=>document.cookie.split(';').map(x=>x.trim()).find(x=>x.startsWith('__Host-ipat_csrf='))?.split('=')[1];
  async function api(path,method='GET',body){
   const headers={'Accept':'application/json'};
@@ -111,11 +111,18 @@
  async function refreshDomains(){const r=await api('/api/v1/domains');$('domain-rows').replaceChildren();for(const d of r.domains){const tr=document.createElement('tr');cell(tr,d.hostname);cell(tr,d.verification_name?`${d.verification_name} TXT ${d.verification_value||''}`:'Awaiting instructions');cell(tr,d.activation_state);
  const actions=cell(tr,'');actions.textContent='';btn(actions,'Disable',async()=>{if(!confirm(`Disable domain request ${d.hostname}?`))return;try{await api('/api/v1/domains/'+encodeURIComponent(d.id),'DELETE');notice('Domain request disabled.');await refreshDomains()}catch(e){notice(e.message)}});$('domain-rows').append(tr)}}
  async function refreshNoc(){
-  const pop=$('noc-pop').value;
-  if(!state.nocPops.includes(pop))throw Error('Select an authorized NOC scope.');
+  const chosen=$('noc-pop').value;
+  const typed=chosen.startsWith('real:');
+  const legacy=chosen.startsWith('site:');
+  const pop=chosen.slice(5);
+  if(!((typed&&state.realNocPops.includes(pop))||
+       (legacy&&state.nocPops.includes(pop)))){
+   throw Error('Select a currently authorized exact Site or real POP scope.');
+  }
+  const base=typed?'/api/v1/noc/real':'/api/v1/noc';
   const [sites,devices]=await Promise.all([
-   api('/api/v1/noc/sites?pop='+encodeURIComponent(pop)),
-   api('/api/v1/noc/devices?pop='+encodeURIComponent(pop))
+   api(base+'/sites?pop='+encodeURIComponent(pop)),
+   api(base+'/devices?pop='+encodeURIComponent(pop))
   ]);
   $('noc-site-rows').replaceChildren();
   for(const s of sites.sites){const tr=document.createElement('tr');cell(tr,s.code);cell(tr,s.display_name);cell(tr,s.assigned_devices);$('noc-site-rows').append(tr)}
@@ -146,10 +153,14 @@
  (async()=>{try{
   const r=await api('/api/v1/capabilities');$('identity').textContent='Authorized tenant: '+r.tenant_id;
   state.nocPops=Array.isArray(r.noc_pops)?r.noc_pops.filter(p=>typeof p==='string'):[];
-  if(state.nocPops.length){$('noc-pop').replaceChildren();for(const p of state.nocPops)option($('noc-pop'),p,p);$('nav-noc').hidden=false}
+  state.realNocPops=Array.isArray(r.real_noc_pops)?r.real_noc_pops.filter(p=>typeof p==='string'):[];
+  $('noc-pop').replaceChildren();
+  for(const p of state.realNocPops)option($('noc-pop'),'Real POP: '+p,'real:'+p);
+  for(const p of state.nocPops)option($('noc-pop'),'Legacy exact Site: '+p,'site:'+p);
+  if(state.nocPops.length||state.realNocPops.length)$('nav-noc').hidden=false;
   if(r.can_manage_sites){for(const n of ['pops','sites','devices','domains'])$('nav-'+n).hidden=false;await loadCatalog()}
   $('logout').hidden=false;
-  notice(r.can_manage_sites||state.nocPops.length?'Tenant permissions verified. Select a permitted module.':'No operations modules assigned to your current identity.');
+  notice(r.can_manage_sites||state.nocPops.length||state.realNocPops.length?'Tenant permissions verified. Select a permitted module.':'No operations modules assigned to your current identity.');
 
  }catch(e){notice(e.message);$('signin').hidden=false;$('identity').textContent='Sign-in required'}})();
 })();

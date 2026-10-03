@@ -145,3 +145,6 @@ New 0028 master separates tenant POP codes from historical Site codes; 0029 is a
 
 ## R9.76 final source milestone after exact CI
 Canonical main 8cc8ddb after PR #167; exact-head workflow 37089136670 succeeded 4/4; Mac disposable PG16 29/29, isolated owner-VPS Rust 102/102, Node static dashboard plus GitHub isolated real Axum/PG16 commercial Host-bound and 0028/0029 FK tests passed. Independent POP CRUD and explicit optional Site-parent association are SOURCE/DISPOSABLE PASS. Legacy exact-Site NOC permissions intentionally do NOT expand to linked real POP descendants; typed real POP grants, hardware topology, true public commercial operator access, migration rollback on recovered live infrastructure and all other independent PRD gates remain BLOCKED.
+
+## R9.77 typed NOC real-POP authorization candidate
+Typed real-POP grants do not inherit or rewrite legacy exact-Site grants. Disposable PostgreSQL regression passed 34/34 including current membership, expiry/revocation, two-tenant same-code POP, Site reassociation, redacted Device results and no raw-table rights. Real Axum integration and exact CI are required before source closure. This does not satisfy public AC-02/AC-16 until real NOC MFA, grant lifecycle, production Host/DB and external cross-tenant tests are deployed.

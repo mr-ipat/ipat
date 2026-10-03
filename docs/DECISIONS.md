@@ -727,3 +727,6 @@ Dynamic tenant-admin catalog listing and an independent FORCE-RLS guarded DB INS
 
 ## ADR-088 — Independent POP master with explicit staged Site parent and no implicit NOC promotion (2026-10-03)
 Create independent tenant-scoped POP CRUD and protected Site.parent_pop_code FK, staging 0028 and explicitly reviewed second-phase FK validation 0029. Preserve existing legacy managed-device Site code references and exact Site-code NOC grants, even after linking a Site to a new real POP. No automatic historic mapping, broadening of NOC authorization, device move or hardware operation. POP code tombstones protect audit identity after deletion. Typed real-POP NOC grants and reviewed reassignment require a future separately privileged workflow.
+
+## ADR-089 — Typed real POP NOC grants are separate from legacy exact-Site grants (2026-10-03)
+Never reinterpret identity_pop_grants.pop_id as a real POP. Use a separate tenant+identity+real-POP typed grant with current membership, expiry/revocation and independent requester/approver attribution. Existing NOC Site endpoints preserve historical exact-Site semantics; distinct real-POP endpoints join through current Site.parent_pop_code. Reassociation changes real-POP visibility but cannot widen legacy Site access. R9.77 authorizes no runtime grant writer.
