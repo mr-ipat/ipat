@@ -1,0 +1,14 @@
+[Unit]
+Description=IPAT temporary public-IP short-lived certificate renewal
+After=network-online.target nginx.service
+Wants=network-online.target
+ConditionPathExists=/etc/letsencrypt/live/ipat-platform-ip/fullchain.pem
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/flock -n /run/ipat-certbot-ip.lock __CERTBOT__ renew --cert-name ipat-platform-ip --quiet
+PrivateTmp=true
+NoNewPrivileges=true
+ProtectHome=true
+ProtectSystem=full
+ReadWritePaths=/etc/letsencrypt /var/lib/letsencrypt /var/log/letsencrypt /run

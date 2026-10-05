@@ -1,0 +1,17 @@
+# R9.84 temporary literal-IP ACME bootstrap. Render __IP__ first.
+server {
+    listen 80 default_server;
+    server_name __IP__;
+    if ($host != "__IP__") { return 421; }
+
+    location ^~ /.well-known/acme-challenge/ {
+        root /var/lib/ipat/acme-webroot;
+        default_type text/plain;
+        try_files $uri =404;
+        access_log off;
+    }
+
+    location / {
+        return 308 https://__IP__$request_uri;
+    }
+}
