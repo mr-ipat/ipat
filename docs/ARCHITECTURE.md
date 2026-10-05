@@ -1218,3 +1218,6 @@ PostgreSQL availability is separate from K3s worker scaling. Production baseline
 
 ## R9.90 — Encrypted backup separation
 Database HA replication and backups are independent. PostgreSQL base backup plus archived WAL must be encrypted before leaving the database failure domain and restored on an independent target for acceptance. Restic is an approved transport/encryption candidate for off-host copies; repository credentials and passwords remain deployment secrets outside Git. A replica never substitutes for an immutable/recoverable backup.
+
+## R9.91 — Backup failure-domain boundary
+PostgreSQL primary/standby availability and Restic backup recovery are independent control planes. Base+WAL material must be encrypted before or while entering an independently controlled backup failure domain. Database/service runtime identities must not automatically have backup retention/deletion credentials. A read-only backup observer can enumerate tagged snapshots but cannot restore, prune or grant release. Recovery acceptance runs on a separate approved host and validates restored PostgreSQL18/RLS before reintroducing traffic.

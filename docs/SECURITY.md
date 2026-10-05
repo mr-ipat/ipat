@@ -1307,3 +1307,6 @@ Failover must prove the previous primary is stopped or fenced before promotion. 
 
 ## R9.90 — Backup confidentiality and recovery integrity
 Backup secrets must not appear in repository files, shell history, prompts or application logs. Use secret files with restrictive ownership/permissions and an off-host repository under independent access control. Recovery acceptance must delete or isolate original plaintext staging, restore from encrypted repository bytes, rerun PostgreSQL backup verification, validate PITR boundaries and recheck tenant RLS. Snapshot existence alone is not restore proof.
+
+## R9.91 — Offsite backup credential and evidence controls
+Never put Restic passwords, cloud keys, signed URLs, tokens or password-bearing repository URLs in Git, CLI history, chat, audit JSON or dashboard responses. The read-only evidence gate accepts only external owner-only password files and rejects inline secret environment variables. Hash nonsecret repository/failure-domain identifiers in evidence. Snapshot presence does not prove immutability, independent ownership or recoverability; deletion rights, retention policy, distinct-host restore, PITR and RPO/RTO require separate reviewed evidence.

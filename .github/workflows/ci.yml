@@ -665,6 +665,12 @@ jobs:
           python3 -m unittest discover deploy/db/tests -p 'test_job_outbox_integration.py' -v
       - name: Verify synthetic physical basebackup and restore on separate CI server process
         run: bash deploy/db/tests/physical_restore_ephemeral.sh
+      - name: R9.91 remote-only offsite Restic evidence gate source
+        run: |
+          python3 -m py_compile deploy/scripts/production/r991/offsite_restic_gate.py
+          (cd deploy/scripts/production/r991 && python3 -m unittest test_offsite_restic_gate.py -v)
+          grep -Fq 'public_go":False' deploy/scripts/production/r991/offsite_restic_gate.py
+          grep -Fq R9.91 docs/PROJECT_STATUS.md
       - name: R9.90 Restic-encrypted PostgreSQL18 base-WAL PITR recovery rehearsal
         run: |
           sudo apt-get update -qq

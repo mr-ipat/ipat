@@ -769,3 +769,6 @@ Use physical streaming replication in addition to PITR backups. Maintain exactly
 
 ## ADR-095 — R9.90 encrypted PostgreSQL base+WAL copies remain separate from HA (2026-10-05)
 Use encrypted off-host backup storage in addition to physical streaming standby. Restic is accepted for encrypted transport/snapshotting when repository credentials are external to Git and the target is a separate failure domain. Production acceptance requires a real independent restore from the encrypted repository; a local Restic rehearsal or healthy standby cannot satisfy the offsite-recovery gate.
+
+## ADR-101 — R9.91 distinguish remote backup observation from offsite recovery acceptance (2026-10-05)
+A Restic snapshot may only be called an offsite backup candidate when its nonsecret repository identifier is remote-only, credentials are external to argv/repository/Git, and active versus backup failure-domain identifiers are distinct. Read-only snapshot observation is insufficient for public release and can never promote public_go. Actual independent restore, pg_verifybackup, PITR correctness, RLS validation and measured RPO/RTO on a distinct approved host remain mandatory. Production database/runtime identities must not receive repository deletion/retention authority by default.
