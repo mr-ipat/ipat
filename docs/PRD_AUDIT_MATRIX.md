@@ -188,3 +188,13 @@ PR #176 exact head 3168992bc914f2ae6f8230463f8b97235dd860a8 passed GitHub Action
 
 ## R9.84 temporary-IP HTTPS ingress source candidate (2026-10-05)
 Source adds Ubuntu26 root-gated Nginx/Certbot prerequisite and transactional two-phase ACME short-lived literal-IP deployment, exact Host routing only to Platform API 3005/OIDC 3006, pre-cutover exact-loopback backend checks, rollback and renewal safety. Current official Let’s Encrypt/Certbot behavior supports short-lived IP certificates and Certbot 5.4+ webroot IP issuance. Source tests and disposable Nginx syntax do not prove owner VPS root execution, external port80/443 reachability, real trusted issuance, human MFA, production PG/recovery or customer SNI. AC02/09/16/public GO remain BLOCKED until actual privileged and external evidence passes.
+
+
+## R9.85 Platform Owner runtime services source candidate (2026-10-05)
+Adds two distinct hardened systemd services/users, checksum-pinned binary preparation, secure env/secret constraints, actual restricted-PostgreSQL-login preflight, timed activation rollback and exact loopback HTTP/listener checks. Source tests and Ubuntu26 systemd-analyze verification do not prove live production PG auth mapping, IdP client secret/key, human MFA or owner-VPS root deployment. R9.84 HTTPS cutover remains impossible by design until these services are actually active and separately verified.
+
+### R9.84 final exact source acceptance
+PR #177 exact head 2e2bcdd3c8f02f96a886a3d99a10d44615822b7c passed exact GitHub Actions run 37268364774 SUCCESS 4/4 and merged canonical main fec6360ab3ed2dc00c4e158381a335cb55d58775. This upgrades only source/disposable ingress acceptance. No real privileged package install, ACME challenge, public 80/443 listener, exact IP certificate or browser test occurred on the owner VPS.
+
+### R9.85 pre-commit source hardening
+Runtime env parsing is fail-closed before mapfile loading; first-install conflict checks precede binary/unit installation; source safety tests 7/7 PASS and Ubuntu26 systemd-analyze with synthetic expected executable/env paths PASS. Actual service-user PostgreSQL peer mapping, OIDC secret/key provisioning and live 3005/3006 activation remain unverified production gates.

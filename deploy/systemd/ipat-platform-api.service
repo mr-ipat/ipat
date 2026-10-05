@@ -1,0 +1,35 @@
+[Unit]
+Description=IPAT Platform Owner API (loopback only)
+After=network.target
+ConditionPathExists=/etc/ipat/platform-api.env
+
+[Service]
+Type=simple
+User=ipatpapi
+Group=ipatpapi
+EnvironmentFile=/etc/ipat/platform-api.env
+ExecStart=/opt/ipat/bin/control-api
+Restart=on-failure
+RestartSec=2s
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+ProtectClock=true
+LockPersonality=true
+RestrictSUIDSGID=true
+SystemCallArchitectures=native
+CapabilityBoundingSet=
+AmbientCapabilities=
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+IPAddressDeny=any
+IPAddressAllow=localhost
+
+[Install]
+WantedBy=multi-user.target
