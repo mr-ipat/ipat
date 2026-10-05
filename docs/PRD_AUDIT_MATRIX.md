@@ -217,3 +217,7 @@ Owner-Mac real disposable PG18 + Restic rehearsal passes: base backup, WAL archi
 
 ## R9.91 remote-only backup evidence source candidate
 Adds a fail-closed read-only Restic snapshot observer that rejects local/loopback/private-target repositories, repository inline passwords, inline secret env and same declared active/backup failure domain. It never mutates repository and always reports production NO_GO. Source tests can prove parser/secret/output/command restrictions only; actual independent storage ownership, production base+WAL backup, distinct-host restore and measured RPO/RTO remain AC-13 BLOCKED until executed.
+
+
+## R9.92 commercial tenant runtime candidate (2026-10-05)
+Closes a concrete deployment-source gap left after R9.85: customer tenant API/OIDC had Rust endpoints but no production systemd/runtime installer or PostgreSQL OS-peer identities. Candidate adds distinct nonroot tenant API/OIDC units, per-customer exact-Host OIDC loopback port support, first-install PostgreSQL peer mappings, fail-closed env/secret checks and timed rollback. Source/disposable acceptance must include full Rust regressions, Ubuntu26 systemd verification and full PostgreSQL18 first-install rehearsal. Public AC02/09/16 remain blocked until actual ingress TLS/SNI, real IdP MFA, production recovery and external tenant isolation pass.

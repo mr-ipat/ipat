@@ -1216,3 +1216,7 @@ MUST: PostgreSQL base backups and required WAL are encrypted to a storage failur
 
 ## R9.91 — Offsite encrypted backup evidence gate
 MUST distinguish local encrypted backup rehearsal from a genuinely independent remote backup failure domain. Credentials must remain external secrets; local/file/loopback/private-target and credential-bearing repository identifiers are denied. Read-only observation may verify a tagged snapshot exists but cannot satisfy AC-13. Production acceptance requires a real distinct-host restore with pg_verifybackup, PITR correctness, tenant/RLS/audit checks, measured RPO/RTO and independently reviewed retention/credential separation.
+
+
+## R9.92 — Deployable customer-company tenant runtime (MUST)
+MUST provide a production-installable tenant dashboard runtime separate from Platform Owner and device services: nonroot shared tenant API on loopback, tenant OIDC/MFA issuer isolated by exact customer Host with durable one-use login state, independent PostgreSQL peer roles, root-owned configuration, secure secret files, bounded port assignment and timed rollback. PostgreSQL first-install bootstrap must authenticate both tenant roles without passwords/TCP. A successful source/disposable test does not activate a customer: exact verified domain+TLS/SNI, real human MFA, tenant membership and external two-tenant negative testing are still required.
