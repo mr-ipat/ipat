@@ -1294,3 +1294,7 @@ Separate Linux users, service units, DB roles and environment files are mandator
 
 ## R9.86 PostgreSQL version transition control
 A server-version change cannot weaken tenant isolation or service-role privilege boundaries. Run the same raw-table denial, RLS, current-membership, session, cross-tenant, maker/checker and Platform Owner negative tests on PostgreSQL18. Do not auto-upgrade a production cluster in place from PG16; use reviewed backup/restore or supported upgrade procedures with independent rollback and complete recovery evidence.
+
+
+## R9.87 database bootstrap threat controls
+Refuse existing clusters, verify every migration digest, suppress package-created default clusters, expose no TCP database socket, reject all unspecified local users, and delete the temporary nologin migration OS principal plus its superuser peer map before runtime checks. Runtime services authenticate through OS peer identity to narrow PostgreSQL roles with no repository password. A compromised root remains outside this control boundary; independent host recovery and DB PITR remain mandatory.

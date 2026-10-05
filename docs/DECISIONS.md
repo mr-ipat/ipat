@@ -756,3 +756,7 @@ Deploy Platform Owner API and Platform OIDC issuer as distinct systemd services/
 
 ## ADR-097 — R9.86 PostgreSQL 18 is Ubuntu26 production baseline, PG16 retained as regression (2026-10-05)
 Use PostgreSQL 18 as the deployment baseline for new Ubuntu Server 26.04 production nodes because it is the supported Ubuntu26 package generation and the current IPAT migration/security chain passes real disposable PostgreSQL18 tests. Retain PostgreSQL16 tests temporarily as a compatibility/regression matrix rather than assuming a silent upgrade. Do not infer HA, replication or PITR from single-node Docker compatibility; primary/standby/WAL/offsite restore require separate cross-host acceptance.
+
+
+## ADR-094 — R9.87 local-socket PostgreSQL18 first-install boundary (2026-10-05)
+For the first commercial staging database, use Ubuntu26 PostgreSQL18 with no TCP listener and exact Unix-peer mappings to distinct Platform API/OIDC database logins. Current migrations require ownership transfers among multiple roles; a plain non-superuser CREATEROLE migrator was actually rejected by PostgreSQL18. Therefore permit a temporary nologin OS migration identity mapped to local DB superuser only during a hash-pinned first-install transaction, then delete that OS identity and fully replace bootstrap HBA/ident rules before runtime. Existing clusters are never auto-migrated. This does not satisfy HA/PITR; standby/offsite WAL restore is a separate mandatory milestone.

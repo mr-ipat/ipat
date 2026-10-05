@@ -558,6 +558,13 @@ jobs:
           grep -Fq '127.0.0.1:3006' apps/control-api/src/main.rs
           grep -Fq ipat_platform_session_issuer_login apps/control-api/src/platform_oidc_issuer.rs
           grep -Fq R9.83 docs/PROJECT_STATUS.md
+      - name: R9.87 PostgreSQL18 local-socket first-install bootstrap rehearsal
+        run: |
+          bash -n deploy/scripts/production/r987_bootstrap_postgres18.sh
+          bash -n deploy/db/tests/r987_ubuntu26_bootstrap_docker.sh
+          python3 -m unittest deploy/scripts/production/test_r987_postgres18_bootstrap_source.py -v
+          IPAT_R987_DISPOSABLE_DOCKER=YES bash deploy/db/tests/r987_ubuntu26_bootstrap_docker.sh
+          grep -Fq R9.87 docs/PROJECT_STATUS.md
       - name: R9.86 PostgreSQL18 Ubuntu26 compatibility security chain
         run: |
           bash -n deploy/db/tests/r986_pg18_docker_repro.sh

@@ -201,3 +201,7 @@ Runtime env parsing is fail-closed before mapfile loading; first-install conflic
 
 ## R9.86 PostgreSQL18 baseline compatibility (2026-10-05)
 Owner-Mac disposable pinned PostgreSQL18 applied selected migrations through 0032 and passed 45/45 current database security/commercial regressions, twice including a digest-pinned rerun. This closes the PostgreSQL18 schema-compatibility source gate only. AC-13 remains BLOCKED until real independent production primary/standby failover, WAL/PITR offsite restore and measured RPO/RTO pass.
+
+
+## R9.87 PostgreSQL18 local bootstrap candidate
+Actual PostgreSQL18 proved that ordinary CREATEROLE migration is insufficient (must be able to SET ROLE "ipat_schema_owner"), so source now implements a temporary nologin OS migrator mapped to DB superuser for hash-pinned first-install only, then removes the identity/map and verifies narrow API/OIDC peer roles. Owner-Mac disposable Ubuntu26 full package/cluster/migration rehearsal PASS with zero TCP5432. This is stronger than schema compatibility but does not pass HA, real off-host WAL/PITR restore, production-root execution, failover or public release.
