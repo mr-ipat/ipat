@@ -23,6 +23,10 @@ class R990ResticSource(unittest.TestCase):
         self.assertIn('chown -R $host_uid:$host_gid /cleanup',SCRIPT)
         self.assertIn('chown -R $host_uid:$host_gid /plain/base /plain/wal',SCRIPT)
 
+    def test_restic_restore_integrity_check_is_readonly_root_then_runtime_reowned(self):
+        self.assertIn('--user 0 -v "$restored/base:/verify:ro"',SCRIPT)
+        self.assertIn('chown -R postgres:postgres /restore',SCRIPT)
+
     def test_rls_and_bad_change_absence(self):
         for x in ("-U ipat_app_runtime","SET LOCAL ipat.tenant_id",
                   '[[ "$good_count" == 1 && "$bad_count" == 0 ]]',

@@ -126,7 +126,7 @@ restic restore latest --tag ipat-r990-encrypted-pg18 --target "$restored" >/dev/
 post_restore_hash=$(cd "$restored" && find base wal -type f -print0 | sort -z | xargs -0 sha256sum | sha256sum | awk '{print $1}')
 [[ "$post_restore_hash" == "$pre_backup_hash" ]] || { echo 'encrypted restore artifact hash mismatch' >&2; exit 1; }
 
-docker run --rm --user postgres -v "$restored/base:/verify:ro" "$image" pg_verifybackup /verify >/dev/null
+docker run --rm --user 0 -v "$restored/base:/verify:ro" "$image" pg_verifybackup /verify >/dev/null
 
 docker run --rm -u 0 -v "$restored/base:/restore" -v "$restored/wal:/archive:ro" "$image" sh -ceu '
 chown -R postgres:postgres /restore
