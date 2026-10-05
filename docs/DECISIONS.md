@@ -763,3 +763,6 @@ For the first commercial staging database, use Ubuntu26 PostgreSQL18 with no TCP
 
 ## ADR-095 — R9.88 PostgreSQL18 PITR must prove named-point rollback, not only readable basebackup (2026-10-05)
 Commercial recovery acceptance requires replay of archived WAL to an explicit recovery target and verification that changes committed after the target are absent. A basebackup-only restore is insufficient. The canonical disposable test uses PostgreSQL18, the exact R9.87 migration manifest, physical pg_basebackup plus pg_verifybackup, archived WAL, a named restore point, fresh recovery process, exact pre-point dataset hash/identity, explicit post-point absence and FORCE-RLS revalidation. Production acceptance remains separate and additionally requires independent off-host storage, distinct failure domain and measured RPO/RTO.
+
+## ADR-094 — R9.89 PostgreSQL18 physical standby with controlled single-writer promotion (2026-10-05)
+Use physical streaming replication in addition to PITR backups. Maintain exactly one writable primary. Promotion requires positive evidence the previous primary is unavailable/fenced. R9.89 validates PostgreSQL mechanics in disposable infrastructure; production failover coordinator selection remains open until real two-host failure tests establish fencing, endpoint routing and RPO/RTO.

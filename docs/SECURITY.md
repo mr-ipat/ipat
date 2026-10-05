@@ -1301,3 +1301,6 @@ Refuse existing clusters, verify every migration digest, suppress package-create
 
 ## R9.88 — Recovery security invariants
 PITR evidence must protect tenant isolation after restore, not merely recover bytes. The recovery drill verifies the same restricted runtime role sees zero unscoped rows and only its exact scoped tenant after promotion. Empty query hashes are invalid evidence. Archived WAL and physical backups contain cross-tenant data and therefore require encryption, access separation, retention/immutability and independent storage in production. Recovery credentials, WAL contents and backup keys must never be committed or logged.
+
+## R9.89 — HA split-brain controls
+Failover must prove the previous primary is stopped or fenced before promotion. Replication credentials are service-only least-privileged REPLICATION identities, never application credentials. Cross-host replication requires encrypted authenticated transport and allowlisting. Promotion must preserve RLS and audit grants. Automatic failback is forbidden until the former primary is rebuilt as a standby and timeline consistency is verified.
