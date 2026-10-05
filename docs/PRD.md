@@ -1210,3 +1210,6 @@ MUST: database recovery testing cannot stop at a readable physical backup. Rehea
 
 ## R9.89 — PostgreSQL HA controlled-failover requirement
 MUST: at least one independent physical streaming standby, one writable primary, encrypted replication, monitored lag, explicit fencing before promotion, preserved tenant RLS/audit and independent PITR backup. Real cross-host failover with measured RPO/RTO is required before public commercial GO. Disposable R9.89 closes only the PostgreSQL18 replication/promotion mechanism.
+
+## R9.90 — Encrypted off-host PostgreSQL backup requirement
+MUST: PostgreSQL base backups and required WAL are encrypted to a storage failure domain separate from the active database; backup credentials are external secrets; retention is documented; restore is performed on an independent approved target; pg_verifybackup, PITR target correctness, tenant/RLS integrity, RPO and RTO are measured. R9.90 disposable Restic rehearsal validates encryption/restore mechanics only, not actual offsite production acceptance.

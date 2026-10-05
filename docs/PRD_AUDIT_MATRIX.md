@@ -211,3 +211,6 @@ New isolated test performs exact R9.87 migrations, synthetic tenant row creation
 
 ## R9.89 PostgreSQL18 streaming standby candidate
 Disposable PostgreSQL18 primary/standby proves streaming, pre-promotion write denial, committed-row replication, deliberate primary stop, controlled promotion, retained tenant data, FORCE-RLS and post-promotion writes. First run exposed a boolean-text readiness false negative and was corrected to explicit 1/0. Production AC-13 remains OPEN for actual independent hosts, encrypted replication, fencing, stable endpoint, monitored lag, measured RPO/RTO and actual offsite PITR.
+
+## R9.90 encrypted Restic recovery candidate
+Owner-Mac real disposable PG18 + Restic rehearsal passes: base backup, WAL archive, encrypted snapshot, restic check, plaintext staging deletion, encrypted restore, pg_verifybackup, named-point PITR, post-point bad-row absence and FORCE-RLS 0/1. This improves AC-07/AC-13 source evidence but remains BLOCKED production until the real repository is outside the primary failure domain and an actual production snapshot is restored independently with measured RPO/RTO.

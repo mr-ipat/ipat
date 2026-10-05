@@ -766,3 +766,6 @@ Commercial recovery acceptance requires replay of archived WAL to an explicit re
 
 ## ADR-094 — R9.89 PostgreSQL18 physical standby with controlled single-writer promotion (2026-10-05)
 Use physical streaming replication in addition to PITR backups. Maintain exactly one writable primary. Promotion requires positive evidence the previous primary is unavailable/fenced. R9.89 validates PostgreSQL mechanics in disposable infrastructure; production failover coordinator selection remains open until real two-host failure tests establish fencing, endpoint routing and RPO/RTO.
+
+## ADR-095 — R9.90 encrypted PostgreSQL base+WAL copies remain separate from HA (2026-10-05)
+Use encrypted off-host backup storage in addition to physical streaming standby. Restic is accepted for encrypted transport/snapshotting when repository credentials are external to Git and the target is a separate failure domain. Production acceptance requires a real independent restore from the encrypted repository; a local Restic rehearsal or healthy standby cannot satisfy the offsite-recovery gate.

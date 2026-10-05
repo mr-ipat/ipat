@@ -1215,3 +1215,6 @@ The PostgreSQL plane requires independently restorable base backup plus continuo
 
 ## R9.89 — PostgreSQL streaming-HA boundary
 PostgreSQL availability is separate from K3s worker scaling. Production baseline is one writable primary plus at least one physical streaming standby in an independent failure domain. A standby remains read-only until a reviewed failover decision proves/fences the former primary; only then may it promote. R9.88 PITR remains mandatory because replication also copies operator mistakes.
+
+## R9.90 — Encrypted backup separation
+Database HA replication and backups are independent. PostgreSQL base backup plus archived WAL must be encrypted before leaving the database failure domain and restored on an independent target for acceptance. Restic is an approved transport/encryption candidate for off-host copies; repository credentials and passwords remain deployment secrets outside Git. A replica never substitutes for an immutable/recoverable backup.
