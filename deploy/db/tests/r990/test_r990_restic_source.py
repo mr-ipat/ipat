@@ -27,6 +27,12 @@ class R990ResticSource(unittest.TestCase):
         self.assertIn('--user 0 -v "$restored/base:/verify:ro"',SCRIPT)
         self.assertIn('chown -R postgres:postgres /restore',SCRIPT)
 
+    def test_restored_wal_reowned_before_readonly_recovery_mount(self):
+        self.assertIn('-v "$restored/wal:/archive"',SCRIPT)
+        self.assertIn('chown -R postgres:postgres /restore /archive',SCRIPT)
+        self.assertIn('-v "$restored/wal:/archive:ro"',SCRIPT)
+        self.assertNotIn('docker run --rm -d --name "$restore_name"',SCRIPT)
+
     def test_rls_and_bad_change_absence(self):
         for x in ("-U ipat_app_runtime","SET LOCAL ipat.tenant_id",
                   '[[ "$good_count" == 1 && "$bad_count" == 0 ]]',

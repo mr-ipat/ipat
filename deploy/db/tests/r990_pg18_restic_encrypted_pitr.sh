@@ -128,8 +128,8 @@ post_restore_hash=$(cd "$restored" && find base wal -type f -print0 | sort -z | 
 
 docker run --rm --user 0 -v "$restored/base:/verify:ro" "$image" pg_verifybackup /verify >/dev/null
 
-docker run --rm -u 0 -v "$restored/base:/restore" -v "$restored/wal:/archive:ro" "$image" sh -ceu '
-chown -R postgres:postgres /restore
+docker run --rm -u 0 -v "$restored/base:/restore" -v "$restored/wal:/archive" "$image" sh -ceu '
+chown -R postgres:postgres /restore /archive
 cat >> /restore/postgresql.auto.conf <<EOF
 restore_command = '"'"'cp /archive/%f %p'"'"'
 recovery_target_name = '"'"'r990_before_bad_change'"'"'
@@ -138,7 +138,7 @@ EOF
 touch /restore/recovery.signal
 chown postgres:postgres /restore/postgresql.auto.conf /restore/recovery.signal
 '
-docker run --rm -d --name "$restore_name" \
+docker run -d --name "$restore_name" \
   --label ipat.test.disposable=r990 \
   -e PGDATA=/restore \
   -v "$restored/base:/restore" \
