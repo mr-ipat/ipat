@@ -29,3 +29,7 @@ The repository contains examples only. The examples use documentation IP 203.0.1
 ## Acceptance boundary
 
 Source tests check separation, hardening, checksum-pinned first install, exact DB roles, secret-file constraints, loopback listeners, rollback, and absence of firewall/device commands. systemd-analyze verification is run on Ubuntu 26.04. Actual production acceptance still requires a production PostgreSQL instance/roles and authentication mapping, real confidential IdP client+human MFA, securely provisioned secret/key files, root execution of prepare/apply, and then R9.84 staging/production IP certificate cutover.
+
+## Independent exact-main source verification candidate (2026-10-05)
+
+Canonical main 3b1d35bb16dd1a4b145d0a33e0e2a27b3edf860b passed seven R9.85 source-policy tests and full locked-offline control-api 110/110 on an isolated rootless owner-VPS checkout transferred from the owner Mac as a checksum-recorded Git bundle. No root installer/apply command was executed. Exact-head GitHub CI and actual privileged production deployment remain separate requirements.

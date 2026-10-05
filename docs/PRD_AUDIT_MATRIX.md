@@ -198,3 +198,6 @@ PR #177 exact head 2e2bcdd3c8f02f96a886a3d99a10d44615822b7c passed exact GitHub 
 
 ### R9.85 pre-commit source hardening
 Runtime env parsing is fail-closed before mapfile loading; first-install conflict checks precede binary/unit installation; source safety tests 7/7 PASS and Ubuntu26 systemd-analyze with synthetic expected executable/env paths PASS. Actual service-user PostgreSQL peer mapping, OIDC secret/key provisioning and live 3005/3006 activation remain unverified production gates.
+
+### R9.85 exact-main independent source verification candidate
+Canonical main 3b1d35bb16dd1a4b145d0a33e0e2a27b3edf860b independently passed owner-Mac R9.85 source tests 7/7 and exact isolated owner-VPS pinned-Rust full control-api 110/110 with no host mutation. This proves source-level service separation/rollback contracts only. Actual root prepare/apply, service activation, restricted production PostgreSQL auth mapping, human IdP/MFA, trusted HTTPS ingress and independent recovery remain production acceptance gates. Exact-head GitHub CI must pass before source closure.
