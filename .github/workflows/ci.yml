@@ -542,7 +542,11 @@ jobs:
         run: |
           cargo test --locked -p control-api platform_owner_api::tests::r981_platform_host_cookie_csrf_are_separate -- --exact
           cargo test --locked -p control-api tenant_domain::tests::saved_customer_domain_can_use_temporary_ipv4_without_ipat_id -- --exact
-          cargo test --locked -p control-api commercial_tenant_api::pg_integration::r968_real_pg_durable_host_session_to_site_device_domain_http -- --exact
+          # Existing R9.68 step above ALREADY executes the expanded real
+          # Axum+PostgreSQL test on this disposable shared DB. Never replay
+          # a data-creating E2E in the same CI PostgreSQL cluster.
+          grep -Fq saved_customer_dns_guidance apps/control-api/src/commercial_tenant_api.rs
+          grep -Fq customer_domain_dns apps/control-api/src/commercial_tenant_api.rs
           node --check web/console/tenant/app.js
           node deploy/scripts/lab/r982/test_customer_dns_ui.cjs
           python3 -m unittest discover deploy/scripts/production -p test_r982_temporary_ip_tls_preflight.py -v
