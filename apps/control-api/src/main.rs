@@ -17,6 +17,7 @@ mod oidc_lab;
 mod owner_device_registry_lab;
 mod owner_domain_control_lab;
 mod owner_site_ui_lab;
+mod platform_oidc_issuer;
 mod platform_owner_api;
 mod site_a_pairing_lab;
 mod tenant_domain;
@@ -255,6 +256,38 @@ async fn main() {
         .await;
         return;
     }
+    // R9.83: dedicated Platform Owner confidential OIDC/MFA issuer.
+    // It shares NO business, tenant, DNS-verifier, lab or device routes.
+    if std::env::var("IPAT_R983_PLATFORM_OIDC_ISSUER_SERVICE").as_deref() == Ok("YES") {
+        for forbidden in [
+            "IPAT_R981_PLATFORM_SERVICE",
+            "IPAT_R969_COMMERCIAL_SERVICE",
+            "IPAT_R970_OIDC_ISSUER_SERVICE",
+            "IPAT_R983_PLATFORM_OIDC_ISSUER_SERVICE",
+            "IPAT_TENANT_DOMAIN_VERIFIER",
+            "IPAT_LAB_WEB",
+            "IPAT_RUN_K3S_LAB",
+            "IPAT_R911_PRIVATE_CANARY",
+            "IPAT_R940_PRIVATE_OWNER_READ",
+            "IPAT_LAB_OIDC_VERIFY",
+        ] {
+            assert!(
+                std::env::var_os(forbidden).is_none(),
+                "Platform Owner issuer cannot share another control-plane or device process"
+            );
+        }
+        let app = platform_oidc_issuer::from_environment()
+            .await
+            .expect("verified Platform Owner OIDC/MFA issuer prerequisites missing");
+        let listener = tokio::net::TcpListener::bind("127.0.0.1:3006")
+            .await
+            .expect("dedicated Platform Owner OIDC loopback listener");
+        axum::serve(listener, app)
+            .await
+            .expect("serve dedicated Platform Owner OIDC issuer");
+        return;
+    }
+
     // R9.81: exclusive Platform Owner API. Never combine this BFF with
     // tenant, login issuer, physical lab or private owner device services.
     if std::env::var("IPAT_R981_PLATFORM_SERVICE").as_deref() == Ok("YES") {
@@ -295,6 +328,7 @@ async fn main() {
         let conflict = [
             "IPAT_R969_COMMERCIAL_SERVICE",
             "IPAT_R981_PLATFORM_SERVICE",
+            "IPAT_R983_PLATFORM_OIDC_ISSUER_SERVICE",
             "IPAT_LAB_WEB",
             "IPAT_R940_PRIVATE_OWNER_READ",
             "IPAT_R911_PRIVATE_CANARY",
@@ -340,6 +374,7 @@ async fn main() {
             "IPAT_TENANT_DOMAIN_RESOLVER",
             "IPAT_CUSTOM_DOMAIN_INSTRUCTIONS",
             "IPAT_R970_OIDC_ISSUER_SERVICE",
+            "IPAT_R983_PLATFORM_OIDC_ISSUER_SERVICE",
         ]
         .iter()
         .any(|name| std::env::var(name).is_ok());

@@ -551,6 +551,13 @@ jobs:
           node deploy/scripts/lab/r982/test_customer_dns_ui.cjs
           python3 -m unittest discover deploy/scripts/production -p test_r982_temporary_ip_tls_preflight.py -v
           grep -Fq R9.82 docs/PROJECT_STATUS.md
+      - name: R9.83 dedicated Platform Owner signed OIDC MFA to current PostgreSQL session
+        run: |
+          cargo test --locked -p control-api platform_oidc_issuer::tests:: -- --nocapture
+          cargo test --locked -p control-api platform_oidc_issuer::r983_pg_integration::r983_signed_fresh_mfa_identity_issues_platform_only_session -- --exact
+          grep -Fq '127.0.0.1:3006' apps/control-api/src/main.rs
+          grep -Fq ipat_platform_session_issuer_login apps/control-api/src/platform_oidc_issuer.rs
+          grep -Fq R9.83 docs/PROJECT_STATUS.md
       - name: R9.71 real disposable PostgreSQL HA-safe one-use OIDC state across Rust client instances
         run: |
           python3 -m unittest discover deploy/db/tests -p test_oidc_pending_integration.py -v
