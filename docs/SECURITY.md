@@ -1304,3 +1304,6 @@ PITR evidence must protect tenant isolation after restore, not merely recover by
 
 ## R9.89 — HA split-brain controls
 Failover must prove the previous primary is stopped or fenced before promotion. Replication credentials are service-only least-privileged REPLICATION identities, never application credentials. Cross-host replication requires encrypted authenticated transport and allowlisting. Promotion must preserve RLS and audit grants. Automatic failback is forbidden until the former primary is rebuilt as a standby and timeline consistency is verified.
+
+## R9.90 — Backup confidentiality and recovery integrity
+Backup secrets must not appear in repository files, shell history, prompts or application logs. Use secret files with restrictive ownership/permissions and an off-host repository under independent access control. Recovery acceptance must delete or isolate original plaintext staging, restore from encrypted repository bytes, rerun PostgreSQL backup verification, validate PITR boundaries and recheck tenant RLS. Snapshot existence alone is not restore proof.

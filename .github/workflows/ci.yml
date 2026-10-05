@@ -665,6 +665,15 @@ jobs:
           python3 -m unittest discover deploy/db/tests -p 'test_job_outbox_integration.py' -v
       - name: Verify synthetic physical basebackup and restore on separate CI server process
         run: bash deploy/db/tests/physical_restore_ephemeral.sh
+      - name: R9.90 Restic-encrypted PostgreSQL18 base-WAL PITR recovery rehearsal
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends restic
+          restic version
+          bash -n deploy/db/tests/r990_pg18_restic_encrypted_pitr.sh
+          python3 -m unittest deploy/db/tests/r990/test_r990_restic_source.py -v
+          IPAT_R990_RESTIC_PITR_DOCKER=YES bash deploy/db/tests/r990_pg18_restic_encrypted_pitr.sh
+          grep -Fq R9.90 docs/PROJECT_STATUS.md
       - name: R9.89 PostgreSQL18 streaming standby controlled promotion rehearsal
         run: |
           bash -n deploy/db/tests/r989_pg18_streaming_failover_docker.sh
