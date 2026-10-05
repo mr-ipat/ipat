@@ -65,12 +65,15 @@ fn eligible_temporary_ipv4(host: &str) -> bool {
         || (a == 203 && b == 0 && c == 113)
         || (a == 255))
 }
-fn allowed_platform_host(host: &str, ip_mode: bool, ip_san_reviewed: bool) -> bool {
+pub(super) fn allowed_platform_host(host: &str, ip_mode: bool, ip_san_reviewed: bool) -> bool {
     if host.parse::<Ipv4Addr>().is_ok() {
         ip_mode && ip_san_reviewed && eligible_temporary_ipv4(host)
     } else {
         strict_host(host)
     }
+}
+pub(super) fn platform_host_shape(host: &str) -> bool {
+    strict_host(host) || eligible_temporary_ipv4(host)
 }
 pub(super) async fn connect_from_environment() -> Result<(Arc<Client>, String), String> {
     if unsafe { libc::geteuid() } == 0
@@ -240,11 +243,11 @@ async fn verified(
     }
     Some((cookie, host, csrf))
 }
-async fn unavailable() -> Response {
+async fn sign_in_page() -> Response {
     (
-        StatusCode::SERVICE_UNAVAILABLE,
+        StatusCode::OK,
         html_headers(),
-        Html("Platform Owner login requires a separately approved real confidential OIDC issuer with enforced MFA. No synthetic login is available."),
+        Html("<!doctype html><html lang=\"en-US\"><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width\"><title>IPAT Platform Owner sign in</title><h1>IPAT Platform Owner</h1><p>Use the approved Platform Owner identity provider and multi-factor authentication.</p><a href=\"/platform/auth/oidc/start\">Sign in securely</a></html>"),
     )
         .into_response()
 }
@@ -374,7 +377,7 @@ async fn logout(
 pub(super) fn router(db: Arc<Client>, expected_host: String) -> Router {
     let state = Arc::new(PlatformState { db, expected_host });
     Router::new()
-        .route("/", get(unavailable))
+        .route("/", get(sign_in_page))
         .route("/platform/dashboard", get(dashboard))
         .route("/platform/assets/app.js", get(js))
         .route("/platform/assets/style.css", get(css))
@@ -535,12 +538,16 @@ mod pg_integration {
             .await
             .unwrap();
         assert_eq!(unauthorized.status(), StatusCode::UNAUTHORIZED);
-        let unsupported_login = app
+        let login_page = app
             .clone()
             .oneshot(req("GET", "/", HOST, None, None, None))
             .await
             .unwrap();
-        assert_eq!(unsupported_login.status(), StatusCode::SERVICE_UNAVAILABLE);
+        assert_eq!(login_page.status(), StatusCode::OK);
+        let login_html = to_bytes(login_page.into_body(), 32 * 1024).await.unwrap();
+        let login_html = String::from_utf8(login_html.to_vec()).unwrap();
+        assert!(login_html.contains("/platform/auth/oidc/start"));
+        assert!(!login_html.contains("password"));
         let wrong_host = app
             .clone()
             .oneshot(req(
