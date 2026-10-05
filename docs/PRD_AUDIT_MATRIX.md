@@ -214,3 +214,6 @@ Disposable PostgreSQL18 primary/standby proves streaming, pre-promotion write de
 
 ## R9.90 encrypted Restic recovery candidate
 Owner-Mac real disposable PG18 + Restic rehearsal passes: base backup, WAL archive, encrypted snapshot, restic check, plaintext staging deletion, encrypted restore, pg_verifybackup, named-point PITR, post-point bad-row absence and FORCE-RLS 0/1. This improves AC-07/AC-13 source evidence but remains BLOCKED production until the real repository is outside the primary failure domain and an actual production snapshot is restored independently with measured RPO/RTO.
+
+## R9.91 remote-only backup evidence source candidate
+Adds a fail-closed read-only Restic snapshot observer that rejects local/loopback/private-target repositories, repository inline passwords, inline secret env and same declared active/backup failure domain. It never mutates repository and always reports production NO_GO. Source tests can prove parser/secret/output/command restrictions only; actual independent storage ownership, production base+WAL backup, distinct-host restore and measured RPO/RTO remain AC-13 BLOCKED until executed.

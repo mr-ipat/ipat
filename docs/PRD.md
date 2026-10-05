@@ -1213,3 +1213,6 @@ MUST: at least one independent physical streaming standby, one writable primary,
 
 ## R9.90 — Encrypted off-host PostgreSQL backup requirement
 MUST: PostgreSQL base backups and required WAL are encrypted to a storage failure domain separate from the active database; backup credentials are external secrets; retention is documented; restore is performed on an independent approved target; pg_verifybackup, PITR target correctness, tenant/RLS integrity, RPO and RTO are measured. R9.90 disposable Restic rehearsal validates encryption/restore mechanics only, not actual offsite production acceptance.
+
+## R9.91 — Offsite encrypted backup evidence gate
+MUST distinguish local encrypted backup rehearsal from a genuinely independent remote backup failure domain. Credentials must remain external secrets; local/file/loopback/private-target and credential-bearing repository identifiers are denied. Read-only observation may verify a tagged snapshot exists but cannot satisfy AC-13. Production acceptance requires a real distinct-host restore with pg_verifybackup, PITR correctness, tenant/RLS/audit checks, measured RPO/RTO and independently reviewed retention/credential separation.
