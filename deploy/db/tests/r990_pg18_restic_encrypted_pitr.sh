@@ -7,6 +7,8 @@ umask 077
   echo 'Requires explicit disposable encrypted-PITR opt-in' >&2; exit 2; }
 for cmd in docker restic sha256sum mktemp python3; do command -v "$cmd" >/dev/null || exit 2; done
 root=$(cd "$(dirname "$0")/../../.." && pwd -P)
+host_uid=$(id -u)
+host_gid=$(id -g)
 image='postgres:18-alpine@sha256:77f585114c32fbca283dc835b0596f4e52b51b4c6662d7810b2f4084f60a1873'
 tag="r990-$RANDOM-$$"
 source_name="ipat-$tag-source"
@@ -95,6 +97,9 @@ for _ in $(seq 1 80); do
 done
 [[ "$archived" == YES ]] || { echo 'WAL archive did not complete' >&2; exit 3; }
 docker stop -t 10 "$source_name" >/dev/null
+# Linux bind-mount ownership follows the postgres container UID. Return the
+# stopped disposable staging tree to the invoking runner before Restic/delete.
+docker run --rm -u 0 -v "$plain:/plain" "$image" sh -ceu   "chown -R $host_uid:$host_gid /plain/base /plain/wal"
 
 pre_backup_hash=$(cd "$plain" && find base wal -type f -print0 | sort -z | xargs -0 sha256sum | sha256sum | awk '{print $1}')
 [[ -n "$pre_backup_hash" ]] || { echo 'backup artifact hash unavailable' >&2; exit 3; }
