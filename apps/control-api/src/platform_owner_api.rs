@@ -1,0 +1,658 @@
+//! Dedicated source-only Platform Owner BFF. NEVER mount in tenant/device service.
+//! This router accepts only a previously issued real-MFA platform session;
+//! it deliberately has no unverified login or role-claim endpoint.
+use axum::{
+    extract::State,
+    http::{header, HeaderMap, HeaderName, HeaderValue, StatusCode},
+    response::{Html, IntoResponse, Response},
+    routing::get,
+    Json, Router,
+};
+use serde::Deserialize;
+use serde_json::{json, Value};
+use sha2::{Digest, Sha256};
+use std::{path::PathBuf, sync::Arc};
+use tokio_postgres::{Client, Config, NoTls};
+use uuid::Uuid;
+
+use crate::tenant_domain::canonical_host;
+
+const CSRF_HEADER: HeaderName = HeaderName::from_static("x-ipat-platform-csrf");
+const HTML: &str = include_str!("../../../web/console/platform/dashboard.html");
+const JS: &str = include_str!("../../../web/console/platform/app.js");
+const CSS: &str = include_str!("../../../web/console/platform/style.css");
+
+#[derive(Clone)]
+struct PlatformState {
+    db: Arc<Client>,
+    expected_host: String,
+}
+fn strict_host(host: &str) -> bool {
+    host.len() <= 253
+        && host.split('.').count() >= 2
+        && host.split('.').all(|part| {
+            !part.is_empty()
+                && part.len() <= 63
+                && !part.starts_with('-')
+                && !part.ends_with('-')
+                && part
+                    .bytes()
+                    .all(|b| b.is_ascii_lowercase() || b.is_ascii_digit() || b == b'-')
+        })
+        && host
+            .rsplit('.')
+            .next()
+            .is_some_and(|t| t.len() >= 2 && t.bytes().all(|b| b.is_ascii_lowercase()))
+}
+pub(super) async fn connect_from_environment() -> Result<(Arc<Client>, String), String> {
+    if unsafe { libc::geteuid() } == 0
+        || std::env::var("IPAT_R981_PLATFORM_SERVICE").as_deref() != Ok("YES")
+        || std::env::var("IPAT_R981_REVIEWED_TRUSTED_HTTPS_EDGE").as_deref() != Ok("YES")
+    {
+        return Err(
+            "dedicated Platform Owner mode requires nonroot and reviewed HTTPS edge".into(),
+        );
+    }
+    let host =
+        std::env::var("IPAT_R981_EXACT_PLATFORM_HOST").map_err(|_| "platform Host missing")?;
+    if !strict_host(&host) {
+        return Err("invalid exact platform Host".into());
+    }
+    let user = std::env::var("IPAT_R981_PLATFORM_DB_USER").map_err(|_| "DB user missing")?;
+    if user != "ipat_platform_session_api_login" {
+        return Err("wrong dedicated DB user".into());
+    }
+    let name = std::env::var("IPAT_R981_PLATFORM_DB_NAME").map_err(|_| "DB name missing")?;
+    if name.is_empty()
+        || name.len() > 63
+        || !name.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'_')
+    {
+        return Err("invalid dedicated DB name".into());
+    }
+    let path = std::env::var("IPAT_R981_PLATFORM_DB_SOCKET").map_err(|_| "DB socket missing")?;
+    if !PathBuf::from(&path).is_absolute() || path.len() > 200 || path.contains("..") {
+        return Err("invalid local DB socket".into());
+    }
+    let mut config = Config::new();
+    config.host_path(PathBuf::from(path));
+    config.user(&user);
+    config.dbname(&name);
+    let (client, connection) = config
+        .connect(NoTls)
+        .await
+        .map_err(|_| "dedicated Platform Owner database unavailable")?;
+    tokio::spawn(async move {
+        let _ = connection.await;
+    });
+    Ok((Arc::new(client), host))
+}
+fn headers(content: &'static str) -> HeaderMap {
+    let mut h = HeaderMap::new();
+    h.insert(header::CONTENT_TYPE, HeaderValue::from_static(content));
+    h.insert(header::CACHE_CONTROL, HeaderValue::from_static("no-store"));
+    h.insert(
+        "x-content-type-options",
+        HeaderValue::from_static("nosniff"),
+    );
+    h.insert("x-frame-options", HeaderValue::from_static("DENY"));
+    h.insert("referrer-policy", HeaderValue::from_static("no-referrer"));
+    h
+}
+fn html_headers() -> HeaderMap {
+    let mut h = headers("text/html; charset=utf-8");
+    h.insert(
+        "content-security-policy",
+        HeaderValue::from_static(
+            "default-src 'none'; base-uri 'none'; frame-ancestors 'none'; object-src 'none'; form-action 'self'; connect-src 'self'; style-src 'self'; script-src 'self'",
+        ),
+    );
+    h
+}
+fn json_resp(status: StatusCode, value: Value) -> (StatusCode, HeaderMap, Json<Value>) {
+    (
+        status,
+        headers("application/json; charset=utf-8"),
+        Json(value),
+    )
+}
+fn denied(status: StatusCode) -> (StatusCode, HeaderMap, Json<Value>) {
+    json_resp(status, json!({"ok":false,"error":"REQUEST_REJECTED"}))
+}
+fn request_host(h: &HeaderMap, allowed: &str) -> Option<String> {
+    if h.get_all(header::HOST).iter().count() != 1 {
+        return None;
+    }
+    let canonical = canonical_host(h.get(header::HOST)?)?;
+    (canonical.as_str() == allowed).then(|| allowed.to_string())
+}
+fn secret(h: &HeaderMap) -> Option<&str> {
+    if h.get_all(header::COOKIE).iter().count() != 1 {
+        return None;
+    }
+    let raw = h.get(header::COOKIE)?.to_str().ok()?;
+    let mut found = None;
+    for field in raw.split(';') {
+        if let Some(value) = field.trim().strip_prefix("__Host-ipat_platform_session=") {
+            if found.is_some()
+                || value.len() != 43
+                || !value
+                    .bytes()
+                    .all(|b| b.is_ascii_alphanumeric() || b == b'-' || b == b'_')
+            {
+                return None;
+            }
+            found = Some(value);
+        }
+    }
+    found
+}
+fn csrf(h: &HeaderMap) -> Option<&str> {
+    if h.get_all(&CSRF_HEADER).iter().count() != 1 {
+        return None;
+    }
+    let value = h.get(&CSRF_HEADER)?.to_str().ok()?;
+    (value.len() == 43
+        && value
+            .bytes()
+            .all(|b| b.is_ascii_alphanumeric() || b == b'-' || b == b'_'))
+    .then_some(value)
+}
+fn sha256_hex(input: &str) -> String {
+    let mut digest = String::with_capacity(64);
+    for byte in Sha256::digest(input.as_bytes()) {
+        use std::fmt::Write as _;
+        write!(&mut digest, "{byte:02x}").expect("write fixed digest");
+    }
+    digest
+}
+fn session_inputs(
+    h: &HeaderMap,
+    allowed: &str,
+    mutation: bool,
+) -> Option<(String, String, Option<String>)> {
+    let host = request_host(h, allowed)?;
+    if mutation
+        && (h.get_all(header::ORIGIN).iter().count() != 1
+            || h.get(header::ORIGIN).and_then(|v| v.to_str().ok())
+                != Some(format!("https://{host}").as_str()))
+    {
+        return None;
+    }
+    let cookie = sha256_hex(secret(h)?);
+    let csrf = if mutation {
+        Some(sha256_hex(csrf(h)?))
+    } else {
+        None
+    };
+    Some((cookie, host, csrf))
+}
+async fn verified(
+    s: &PlatformState,
+    h: &HeaderMap,
+    mutation: bool,
+) -> Option<(String, String, Option<String>)> {
+    let (cookie, host, csrf) = session_inputs(h, &s.expected_host, mutation)?;
+    let row = s
+        .db
+        .query_opt(
+            "SELECT issuer,subject FROM ipat_platform.authenticate_platform_browser_session($1,$2,$3,$4)",
+            &[&cookie, &host, &csrf, &mutation],
+        )
+        .await
+        .ok()??;
+    let issuer: String = row.get(0);
+    let subject: String = row.get(1);
+    if issuer.is_empty() || subject.is_empty() {
+        return None;
+    }
+    Some((cookie, host, csrf))
+}
+async fn unavailable() -> Response {
+    (
+        StatusCode::SERVICE_UNAVAILABLE,
+        html_headers(),
+        Html("Platform Owner login requires a separately approved real confidential OIDC issuer with enforced MFA. No synthetic login is available."),
+    )
+        .into_response()
+}
+async fn dashboard(State(s): State<Arc<PlatformState>>, h: HeaderMap) -> Response {
+    if verified(&s, &h, false).await.is_none() {
+        return (
+            StatusCode::UNAUTHORIZED,
+            html_headers(),
+            "Sign in through an approved Platform Owner issuer.",
+        )
+            .into_response();
+    }
+    (StatusCode::OK, html_headers(), Html(HTML)).into_response()
+}
+async fn js() -> Response {
+    (
+        StatusCode::OK,
+        headers("application/javascript; charset=utf-8"),
+        JS,
+    )
+        .into_response()
+}
+async fn css() -> Response {
+    (StatusCode::OK, headers("text/css; charset=utf-8"), CSS).into_response()
+}
+async fn list(
+    State(s): State<Arc<PlatformState>>,
+    h: HeaderMap,
+) -> (StatusCode, HeaderMap, Json<Value>) {
+    let Some((cookie, host, _)) = verified(&s, &h, false).await else {
+        return denied(StatusCode::UNAUTHORIZED);
+    };
+    let Ok(rows) = s.db.query(
+        "SELECT tenant_id,tenant_slug,tenant_state,reserved_at::text FROM ipat_platform.list_reservations_from_platform_session($1,$2)",
+        &[&cookie, &host],
+    ).await else {
+        return denied(StatusCode::SERVICE_UNAVAILABLE);
+    };
+    json_resp(
+        StatusCode::OK,
+        json!({
+            "ok":true,
+            "reservations":rows.into_iter().map(|r| json!({
+                "tenant_id":r.get::<_,Uuid>(0).to_string(),
+                "tenant_slug":r.get::<_,String>(1),
+                "tenant_state":r.get::<_,String>(2),
+                "reserved_at":r.get::<_,String>(3)
+            })).collect::<Vec<_>>()
+        }),
+    )
+}
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct Reservation {
+    request_id: String,
+    tenant_id: String,
+    slug: String,
+}
+async fn create(
+    State(s): State<Arc<PlatformState>>,
+    h: HeaderMap,
+    Json(v): Json<Reservation>,
+) -> (StatusCode, HeaderMap, Json<Value>) {
+    let Some((cookie, host, csrf)) = verified(&s, &h, true).await else {
+        return denied(StatusCode::UNAUTHORIZED);
+    };
+    let (Ok(request), Ok(tenant)) = (
+        Uuid::parse_str(&v.request_id),
+        Uuid::parse_str(&v.tenant_id),
+    ) else {
+        return denied(StatusCode::UNPROCESSABLE_ENTITY);
+    };
+    if v.slug.is_empty()
+        || v.slug.len() > 63
+        || !v
+            .slug
+            .bytes()
+            .all(|b| b.is_ascii_lowercase() || b.is_ascii_digit() || b == b'-')
+        || v.slug.starts_with('-')
+        || v.slug.ends_with('-')
+    {
+        return denied(StatusCode::UNPROCESSABLE_ENTITY);
+    }
+    let result=s.db.query_one(
+        "SELECT ipat_platform.reserve_tenant_from_platform_session($1,$2,$3,$4::uuid,$5::uuid,$6)",
+        &[&cookie,&host,&csrf,&request,&tenant,&v.slug]
+    ).await;
+    match result.ok().and_then(|r| r.get::<_, Option<Uuid>>(0)) {
+        Some(id) => json_resp(
+            StatusCode::CREATED,
+            json!({"ok":true,"tenant_id":id.to_string(),"state":"suspended"}),
+        ),
+        None => denied(StatusCode::CONFLICT),
+    }
+}
+async fn logout(
+    State(s): State<Arc<PlatformState>>,
+    h: HeaderMap,
+) -> (StatusCode, HeaderMap, Json<Value>) {
+    let Some((cookie, host, csrf)) = verified(&s, &h, true).await else {
+        return denied(StatusCode::UNAUTHORIZED);
+    };
+    let result =
+        s.db.query_one(
+            "SELECT ipat_platform.revoke_platform_browser_session($1,$2,$3)",
+            &[&cookie, &host, &csrf],
+        )
+        .await;
+    if !result.ok().is_some_and(|r| r.get::<_, bool>(0)) {
+        return denied(StatusCode::CONFLICT);
+    }
+    let mut h = headers("application/json; charset=utf-8");
+    h.append(
+        header::SET_COOKIE,
+        HeaderValue::from_static(
+            "__Host-ipat_platform_session=; Secure; HttpOnly; SameSite=Strict; Path=/; Max-Age=0",
+        ),
+    );
+    h.append(
+        header::SET_COOKIE,
+        HeaderValue::from_static(
+            "__Host-ipat_platform_csrf=; Secure; SameSite=Strict; Path=/; Max-Age=0",
+        ),
+    );
+    (StatusCode::OK, h, Json(json!({"ok":true})))
+}
+pub(super) fn router(db: Arc<Client>, expected_host: String) -> Router {
+    let state = Arc::new(PlatformState { db, expected_host });
+    Router::new()
+        .route("/", get(unavailable))
+        .route("/platform/dashboard", get(dashboard))
+        .route("/platform/assets/app.js", get(js))
+        .route("/platform/assets/style.css", get(css))
+        .route("/api/v1/platform/reservations", get(list).post(create))
+        .route("/api/v1/platform/logout", axum::routing::post(logout))
+        .with_state(state)
+}
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn r981_platform_host_cookie_csrf_are_separate() {
+        assert!(strict_host("admin.platform.example"));
+        for bad in [
+            "a",
+            "admin.EXAMPLE.org",
+            "admin..example.org",
+            "-admin.example.org",
+            "admin.example.org:443",
+        ] {
+            assert!(!strict_host(bad));
+        }
+        let mut h = HeaderMap::new();
+        h.insert(
+            header::HOST,
+            HeaderValue::from_static("admin.platform.example"),
+        );
+        h.insert(
+            header::COOKIE,
+            HeaderValue::from_static(
+                "__Host-ipat_platform_session=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            ),
+        );
+        h.insert(
+            header::ORIGIN,
+            HeaderValue::from_static("https://admin.platform.example"),
+        );
+        h.insert(
+            &CSRF_HEADER,
+            HeaderValue::from_static("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"),
+        );
+        assert!(session_inputs(&h, "admin.platform.example", true).is_some());
+        assert!(session_inputs(&h, "other.platform.example", false).is_none());
+        h.append(
+            &CSRF_HEADER,
+            HeaderValue::from_static("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"),
+        );
+        assert!(session_inputs(&h, "admin.platform.example", true).is_none());
+    }
+}
+
+#[cfg(test)]
+mod pg_integration {
+    use super::*;
+    use axum::{
+        body::{to_bytes, Body},
+        http::Request,
+    };
+    use tower::ServiceExt;
+
+    const HOST: &str = "platform-r981.synthetic.invalid";
+    const ISSUER: &str = "https://identity.r981.synthetic.invalid/realm/platform";
+    const SUBJECT: &str = "owner-r981";
+    const COOKIE: &str = "ccccccccccccccccccccccccccccccccccccccccccc";
+    const CSRF: &str = "ddddddddddddddddddddddddddddddddddddddddddd";
+
+    async fn db() -> Client {
+        let mut cfg = Config::new();
+        cfg.host("127.0.0.1");
+        cfg.port(
+            std::env::var("PGPORT")
+                .ok()
+                .and_then(|x| x.parse().ok())
+                .unwrap_or(5432),
+        );
+        cfg.user(std::env::var("PGUSER").as_deref().unwrap_or("postgres"));
+        if let Ok(password) = std::env::var("PGPASSWORD") {
+            cfg.password(password);
+        }
+        cfg.dbname("ipat_synthetic");
+        let (client, conn) = cfg.connect(NoTls).await.unwrap();
+        tokio::spawn(async move {
+            let _ = conn.await;
+        });
+        client
+    }
+    fn req(
+        method: &str,
+        path: &str,
+        host: &str,
+        cookie: Option<&str>,
+        csrf: Option<&str>,
+        body: Option<&str>,
+    ) -> Request<Body> {
+        let mut b = Request::builder()
+            .method(method)
+            .uri(path)
+            .header("Host", host);
+        if let Some(c) = cookie {
+            b = b.header("Cookie", format!("__Host-ipat_platform_session={c}"));
+        }
+        if let Some(c) = csrf {
+            b = b
+                .header("Origin", format!("https://{host}"))
+                .header("X-IPAT-Platform-CSRF", c);
+        }
+        if body.is_some() {
+            b = b.header("Content-Type", "application/json");
+        }
+        b.body(Body::from(body.unwrap_or_default().to_string()))
+            .unwrap()
+    }
+    async fn json_body(r: Response) -> Value {
+        serde_json::from_slice(&to_bytes(r.into_body(), 64 * 1024).await.unwrap()).unwrap()
+    }
+    #[tokio::test]
+    async fn r981_real_pg_platform_api_owner_exact_host_csrf_suspended_reservation_logout() {
+        if std::env::var("IPAT_PG_EPHEMERAL_TEST").as_deref() != Ok("1")
+            || std::env::var("PGDATABASE").as_deref() != Ok("ipat_synthetic")
+        {
+            return;
+        }
+        let admin = db().await;
+        admin.execute("INSERT INTO ipat_platform.platform_principals(issuer,subject,role,approved_by,expires_at) VALUES($1,$2,'platform_owner','independent-synthetic-reviewer',clock_timestamp()+interval '1 day')",&[&ISSUER,&SUBJECT]).await.unwrap();
+        admin.execute("INSERT INTO ipat_platform.platform_console_hosts(hostname,verified_at,tls_ready_at) VALUES($1,clock_timestamp()-interval '1 day',clock_timestamp()-interval '1 hour')",&[&HOST]).await.unwrap();
+        let issuer_db = db().await;
+        issuer_db
+            .batch_execute("SET ROLE ipat_platform_session_issuer_login")
+            .await
+            .unwrap();
+        let session = Uuid::parse_str("81818181-8181-4181-8181-818181818181").unwrap();
+        let issued=issuer_db.query_one(
+            "SELECT ipat_platform.issue_platform_browser_session($1,$2,$3,$4::uuid,$5,$6,clock_timestamp()+interval '8 minutes')",
+            &[&ISSUER,&SUBJECT,&HOST,&session,&sha256_hex(COOKIE),&sha256_hex(CSRF)]
+        ).await.unwrap();
+        assert_eq!(issued.get::<_, Option<Uuid>>(0), Some(session));
+        let api_db = db().await;
+        api_db
+            .batch_execute("SET ROLE ipat_platform_session_api_login")
+            .await
+            .unwrap();
+        let app = router(Arc::new(api_db), HOST.to_string());
+        let unauthorized = app
+            .clone()
+            .oneshot(req("GET", "/platform/dashboard", HOST, None, None, None))
+            .await
+            .unwrap();
+        assert_eq!(unauthorized.status(), StatusCode::UNAUTHORIZED);
+        let unsupported_login = app
+            .clone()
+            .oneshot(req("GET", "/", HOST, None, None, None))
+            .await
+            .unwrap();
+        assert_eq!(unsupported_login.status(), StatusCode::SERVICE_UNAVAILABLE);
+        let wrong_host = app
+            .clone()
+            .oneshot(req(
+                "GET",
+                "/api/v1/platform/reservations",
+                "other-r981.synthetic.invalid",
+                Some(COOKIE),
+                None,
+                None,
+            ))
+            .await
+            .unwrap();
+        assert_eq!(wrong_host.status(), StatusCode::UNAUTHORIZED);
+        let tenant_cookie = app
+            .clone()
+            .oneshot(req(
+                "GET",
+                "/api/v1/platform/reservations",
+                HOST,
+                Some("eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"),
+                None,
+                None,
+            ))
+            .await
+            .unwrap();
+        assert_eq!(tenant_cookie.status(), StatusCode::UNAUTHORIZED);
+        let dashboard = app
+            .clone()
+            .oneshot(req(
+                "GET",
+                "/platform/dashboard",
+                HOST,
+                Some(COOKIE),
+                None,
+                None,
+            ))
+            .await
+            .unwrap();
+        assert_eq!(dashboard.status(), StatusCode::OK);
+        let req_id = Uuid::parse_str("81818181-8181-4181-8181-818181818182").unwrap();
+        let tenant_id = Uuid::parse_str("81818181-8181-4181-8181-818181818183").unwrap();
+        let body=json!({"request_id":req_id.to_string(),"tenant_id":tenant_id.to_string(),"slug":"r981-company"}).to_string();
+        let missing_csrf = app
+            .clone()
+            .oneshot(req(
+                "POST",
+                "/api/v1/platform/reservations",
+                HOST,
+                Some(COOKIE),
+                None,
+                Some(&body),
+            ))
+            .await
+            .unwrap();
+        assert_eq!(missing_csrf.status(), StatusCode::UNAUTHORIZED);
+        let wrong_origin = app
+            .clone()
+            .oneshot(req(
+                "POST",
+                "/api/v1/platform/reservations",
+                "other-r981.synthetic.invalid",
+                Some(COOKIE),
+                Some(CSRF),
+                Some(&body),
+            ))
+            .await
+            .unwrap();
+        assert_eq!(wrong_origin.status(), StatusCode::UNAUTHORIZED);
+        for _ in 0..2 {
+            let created = app
+                .clone()
+                .oneshot(req(
+                    "POST",
+                    "/api/v1/platform/reservations",
+                    HOST,
+                    Some(COOKIE),
+                    Some(CSRF),
+                    Some(&body),
+                ))
+                .await
+                .unwrap();
+            assert_eq!(created.status(), StatusCode::CREATED);
+            assert_eq!(json_body(created).await["state"], "suspended");
+        }
+        let forged=json!({"request_id":req_id.to_string(),"tenant_id":tenant_id.to_string(),"slug":"forged"}).to_string();
+        let denied_replay = app
+            .clone()
+            .oneshot(req(
+                "POST",
+                "/api/v1/platform/reservations",
+                HOST,
+                Some(COOKIE),
+                Some(CSRF),
+                Some(&forged),
+            ))
+            .await
+            .unwrap();
+        assert_eq!(denied_replay.status(), StatusCode::CONFLICT);
+        let listed = app
+            .clone()
+            .oneshot(req(
+                "GET",
+                "/api/v1/platform/reservations",
+                HOST,
+                Some(COOKIE),
+                None,
+                None,
+            ))
+            .await
+            .unwrap();
+        assert_eq!(listed.status(), StatusCode::OK);
+        let entries = json_body(listed).await;
+        assert!(entries["reservations"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|x| x["tenant_slug"] == "r981-company"));
+        assert_eq!(
+            admin
+                .query_one(
+                    "SELECT state FROM ipat_platform.tenants WHERE id=$1",
+                    &[&tenant_id]
+                )
+                .await
+                .unwrap()
+                .get::<_, String>(0),
+            "suspended"
+        );
+        let logout = app
+            .clone()
+            .oneshot(req(
+                "POST",
+                "/api/v1/platform/logout",
+                HOST,
+                Some(COOKIE),
+                Some(CSRF),
+                None,
+            ))
+            .await
+            .unwrap();
+        assert_eq!(logout.status(), StatusCode::OK);
+        assert_eq!(
+            logout.headers().get_all(header::SET_COOKIE).iter().count(),
+            2
+        );
+        let replay = app
+            .clone()
+            .oneshot(req(
+                "GET",
+                "/api/v1/platform/reservations",
+                HOST,
+                Some(COOKIE),
+                None,
+                None,
+            ))
+            .await
+            .unwrap();
+        assert_eq!(replay.status(), StatusCode::UNAUTHORIZED);
+    }
+}

@@ -1180,3 +1180,6 @@ MUST: independent POP and Site identity, independently eligible current NOC memb
 
 ## R9.80 — Platform Owner session source
 MUST: independent Platform Owner browser authorization boundary, externally reviewed exact HTTPS hostname, strong signed OIDC with enforced real human MFA before issuing a session, digest-only current short-lived session with CSRF and dynamic principal revocation, and separately authenticated function-only suspended company reservation. Migration 0032 provides restricted PostgreSQL functions only; actual OIDC/BFF/UI, commercial activation and live production deployment still require separate acceptance.
+
+## R9.81 — Platform Owner HTTP/dashboard source
+MUST: independent Platform Owner dashboard and strictly separated HTTP/API process, dedicated database login, exact platform Host and current short-lived platform browser session on every endpoint, deny unauthorized pages and cross-Host/CSRF operations, stable idempotent Suspended-only company reservation, listing and logout. Source and disposable HTTP/DB tests alone do not qualify real commercial login, company activation, public TLS, backups or full PRD acceptance.

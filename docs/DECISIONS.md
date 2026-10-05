@@ -736,3 +736,6 @@ Current active Tenant Admin may only REQUEST a bounded read-only grant for an al
 
 ## ADR-091 — R9.80 distinct Platform Owner durable session (2026-10-05)
 Platform Owner authentication has its own session issuer and API SQL identities, exact externally verified Host/TLS allowlist, digest-only database session and current principal reauthorization. A Platform API uses only session-scoped suspended reservation/list functions. Never share tenant API/OIDC roles or promote browser-supplied identity/tenant headers to platform rights. Real signed OIDC/MFA verification and hostname provisioning are independent release gates; migration 0032 alone is not a deployed login.
+
+## ADR-092 — R9.81 exclusive Platform Owner HTTP service (2026-10-05)
+Separate the Platform Owner Axum API and dashboard from tenant BFF, OIDC issuer, private owner C320 and DNS verifier as an exclusive nonroot loopback-only process on port 3005. It uses the dedicated platform session API login and DB-session-bound suspended reservation functions only. Require exact Host, HTTPS Origin/CSRF on mutations and previous independently verified platform session. Do not implement a synthetic identity login or silently activate customer tenancy. External approved real IdP/MFA and DNS/TLS stay independent production acceptance gates.

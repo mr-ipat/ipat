@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="en-US"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>IPAT Platform Owner</title><link rel="stylesheet" href="/platform/assets/style.css"></head>
+<body><header><strong>IPAT Platform Owner</strong><button type="button" id="logout">Sign out</button></header>
+<main>
+<h1>Company reservations</h1>
+<p>Creating a company reserves its slug only. It remains <strong>Suspended</strong> until independent DNS, real MFA, billing and tenant-activation requirements are accepted. This workspace has no customer device credentials.</p>
+<p id="notice" role="status" aria-live="polite">Validating your current Platform Owner session…</p>
+<section id="panel" hidden>
+<form id="reserve-form"><label>Company slug <input id="slug" required minlength="1" maxlength="63" pattern="[a-z0-9]+([a-z0-9-]*[a-z0-9])?"></label>
+<button type="submit">Reserve suspended company</button></form>
+<table><caption>Reserved companies</caption><thead><tr><th>Company slug</th><th>Current state</th><th>Reserved UTC</th><th>Tenant ID</th></tr></thead><tbody id="rows"></tbody></table>
+</section>
+</main><script src="/platform/assets/app.js" defer></script>
+</body></html>

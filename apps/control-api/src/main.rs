@@ -17,6 +17,7 @@ mod oidc_lab;
 mod owner_device_registry_lab;
 mod owner_domain_control_lab;
 mod owner_site_ui_lab;
+mod platform_owner_api;
 mod site_a_pairing_lab;
 mod tenant_domain;
 mod tenant_domain_bff;
@@ -241,7 +242,8 @@ async fn main() {
     // Nonroot background worker only: no HTTP listener or browser authority.
     if std::env::var("IPAT_TENANT_DOMAIN_VERIFIER").as_deref() == Ok("YES")
         && (std::env::var("IPAT_R969_COMMERCIAL_SERVICE").as_deref() == Ok("YES")
-            || std::env::var("IPAT_R970_OIDC_ISSUER_SERVICE").as_deref() == Ok("YES"))
+            || std::env::var("IPAT_R970_OIDC_ISSUER_SERVICE").as_deref() == Ok("YES")
+            || std::env::var("IPAT_R981_PLATFORM_SERVICE").as_deref() == Ok("YES"))
     {
         panic!("commercial API and separate DNS verifier cannot share a process");
     }
@@ -253,6 +255,36 @@ async fn main() {
         .await;
         return;
     }
+    // R9.81: exclusive Platform Owner API. Never combine this BFF with
+    // tenant, login issuer, physical lab or private owner device services.
+    if std::env::var("IPAT_R981_PLATFORM_SERVICE").as_deref() == Ok("YES") {
+        for forbidden in [
+            "IPAT_R969_COMMERCIAL_SERVICE",
+            "IPAT_R970_OIDC_ISSUER_SERVICE",
+            "IPAT_TENANT_DOMAIN_VERIFIER",
+            "IPAT_LAB_WEB",
+            "IPAT_RUN_K3S_LAB",
+            "IPAT_R911_PRIVATE_CANARY",
+            "IPAT_R940_PRIVATE_OWNER_READ",
+            "IPAT_LAB_OIDC_VERIFY",
+        ] {
+            assert!(
+                std::env::var_os(forbidden).is_none(),
+                "Platform Owner cannot share another control plane or device process"
+            );
+        }
+        let (db, host) = platform_owner_api::connect_from_environment()
+            .await
+            .expect("unapproved Platform Owner HTTPS edge or dedicated DB role");
+        let app = platform_owner_api::router(db, host);
+        let listener = tokio::net::TcpListener::bind("127.0.0.1:3005")
+            .await
+            .expect("dedicated loopback Platform Owner API");
+        axum::serve(listener, app)
+            .await
+            .expect("serve dedicated Platform Owner API");
+        return;
+    }
     // R9.69: mounting the already-tested commercial API is a distinct
     // NONPUBLIC deployment unit. Its opt-in flags assert intent only; a
     // reviewed live HTTPS edge, real IdP and recovered production database
@@ -262,6 +294,7 @@ async fn main() {
     if std::env::var("IPAT_R970_OIDC_ISSUER_SERVICE").as_deref() == Ok("YES") {
         let conflict = [
             "IPAT_R969_COMMERCIAL_SERVICE",
+            "IPAT_R981_PLATFORM_SERVICE",
             "IPAT_LAB_WEB",
             "IPAT_R940_PRIVATE_OWNER_READ",
             "IPAT_R911_PRIVATE_CANARY",

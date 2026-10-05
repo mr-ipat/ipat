@@ -166,3 +166,6 @@ PR #172 exact-head GitHub Actions run 37255084254 passed all four jobs; verified
 
 ## R9.80 Platform Owner source-only milestone
 SQL migration 0032 provides separate Host-bound Platform Owner session, issuer/API roles, session-scoped suspended reservation/list/revoke and direct tenant-role denial. Owner-Mac disposable PG16 source run passed 45/45 tests including existing commercial regressions. This does not upgrade AC02, AC09 or AC16 to public acceptance: actual MFA issuer, dedicated HTTP/dashboard, trusted DNS/HTTPS, current production DB, real recovery and deployed two-tenant external tests remain pending.
+
+## R9.81 dedicated Platform Owner HTTP candidate
+Separate platform_owner_api.rs and minimal Platform Owner console consume the R9.80 session and limit company enrollment to suspended reservation/list/logout. Exact Rust unit/Node source acceptance tests can be performed without the public IdP; the live Axum+disposable PostgreSQL integration is a distinct mandatory CI gate. Missing real Platform Owner login/MFA, independently verified exact platform domain/trusted HTTPS, production PostgreSQL+host recovery and two-tenant public flows keep AC02/09/16 production BLOCKED.
