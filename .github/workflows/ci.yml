@@ -523,6 +523,13 @@ jobs:
           node --check web/console/tenant/app.js
           node deploy/scripts/lab/r970/test_tenant_dashboard_contract.cjs
           grep -Fq noc_real_pop_grant_requests deploy/db/migrations/0031_noc_real_pop_grant_lifecycle.sql
+      - name: R9.80 separate Platform Owner Host-bound session and safe company reservation
+        run: |
+          psql -X -v ON_ERROR_STOP=1 -f deploy/db/migrations/0032_platform_owner_browser_sessions.sql
+          python3 -m unittest discover deploy/db/tests -p test_platform_owner_browser_sessions_integration.py -v
+          bash -n deploy/db/tests/r980_docker_repro.sh
+          grep -Fq ipat_platform_session_api_login deploy/db/migrations/0032_platform_owner_browser_sessions.sql
+          grep -Fq R9.80 docs/PROJECT_STATUS.md
       - name: R9.71 real disposable PostgreSQL HA-safe one-use OIDC state across Rust client instances
         run: |
           python3 -m unittest discover deploy/db/tests -p test_oidc_pending_integration.py -v

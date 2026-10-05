@@ -163,3 +163,6 @@ Owner reported five external dependencies ready but no independent masked eviden
 
 ### R9.79 final reviewed evidence gate
 PR #172 exact-head GitHub Actions run 37255084254 passed all four jobs; verified source merged to main 4955bddc. Owner-Mac combined original R9.63 and R9.79 negative tests 10/10 PASS and actual read-only VPS+public DNS report correctly returned BLOCKED. Five owner-reported readiness statements do not constitute five verified production prerequisites. Candidate ipat.id returned NXDOMAIN. Existing AC01–17 commercial-public acceptance remains OPEN until independent masked proof and live-production deployment/physical acceptance.
+
+## R9.80 Platform Owner source-only milestone
+SQL migration 0032 provides separate Host-bound Platform Owner session, issuer/API roles, session-scoped suspended reservation/list/revoke and direct tenant-role denial. Owner-Mac disposable PG16 source run passed 45/45 tests including existing commercial regressions. This does not upgrade AC02, AC09 or AC16 to public acceptance: actual MFA issuer, dedicated HTTP/dashboard, trusted DNS/HTTPS, current production DB, real recovery and deployed two-tenant external tests remain pending.
