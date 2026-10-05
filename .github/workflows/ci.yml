@@ -558,6 +558,15 @@ jobs:
           grep -Fq '127.0.0.1:3006' apps/control-api/src/main.rs
           grep -Fq ipat_platform_session_issuer_login apps/control-api/src/platform_oidc_issuer.rs
           grep -Fq R9.83 docs/PROJECT_STATUS.md
+      - name: R9.92 commercial tenant nonroot runtime and multi-instance exact-Host OIDC source
+        run: |
+          bash -n deploy/scripts/production/r992_prepare_tenant_runtime.sh
+          bash -n deploy/scripts/production/r992_apply_tenant_api.sh
+          bash -n deploy/scripts/production/r992_add_tenant_oidc_instance.sh
+          python3 -m unittest deploy/scripts/production/test_r992_tenant_runtime_source.py -v
+          cargo test --locked -p control-api -q
+          grep -Fq IPAT_R992_TENANT_OIDC_PORT apps/control-api/src/main.rs
+          grep -Fq R9.92 docs/PROJECT_STATUS.md
       - name: R9.87 PostgreSQL18 local-socket first-install bootstrap rehearsal
         run: |
           bash -n deploy/scripts/production/r987_bootstrap_postgres18.sh
@@ -738,6 +747,11 @@ jobs:
           sudo chmod 0755 /opt/ipat/bin/control-api
           sudo touch /etc/ipat/platform-api.env /etc/ipat/platform-oidc.env
           systemd-analyze verify deploy/systemd/ipat-platform-api.service deploy/systemd/ipat-platform-oidc.service
+      - name: R9.92 verify tenant systemd units on actual Ubuntu 26.04 runner
+        run: |
+          sudo install -d -m 0700 /etc/ipat/tenant-oidc
+          sudo touch /etc/ipat/tenant-api.env /etc/ipat/tenant-oidc/customer.env
+          systemd-analyze verify deploy/systemd/ipat-tenant-api.service deploy/systemd/ipat-tenant-oidc@.service
       - name: Install and smoke-test checksum-pinned K3s on disposable Ubuntu 26.04
         run: |
           timeout --signal=TERM --kill-after=15s 1200s bash             deploy/scripts/lab/k3s-ubuntu26-ephemeral-ci.sh

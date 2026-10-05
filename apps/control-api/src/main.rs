@@ -349,9 +349,22 @@ async fn main() {
         let app = commercial_oidc_issuer::from_environment()
             .await
             .expect("confidential pinned OIDC and restricted DB prerequisite missing");
-        let listener = tokio::net::TcpListener::bind("127.0.0.1:3004")
+        // R9.92: one exact-Host tenant OIDC process may be assigned a reviewed
+        // loopback port. Legacy isolated tests retain 3004 when unset.
+        let oidc_port = std::env::var("IPAT_R992_TENANT_OIDC_PORT")
+            .ok()
+            .map(|raw| {
+                raw.parse::<u16>()
+                    .expect("tenant OIDC port must be numeric")
+            })
+            .unwrap_or(3004);
+        assert!(
+            (3004..=31999).contains(&oidc_port),
+            "tenant OIDC port outside reviewed loopback range"
+        );
+        let listener = tokio::net::TcpListener::bind(("127.0.0.1", oidc_port))
             .await
-            .expect("dedicated OIDC loopback listener");
+            .expect("dedicated tenant OIDC loopback listener");
         axum::serve(listener, app)
             .await
             .expect("serve isolated OIDC issuer");
