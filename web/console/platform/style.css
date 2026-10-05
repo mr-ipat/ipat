@@ -1,0 +1,7 @@
+:root{font-family:system-ui,sans-serif;color-scheme:light dark}
+body{max-width:1040px;margin:auto;padding:1.5rem;line-height:1.5}
+header{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid;padding-bottom:1rem}
+main{padding-top:1.5rem}form{display:flex;gap:1rem;align-items:end;flex-wrap:wrap}
+label{display:grid;gap:.3rem}input,button{font:inherit;padding:.45rem}
+table{width:100%;border-collapse:collapse;margin-top:1.5rem}th,td{padding:.65rem;border-bottom:1px solid;text-align:left;overflow-wrap:anywhere}
+#notice{min-height:2rem}

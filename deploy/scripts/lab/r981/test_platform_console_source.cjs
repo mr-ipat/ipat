@@ -1,0 +1,24 @@
+'use strict';
+// Static source contract only; signed+MFA real IdP and public TLS remain external.
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const html=fs.readFileSync('web/console/platform/dashboard.html','utf8');
+const js=fs.readFileSync('web/console/platform/app.js','utf8');
+const rs=fs.readFileSync('apps/control-api/src/platform_owner_api.rs','utf8');
+const main=fs.readFileSync('apps/control-api/src/main.rs','utf8');
+assert(html.includes('<html lang="en-US">'));
+assert(html.includes('id="panel" hidden'));
+assert(html.includes('Suspended'));
+assert(!html.includes('onload=')&&!html.includes('onclick='));
+assert(!js.includes('.innerHTML'));
+assert(js.includes('credentials:\'same-origin\''));
+assert(js.includes('pending.request_id')||js.includes('request_id:crypto.randomUUID()'));
+assert(js.includes('X-IPAT-Platform-CSRF'));
+assert(rs.includes('authenticate_platform_browser_session'));
+assert(rs.includes('reserve_tenant_from_platform_session'));
+assert(rs.includes('ipat_platform_session_api_login'));
+assert(rs.includes('SERVICE_UNAVAILABLE'));
+assert(!rs.split('#[cfg(test)]')[0].includes('issue_platform_browser_session('));
+assert(main.includes('127.0.0.1:3005'));
+assert(main.includes('IPAT_R981_PLATFORM_SERVICE'));
+console.log('R981_PLATFORM_OWNER_NO_FAKE_LOGIN_INDEPENDENT_SESSION_SAFE_UI_SOURCE=PASS');

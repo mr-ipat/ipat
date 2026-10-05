@@ -530,6 +530,14 @@ jobs:
           bash -n deploy/db/tests/r980_docker_repro.sh
           grep -Fq ipat_platform_session_api_login deploy/db/migrations/0032_platform_owner_browser_sessions.sql
           grep -Fq R9.80 docs/PROJECT_STATUS.md
+      - name: R9.81 actual restricted Platform Owner Axum HTTP + disposable PostgreSQL
+        run: |
+          cargo test --locked -p control-api platform_owner_api::pg_integration::r981_real_pg_platform_api_owner_exact_host_csrf_suspended_reservation_logout -- --exact
+          cargo test --locked -p control-api platform_owner_api::tests::r981_platform_host_cookie_csrf_are_separate -- --exact
+          node --check web/console/platform/app.js
+          node deploy/scripts/lab/r981/test_platform_console_source.cjs
+          grep -Fq '127.0.0.1:3005' apps/control-api/src/main.rs
+          grep -Fq 'IPAT_R981_PLATFORM_SERVICE' apps/control-api/src/main.rs
       - name: R9.71 real disposable PostgreSQL HA-safe one-use OIDC state across Rust client instances
         run: |
           python3 -m unittest discover deploy/db/tests -p test_oidc_pending_integration.py -v
