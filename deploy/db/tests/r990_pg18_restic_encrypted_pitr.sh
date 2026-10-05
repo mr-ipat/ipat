@@ -24,7 +24,10 @@ export RESTIC_REPOSITORY="$tmp/restic-repo"
 export RESTIC_PASSWORD_FILE="$password_file"
 cleanup(){
   docker rm -f "$source_name" "$restore_name" >/dev/null 2>&1 || :
-  rm -rf "$tmp"
+  if [[ -d "$tmp" ]]; then
+    docker run --rm -u 0 -v "$tmp:/cleanup" "$image" sh -ceu       "chown -R $host_uid:$host_gid /cleanup" >/dev/null 2>&1 || :
+    rm -rf "$tmp"
+  fi
 }
 trap cleanup EXIT
 
@@ -89,7 +92,7 @@ SQL
 
 archived=NO
 for _ in $(seq 1 80); do
-  wal_count=$(find "$plain/wal" -maxdepth 1 -type f 2>/dev/null | wc -l | tr -d '[:space:]')
+  wal_count=$(docker exec -u postgres "$source_name" sh -ceu     "find /archive -maxdepth 1 -type f | wc -l" | tr -d '[:space:]')
   last=$(docker exec -u postgres "$source_name" psql -XAtq -U postgres -d ipat_synthetic \
     -c "SELECT coalesce(last_archived_wal,'') FROM pg_stat_archiver")
   if [[ "$wal_count" -ge 1 && -n "$last" ]]; then archived=YES; break; fi

@@ -17,6 +17,12 @@ class R990ResticSource(unittest.TestCase):
                         SCRIPT.index('restic restore latest'))
         self.assertIn("plaintext staging deletion failed",SCRIPT)
         self.assertIn("encrypted restore artifact hash mismatch",SCRIPT)
+    def test_linux_bind_mount_not_read_by_host_before_normalization(self):
+        self.assertIn('find /archive -maxdepth 1 -type f',SCRIPT)
+        self.assertNotIn('find "$plain/wal" -maxdepth 1 -type f',SCRIPT)
+        self.assertIn('chown -R $host_uid:$host_gid /cleanup',SCRIPT)
+        self.assertIn('chown -R $host_uid:$host_gid /plain/base /plain/wal',SCRIPT)
+
     def test_rls_and_bad_change_absence(self):
         for x in ("-U ipat_app_runtime","SET LOCAL ipat.tenant_id",
                   '[[ "$good_count" == 1 && "$bad_count" == 0 ]]',
