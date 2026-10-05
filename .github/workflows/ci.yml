@@ -538,6 +538,15 @@ jobs:
           node deploy/scripts/lab/r981/test_platform_console_source.cjs
           grep -Fq '127.0.0.1:3005' apps/control-api/src/main.rs
           grep -Fq 'IPAT_R981_PLATFORM_SERVICE' apps/control-api/src/main.rs
+      - name: R9.82 temporary IPv4 Platform Owner and tenant-owned custom domain DNS instructions
+        run: |
+          cargo test --locked -p control-api platform_owner_api::tests::r981_platform_host_cookie_csrf_are_separate -- --exact
+          cargo test --locked -p control-api tenant_domain::tests::saved_customer_domain_can_use_temporary_ipv4_without_ipat_id -- --exact
+          cargo test --locked -p control-api commercial_tenant_api::pg_integration::r968_real_pg_durable_host_session_to_site_device_domain_http -- --exact
+          node --check web/console/tenant/app.js
+          node deploy/scripts/lab/r982/test_customer_dns_ui.cjs
+          python3 -m unittest discover deploy/scripts/production -p test_r982_temporary_ip_tls_preflight.py -v
+          grep -Fq R9.82 docs/PROJECT_STATUS.md
       - name: R9.71 real disposable PostgreSQL HA-safe one-use OIDC state across Rust client instances
         run: |
           python3 -m unittest discover deploy/db/tests -p test_oidc_pending_integration.py -v

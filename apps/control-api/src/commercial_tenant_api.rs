@@ -18,7 +18,10 @@ use uuid::Uuid;
 
 use crate::{
     durable_tenant_session,
-    tenant_domain::{canonical_dns_name, canonical_host, valid_custom_domain},
+    tenant_domain::{
+        canonical_dns_name, canonical_host, dns_profile_from_environment,
+        saved_customer_dns_guidance, valid_custom_domain,
+    },
 };
 
 const CSRF_HEADER: HeaderName = HeaderName::from_static("x-ipat-csrf");
@@ -1318,6 +1321,67 @@ async fn create_domain(
         None => denied(StatusCode::CONFLICT),
     }
 }
+// The customer sees DNS instructions ONLY for a domain they already saved
+// inside their current authenticated tenant. Never invent TXT tokens.
+async fn customer_domain_dns(
+    State(s): State<Arc<StateData>>,
+    headers: HeaderMap,
+    Path(id_raw): Path<String>,
+) -> (StatusCode, HeaderMap, Json<Value>) {
+    let Some(a) = actor(&s.db, &headers, false).await else {
+        return denied(StatusCode::UNAUTHORIZED);
+    };
+    let Ok(id) = Uuid::parse_str(&id_raw) else {
+        return denied(StatusCode::UNPROCESSABLE_ENTITY);
+    };
+    let rows =
+        s.db.query(
+            "SELECT id,hostname,routing_mode,verification_name,verification_value,activation_state
+         FROM ipat_platform.list_tenant_domains_for_member($1,$2,$3::uuid)",
+            &[&a.issuer, &a.subject, &a.tenant_id],
+        )
+        .await;
+    let Ok(rows) = rows else {
+        return denied(StatusCode::SERVICE_UNAVAILABLE);
+    };
+    let Some(row) = rows.iter().find(|r| r.get::<_, Uuid>(0) == id) else {
+        return denied(StatusCode::NOT_FOUND);
+    };
+    let hostname: String = row.get(1);
+    let mode: Option<String> = row.get(2);
+    let verification_name: Option<String> = row.get(3);
+    let verification_value: Option<String> = row.get(4);
+    let activation_state: String = row.get(5);
+    let (Some(mode), Some(verification_name), Some(verification_value)) =
+        (mode, verification_name, verification_value)
+    else {
+        return denied(StatusCode::NOT_FOUND);
+    };
+    let Some(host) = canonical_dns_name(&hostname) else {
+        return denied(StatusCode::SERVICE_UNAVAILABLE);
+    };
+    if !valid_custom_domain(&host) || activation_state == "disabled" {
+        return denied(StatusCode::NOT_FOUND);
+    }
+    let Ok(profile) = dns_profile_from_environment() else {
+        // No made-up IP or dependency on an unowned main brand domain.
+        return denied(StatusCode::SERVICE_UNAVAILABLE);
+    };
+    let edge_reviewed =
+        std::env::var("IPAT_R982_CUSTOM_DOMAIN_TLS_EDGE_READY").as_deref() == Ok("YES");
+    let Some(mut guide) =
+        saved_customer_dns_guidance(&profile, host, &mode, &activation_state, edge_reviewed)
+    else {
+        return denied(StatusCode::SERVICE_UNAVAILABLE);
+    };
+    guide["verification_record_name"] = json!(verification_name);
+    guide["verification_record_type"] = json!("TXT");
+    guide["verification_value"] = json!(verification_value);
+    guide["verification_value_issued_after_save"] = json!(true);
+    guide["saved_domain_id"] = json!(id.to_string());
+    response(StatusCode::OK, json!({"ok":true,"guide":guide}))
+}
+
 async fn delete_domain(
     State(s): State<Arc<StateData>>,
     headers: HeaderMap,
@@ -1393,6 +1457,7 @@ pub(super) fn router(db: Arc<Client>) -> Router {
             get(device_detail).patch(edit_device).delete(delete_device),
         )
         .route("/api/v1/domains", get(list_domains).post(create_domain))
+        .route("/api/v1/domains/{id}/dns", get(customer_domain_dns))
         .route(
             "/api/v1/domains/{id}",
             get(|| async { StatusCode::METHOD_NOT_ALLOWED }).delete(delete_domain),
@@ -2299,6 +2364,115 @@ mod pg_integration {
             .unwrap()
             .iter()
             .any(|d| d["hostname"] == "customer-r968.example.net"));
+        // R9.82: the customer's saved domain, never the unowned IPAT
+        // brand, is the authority for unique TXT + conditional A instructions.
+        let list_domains = app
+            .clone()
+            .oneshot(req(
+                "GET",
+                "/api/v1/domains",
+                host,
+                Some(cookie),
+                None,
+                None,
+            ))
+            .await
+            .unwrap();
+        let saved = body_json(list_domains).await;
+        let saved_domain = saved["domains"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|d| d["hostname"] == "customer-r968.example.net")
+            .unwrap();
+        let saved_id = saved_domain["id"].as_str().unwrap().to_string();
+        let saved_txt = saved_domain["verification_value"]
+            .as_str()
+            .unwrap()
+            .to_string();
+        let dns_path = format!("/api/v1/domains/{saved_id}/dns");
+        let no_session = app
+            .clone()
+            .oneshot(req("GET", &dns_path, host, None, None, None))
+            .await
+            .unwrap();
+        assert_eq!(no_session.status(), StatusCode::UNAUTHORIZED);
+        let other_host = app
+            .clone()
+            .oneshot(req(
+                "GET",
+                &dns_path,
+                "other-r968.example.net",
+                Some(cookie),
+                None,
+                None,
+            ))
+            .await
+            .unwrap();
+        assert_eq!(other_host.status(), StatusCode::UNAUTHORIZED);
+        let foreign = app
+            .clone()
+            .oneshot(req(
+                "GET",
+                "/api/v1/domains/78787878-7878-4878-8878-787878787899/dns",
+                host,
+                Some(cookie),
+                None,
+                None,
+            ))
+            .await
+            .unwrap();
+        assert_eq!(foreign.status(), StatusCode::NOT_FOUND);
+        std::env::set_var("IPAT_CUSTOM_DOMAIN_DNS_MODE", "a_record");
+        std::env::set_var("IPAT_CUSTOM_DOMAIN_IPV4", "202.162.204.121");
+        std::env::set_var("IPAT_CUSTOM_DOMAIN_ROUTING_READY", "YES");
+        std::env::set_var("IPAT_R982_CUSTOM_DOMAIN_TLS_EDGE_READY", "YES");
+        let pending = app
+            .clone()
+            .oneshot(req("GET", &dns_path, host, Some(cookie), None, None))
+            .await
+            .unwrap();
+        assert_eq!(pending.status(), StatusCode::OK);
+        let pending_body = body_json(pending).await;
+        assert_eq!(pending_body["guide"]["verification_value"], saved_txt);
+        assert_eq!(
+            pending_body["guide"]["routing_records"][0]["value"],
+            "202.162.204.121"
+        );
+        assert_eq!(pending_body["guide"]["safe_to_point_now"], false);
+        assert_eq!(pending_body["guide"]["activation_state"], "pending_dns");
+        // Synthetic approved ownership lifecycle: do not imply actual DNS
+        // or TLS readiness in the live customer environment.
+        let saved_uuid = Uuid::parse_str(&saved_id).unwrap();
+        admin.execute("UPDATE ipat_platform.tenant_domains SET verification_state='verified',verified_at=clock_timestamp(),activation_state='ownership_verified',ownership_verified_at=clock_timestamp() WHERE id=$1 AND tenant_id=$2",
+            &[&saved_uuid,&tenant]).await.unwrap();
+        std::env::remove_var("IPAT_R982_CUSTOM_DOMAIN_TLS_EDGE_READY");
+        let not_reviewed = app
+            .clone()
+            .oneshot(req("GET", &dns_path, host, Some(cookie), None, None))
+            .await
+            .unwrap();
+        assert_eq!(not_reviewed.status(), StatusCode::OK);
+        assert_eq!(
+            body_json(not_reviewed).await["guide"]["safe_to_point_now"],
+            false
+        );
+        std::env::set_var("IPAT_R982_CUSTOM_DOMAIN_TLS_EDGE_READY", "YES");
+        let ready = app
+            .clone()
+            .oneshot(req("GET", &dns_path, host, Some(cookie), None, None))
+            .await
+            .unwrap();
+        assert_eq!(ready.status(), StatusCode::OK);
+        assert_eq!(body_json(ready).await["guide"]["safe_to_point_now"], true);
+        for key in [
+            "IPAT_CUSTOM_DOMAIN_DNS_MODE",
+            "IPAT_CUSTOM_DOMAIN_IPV4",
+            "IPAT_CUSTOM_DOMAIN_ROUTING_READY",
+            "IPAT_R982_CUSTOM_DOMAIN_TLS_EDGE_READY",
+        ] {
+            std::env::remove_var(key);
+        }
         let archived = app
             .clone()
             .oneshot(req(

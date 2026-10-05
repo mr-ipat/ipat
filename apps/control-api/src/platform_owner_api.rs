@@ -11,7 +11,7 @@ use axum::{
 use serde::Deserialize;
 use serde_json::{json, Value};
 use sha2::{Digest, Sha256};
-use std::{path::PathBuf, sync::Arc};
+use std::{net::Ipv4Addr, path::PathBuf, sync::Arc};
 use tokio_postgres::{Client, Config, NoTls};
 use uuid::Uuid;
 
@@ -44,6 +44,34 @@ fn strict_host(host: &str) -> bool {
             .next()
             .is_some_and(|t| t.len() >= 2 && t.bytes().all(|b| b.is_ascii_lowercase()))
 }
+
+// Explicit temporary IPv4 is allowed as an exact platform Host only. A public
+// address is NOT an HTTPS identity: a separately reviewed trusted certificate
+// with an iPAddress SAN, recovery and external reachability are still required.
+fn eligible_temporary_ipv4(host: &str) -> bool {
+    let Ok(ip) = host.parse::<Ipv4Addr>() else {
+        return false;
+    };
+    let [a, b, c, _] = ip.octets();
+    !(a == 0
+        || a == 10
+        || a == 127
+        || a >= 224
+        || (a == 100 && (64..=127).contains(&b))
+        || (a == 169 && b == 254)
+        || (a == 172 && (16..=31).contains(&b))
+        || (a == 192 && (b == 168 || (b == 0 && c == 2)))
+        || (a == 198 && (b == 18 || b == 19 || (b == 51 && c == 100)))
+        || (a == 203 && b == 0 && c == 113)
+        || (a == 255))
+}
+fn allowed_platform_host(host: &str, ip_mode: bool, ip_san_reviewed: bool) -> bool {
+    if host.parse::<Ipv4Addr>().is_ok() {
+        ip_mode && ip_san_reviewed && eligible_temporary_ipv4(host)
+    } else {
+        strict_host(host)
+    }
+}
 pub(super) async fn connect_from_environment() -> Result<(Arc<Client>, String), String> {
     if unsafe { libc::geteuid() } == 0
         || std::env::var("IPAT_R981_PLATFORM_SERVICE").as_deref() != Ok("YES")
@@ -55,9 +83,14 @@ pub(super) async fn connect_from_environment() -> Result<(Arc<Client>, String), 
     }
     let host =
         std::env::var("IPAT_R981_EXACT_PLATFORM_HOST").map_err(|_| "platform Host missing")?;
-    if !strict_host(&host) {
-        return Err("invalid exact platform Host".into());
+    let ip_mode = std::env::var("IPAT_R982_TEMPORARY_IPV4_MODE").as_deref() == Ok("YES");
+    let ip_san_reviewed = std::env::var("IPAT_R982_IP_SAN_TLS_REVIEWED").as_deref() == Ok("YES");
+    if !allowed_platform_host(&host, ip_mode, ip_san_reviewed) {
+        return Err("unapproved exact platform hostname or temporary public IPv4".into());
     }
+    // IP mode still also requires the existing independent trusted-edge gate
+    // plus a separately provisioned preapproved platform_console_hosts record.
+    // A configuration value alone is NEVER proof of an actual valid certificate.
     let user = std::env::var("IPAT_R981_PLATFORM_DB_USER").map_err(|_| "DB user missing")?;
     if user != "ipat_platform_session_api_login" {
         return Err("wrong dedicated DB user".into());
@@ -355,6 +388,18 @@ mod tests {
     #[test]
     fn r981_platform_host_cookie_csrf_are_separate() {
         assert!(strict_host("admin.platform.example"));
+        assert!(!allowed_platform_host("202.162.204.121", false, true));
+        assert!(!allowed_platform_host("202.162.204.121", true, false));
+        assert!(allowed_platform_host("202.162.204.121", true, true));
+        assert!(!allowed_platform_host("127.0.0.1", true, true));
+        assert!(!allowed_platform_host("10.10.13.233", true, true));
+        assert!(!allowed_platform_host("203.0.113.99", true, true));
+        assert!(!allowed_platform_host("202.162.204.121:3005", true, true));
+        assert!(allowed_platform_host(
+            "admin.platform.example",
+            false,
+            false
+        ));
         for bad in [
             "a",
             "admin.EXAMPLE.org",
