@@ -558,6 +558,14 @@ jobs:
           grep -Fq '127.0.0.1:3006' apps/control-api/src/main.rs
           grep -Fq ipat_platform_session_issuer_login apps/control-api/src/platform_oidc_issuer.rs
           grep -Fq R9.83 docs/PROJECT_STATUS.md
+      - name: R9.84 temporary literal-IP short-lived TLS ingress source and rollback
+        run: |
+          bash -n deploy/scripts/production/r984_prepare_ip_tls_prereqs.sh
+          bash -n deploy/scripts/production/r984_apply_ip_tls_ingress.sh
+          bash -n deploy/scripts/production/r984_nginx_template_smoke.sh
+          python3 -m unittest deploy/scripts/production/test_r984_ip_tls_ingress_source.py -v
+          bash deploy/scripts/production/r984_nginx_template_smoke.sh
+          grep -Fq R9.84 docs/PROJECT_STATUS.md
       - name: R9.71 real disposable PostgreSQL HA-safe one-use OIDC state across Rust client instances
         run: |
           python3 -m unittest discover deploy/db/tests -p test_oidc_pending_integration.py -v

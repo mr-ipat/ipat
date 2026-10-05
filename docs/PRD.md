@@ -1189,3 +1189,7 @@ MUST for initial staging: remove ownership of ipat.id from the critical path. Pi
 
 ## R9.83 — Dedicated Platform Owner real-OIDC browser login source
 MUST: Platform Owner login is a separate confidential OIDC service from tenant login and all device/control services; Authorization Code+S256 PKCE, nonce, at_hash, exact issuer/client/key pin, fresh signed MFA/auth_time, short bounded state and current PostgreSQL approved Platform Owner principal+console Host are required before a platform session. Tenant issuer/session cannot mint or replay a Platform Owner session. Source supports exact R9.82 DNS host or explicitly reviewed public IPv4 callback. Initial issuer may be singleton fail-closed; public production requires actual IdP client/human MFA, trusted HTTPS callback and external revocation/replay tests.
+
+
+## R9.84 — Temporary IPv4 trusted HTTPS deployment MUST
+MUST provide an executable Ubuntu 26.04 first-cutover path for browser-trusted literal-IP HTTPS without using ipat.id: prerequisite install with daemon auto-start suppressed, ACME short-lived IP staging validation first, exact iPAddress SAN verification, production issuance only with Platform Owner API and OIDC backends already restricted to loopback, exact Host routing, fail-closed timed rollback, automated renewal with deploy-hook validation and no firewall/device mutation. Source/disposable Nginx acceptance is not live deployment acceptance. Actual root execution, external ACME, human MFA/browser test, recovery and production PostgreSQL remain required before public GO.

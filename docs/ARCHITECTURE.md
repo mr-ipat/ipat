@@ -1194,3 +1194,7 @@ Initial target has a dedicated exact IPv4 platform administrative virtual host r
 
 ## R9.83 — Platform identity plane separation
 Add a distinct Platform Owner OIDC issuer deployment on loopback 3006. Public trusted ingress path-routes only /platform/auth/oidc/* to 3006 and Platform Owner UI/API to loopback 3005; tenant OIDC remains 3004 and tenant BFF 3003. These processes have distinct database login roles and cookies. A verified platform token pair contains identity only; database principal approval is the authorization boundary. Platform issuer is initially singleton for ephemeral PKCE pending state, while issued sessions live in PostgreSQL and survive issuer restart. Do not share IdP client secret, signing-key trust files or SQL roles across platform and tenants.
+
+
+## R9.84 — Public edge cut-line for temporary literal IPv4
+The public edge terminates only ports 80/443 in Nginx. HTTP serves the exact-IP ACME webroot and redirects exact Host to HTTPS. HTTPS exact-IP virtual host routes Platform OIDC paths to loopback 3006 and Platform Owner API/dashboard to loopback 3005. It does not route owner-private 3002, commercial tenant 3003 or tenant issuer 3004. Backends remain nonroot and exact-loopback-only; wildcard listeners block cutover. Short-lived IP certificate renewal is independent of application processes and reloads Nginx only after exact SAN and configuration validation. Customer-owned domain SNI blocks are a subsequent independent layer and must not weaken exact-IP default rejection.

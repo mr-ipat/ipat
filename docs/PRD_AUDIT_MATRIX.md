@@ -184,3 +184,7 @@ Added independent Platform Owner Authorization Code+PKCE issuer on loopback 3006
 
 ### R9.83 final exact-source acceptance (2026-10-05)
 PR #176 exact head 3168992bc914f2ae6f8230463f8b97235dd860a8 passed GitHub Actions 37261099841 all 4/4 jobs and merged main db8aa0f9b2f3cf43c860c70e9f13c572fa040bee. Separate Platform Owner Authorization Code+PKCE/MFA issuer, ISSUE-only SQL role and current principal/Host session are SOURCE/DISPOSABLE PASS. Actual human IdP/MFA over browser-trusted public HTTPS, production data/recovery, external hostile replay and physical-device acceptance remain BLOCKED.
+
+
+## R9.84 temporary-IP HTTPS ingress source candidate (2026-10-05)
+Source adds Ubuntu26 root-gated Nginx/Certbot prerequisite and transactional two-phase ACME short-lived literal-IP deployment, exact Host routing only to Platform API 3005/OIDC 3006, pre-cutover exact-loopback backend checks, rollback and renewal safety. Current official Let’s Encrypt/Certbot behavior supports short-lived IP certificates and Certbot 5.4+ webroot IP issuance. Source tests and disposable Nginx syntax do not prove owner VPS root execution, external port80/443 reachability, real trusted issuance, human MFA, production PG/recovery or customer SNI. AC02/09/16/public GO remain BLOCKED until actual privileged and external evidence passes.

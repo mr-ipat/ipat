@@ -1,0 +1,12 @@
+[Unit]
+Description=Check IPAT short-lived public-IP certificate renewal window
+
+[Timer]
+OnBootSec=20min
+OnUnitActiveSec=6h
+RandomizedDelaySec=30min
+Persistent=true
+Unit=ipat-ip-cert-renew.service
+
+[Install]
+WantedBy=timers.target
