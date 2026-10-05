@@ -564,7 +564,10 @@ jobs:
           bash -n deploy/scripts/production/r992_apply_tenant_api.sh
           bash -n deploy/scripts/production/r992_add_tenant_oidc_instance.sh
           python3 -m unittest deploy/scripts/production/test_r992_tenant_runtime_source.py -v
-          cargo test --locked -p control-api -q
+          # This shared PostgreSQL job already contains many historical fixtures.
+          # Never replay the entire data-creating Rust PG suite here; the separate
+          # unit-tests job runs full control-api regression from a clean context.
+          cargo test --locked -p control-api commercial_oidc_issuer::tests::durable_pending_cookie_has_strict_bounded_host_cookie_parts -- --exact
           grep -Fq IPAT_R992_TENANT_OIDC_PORT apps/control-api/src/main.rs
           grep -Fq R9.92 docs/PROJECT_STATUS.md
       - name: R9.87 PostgreSQL18 local-socket first-install bootstrap rehearsal
