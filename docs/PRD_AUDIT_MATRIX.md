@@ -198,3 +198,6 @@ PR #177 exact head 2e2bcdd3c8f02f96a886a3d99a10d44615822b7c passed exact GitHub 
 
 ### R9.85 pre-commit source hardening
 Runtime env parsing is fail-closed before mapfile loading; first-install conflict checks precede binary/unit installation; source safety tests 7/7 PASS and Ubuntu26 systemd-analyze with synthetic expected executable/env paths PASS. Actual service-user PostgreSQL peer mapping, OIDC secret/key provisioning and live 3005/3006 activation remain unverified production gates.
+
+## R9.86 PostgreSQL18 baseline compatibility (2026-10-05)
+Owner-Mac disposable pinned PostgreSQL18 applied selected migrations through 0032 and passed 45/45 current database security/commercial regressions, twice including a digest-pinned rerun. This closes the PostgreSQL18 schema-compatibility source gate only. AC-13 remains BLOCKED until real independent production primary/standby failover, WAL/PITR offsite restore and measured RPO/RTO pass.

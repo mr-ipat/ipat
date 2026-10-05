@@ -1291,3 +1291,6 @@ Treat root ingress installation as a high-risk reviewed change: staging before p
 
 ## R9.85 runtime-service controls
 Separate Linux users, service units, DB roles and environment files are mandatory. API service gets localhost-only systemd network policy; OIDC service is allowed external IdP networking but the application listener remains hard-coded loopback. Both drop all capabilities and use NoNewPrivileges plus filesystem/kernel hardening. Secret/key files must be single-link regular 0600 files owned by ipatpoidc beneath its 0700 directory. Activation validates PostgreSQL roles with noninteractive psql -w and cannot configure authentication itself. A timed rollback removes final env files and disables both services on failure. Existing service/binary/env requires explicit upgrade review rather than overwrite.
+
+## R9.86 PostgreSQL version transition control
+A server-version change cannot weaken tenant isolation or service-role privilege boundaries. Run the same raw-table denial, RLS, current-membership, session, cross-tenant, maker/checker and Platform Owner negative tests on PostgreSQL18. Do not auto-upgrade a production cluster in place from PG16; use reviewed backup/restore or supported upgrade procedures with independent rollback and complete recovery evidence.

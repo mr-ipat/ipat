@@ -1197,3 +1197,6 @@ MUST provide an executable Ubuntu 26.04 first-cutover path for browser-trusted l
 
 ## R9.85 — Platform Owner runtime services MUST
 MUST deploy the Platform Owner API and confidential OIDC issuer as independently hardened nonroot restart-safe services with checksum-pinned binary, root-only env, external secret files, exact Platform Host, separate function-only PostgreSQL logins and loopback-only listeners. Activation must validate actual DB role access and secure file ownership first, arm timed rollback, verify exact 3005/3006 health and refuse wildcard listeners. No service installer may alter firewall, DNS, PostgreSQL roles/configuration or device state. Source/systemd acceptance is not production acceptance until real PostgreSQL, real IdP/MFA secrets and privileged owner-VPS deployment have passed.
+
+## R9.86 — PostgreSQL 18 production-version compatibility MUST
+MUST run the full current tenant/RLS/identity/platform database authorization regression against PostgreSQL18 before Ubuntu26 production database deployment, while retaining PG16 regression until an explicit compatibility-retirement decision. Passing single-node PG18 migrations does not satisfy FR-031/AC-13: production still requires independent primary/standby replication, WAL/PITR, offsite restore, failover and measured RPO/RTO.
