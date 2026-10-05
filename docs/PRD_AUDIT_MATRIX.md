@@ -181,3 +181,6 @@ PR #175 final reviewed head d2dc0db846ceaf85d1af60bc9cf9275cbf6d207c passed exac
 
 ## R9.83 dedicated Platform Owner OIDC source candidate (2026-10-05)
 Added independent Platform Owner Authorization Code+PKCE issuer on loopback 3006 and same-origin login link. Local isolated evidence: pinned Rust full control-api 110/110 PASS; signed RSA ID/access+fresh MFA/auth_time to disposable PostgreSQL approved-principal exact-host session 1/1 PASS including tenant-issuer denial and immediate principal-revocation invalidation. Exact GitHub CI/merge is pending. This closes a source gap only: actual external human IdP/MFA, browser-trusted temporary-IP HTTPS callback, provider recovery/production PG and hostile public browser tests remain required for AC02/09/16 public PASS.
+
+### R9.83 final exact-source acceptance (2026-10-05)
+PR #176 exact head 3168992bc914f2ae6f8230463f8b97235dd860a8 passed GitHub Actions 37261099841 all 4/4 jobs and merged main db8aa0f9b2f3cf43c860c70e9f13c572fa040bee. Separate Platform Owner Authorization Code+PKCE/MFA issuer, ISSUE-only SQL role and current principal/Host session are SOURCE/DISPOSABLE PASS. Actual human IdP/MFA over browser-trusted public HTTPS, production data/recovery, external hostile replay and physical-device acceptance remain BLOCKED.

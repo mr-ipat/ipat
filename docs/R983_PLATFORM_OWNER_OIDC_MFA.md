@@ -23,3 +23,6 @@ Actually exercised before GitHub publication:
 - all temporary PostgreSQL/network fixtures are removed after acceptance.
 
 This does NOT prove a real human IdP tenant exists, a real Keycloak/other provider client has been provisioned, a human has completed MFA, or public HTTPS is active. Production acceptance requires an independently controlled IdP client, actual human Platform Owner login with MFA, callback over browser-trusted HTTPS, logout/revocation tests, external hostile Host/session replay tests, and full recovery evidence. Never commit client secret, MFA seed or real tokens.
+
+## Final reviewed source result
+Exact PR #176 head 3168992bc914f2ae6f8230463f8b97235dd860a8 passed GitHub Actions run 37261099841 in all four jobs and was squash-merged to main db8aa0f9b2f3cf43c860c70e9f13c572fa040bee. This confirms source/disposable integration, not a real human IdP login or public production deployment.
