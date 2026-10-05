@@ -1200,3 +1200,7 @@ MUST deploy the Platform Owner API and confidential OIDC issuer as independently
 
 ## R9.86 — PostgreSQL 18 production-version compatibility MUST
 MUST run the full current tenant/RLS/identity/platform database authorization regression against PostgreSQL18 before Ubuntu26 production database deployment, while retaining PG16 regression until an explicit compatibility-retirement decision. Passing single-node PG18 migrations does not satisfy FR-031/AC-13: production still requires independent primary/standby replication, WAL/PITR, offsite restore, failover and measured RPO/RTO.
+
+
+## R9.87 — PostgreSQL18 first-install staging bootstrap
+MUST: clean-host-only Ubuntu26/PostgreSQL18 bootstrap with migration SHA256 manifest, no PostgreSQL TCP listener, no runtime DB password, temporary migration-only privileged identity removed before success, distinct peer-authenticated Platform API/OIDC runtime logins, fail-closed refusal on preexisting clusters, and rollback of a newly created failed cluster. Disposable installation tests are mandatory. This milestone is staging-only until independent PostgreSQL standby/failover, off-host encrypted base+WAL PITR restoration and measured RPO/RTO pass.

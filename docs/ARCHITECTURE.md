@@ -1205,3 +1205,7 @@ Host-level runtime separates ipatpapi -> Platform API :3005 -> ipat_platform_ses
 
 ## R9.86 — PostgreSQL version baseline
 New Ubuntu26 production database nodes target PostgreSQL18. Application SQL remains migration-driven and must keep deny-by-default RLS/function-only identities independent of server version. PG16 remains a CI regression target during transition. HA topology, synchronous/asynchronous replication policy, WAL archive destination and recovery orchestration are separate from application worker/K3s scaling and must be validated across independent failure domains.
+
+
+## R9.87 — Local PostgreSQL18 staging boundary
+Initial Platform Owner staging uses a dedicated PostgreSQL18 cluster reachable only over local Unix socket. Platform API and Platform OIDC have separate peer-mapped SQL identities; neither can use the one-shot bootstrap superuser mapping. Migrations are bound to a reviewed SHA256 manifest. The first local primary is not an HA topology and must not be promoted to commercial production until a separate standby plus independently restorable off-host WAL/PITR plane is implemented and tested.
