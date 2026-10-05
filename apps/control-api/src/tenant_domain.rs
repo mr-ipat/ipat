@@ -155,6 +155,21 @@ pub(crate) struct DnsInstructionProfile {
     authoritative_dns_ready: bool,
 }
 
+fn eligible_public_ipv4(ipv4: Ipv4Addr) -> bool {
+    let [a, b, c, _] = ipv4.octets();
+    !(a == 0
+        || a == 10
+        || a == 127
+        || a >= 224
+        || a == 100 && (64..=127).contains(&b)
+        || a == 169 && b == 254
+        || a == 172 && (16..=31).contains(&b)
+        || a == 192 && (b == 168 || b == 0 && c == 2)
+        || a == 198 && (b == 18 || b == 19 || b == 51 && c == 100)
+        || a == 203 && b == 0 && c == 113
+        || a == 255)
+}
+
 pub(crate) fn dns_profile_from_environment() -> Result<Arc<DnsInstructionProfile>, String> {
     let mode = match std::env::var("IPAT_CUSTOM_DOMAIN_DNS_MODE")
         .map_err(|_| "missing custom-domain DNS mode")?
@@ -171,6 +186,9 @@ pub(crate) fn dns_profile_from_environment() -> Result<Arc<DnsInstructionProfile
         .map(|value| value.parse::<Ipv4Addr>())
         .transpose()
         .map_err(|_| "invalid custom-domain IPv4 target")?;
+    if ipv4.is_some_and(|address| !eligible_public_ipv4(address)) {
+        return Err("custom domain target must be an eligible public IPv4".into());
+    }
     let ipv6 = std::env::var("IPAT_CUSTOM_DOMAIN_IPV6")
         .ok()
         .map(|value| value.parse::<Ipv6Addr>())
@@ -417,6 +435,45 @@ fn build_dns_instructions(
     })
 }
 
+// A tenant must first SAVE its own exact custom-domain record. This helper
+// never issues ownership TXT tokens and never grants authorization.
+pub(super) fn saved_customer_dns_guidance(
+    profile: &DnsInstructionProfile,
+    hostname: CanonicalHost,
+    requested_mode: &str,
+    activation_state: &str,
+    reviewed_custom_domain_tls_edge: bool,
+) -> Option<Value> {
+    let mode = match requested_mode {
+        "a_record" => DnsRoutingMode::ARecord,
+        "cname" => DnsRoutingMode::Cname,
+        "nameserver" => DnsRoutingMode::Nameserver,
+        _ => return None,
+    };
+    let mut exact = profile.clone();
+    exact.mode = mode;
+    let guide = build_dns_instructions(&exact, hostname)?;
+    if guide.routing_records.is_empty() {
+        return None;
+    }
+    let owned = matches!(
+        activation_state,
+        "ownership_verified" | "routing_ready" | "tls_ready" | "active"
+    );
+    let may_point = owned && reviewed_custom_domain_tls_edge && guide.safe_to_point_now;
+    let mut value = serde_json::to_value(guide).ok()?;
+    value["safe_to_point_now"] = json!(may_point);
+    value["customer_instruction_phase"] = json!(if may_point {
+        "VERIFIED_AND_INGRESS_REVIEWED"
+    } else {
+        "VERIFY_OWNERSHIP_AND_REVIEW_INGRESS_FIRST"
+    });
+    value["activation_state"] = json!(activation_state);
+    value["activation_requires_verification"] = json!(true);
+    value["authorization_granted"] = json!(false);
+    Some(value)
+}
+
 fn headers() -> HeaderMap {
     let mut h = HeaderMap::new();
     h.insert(header::CACHE_CONTROL, HeaderValue::from_static("no-store"));
@@ -631,6 +688,52 @@ mod tests {
         assert!(!response.routing_ready);
         assert!(!response.safe_to_point_now);
         assert!(!response.authorization_granted);
+    }
+
+    #[test]
+    fn rejects_nonpublic_runtime_customer_address_targets() {
+        assert!(eligible_public_ipv4("202.162.204.121".parse().unwrap()));
+        for ip in [
+            "10.10.13.233",
+            "127.0.0.1",
+            "203.0.113.20",
+            "198.51.100.20",
+            "192.0.2.20",
+            "100.64.0.10",
+            "192.168.0.10",
+        ] {
+            assert!(!eligible_public_ipv4(ip.parse().unwrap()), "{ip}");
+        }
+    }
+
+    #[test]
+    fn saved_customer_domain_can_use_temporary_ipv4_without_ipat_id() {
+        let mut p = (*profile_a()).clone();
+        p.ipv4 = Some("202.162.204.121".parse().unwrap());
+        p.cname_target = None;
+        p.routing_ready = true;
+        let name = canonical_dns_name("portal.customer.co.id").unwrap();
+        let pending =
+            saved_customer_dns_guidance(&p, name.clone(), "a_record", "pending_dns", true).unwrap();
+        assert_eq!(pending["routing_records"][0]["value"], "202.162.204.121");
+        assert_eq!(
+            pending["verification_record_name"],
+            "_ipat-verify.portal.customer.co.id"
+        );
+        assert_eq!(pending["safe_to_point_now"], false);
+        assert_eq!(pending["authorization_granted"], false);
+        let verified =
+            saved_customer_dns_guidance(&p, name.clone(), "a_record", "ownership_verified", true)
+                .unwrap();
+        assert_eq!(verified["safe_to_point_now"], true);
+        let no_tls =
+            saved_customer_dns_guidance(&p, name.clone(), "a_record", "ownership_verified", false)
+                .unwrap();
+        assert_eq!(no_tls["safe_to_point_now"], false);
+        assert!(
+            saved_customer_dns_guidance(&p, name.clone(), "cname", "pending_dns", true).is_none()
+        );
+        assert!(saved_customer_dns_guidance(&p, name, "bad_mode", "pending_dns", true).is_none());
     }
 
     #[test]

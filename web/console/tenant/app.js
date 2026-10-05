@@ -108,8 +108,30 @@
   if(d.lifecycle_state!=='SAVED'){edit.disabled=true;del.disabled=true}
   $('device-rows').append(tr);
  }}
+ async function showDomainDns(id){
+  const r=await api('/api/v1/domains/'+encodeURIComponent(id)+'/dns');
+  const guide=r.guide;
+  const section=$('domain-dns-guide');const rows=$('domain-dns-records');
+  section.hidden=false;rows.replaceChildren();
+  const line=(title,value)=>{
+    const p=document.createElement('p');
+    const strong=document.createElement('strong');strong.textContent=title+': ';
+    const text=document.createElement('span');text.textContent=String(value);
+    p.append(strong,text);rows.append(p);
+  };
+  line('Customer hostname',guide.hostname);
+  line('Ownership DNS record',guide.verification_record_type+' '+guide.verification_record_name);
+  line('Unique saved TXT value',guide.verification_value);
+  $('domain-dns-status').textContent=guide.safe_to_point_now
+   ?'Ownership and ingress readiness approved; review the exact routing records with your DNS operator.'
+   :'WAIT: complete ownership verification and reviewed HTTPS ingress before routing the customer domain.';
+  line('Requested routing mode',guide.routing_mode);
+  for(const record of guide.routing_records||[])
+    line('Candidate '+record.record_type+' ('+record.stage+')',record.name+' → '+record.value);
+  notice('DNS instructions loaded for your own registered company domain.');
+ }
  async function refreshDomains(){const r=await api('/api/v1/domains');$('domain-rows').replaceChildren();for(const d of r.domains){const tr=document.createElement('tr');cell(tr,d.hostname);cell(tr,d.verification_name?`${d.verification_name} TXT ${d.verification_value||''}`:'Awaiting instructions');cell(tr,d.activation_state);
- const actions=cell(tr,'');actions.textContent='';btn(actions,'Disable',async()=>{if(!confirm(`Disable domain request ${d.hostname}?`))return;try{await api('/api/v1/domains/'+encodeURIComponent(d.id),'DELETE');notice('Domain request disabled.');await refreshDomains()}catch(e){notice(e.message)}});$('domain-rows').append(tr)}}
+ const actions=cell(tr,'');actions.textContent='';if(d.activation_state!=='disabled')btn(actions,'DNS instructions',async()=>{try{await showDomainDns(d.id)}catch(e){notice(e.message)}});btn(actions,'Disable',async()=>{if(!confirm(`Disable domain request ${d.hostname}?`))return;try{await api('/api/v1/domains/'+encodeURIComponent(d.id),'DELETE');notice('Domain request disabled.');await refreshDomains()}catch(e){notice(e.message)}});$('domain-rows').append(tr)}}
  function refreshNocAccessChoices(){
   const member=$('noc-access-member');member.replaceChildren();
   option(member,'Select a current NOC member','');
@@ -195,7 +217,7 @@
  $('device-create').addEventListener('submit',e=>{e.preventDefault();const f=e.currentTarget;submit(f,async()=>{const d=Object.fromEntries(new FormData(f));if(['cwmp','usp'].includes(d.management_transport)){d.management_host=null;d.management_port=null}else{d.management_port=Number(d.management_port)};d.request_id=crypto.randomUUID();d.intended_model=d.intended_model||null;await api('/api/v1/devices','POST',d);clearForm(f);syncCatalog();await refreshDevices();notice('Device saved as metadata. Physical connection not yet established.')})});
  $('device-edit').addEventListener('submit',e=>{e.preventDefault();const f=e.currentTarget;submit(f,async()=>{const d=Object.fromEntries(new FormData(f));d.expected_revision=state.editRevision;d.intended_model=d.intended_model||null;d.management_host=d.management_host||null;d.management_port=d.management_port?Number(d.management_port):null;await api('/api/v1/devices/'+encodeURIComponent(state.editId),'PATCH',d);$('device-edit-panel').hidden=true;state.editId=null;await refreshDevices();notice('Saved device metadata updated.')})});
  $('edit-cancel').addEventListener('click',()=>{$('device-edit-panel').hidden=true;state.editId=null});
- $('domain-create').addEventListener('submit',e=>{e.preventDefault();const f=e.currentTarget;submit(f,async()=>{await api('/api/v1/domains','POST',Object.fromEntries(new FormData(f)));clearForm(f);await refreshDomains();notice('Domain requested, not activated. Review the verification record.')})});
+ $('domain-create').addEventListener('submit',e=>{e.preventDefault();const f=e.currentTarget;submit(f,async()=>{await api('/api/v1/domains','POST',Object.fromEntries(new FormData(f)));clearForm(f);await refreshDomains();notice('Domain saved as pending. Open DNS instructions for unique TXT proof and the reviewed routing plan.')})});
  $('logout').addEventListener('click',async()=>{try{await api('/api/v1/logout','POST');location.assign('/auth/oidc/start')}catch(e){notice(e.message)}});
  (async()=>{try{
   const r=await api('/api/v1/capabilities');$('identity').textContent='Authorized tenant: '+r.tenant_id;
