@@ -25,3 +25,7 @@ Only after actual engineering review may an operator configure a routing target 
 ## Scope and evidence
 
 Tests: Rust platform exact IPv4 Host and same-tenant saved-domain guidance, real disposable PostgreSQL16 plus Axum customer request and DNS-instruction flow through the existing R9.68 test, Node static dashboard contract, and read-only Python IP SAN TLS negative tests. Public DNS/HTTPS/MFA are NOT proven by these tests. C320, C-DATA, ONTs, MikroTik physical interoperability, recovery and full PRD public production gates remain separately audited.
+
+## Final source acceptance and live limitation (2026-10-05)
+
+Owner Mac/VPS real current temporary-IP plan matched 202.162.204.121. No listener on the target public HTTPS port, public TCP443 unavailable and no verified browser-trusted exact iPAddress SAN certificate; no production cutover was performed. The source was SHA-verified against local tested code. GitHub PR #175 exact final head d2dc0db846ceaf85d1af60bc9cf9275cbf6d207c passed CI run 37259075082 all 4/4 jobs including the existing R9.68 real disposable PostgreSQL + Axum browser domain flow and newly isolated R9.82 checks; merged to main d160e7ffe051dd910700b83eeeabc4337952c29e. Independently tested 106/106 owner-VPS control-api Rust, 4/4 owner-Mac Python negative checks, Node contract and Rustfmt PASS. Production access to the new console/custom-domain onboarding remains gated by real trusted IP SAN TLS, human MFA issuer, independently recoverable host/DB and real authorized company activation.
