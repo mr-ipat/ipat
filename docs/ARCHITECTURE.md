@@ -1212,3 +1212,6 @@ Initial Platform Owner staging uses a dedicated PostgreSQL18 cluster reachable o
 
 ## R9.88 — Stateful recovery boundary
 The PostgreSQL plane requires independently restorable base backup plus continuous WAL archive. Recovery validation is a separate control plane from application/K3s scaling: restore into a clean PostgreSQL process, select a reviewed recovery target, promote only after integrity and tenant-RLS checks, then reconcile queue/outbox state against real device state before re-enabling risky writes. Never infer PITR capability from a replica or a successful basebackup alone.
+
+## R9.89 — PostgreSQL streaming-HA boundary
+PostgreSQL availability is separate from K3s worker scaling. Production baseline is one writable primary plus at least one physical streaming standby in an independent failure domain. A standby remains read-only until a reviewed failover decision proves/fences the former primary; only then may it promote. R9.88 PITR remains mandatory because replication also copies operator mistakes.

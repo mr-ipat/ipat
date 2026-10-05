@@ -665,6 +665,12 @@ jobs:
           python3 -m unittest discover deploy/db/tests -p 'test_job_outbox_integration.py' -v
       - name: Verify synthetic physical basebackup and restore on separate CI server process
         run: bash deploy/db/tests/physical_restore_ephemeral.sh
+      - name: R9.89 PostgreSQL18 streaming standby controlled promotion rehearsal
+        run: |
+          bash -n deploy/db/tests/r989_pg18_streaming_failover_docker.sh
+          python3 -m unittest deploy/db/tests/r989/test_r989_pg18_streaming_source.py -v
+          IPAT_R989_PG18_STREAMING_DOCKER=YES bash deploy/db/tests/r989_pg18_streaming_failover_docker.sh
+          grep -Fq R9.89 docs/PROJECT_STATUS.md
       - name: R9.88 PostgreSQL18 archived-WAL named restore-point PITR and RLS
         run: |
           bash -n deploy/db/tests/r988_pg18_wal_pitr_docker.sh

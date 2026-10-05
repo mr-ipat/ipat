@@ -1207,3 +1207,6 @@ MUST: clean-host-only Ubuntu26/PostgreSQL18 bootstrap with migration SHA256 mani
 
 ## R9.88 — PostgreSQL18 WAL/PITR recovery acceptance
 MUST: database recovery testing cannot stop at a readable physical backup. Rehearse physical PostgreSQL18 basebackup verification plus archived WAL recovery to an explicit target on a fresh process, prove pre-target tenant data integrity, prove post-target changes are absent, and re-run tenant RLS after promotion. Synthetic/disposable acceptance must reject empty-dataset false positives and never publish database ports. Production remains incomplete until the same controls are exercised using independently controlled encrypted off-host storage, a distinct recovery host/failure domain and measured RPO/RTO on real production-shaped data.
+
+## R9.89 — PostgreSQL HA controlled-failover requirement
+MUST: at least one independent physical streaming standby, one writable primary, encrypted replication, monitored lag, explicit fencing before promotion, preserved tenant RLS/audit and independent PITR backup. Real cross-host failover with measured RPO/RTO is required before public commercial GO. Disposable R9.89 closes only the PostgreSQL18 replication/promotion mechanism.
