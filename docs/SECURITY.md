@@ -1298,3 +1298,6 @@ A server-version change cannot weaken tenant isolation or service-role privilege
 
 ## R9.87 database bootstrap threat controls
 Refuse existing clusters, verify every migration digest, suppress package-created default clusters, expose no TCP database socket, reject all unspecified local users, and delete the temporary nologin migration OS principal plus its superuser peer map before runtime checks. Runtime services authenticate through OS peer identity to narrow PostgreSQL roles with no repository password. A compromised root remains outside this control boundary; independent host recovery and DB PITR remain mandatory.
+
+## R9.88 — Recovery security invariants
+PITR evidence must protect tenant isolation after restore, not merely recover bytes. The recovery drill verifies the same restricted runtime role sees zero unscoped rows and only its exact scoped tenant after promotion. Empty query hashes are invalid evidence. Archived WAL and physical backups contain cross-tenant data and therefore require encryption, access separation, retention/immutability and independent storage in production. Recovery credentials, WAL contents and backup keys must never be committed or logged.

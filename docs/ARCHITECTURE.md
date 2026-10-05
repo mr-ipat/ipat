@@ -1209,3 +1209,6 @@ New Ubuntu26 production database nodes target PostgreSQL18. Application SQL rema
 
 ## R9.87 — Local PostgreSQL18 staging boundary
 Initial Platform Owner staging uses a dedicated PostgreSQL18 cluster reachable only over local Unix socket. Platform API and Platform OIDC have separate peer-mapped SQL identities; neither can use the one-shot bootstrap superuser mapping. Migrations are bound to a reviewed SHA256 manifest. The first local primary is not an HA topology and must not be promoted to commercial production until a separate standby plus independently restorable off-host WAL/PITR plane is implemented and tested.
+
+## R9.88 — Stateful recovery boundary
+The PostgreSQL plane requires independently restorable base backup plus continuous WAL archive. Recovery validation is a separate control plane from application/K3s scaling: restore into a clean PostgreSQL process, select a reviewed recovery target, promote only after integrity and tenant-RLS checks, then reconcile queue/outbox state against real device state before re-enabling risky writes. Never infer PITR capability from a replica or a successful basebackup alone.
