@@ -4,7 +4,7 @@
 (() => {
  const $=id=>document.getElementById(id);
  const notice=text=>{$('notice').textContent=text};
- const state={page:null,sites:[],pops:[],popNext:null,devices:[],catalog:[],next:null,editId:null,editRevision:null,pendingSite:null,nocPops:[],realNocPops:[]};
+ const state={page:null,sites:[],pops:[],popNext:null,devices:[],catalog:[],next:null,editId:null,editRevision:null,pendingSite:null,nocPops:[],realNocPops:[],nocMembers:[],nocAccess:[],pendingNocRequest:null};
  const csrf=()=>document.cookie.split(';').map(x=>x.trim()).find(x=>x.startsWith('__Host-ipat_csrf='))?.split('=')[1];
  async function api(path,method='GET',body){
   const headers={'Accept':'application/json'};
@@ -110,6 +110,35 @@
  }}
  async function refreshDomains(){const r=await api('/api/v1/domains');$('domain-rows').replaceChildren();for(const d of r.domains){const tr=document.createElement('tr');cell(tr,d.hostname);cell(tr,d.verification_name?`${d.verification_name} TXT ${d.verification_value||''}`:'Awaiting instructions');cell(tr,d.activation_state);
  const actions=cell(tr,'');actions.textContent='';btn(actions,'Disable',async()=>{if(!confirm(`Disable domain request ${d.hostname}?`))return;try{await api('/api/v1/domains/'+encodeURIComponent(d.id),'DELETE');notice('Domain request disabled.');await refreshDomains()}catch(e){notice(e.message)}});$('domain-rows').append(tr)}}
+ function refreshNocAccessChoices(){
+  const member=$('noc-access-member');member.replaceChildren();
+  option(member,'Select a current NOC member','');
+  state.nocMembers.forEach((m,i)=>option(member,m.subject+' · '+m.issuer,String(i)));
+  const pop=$('noc-access-pop');pop.replaceChildren();
+  option(pop,'Select a real POP','');
+  state.pops.forEach(p=>option(pop,p.display_name+' ('+p.code+')',p.code));
+ }
+ async function refreshNocAccess(){
+  const r=await api('/api/v1/noc-access');
+  state.nocMembers=r.members||[];state.nocAccess=r.access||[];
+  refreshNocAccessChoices();
+  const rows=$('noc-access-rows');rows.replaceChildren();
+  for(const x of state.nocAccess){
+   const tr=document.createElement('tr');
+   cell(tr,x.kind);cell(tr,x.target_subject+' · '+x.target_issuer);cell(tr,x.pop_code);
+   cell(tr,x.state);cell(tr,x.expires_at);cell(tr,x.requested_by+(x.reviewed_by?' / '+x.reviewed_by:''));
+   const actions=cell(tr,'');actions.textContent='';
+   if(x.kind==='request'&&x.state==='PENDING'&&!x.can_review)actions.textContent='Awaiting a different administrator';
+   if(x.kind==='request'&&x.state==='PENDING'&&x.can_review&&x.request_id){
+    btn(actions,'Approve',async()=>{try{await api('/api/v1/noc-access/requests/'+encodeURIComponent(x.request_id)+'/review','POST',{approve:true});await refreshNocAccess();notice('NOC POP access approved.')}catch(e){notice(e.message)}});
+    btn(actions,'Reject',async()=>{try{await api('/api/v1/noc-access/requests/'+encodeURIComponent(x.request_id)+'/review','POST',{approve:false});await refreshNocAccess();notice('NOC POP access rejected.')}catch(e){notice(e.message)}});
+   }
+   if(x.kind==='grant'&&x.state==='ACTIVE'){
+    btn(actions,'Revoke',async()=>{if(!confirm('Revoke read-only POP access for '+x.target_subject+'?'))return;try{await api('/api/v1/noc-access/revoke','POST',{target_issuer:x.target_issuer,target_subject:x.target_subject,pop_code:x.pop_code});await refreshNocAccess();notice('NOC POP access revoked immediately.')}catch(e){notice(e.message)}});
+   }
+   rows.append(tr);
+  }
+ }
  async function refreshNoc(){
   const chosen=$('noc-pop').value;
   const typed=chosen.startsWith('real:');
@@ -129,7 +158,7 @@
   $('noc-device-rows').replaceChildren();
   for(const d of devices.devices){const tr=document.createElement('tr');cell(tr,d.display_name);cell(tr,d.site);cell(tr,d.device_kind+' / '+d.vendor);cell(tr,d.lifecycle_state==='SAVED'?'Saved — not connected':d.lifecycle_state);$('noc-device-rows').append(tr)}
  }
- async function page(name){if(!['pops','sites','devices','domains','noc'].includes(name)||$('nav-'+name)?.hidden)return;state.page=name;$('welcome').hidden=true;document.querySelectorAll('[data-panel]').forEach(p=>p.hidden=p.dataset.panel!==name);notice('Loading current tenant data…');try{if(name==='pops')await refreshPops();if(name==='sites'){await refreshPops();await refreshSites()}if(name==='devices'){await refreshPops();await refreshSites();await refreshDevices()}if(name==='domains')await refreshDomains();if(name==='noc')await refreshNoc();notice('Data loaded. Operations remain subject to current authorization.')}catch(e){notice(e.message)}}
+ async function page(name){if(!['pops','sites','devices','domains','noc-access','noc'].includes(name)||$('nav-'+name)?.hidden)return;state.page=name;$('welcome').hidden=true;document.querySelectorAll('[data-panel]').forEach(p=>p.hidden=p.dataset.panel!==name);notice('Loading current tenant data…');try{if(name==='pops')await refreshPops();if(name==='sites'){await refreshPops();await refreshSites()}if(name==='devices'){await refreshPops();await refreshSites();await refreshDevices()}if(name==='domains')await refreshDomains();if(name==='noc-access'){await refreshPops();await refreshNocAccess()}if(name==='noc')await refreshNoc();notice('Data loaded. Operations remain subject to current authorization.')}catch(e){notice(e.message)}}
  async function submit(form,callback){const button=form.querySelector('button[type=submit],button:not([type])');if(button)button.disabled=true;try{await callback()}catch(e){notice(e.message)}finally{if(button)button.disabled=false}}
  document.querySelectorAll('.nav').forEach(b=>{b.id='nav-'+b.dataset.page;b.addEventListener('click',()=>page(b.dataset.page))});
  $('create-site-link').addEventListener('click',e=>{e.preventDefault();page('sites')});
@@ -140,6 +169,24 @@
   clearForm(f);await refreshPops();notice('POP registered independently. Create or associate a Site next.');
  })});
  $('site-more').addEventListener('click',()=>refreshSites(state.next).catch(e=>notice(e.message)));
+ $('noc-access-create').addEventListener('submit',e=>{e.preventDefault();const f=e.currentTarget;submit(f,async()=>{
+  const idx=Number($('noc-access-member').value);const member=state.nocMembers[idx];
+  const pop=$('noc-access-pop').value;const hours=Number($('noc-access-hours').value);
+  if(!member||!pop||!Number.isInteger(hours))throw Error('Choose a current NOC member, a real POP and a valid duration.');
+  if(hours<1||hours>2160)throw Error('Duration must be 1–2160 hours.');
+  const fingerprint=JSON.stringify([member.issuer,member.subject,pop,hours]);
+  if(!state.pendingNocRequest||state.pendingNocRequest.fingerprint!==fingerprint){
+   state.pendingNocRequest={fingerprint,request_id:crypto.randomUUID(),
+    expires_at:new Date(Date.now()+hours*3600000).toISOString()};
+  }
+  // Preserve both idempotency key and absolute expiry after network timeout.
+  // An uncertain response can safely be retried without shifting its expiry.
+  await api('/api/v1/noc-access/requests','POST',{request_id:state.pendingNocRequest.request_id,
+    target_issuer:member.issuer,target_subject:member.subject,pop_code:pop,
+    expires_at:state.pendingNocRequest.expires_at});
+  state.pendingNocRequest=null;
+  await refreshNocAccess();notice('POP access request created. A different current Tenant Admin must approve it.');
+ })});
  $('noc-pop').addEventListener('change',()=>{if(state.page==='noc')refreshNoc().catch(e=>notice(e.message))});
  $('device-kind').addEventListener('change',syncCatalog);$('device-vendor').addEventListener('change',syncCatalog);$('device-transport').addEventListener('change',syncEndpoint);
  $('site-create').addEventListener('submit',e=>{e.preventDefault();const f=e.currentTarget;submit(f,async()=>{const d=Object.fromEntries(new FormData(f));d.parent_pop_code=d.parent_pop_code||null;
@@ -158,7 +205,7 @@
   for(const p of state.realNocPops)option($('noc-pop'),'Real POP: '+p,'real:'+p);
   for(const p of state.nocPops)option($('noc-pop'),'Legacy exact Site: '+p,'site:'+p);
   if(state.nocPops.length||state.realNocPops.length)$('nav-noc').hidden=false;
-  if(r.can_manage_sites){for(const n of ['pops','sites','devices','domains'])$('nav-'+n).hidden=false;await loadCatalog()}
+  if(r.can_manage_sites){for(const n of ['pops','sites','devices','domains','noc-access'])$('nav-'+n).hidden=false;await loadCatalog()}
   $('logout').hidden=false;
   notice(r.can_manage_sites||state.nocPops.length||state.realNocPops.length?'Tenant permissions verified. Select a permitted module.':'No operations modules assigned to your current identity.');
 
