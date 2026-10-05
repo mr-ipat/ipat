@@ -216,6 +216,10 @@ jobs:
           node --check web/lab/site-manager.js
           node deploy/scripts/lab/r963/test_standalone_sites.cjs
           python3 -m unittest deploy/scripts/production/test_r963_public_cutover_preflight.py -q
+          # R9.79 synthetic negative checks: no owner VPS or public DNS requests.
+          python3 -m unittest discover deploy/scripts/production -p test_r979_owner_release_evidence.py -v
+          grep -Fq "'public_go': False" deploy/scripts/production/r979_owner_release_evidence.py
+
           python3 -m py_compile deploy/scripts/production/r963_public_cutover_preflight.py
           bash -n deploy/scripts/lab/r963/rollout-private-sites.sh
           bash -n deploy/scripts/lab/r963/rollout-private-fixed-edit.sh
