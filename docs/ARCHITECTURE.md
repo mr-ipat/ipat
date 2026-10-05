@@ -1202,3 +1202,6 @@ The public edge terminates only ports 80/443 in Nginx. HTTP serves the exact-IP 
 
 ## R9.85 — Platform Owner process/service topology
 Host-level runtime separates ipatpapi -> Platform API :3005 -> ipat_platform_session_api_login from ipatpoidc -> OIDC issuer :3006 -> ipat_platform_session_issuer_login. Both consume the same reviewed control-api binary but select mutually exclusive Rust modes using root-owned environment files. OIDC secret/key material is owned by ipatpoidc in a dedicated 0700 directory; the API never receives it. PostgreSQL local authentication mapping is external infrastructure and must prove each OS identity maps only to its intended restricted login before service activation. Nginx R9.84 is a later edge in front of these loopback listeners.
+
+## R9.86 — PostgreSQL version baseline
+New Ubuntu26 production database nodes target PostgreSQL18. Application SQL remains migration-driven and must keep deny-by-default RLS/function-only identities independent of server version. PG16 remains a CI regression target during transition. HA topology, synchronous/asynchronous replication policy, WAL archive destination and recovery orchestration are separate from application worker/K3s scaling and must be validated across independent failure domains.
