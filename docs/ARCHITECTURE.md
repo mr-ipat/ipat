@@ -1198,3 +1198,7 @@ Add a distinct Platform Owner OIDC issuer deployment on loopback 3006. Public tr
 
 ## R9.84 — Public edge cut-line for temporary literal IPv4
 The public edge terminates only ports 80/443 in Nginx. HTTP serves the exact-IP ACME webroot and redirects exact Host to HTTPS. HTTPS exact-IP virtual host routes Platform OIDC paths to loopback 3006 and Platform Owner API/dashboard to loopback 3005. It does not route owner-private 3002, commercial tenant 3003 or tenant issuer 3004. Backends remain nonroot and exact-loopback-only; wildcard listeners block cutover. Short-lived IP certificate renewal is independent of application processes and reloads Nginx only after exact SAN and configuration validation. Customer-owned domain SNI blocks are a subsequent independent layer and must not weaken exact-IP default rejection.
+
+
+## R9.85 — Platform Owner process/service topology
+Host-level runtime separates ipatpapi -> Platform API :3005 -> ipat_platform_session_api_login from ipatpoidc -> OIDC issuer :3006 -> ipat_platform_session_issuer_login. Both consume the same reviewed control-api binary but select mutually exclusive Rust modes using root-owned environment files. OIDC secret/key material is owned by ipatpoidc in a dedicated 0700 directory; the API never receives it. PostgreSQL local authentication mapping is external infrastructure and must prove each OS identity maps only to its intended restricted login before service activation. Nginx R9.84 is a later edge in front of these loopback listeners.

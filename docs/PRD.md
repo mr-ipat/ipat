@@ -1193,3 +1193,7 @@ MUST: Platform Owner login is a separate confidential OIDC service from tenant l
 
 ## R9.84 — Temporary IPv4 trusted HTTPS deployment MUST
 MUST provide an executable Ubuntu 26.04 first-cutover path for browser-trusted literal-IP HTTPS without using ipat.id: prerequisite install with daemon auto-start suppressed, ACME short-lived IP staging validation first, exact iPAddress SAN verification, production issuance only with Platform Owner API and OIDC backends already restricted to loopback, exact Host routing, fail-closed timed rollback, automated renewal with deploy-hook validation and no firewall/device mutation. Source/disposable Nginx acceptance is not live deployment acceptance. Actual root execution, external ACME, human MFA/browser test, recovery and production PostgreSQL remain required before public GO.
+
+
+## R9.85 — Platform Owner runtime services MUST
+MUST deploy the Platform Owner API and confidential OIDC issuer as independently hardened nonroot restart-safe services with checksum-pinned binary, root-only env, external secret files, exact Platform Host, separate function-only PostgreSQL logins and loopback-only listeners. Activation must validate actual DB role access and secure file ownership first, arm timed rollback, verify exact 3005/3006 health and refuse wildcard listeners. No service installer may alter firewall, DNS, PostgreSQL roles/configuration or device state. Source/systemd acceptance is not production acceptance until real PostgreSQL, real IdP/MFA secrets and privileged owner-VPS deployment have passed.
