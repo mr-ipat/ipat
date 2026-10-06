@@ -656,6 +656,16 @@ jobs:
           python3 -m py_compile deploy/scripts/production/r999_validate_customer_browser_acceptance.py
           python3 -m unittest deploy/scripts/production/test_r999_customer_browser_acceptance_source.py -v
           grep -Fq R9.99 docs/PROJECT_STATUS.md
+      - name: R10.1 tenant-safe company branding, current membership and Host-bound HTTP
+        run: |
+          psql -X -v ON_ERROR_STOP=1 -f deploy/db/migrations/0035_tenant_safe_branding.sql
+          python3 -m unittest deploy/db/tests/test_tenant_branding_integration.py -v
+          cargo test --locked -p control-api commercial_tenant_api::pg_integration::r101_real_pg_host_bound_tenant_branding_admin_and_reader -- --exact
+          node --check web/console/tenant/app.js
+          node deploy/scripts/lab/r101/test_tenant_branding_ui.cjs
+          python3 -m unittest deploy/scripts/production/test_r987_postgres18_bootstrap_source.py -v
+          grep -Fq 0035_tenant_safe_branding.sql deploy/db/production/r987_migrations.sha256
+          grep -Fq R10.1 docs/PROJECT_STATUS.md
       - name: R9.71 real disposable PostgreSQL HA-safe one-use OIDC state across Rust client instances
         run: |
           python3 -m unittest discover deploy/db/tests -p test_oidc_pending_integration.py -v
