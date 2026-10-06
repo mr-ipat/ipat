@@ -1,0 +1,21 @@
+{
+  "schema": "ipat.customer-human-mfa-acceptance.v1",
+  "domain_id": "00000000-0000-4000-8000-000000000000",
+  "hostname": "portal.customer.example.net",
+  "tenant_id": "00000000-0000-4000-8000-000000000001",
+  "control_tenant_id": "00000000-0000-4000-8000-000000000002",
+  "control_hostname": "portal.control.example.net",
+  "real_human_mfa_browser_login_verified": true,
+  "unauthorized_menu_hidden_verified": true,
+  "unauthorized_direct_url_denied_verified": true,
+  "unauthorized_api_denied_verified": true,
+  "wrong_host_session_replay_denied": true,
+  "cross_tenant_api_denied": true,
+  "logout_revocation_verified": true,
+  "stale_session_denied": true,
+  "prepared_by": "tenant-acceptance-operator-placeholder",
+  "approved_by": "security-reviewer-placeholder",
+  "evidence_id": "customer-browser-evidence-placeholder",
+  "artifact_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "reviewed_at_utc": "2026-10-06T00:00:00+00:00"
+}

@@ -1335,3 +1335,7 @@ Public edge enablement requires root-owned current PITR evidence with distinct m
 
 ## R9.98 — Exact customer activation security boundary
 Before customer mutation, require a fresh maker/checker Platform Owner browser-MFA acceptance tied to the active R9.97 public IPv4 edge. Root must query exact saved customer authority only through the restricted ingress-verifier role; raw tenant-domain access remains denied. The one-shot verifier must recheck persisted ownership TXT, exact A target, CA-trusted SNI certificate and customer OIDC start before ordered state transitions. Global rollback removes only the newly added customer OIDC and exact customer ingress while the domain is not active. Once active, destructive rollback is disarmed to avoid database/edge desynchronization. Customer commercial GO requires a later real tenant-human MFA and cross-tenant hostile-browser test.
+
+
+## R9.99 — Browser acceptance cannot be inferred from backend green tests
+Synthetic OIDC/Rust/PostgreSQL tests cannot promote a customer to release. Require a real browser artifact with a distinct control tenant and exact public Hosts, independently reviewed maker/checker evidence and explicit revocation/replay checks. The release finalizer has no network or lifecycle mutation authority and consumes only root-owned acceptance plus restricted exact active-domain state.
