@@ -245,3 +245,7 @@ Source adds a hard production-PITR gate before public edge activation. The valid
 
 ## R9.98 exact one-customer activation candidate
 Migration 0034 adds a read-only exact activation result for the ingress verifier only; PostgreSQL disposable regression proves active/owned exact rows, exclusion of pending/suspended/unknown domains, denial to tenant/ownership/OIDC/platform roles, raw-table denial and ordered result tracking. Source activation requires R9.97 edge + current Platform human-MFA acceptance, then one customer OIDC, R9.93 staging/production exact Host ingress and one-shot R9.98 verifier; it deliberately never enables the R9.94 multi-domain timer. Source tests and synthetic DB state do not satisfy live AC-01/02/09/15/16: actual Platform MFA evidence, customer DNS/IdP, real tenant browser isolation/revocation and independent public security acceptance remain mandatory.
+
+
+## R9.99 exact customer browser acceptance candidate
+Source adds a fail-closed customer release validator/finalizer requiring real human MFA browser evidence, menu/direct-URL/API denial, wrong-Host/cross-tenant replay denial, logout/revocation, stale-session denial, distinct control tenant, artifact SHA256 and fresh maker/checker review. It reads only the exact R9.98 active domain through the restricted verifier function. Source tests do not satisfy production acceptance until a real external browser run generates and reviewers approve the required artifact.

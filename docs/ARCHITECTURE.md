@@ -1246,3 +1246,7 @@ The production lifecycle now has three explicit phases: R9.96 local foundation; 
 
 ## R9.98 — Per-customer activation control plane
 Customer ingress is a one-customer transaction layered after the shared R9.97 platform edge. The root orchestrator owns only deployment composition and rollback; database lifecycle authority remains the nonroot ingress verifier. A new exact-state SECURITY DEFINER function provides one domain's activation result to ipat_domain_ingress_verifier without raw-table access. Customer OIDC remains one exact Host/loopback-port instance. Customer Nginx/ACME remains one exact Host/SNI virtual host. A failed pre-active activation can remove OIDC/ingress while retaining non-resolving routing_ready/tls_ready state for explicit re-verification. There is no implicit expansion from one company to another.
+
+
+## R9.99 — Evidence-only customer release marker
+R9.98 owns customer OIDC/domain activation; R9.99 owns only the final release evidence boundary. It validates a real-browser acceptance artifact and reads exact active domain state through the ingress-verifier security-definer function, then writes a root-owned release marker. No service restart, ingress mutation, DNS update or device action occurs at this layer.

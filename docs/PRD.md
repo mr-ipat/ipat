@@ -1241,3 +1241,7 @@ MUST prohibit public Platform Owner activation before production PostgreSQL reco
 
 ## R9.98 — Exact per-company OIDC/custom-domain activation
 MUST activate customer companies one exact custom-domain ID at a time. Require the active R9.97 platform edge plus current independent Platform Owner human-MFA browser acceptance before any customer mutation. The system must retrieve the exact stored Host/TXT/state using a narrow ingress-verifier function, provision exactly one customer OIDC instance, validate staging and production ACME for that Host, and let only the nonroot ingress verifier advance that domain after repeated TXT+A+trusted TLS/OIDC checks. Cross-tenant or mass timer activation is forbidden in this flow. Successful domain state active still MUST retain customer_release_go=false until real tenant-human MFA, menu/API denial, wrong-Host/cross-tenant replay and logout/revocation browser acceptance pass.
+
+
+## R9.99 — Customer release acceptance
+MUST keep customer_release_go=false after R9.98 domain activation until a real human-MFA browser test against the exact customer Host and a distinct control tenant proves unauthorized menu/direct URL/API denial, wrong-Host and cross-tenant replay denial, logout/revocation and stale-session denial. Evidence must be recent, artifact-hashed and independently maker/checker reviewed. A narrow read-only finalizer may create a customer release marker only while the exact database domain remains active.

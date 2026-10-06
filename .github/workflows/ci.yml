@@ -650,6 +650,12 @@ jobs:
           grep -Fq get_tenant_domain_activation_result deploy/db/migrations/0034_exact_customer_domain_activation_result.sql
           grep -Fq customer_release_go docs/R998_SINGLE_CUSTOMER_ACTIVATION.md
           grep -Fq R9.98 docs/PROJECT_STATUS.md
+      - name: R9.99 exact customer human MFA/browser acceptance release gate
+        run: |
+          bash -n deploy/scripts/production/r999_finalize_customer_release.sh
+          python3 -m py_compile deploy/scripts/production/r999_validate_customer_browser_acceptance.py
+          python3 -m unittest deploy/scripts/production/test_r999_customer_browser_acceptance_source.py -v
+          grep -Fq R9.99 docs/PROJECT_STATUS.md
       - name: R9.71 real disposable PostgreSQL HA-safe one-use OIDC state across Rust client instances
         run: |
           python3 -m unittest discover deploy/db/tests -p test_oidc_pending_integration.py -v
