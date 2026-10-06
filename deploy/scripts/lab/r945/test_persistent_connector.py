@@ -101,6 +101,30 @@ class PersistentC320Tests(unittest.TestCase):
                 with self.assertRaises(ValueError):
                     agent.save_draft('a'+chr(10)+'b')
 
+    def test_paged_refresh_helpers_are_bounded_and_prefix_only(self):
+        class PX:
+            EOF=object(); TIMEOUT=object()
+        class Child:
+            def __init__(self,events):
+                self.events=list(events);self.before=b'';self.sent=[];self.lines=[]
+            def sendline(self,v):self.lines.append(v)
+            def send(self,v):self.sent.append(v)
+            def expect(self,patterns,timeout):
+                idx,chunk=self.events.pop(0);self.before=chunk;return idx
+        child=Child([(1,b'page1\n'),(0,b'\x08'*18+b' 1/1/1:2 enable disable OffLine 1(GPON)\n')])
+        raw,pages=agent._paged_read(child,b'P',agent.PAGED_COMMANDS[1],PX)
+        self.assertEqual(pages,1)
+        self.assertEqual(child.sent,[b' '])
+        clean=agent._normalize_pager_artifacts(raw,pages)
+        self.assertNotIn(b'\x08',clean)
+        self.assertIn(b'1/1/1:2',clean)
+        with self.assertRaises(ValueError):
+            agent._paged_read(Child([]),b'P','show users',PX)
+        with self.assertRaises(ValueError):
+            agent._normalize_pager_artifacts(b'1/1/1:\x082 bad\n',1)
+        with self.assertRaises(ValueError):
+            agent._normalize_pager_artifacts(b'\x08 bad\n',0)
+
     def test_command_allowlist_and_fixed_transport(self):
         src=FILE.read_text()
         self.assertIn("SAFE_ACTIONS = {b'REFRESH",src)
