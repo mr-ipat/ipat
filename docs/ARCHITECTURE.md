@@ -1221,3 +1221,7 @@ Database HA replication and backups are independent. PostgreSQL base backup plus
 
 ## R9.91 — Backup failure-domain boundary
 PostgreSQL primary/standby availability and Restic backup recovery are independent control planes. Base+WAL material must be encrypted before or while entering an independently controlled backup failure domain. Database/service runtime identities must not automatically have backup retention/deletion credentials. A read-only backup observer can enumerate tagged snapshots but cannot restore, prune or grant release. Recovery acceptance runs on a separate approved host and validates restored PostgreSQL18/RLS before reintroducing traffic.
+
+
+## R9.92 — Commercial tenant runtime deployment boundary
+Production-shaped customer runtime now has explicit deployable units: shared tenant API `127.0.0.1:3003` (`ipattapi` → `ipat_tenant_api_login`) and exact-Host tenant OIDC instances (`ipattoidc` → `ipat_oidc_session_issuer_login`) on reviewed loopback ports 31000–31999. Each OIDC instance retains R9.71 durable one-use pending state, pinned issuer/key, exact customer Host and no business/device routes. Platform Owner remains separately isolated on 3005/3006 and cannot use tenant database roles. External ingress must reject unknown Host/SNI and route only an already verified customer hostname to its corresponding issuer/BFF. Multi-instance loopback ports are deployment metadata, not tenant authority.

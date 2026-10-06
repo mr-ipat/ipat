@@ -25,6 +25,8 @@ class R987BootstrapSource(unittest.TestCase):
     def test_runtime_roles_are_peer_mapped_and_passwordless(self):
         self.assertIn("ipatpapi       ipat_platform_session_api_login",SCRIPT)
         self.assertIn("ipatpoidc      ipat_platform_session_issuer_login",SCRIPT)
+        self.assertIn("ipattapi       ipat_tenant_api_login",SCRIPT)
+        self.assertIn("ipattoidc      ipat_oidc_session_issuer_login",SCRIPT)
         self.assertIn("local   all        all                                 reject",SCRIPT)
         self.assertNotIn("PGPASSWORD=",SCRIPT)
 
