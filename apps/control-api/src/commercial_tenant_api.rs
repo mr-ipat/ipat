@@ -131,11 +131,113 @@ async fn capabilities(
         StatusCode::OK,
         json!({"ok":true,"tenant_id":a.tenant_id.to_string(),
         "can_manage_sites":admin,"can_manage_pops":admin,
-        "can_manage_devices":admin,"can_manage_domains":admin,
+        "can_manage_devices":admin,"can_manage_domains":admin,"can_manage_branding":admin,
         "noc_pops":noc_pops,"real_noc_pops":real_noc_pops,
         "can_read_noc":can_read_noc}),
     )
 }
+
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct BrandingUpdate {
+    request_id: String,
+    expected_revision: i64,
+    display_name: String,
+    mark_text: String,
+    accent_token: String,
+}
+fn valid_brand_text(value: &str, max: usize) -> bool {
+    !value.is_empty()
+        && value.len() <= max
+        && value == value.trim()
+        && !value.chars().any(char::is_control)
+}
+fn valid_accent_token(value: &str) -> bool {
+    matches!(
+        value,
+        "slate" | "blue" | "indigo" | "emerald" | "amber" | "rose"
+    )
+}
+async fn get_branding(
+    State(s): State<Arc<StateData>>,
+    headers: HeaderMap,
+) -> (StatusCode, HeaderMap, Json<Value>) {
+    let Some(a) = actor(&s.db, &headers, false).await else {
+        return denied(StatusCode::UNAUTHORIZED);
+    };
+    let row =
+        s.db.query_opt(
+            "SELECT tenant_slug,display_name,mark_text,accent_token,revision
+         FROM ipat_platform.get_tenant_branding_for_member($1,$2,$3::uuid)",
+            &[&a.issuer, &a.subject, &a.tenant_id],
+        )
+        .await;
+    let Ok(Some(row)) = row else {
+        return match row {
+            Ok(None) => denied(StatusCode::FORBIDDEN),
+            Err(_) => denied(StatusCode::SERVICE_UNAVAILABLE),
+            _ => unreachable!(),
+        };
+    };
+    response(
+        StatusCode::OK,
+        json!({
+            "ok":true,
+            "branding":{
+                "tenant_slug":row.get::<_,String>(0),
+                "display_name":row.get::<_,String>(1),
+                "mark_text":row.get::<_,String>(2),
+                "accent_token":row.get::<_,String>(3),
+                "revision":row.get::<_,i64>(4)
+            }
+        }),
+    )
+}
+async fn update_branding(
+    State(s): State<Arc<StateData>>,
+    headers: HeaderMap,
+    Json(q): Json<BrandingUpdate>,
+) -> (StatusCode, HeaderMap, Json<Value>) {
+    let Some(a) = actor(&s.db, &headers, true).await else {
+        return denied(StatusCode::UNAUTHORIZED);
+    };
+    let Ok(request_id) = Uuid::parse_str(&q.request_id) else {
+        return denied(StatusCode::UNPROCESSABLE_ENTITY);
+    };
+    if q.expected_revision < 0
+        || !valid_brand_text(&q.display_name, 80)
+        || !valid_brand_text(&q.mark_text, 12)
+        || !valid_accent_token(&q.accent_token)
+    {
+        return denied(StatusCode::UNPROCESSABLE_ENTITY);
+    }
+    let row =
+        s.db.query_one(
+            "SELECT ipat_platform.set_tenant_branding(
+           $1,$2,$3::uuid,$4::uuid,$5::bigint,$6,$7,$8)",
+            &[
+                &a.issuer,
+                &a.subject,
+                &a.tenant_id,
+                &request_id,
+                &q.expected_revision,
+                &q.display_name,
+                &q.mark_text,
+                &q.accent_token,
+            ],
+        )
+        .await;
+    match row.ok().and_then(|r| r.get::<_, Option<i64>>(0)) {
+        Some(revision) => response(
+            StatusCode::OK,
+            json!({
+                "ok":true,"revision":revision
+            }),
+        ),
+        None => denied(StatusCode::CONFLICT),
+    }
+}
+
 async fn device_catalog(
     State(s): State<Arc<StateData>>,
     headers: HeaderMap,
@@ -1431,6 +1533,7 @@ pub(super) fn router(db: Arc<Client>) -> Router {
             "/api/v1/noc-access/revoke",
             axum::routing::post(revoke_noc_access),
         )
+        .route("/api/v1/branding", get(get_branding).patch(update_branding))
         .route("/api/v1/device-catalog", get(device_catalog))
         .route("/api/v1/logout", axum::routing::post(logout))
         .route("/api/v1/pops", get(list_pops).post(create_pop))
@@ -1486,6 +1589,9 @@ mod tests {
         assert!(DASHBOARD_HTML.contains("<html lang=\"en-US\">"));
         assert!(!DASHBOARD_HTML.contains("ipt-owner-pop-form"));
         assert!(DASHBOARD_JS.contains("'/api/v1/capabilities'"));
+        assert!(DASHBOARD_JS.contains("'/api/v1/branding'"));
+        assert!(DASHBOARD_HTML.contains("data-page=\"branding\""));
+        assert!(DASHBOARD_HTML.contains("id=\"brand-display-name\""));
     }
     #[test]
     fn cookie_and_origin_are_strict() {
@@ -2525,6 +2631,253 @@ mod pg_integration {
         admin
             .execute(
                 "DELETE FROM ipat_ops.tenant_sites WHERE tenant_id=$1",
+                &[&tenant],
+            )
+            .await
+            .unwrap();
+        admin
+            .execute(
+                "DELETE FROM ipat_platform.tenant_domains WHERE tenant_id=$1",
+                &[&tenant],
+            )
+            .await
+            .unwrap();
+        admin
+            .execute(
+                "DELETE FROM ipat_platform.identity_memberships WHERE tenant_id=$1",
+                &[&tenant],
+            )
+            .await
+            .unwrap();
+        admin
+            .execute("DELETE FROM ipat_platform.tenants WHERE id=$1", &[&tenant])
+            .await
+            .unwrap();
+    }
+
+    #[tokio::test]
+    async fn r101_real_pg_host_bound_tenant_branding_admin_and_reader() {
+        if std::env::var("IPAT_PG_EPHEMERAL_TEST").as_deref() != Ok("1")
+            || std::env::var("PGDATABASE").as_deref() != Ok("ipat_synthetic")
+        {
+            return;
+        }
+        let admin = connect_admin().await;
+        let exists: bool=admin.query_one(
+            "SELECT to_regprocedure('ipat_platform.set_tenant_branding(text,text,uuid,uuid,bigint,text,text,text)') IS NOT NULL",
+            &[]).await.unwrap().get(0);
+        if !exists {
+            return;
+        }
+
+        let tenant = Uuid::parse_str("11111111-1111-4111-8111-111111111101").unwrap();
+        let domain = Uuid::parse_str("11111111-1111-4111-8111-111111111102").unwrap();
+        let admin_session = Uuid::parse_str("11111111-1111-4111-8111-111111111103").unwrap();
+        let help_session = Uuid::parse_str("11111111-1111-4111-8111-111111111104").unwrap();
+        let request = Uuid::parse_str("11111111-1111-4111-8111-111111111105").unwrap();
+        let request2 = Uuid::parse_str("11111111-1111-4111-8111-111111111106").unwrap();
+        let issuer = "https://id.r101.synthetic.invalid/realms/ipat";
+        let admin_subject = "r101-brand-admin";
+        let help_subject = "r101-brand-helpdesk";
+        let host = "tenant-r101.example.net";
+        let admin_cookie = "fffffffffffffffffffffffffffffffffffffffffff";
+        let admin_csrf = "ggggggggggggggggggggggggggggggggggggggggggg";
+        let help_cookie = "hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh";
+        let help_csrf = "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii";
+
+        admin.execute("INSERT INTO ipat_platform.tenants(id,tenant_slug,state) VALUES($1,'r101-company','active')",&[&tenant]).await.unwrap();
+        admin.execute("INSERT INTO ipat_platform.identity_memberships(tenant_id,issuer,subject,role,approved_by,expires_at) VALUES($1,$2,$3,'tenant_admin','r101-independent-reviewer',clock_timestamp()+interval '1 day'),($1,$2,$4,'helpdesk','r101-independent-reviewer',clock_timestamp()+interval '1 day')",
+            &[&tenant,&issuer,&admin_subject,&help_subject]).await.unwrap();
+        admin.execute("INSERT INTO ipat_platform.tenant_domains(id,tenant_id,hostname,domain_type,verification_state,verification_method,verified_at,routing_mode,verification_name,verification_value,requested_by_issuer,requested_by_subject,requested_at,activation_state,ownership_verified_at,routing_ready_at,tls_ready_at,activated_at) VALUES($1,$2,$3,'custom_domain','verified','dns_txt',clock_timestamp(),'a_record',$4,$5,$6,$7,clock_timestamp(),'active',clock_timestamp(),clock_timestamp(),clock_timestamp(),clock_timestamp())",
+            &[&domain,&tenant,&host,&format!("_ipat-verify.{host}"),&format!("ipat-domain={domain}"),&issuer,&admin_subject]).await.unwrap();
+
+        let issuer_db = connect_admin().await;
+        issuer_db
+            .batch_execute("SET ROLE ipat_oidc_session_issuer_login")
+            .await
+            .unwrap();
+        for (subject, sid, cookie, csrf) in [
+            (admin_subject, admin_session, admin_cookie, admin_csrf),
+            (help_subject, help_session, help_cookie, help_csrf),
+        ] {
+            let row=issuer_db.query_one(
+                "SELECT ipat_platform.issue_tenant_browser_session($1,$2,$3::uuid,$4::uuid,$5::uuid,$6,$7,clock_timestamp()+interval '10 minutes')",
+                &[&issuer,&subject,&tenant,&domain,&sid,&hex(cookie),&hex(csrf)]).await.unwrap();
+            assert_eq!(row.get::<_, Option<Uuid>>(0), Some(sid));
+        }
+        let api_db = connect_admin().await;
+        api_db
+            .batch_execute("SET ROLE ipat_tenant_api_login")
+            .await
+            .unwrap();
+        let app = router(Arc::new(api_db));
+
+        let default = app
+            .clone()
+            .oneshot(req(
+                "GET",
+                "/api/v1/branding",
+                host,
+                Some(admin_cookie),
+                None,
+                None,
+            ))
+            .await
+            .unwrap();
+        assert_eq!(default.status(), StatusCode::OK);
+        let default = body_json(default).await;
+        assert_eq!(default["branding"]["display_name"], "r101-company");
+        assert_eq!(default["branding"]["mark_text"], "R1");
+        assert_eq!(default["branding"]["revision"], 0);
+
+        let body = json!({"request_id":request.to_string(),"expected_revision":0,
+            "display_name":"North Fiber","mark_text":"NF","accent_token":"indigo"})
+        .to_string();
+        let no_csrf = app
+            .clone()
+            .oneshot(req(
+                "PATCH",
+                "/api/v1/branding",
+                host,
+                Some(admin_cookie),
+                None,
+                Some(&body),
+            ))
+            .await
+            .unwrap();
+        assert_eq!(no_csrf.status(), StatusCode::UNAUTHORIZED);
+        let wrong_host = app
+            .clone()
+            .oneshot(req(
+                "PATCH",
+                "/api/v1/branding",
+                "other-r101.example.net",
+                Some(admin_cookie),
+                Some(admin_csrf),
+                Some(&body),
+            ))
+            .await
+            .unwrap();
+        assert_eq!(wrong_host.status(), StatusCode::UNAUTHORIZED);
+
+        for _ in 0..2 {
+            let saved = app
+                .clone()
+                .oneshot(req(
+                    "PATCH",
+                    "/api/v1/branding",
+                    host,
+                    Some(admin_cookie),
+                    Some(admin_csrf),
+                    Some(&body),
+                ))
+                .await
+                .unwrap();
+            assert_eq!(saved.status(), StatusCode::OK);
+            assert_eq!(body_json(saved).await["revision"], 1);
+        }
+        let read_help = app
+            .clone()
+            .oneshot(req(
+                "GET",
+                "/api/v1/branding",
+                host,
+                Some(help_cookie),
+                None,
+                None,
+            ))
+            .await
+            .unwrap();
+        assert_eq!(read_help.status(), StatusCode::OK);
+        let read_help = body_json(read_help).await;
+        assert_eq!(read_help["branding"]["display_name"], "North Fiber");
+        assert_eq!(read_help["branding"]["accent_token"], "indigo");
+
+        let denied_help = json!({"request_id":request2.to_string(),"expected_revision":1,
+            "display_name":"Forged Helpdesk","mark_text":"FH","accent_token":"rose"})
+        .to_string();
+        let denied = app
+            .clone()
+            .oneshot(req(
+                "PATCH",
+                "/api/v1/branding",
+                host,
+                Some(help_cookie),
+                Some(help_csrf),
+                Some(&denied_help),
+            ))
+            .await
+            .unwrap();
+        assert_eq!(denied.status(), StatusCode::CONFLICT);
+
+        let stale = json!({"request_id":request2.to_string(),"expected_revision":0,
+            "display_name":"Stale Brand","mark_text":"SB","accent_token":"blue"})
+        .to_string();
+        let stale = app
+            .clone()
+            .oneshot(req(
+                "PATCH",
+                "/api/v1/branding",
+                host,
+                Some(admin_cookie),
+                Some(admin_csrf),
+                Some(&stale),
+            ))
+            .await
+            .unwrap();
+        assert_eq!(stale.status(), StatusCode::CONFLICT);
+
+        let update = json!({"request_id":request2.to_string(),"expected_revision":1,
+            "display_name":"North Fiber Operations","mark_text":"NF","accent_token":"emerald"})
+        .to_string();
+        let updated = app
+            .clone()
+            .oneshot(req(
+                "PATCH",
+                "/api/v1/branding",
+                host,
+                Some(admin_cookie),
+                Some(admin_csrf),
+                Some(&update),
+            ))
+            .await
+            .unwrap();
+        assert_eq!(updated.status(), StatusCode::OK);
+        assert_eq!(body_json(updated).await["revision"], 2);
+
+        admin.execute("UPDATE ipat_platform.identity_memberships SET revoked_at=clock_timestamp() WHERE tenant_id=$1 AND issuer=$2 AND subject=$3 AND role='tenant_admin'",
+            &[&tenant,&issuer,&admin_subject]).await.unwrap();
+        let revoked = app
+            .clone()
+            .oneshot(req(
+                "PATCH",
+                "/api/v1/branding",
+                host,
+                Some(admin_cookie),
+                Some(admin_csrf),
+                Some(&update),
+            ))
+            .await
+            .unwrap();
+        assert_eq!(revoked.status(), StatusCode::UNAUTHORIZED);
+
+        admin
+            .execute(
+                "DELETE FROM ipat_platform.tenant_browser_sessions WHERE tenant_id=$1",
+                &[&tenant],
+            )
+            .await
+            .unwrap();
+        admin
+            .execute(
+                "DELETE FROM ipat_platform.tenant_branding_events WHERE tenant_id=$1",
+                &[&tenant],
+            )
+            .await
+            .unwrap();
+        admin
+            .execute(
+                "DELETE FROM ipat_platform.tenant_branding WHERE tenant_id=$1",
                 &[&tenant],
             )
             .await

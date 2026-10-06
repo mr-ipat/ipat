@@ -252,3 +252,9 @@ Source adds a fail-closed customer release validator/finalizer requiring real hu
 
 ### R9.99 exact source closure
 PR #194 exact head dda6d6943142cbe72f497f81fb313f5a40c15aff passed GitHub Actions run 37415794710 all four jobs and merged main dec6503027a983595dfda2778c59bde70a0de768. This closes source implementation of the customer release evidence gate only. AC-01/02/09/15/16 remain production BLOCKED until real public custom domains, real human MFA, hostile wrong-Host/cross-tenant browser/API tests, revocation and independent browser artifact review actually occur.
+
+## R10.1 tenant-safe baseline branding candidate (2026-10-06)
+Migration 0035, restricted functions, and commercial /api/v1/branding add baseline per-company branding with no arbitrary media, CSS, or HTML. Same-tenant current members can read; only current Tenant Admin can CAS and idempotently write; raw table and cross-tenant access are denied. Dashboard navigation is capability-hidden and rendering is textContent plus finite source-controlled theme tokens. Source and disposable tests can close the baseline branding code gap, but parent commercial lifecycle/public acceptance remains BLOCKED until actual external two-tenant human-MFA browser evidence, live production PostgreSQL/recovery, and public Host/SNI deployment pass.
+
+### R10.1 local executable acceptance
+Owner-Mac PostgreSQL18 security chain 50/50 PASS, isolated owner-VPS full control-api 112/112 PASS, clean Ubuntu26/PostgreSQL18 26-migration first-install PASS, and actual isolated Axum+PostgreSQL18 Host-bound branding HTTP 1/1 PASS. Temporary DB and reverse tunnel were removed and existing C320 private services remained active. Branding menu now keys directly from can_manage_branding rather than can_manage_sites. Exact GitHub CI/merge still required before source milestone closure; live two-tenant public MFA acceptance remains separate.

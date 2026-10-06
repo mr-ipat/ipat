@@ -4,7 +4,7 @@
 (() => {
  const $=id=>document.getElementById(id);
  const notice=text=>{$('notice').textContent=text};
- const state={page:null,sites:[],pops:[],popNext:null,devices:[],catalog:[],next:null,editId:null,editRevision:null,pendingSite:null,nocPops:[],realNocPops:[],nocMembers:[],nocAccess:[],pendingNocRequest:null};
+ const state={page:null,sites:[],pops:[],popNext:null,devices:[],catalog:[],next:null,editId:null,editRevision:null,pendingSite:null,nocPops:[],realNocPops:[],nocMembers:[],nocAccess:[],pendingNocRequest:null,branding:null,pendingBranding:null};
  const csrf=()=>document.cookie.split(';').map(x=>x.trim()).find(x=>x.startsWith('__Host-ipat_csrf='))?.split('=')[1];
  async function api(path,method='GET',body){
   const headers={'Accept':'application/json'};
@@ -108,6 +108,21 @@
   if(d.lifecycle_state!=='SAVED'){edit.disabled=true;del.disabled=true}
   $('device-rows').append(tr);
  }}
+ function applyBranding(b){
+  state.branding=b;
+  $('brand-name').textContent=b.display_name;
+  $('brand-mark').textContent=b.mark_text;
+  document.body.dataset.accent=b.accent_token;
+  document.title=b.display_name+' — IPAT';
+  $('brand-display-name').value=b.display_name;
+  $('brand-mark-text').value=b.mark_text;
+  $('brand-accent').value=b.accent_token;
+  $('branding-revision').textContent='Revision '+b.revision;
+ }
+ async function refreshBranding(){
+  const r=await api('/api/v1/branding');
+  applyBranding(r.branding);
+ }
  async function showDomainDns(id){
   const r=await api('/api/v1/domains/'+encodeURIComponent(id)+'/dns');
   const guide=r.guide;
@@ -180,7 +195,7 @@
   $('noc-device-rows').replaceChildren();
   for(const d of devices.devices){const tr=document.createElement('tr');cell(tr,d.display_name);cell(tr,d.site);cell(tr,d.device_kind+' / '+d.vendor);cell(tr,d.lifecycle_state==='SAVED'?'Saved — not connected':d.lifecycle_state);$('noc-device-rows').append(tr)}
  }
- async function page(name){if(!['pops','sites','devices','domains','noc-access','noc'].includes(name)||$('nav-'+name)?.hidden)return;state.page=name;$('welcome').hidden=true;document.querySelectorAll('[data-panel]').forEach(p=>p.hidden=p.dataset.panel!==name);notice('Loading current tenant data…');try{if(name==='pops')await refreshPops();if(name==='sites'){await refreshPops();await refreshSites()}if(name==='devices'){await refreshPops();await refreshSites();await refreshDevices()}if(name==='domains')await refreshDomains();if(name==='noc-access'){await refreshPops();await refreshNocAccess()}if(name==='noc')await refreshNoc();notice('Data loaded. Operations remain subject to current authorization.')}catch(e){notice(e.message)}}
+ async function page(name){if(!['pops','sites','devices','domains','branding','noc-access','noc'].includes(name)||$('nav-'+name)?.hidden)return;state.page=name;$('welcome').hidden=true;document.querySelectorAll('[data-panel]').forEach(p=>p.hidden=p.dataset.panel!==name);notice('Loading current tenant data…');try{if(name==='pops')await refreshPops();if(name==='sites'){await refreshPops();await refreshSites()}if(name==='devices'){await refreshPops();await refreshSites();await refreshDevices()}if(name==='domains')await refreshDomains();if(name==='branding')await refreshBranding();if(name==='noc-access'){await refreshPops();await refreshNocAccess()}if(name==='noc')await refreshNoc();notice('Data loaded. Operations remain subject to current authorization.')}catch(e){notice(e.message)}}
  async function submit(form,callback){const button=form.querySelector('button[type=submit],button:not([type])');if(button)button.disabled=true;try{await callback()}catch(e){notice(e.message)}finally{if(button)button.disabled=false}}
  document.querySelectorAll('.nav').forEach(b=>{b.id='nav-'+b.dataset.page;b.addEventListener('click',()=>page(b.dataset.page))});
  $('create-site-link').addEventListener('click',e=>{e.preventDefault();page('sites')});
@@ -217,6 +232,19 @@
  $('device-create').addEventListener('submit',e=>{e.preventDefault();const f=e.currentTarget;submit(f,async()=>{const d=Object.fromEntries(new FormData(f));if(['cwmp','usp'].includes(d.management_transport)){d.management_host=null;d.management_port=null}else{d.management_port=Number(d.management_port)};d.request_id=crypto.randomUUID();d.intended_model=d.intended_model||null;await api('/api/v1/devices','POST',d);clearForm(f);syncCatalog();await refreshDevices();notice('Device saved as metadata. Physical connection not yet established.')})});
  $('device-edit').addEventListener('submit',e=>{e.preventDefault();const f=e.currentTarget;submit(f,async()=>{const d=Object.fromEntries(new FormData(f));d.expected_revision=state.editRevision;d.intended_model=d.intended_model||null;d.management_host=d.management_host||null;d.management_port=d.management_port?Number(d.management_port):null;await api('/api/v1/devices/'+encodeURIComponent(state.editId),'PATCH',d);$('device-edit-panel').hidden=true;state.editId=null;await refreshDevices();notice('Saved device metadata updated.')})});
  $('edit-cancel').addEventListener('click',()=>{$('device-edit-panel').hidden=true;state.editId=null});
+ $('branding-form').addEventListener('submit',e=>{e.preventDefault();const f=e.currentTarget;submit(f,async()=>{
+  if(!state.branding)throw Error('Current branding is not loaded.');
+  const d=Object.fromEntries(new FormData(f));
+  const fingerprint=JSON.stringify([state.branding.revision,d.display_name,d.mark_text,d.accent_token]);
+  if(!state.pendingBranding||state.pendingBranding.fingerprint!==fingerprint){
+   state.pendingBranding={fingerprint,request_id:crypto.randomUUID()};
+  }
+  await api('/api/v1/branding','PATCH',{request_id:state.pendingBranding.request_id,
+   expected_revision:state.branding.revision,display_name:d.display_name,
+   mark_text:d.mark_text,accent_token:d.accent_token});
+  state.pendingBranding=null;await refreshBranding();
+  notice('Company branding saved for this tenant only.');
+ })});
  $('domain-create').addEventListener('submit',e=>{e.preventDefault();const f=e.currentTarget;submit(f,async()=>{await api('/api/v1/domains','POST',Object.fromEntries(new FormData(f)));clearForm(f);await refreshDomains();notice('Domain saved as pending. Open DNS instructions for unique TXT proof and the reviewed routing plan.')})});
  $('logout').addEventListener('click',async()=>{try{await api('/api/v1/logout','POST');location.assign('/auth/oidc/start')}catch(e){notice(e.message)}});
  (async()=>{try{
@@ -227,7 +255,8 @@
   for(const p of state.realNocPops)option($('noc-pop'),'Real POP: '+p,'real:'+p);
   for(const p of state.nocPops)option($('noc-pop'),'Legacy exact Site: '+p,'site:'+p);
   if(state.nocPops.length||state.realNocPops.length)$('nav-noc').hidden=false;
-  if(r.can_manage_sites){for(const n of ['pops','sites','devices','domains','noc-access'])$('nav-'+n).hidden=false;await loadCatalog()}
+  if(r.can_manage_sites){for(const n of ['pops','sites','devices','domains','noc-access'])$('nav-'+n).hidden=false;await loadCatalog()}if(r.can_manage_branding)$('nav-branding').hidden=false
+  await refreshBranding();
   $('logout').hidden=false;
   notice(r.can_manage_sites||state.nocPops.length||state.realNocPops.length?'Tenant permissions verified. Select a permitted module.':'No operations modules assigned to your current identity.');
 

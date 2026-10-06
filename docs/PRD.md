@@ -1245,3 +1245,6 @@ MUST activate customer companies one exact custom-domain ID at a time. Require t
 
 ## R9.99 — Customer release acceptance
 MUST keep customer_release_go=false after R9.98 domain activation until a real human-MFA browser test against the exact customer Host and a distinct control tenant proves unauthorized menu/direct URL/API denial, wrong-Host and cross-tenant replay denial, logout/revocation and stale-session denial. Evidence must be recent, artifact-hashed and independently maker/checker reviewed. A narrow read-only finalizer may create a customer release marker only while the exact database domain remains active.
+
+## R10.1 — Baseline per-company branding
+MUST provide visibly distinct company branding in the tenant dashboard without weakening tenant isolation or CSP. Baseline fields are company display name, short mark, and a finite platform-controlled accent token. Current same-tenant members may read branding; only current Tenant Admin may mutate it through Host-bound session, Origin and CSRF, compare-and-set revision, and idempotent request UUID. No external logo URL, HTML, arbitrary CSS, or remote tracking asset is accepted. Advanced uploaded logo/media is LATER. Public commercial acceptance still requires real two-tenant human-MFA browser evidence and production deployment.

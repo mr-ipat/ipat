@@ -402,7 +402,8 @@ Build original Rust `control-api` and separate synthetic `usp-controller` into n
 - SHOULD: reusable OIDC test IdP via disposable
   environment, session expiry/revocation and
   documented JWKS rollover drill.
-- LATER: commercial branding/package/billing
+- MUST baseline: tenant-safe text branding (display name, short mark, finite theme token) is implemented in R10.1 with current-membership read and Tenant Admin-only CAS mutation.
+- LATER: advanced uploaded logo/media branding, package catalog and billing
   workflows and high-risk mass provisioning
   after reviewed approval paths exist.
 

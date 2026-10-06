@@ -1339,3 +1339,6 @@ Before customer mutation, require a fresh maker/checker Platform Owner browser-M
 
 ## R9.99 — Browser acceptance cannot be inferred from backend green tests
 Synthetic OIDC/Rust/PostgreSQL tests cannot promote a customer to release. Require a real browser artifact with a distinct control tenant and exact public Hosts, independently reviewed maker/checker evidence and explicit revocation/replay checks. The release finalizer has no network or lifecycle mutation authority and consumes only root-owned acceptance plus restricted exact active-domain state.
+
+## R10.1 — Branding threat controls
+Tenant branding must not become stored XSS, CSS injection, cross-tenant tracking, or SSRF. The baseline schema therefore rejects control characters, limits text lengths, and stores only a finite accent token; no URL, HTML, script, CSS, or image field exists. The API obtains tenant identity only from the current Host-bound session, rechecks active membership on read and Tenant Admin on write, requires CSRF for mutation, and uses CAS plus UUID idempotency. Raw branding and event tables remain unavailable to tenant API and OIDC logins. UI rendering uses textContent and source-controlled CSS selectors only.
