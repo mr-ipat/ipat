@@ -1233,3 +1233,7 @@ MUST provide a production-installable nonroot background service that takes save
 
 ## R9.96 — Recovery-gated first-install production foundation
 MUST provide a single deterministic first-install path for the reviewed runtime identities/systemd units and PostgreSQL18 local-socket database without opening HTTP/HTTPS. Before mutation it must verify exact source/binary hashes, clean source tree, Ubuntu26, no managed listeners or preexisting IPAT/DB state, and a recent root-owned independent recovery-readiness attestation. Component preparation order is fixed and failures must return the host to a safe state with no IPAT database cluster or active/public application service. Successful foundation creation explicitly remains public_go=false until real production offsite base/WAL PITR, IdP/MFA and trusted ingress acceptance are completed.
+
+
+## R9.97 — PITR-gated Platform Owner public-edge activation
+MUST prohibit public Platform Owner activation before production PostgreSQL recovery evidence shows offsite distinct-host restore, pg_verifybackup, named PITR, tenant RLS, standby failover/fencing and RPO/RTO within approved targets under separate maker/checker review. After that gate, activate only Platform API/OIDC, shared tenant API, DNS ownership verifier and the trusted short-lived literal-IP HTTPS edge in a rollback-controlled order. Customer OIDC/custom-domain HTTPS remains per-tenant. Successful edge installation still must not mark public GO until actual human MFA browser, revocation/replay and external Host isolation acceptance pass.

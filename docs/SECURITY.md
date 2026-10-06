@@ -1327,3 +1327,7 @@ The DNS worker is isolated from business APIs and ingress activation. Its DB log
 
 ## R9.96 — Recovery-gated bootstrap threat controls
 First-install automation must reject stale/missing recovery attestation, mismatched source commit, mutable/unverified binary, preexisting runtime identities/artifacts/DB clusters and managed-port listeners before the first host mutation. The recovery attestation is nonsecret and root-owned 0600; it is a reviewed gate, not cryptographic proof. Failure rollback disables runtime units, removes newly created runtime artifacts/identities and drops only the new IPAT cluster. Public ingress, firewall and physical-device operations are explicitly outside this phase. Production PostgreSQL PITR and real external MFA/TLS/tenant tests remain mandatory before public activation.
+
+
+## R9.97 — Public-edge activation controls
+Public edge enablement requires root-owned current PITR evidence with distinct maker/checker and approved measured RPO/RTO. The activation script refuses preexisting managed listeners/services, non-global IP, unsafe evidence/env files and missing foundation units. It does not enable customer OIDC or customer ingress. Runtime failure disables Platform API/OIDC, shared tenant API and DNS ownership verifier; the ACME/Nginx installer maintains its own rollback. A trusted certificate and OIDC redirect are necessary but insufficient: production GO still requires real human MFA, session revocation/replay and hostile Host/SNI external testing.

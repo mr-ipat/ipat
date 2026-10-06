@@ -237,3 +237,7 @@ R9.94 PR #189 exact head 6875d62aaaf7553af6795c071b6a6b27345ca14a passed GitHub 
 
 ## R9.96 production foundation candidate
 A new exact-order first-install orchestrator composes already reviewed R9.85/R9.92/R9.94/R9.95 preparations and R9.87 PostgreSQL18 bootstrap behind a recent root-owned recovery readiness attestation. Source tests require all global preflight checks before mutation, no R9.84/R9.93 public ingress invocation, no firewall/device operations, disabled application services after success, and rollback of newly created cluster/runtime identities on failure. This reduces deployment ambiguity but does NOT upgrade AC-07/09/13/15/16: the owner VPS still has no verified noninteractive root deployment path and actual production offsite PITR, human MFA, trusted HTTPS and external tenant/domain acceptance remain open.
+
+
+## R9.97 Platform edge activation candidate
+Source adds a hard production-PITR gate before public edge activation. The validator requires offsite distinct-host restore, pg_verifybackup, named PITR, restored tenant RLS, standby failover/fencing and measured RPO/RTO within approved targets with distinct maker/checker. The orchestrator then activates only Platform API/OIDC, shared tenant API, DNS ownership verifier and R9.84 staging→production literal-IP HTTPS. Customer OIDC/R9.93 ingress/R9.94 customer activator are absent by design. Source success remains BLOCKED for AC-02/07/09/13/15/16 until the evidence exists on the real server and human MFA/browser hostile tests pass.
