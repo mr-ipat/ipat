@@ -1,0 +1,12 @@
+{
+  "schema": "ipat.platform-human-mfa-acceptance.v1",
+  "platform_public_ipv4": "203.0.113.10",
+  "real_human_mfa_browser_login_verified": true,
+  "logout_revocation_verified": true,
+  "wrong_host_replay_denied": true,
+  "stale_session_denied": true,
+  "prepared_by": "platform-operator-placeholder",
+  "approved_by": "security-reviewer-placeholder",
+  "evidence_id": "platform-mfa-evidence-placeholder",
+  "reviewed_at_utc": "2026-10-06T00:00:00+00:00"
+}

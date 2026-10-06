@@ -606,7 +606,9 @@ jobs:
       - name: R9.94 split ownership and ingress domain verifier ordered activation
         run: |
           psql -X -v ON_ERROR_STOP=1 -f deploy/db/migrations/0033_tenant_domain_ingress_verifier.sql
+          psql -X -v ON_ERROR_STOP=1 -f deploy/db/migrations/0034_exact_customer_domain_activation_result.sql
           python3 -m unittest deploy/db/tests/test_tenant_domain_ingress_verifier_integration.py -v
+          python3 -m unittest deploy/db/tests/test_exact_customer_domain_activation_result_integration.py -v
           bash -n deploy/scripts/production/r994_prepare_domain_ingress_verifier.sh
           bash -n deploy/scripts/production/r994_enable_domain_ingress_verifier.sh
           bash -n deploy/scripts/production/r994_verify_customer_ingress.sh
@@ -639,6 +641,15 @@ jobs:
           grep -Fq ACTIVATE_REVIEWED_PLATFORM_EDGE deploy/scripts/production/r997_activate_platform_edge.sh
           grep -Fq 'human_mfa_browser_acceptance' deploy/scripts/production/r997_activate_platform_edge.sh
           grep -Fq R9.97 docs/PROJECT_STATUS.md
+      - name: R9.98 exact one-customer OIDC and custom-domain activation source contract
+        run: |
+          bash -n deploy/scripts/production/r998_activate_single_customer.sh
+          bash -n deploy/scripts/production/r998_verify_exact_customer_ingress.sh
+          python3 -m py_compile deploy/scripts/production/r998_validate_platform_mfa_acceptance.py
+          python3 -m unittest deploy/scripts/production/test_r998_single_customer_activation_source.py -v
+          grep -Fq get_tenant_domain_activation_result deploy/db/migrations/0034_exact_customer_domain_activation_result.sql
+          grep -Fq customer_release_go docs/R998_SINGLE_CUSTOMER_ACTIVATION.md
+          grep -Fq R9.98 docs/PROJECT_STATUS.md
       - name: R9.71 real disposable PostgreSQL HA-safe one-use OIDC state across Rust client instances
         run: |
           python3 -m unittest discover deploy/db/tests -p test_oidc_pending_integration.py -v

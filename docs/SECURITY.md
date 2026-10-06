@@ -1331,3 +1331,7 @@ First-install automation must reject stale/missing recovery attestation, mismatc
 
 ## R9.97 — Public-edge activation controls
 Public edge enablement requires root-owned current PITR evidence with distinct maker/checker and approved measured RPO/RTO. The activation script refuses preexisting managed listeners/services, non-global IP, unsafe evidence/env files and missing foundation units. It does not enable customer OIDC or customer ingress. Runtime failure disables Platform API/OIDC, shared tenant API and DNS ownership verifier; the ACME/Nginx installer maintains its own rollback. A trusted certificate and OIDC redirect are necessary but insufficient: production GO still requires real human MFA, session revocation/replay and hostile Host/SNI external testing.
+
+
+## R9.98 — Exact customer activation security boundary
+Before customer mutation, require a fresh maker/checker Platform Owner browser-MFA acceptance tied to the active R9.97 public IPv4 edge. Root must query exact saved customer authority only through the restricted ingress-verifier role; raw tenant-domain access remains denied. The one-shot verifier must recheck persisted ownership TXT, exact A target, CA-trusted SNI certificate and customer OIDC start before ordered state transitions. Global rollback removes only the newly added customer OIDC and exact customer ingress while the domain is not active. Once active, destructive rollback is disarmed to avoid database/edge desynchronization. Customer commercial GO requires a later real tenant-human MFA and cross-tenant hostile-browser test.

@@ -241,3 +241,7 @@ A new exact-order first-install orchestrator composes already reviewed R9.85/R9.
 
 ## R9.97 Platform edge activation candidate
 Source adds a hard production-PITR gate before public edge activation. The validator requires offsite distinct-host restore, pg_verifybackup, named PITR, restored tenant RLS, standby failover/fencing and measured RPO/RTO within approved targets with distinct maker/checker. The orchestrator then activates only Platform API/OIDC, shared tenant API, DNS ownership verifier and R9.84 staging→production literal-IP HTTPS. Customer OIDC/R9.93 ingress/R9.94 customer activator are absent by design. Source success remains BLOCKED for AC-02/07/09/13/15/16 until the evidence exists on the real server and human MFA/browser hostile tests pass.
+
+
+## R9.98 exact one-customer activation candidate
+Migration 0034 adds a read-only exact activation result for the ingress verifier only; PostgreSQL disposable regression proves active/owned exact rows, exclusion of pending/suspended/unknown domains, denial to tenant/ownership/OIDC/platform roles, raw-table denial and ordered result tracking. Source activation requires R9.97 edge + current Platform human-MFA acceptance, then one customer OIDC, R9.93 staging/production exact Host ingress and one-shot R9.98 verifier; it deliberately never enables the R9.94 multi-domain timer. Source tests and synthetic DB state do not satisfy live AC-01/02/09/15/16: actual Platform MFA evidence, customer DNS/IdP, real tenant browser isolation/revocation and independent public security acceptance remain mandatory.

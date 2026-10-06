@@ -15,14 +15,20 @@ oidc_port=${IPAT_R993_OIDC_PORT:-}
 ip=${IPAT_R993_PUBLIC_IPV4:-}
 email=${IPAT_R993_ACME_EMAIL:-}
 verification=${IPAT_R993_VERIFICATION_VALUE:-}
+rollback_export=${IPAT_R993_ROLLBACK_EXPORT_FILE:-}
 [[ $instance =~ ^[a-z0-9][a-z0-9-]{0,47}$ ]] || die "invalid instance"
 [[ $oidc_port =~ ^[0-9]+$ && $oidc_port -ge 31000 && $oidc_port -le 31999 ]] || die "OIDC port outside 31000-31999"
 [[ -n $host && -n $ip && -n $email && $email == *@*.* ]] || die "host/public IPv4/contact required"
 [[ $verification =~ ^ipat-domain=[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$ ]] || die "exact persisted ownership token required"
+if [[ -n $rollback_export ]]; then
+  [[ $phase == production ]] || die "rollback export is production-only"
+  [[ $rollback_export == /run/ipat-r998-r993-rollback-*.path && ! -e $rollback_export && ! -L $rollback_export ]] \
+    || die "unsafe rollback export path"
+fi
 
 . /etc/os-release
 [[ ${ID:-} == ubuntu && ${VERSION_ID:-} == 26.04 ]] || die "Ubuntu Server 26.04 required"
-for c in python3 nginx openssl systemctl systemd-run install sed ss curl dig readlink flock certbot; do
+for c in python3 nginx openssl systemctl systemd-run install sed ss curl dig readlink flock certbot stat; do
   command -v "$c" >/dev/null || die "missing tool: $c"
 done
 certbot=$(command -v certbot)
@@ -99,6 +105,11 @@ rm -f '$enabled' '$site'
 '$nginx' -t && /bin/systemctl reload nginx || true
 RB
 chmod 0700 "$rollback"
+if [[ -n $rollback_export ]]; then
+  printf '%s\n' "$rollback" > "$rollback_export"
+  chmod 0600 "$rollback_export"
+  [[ $(stat -c '%u:%a:%h' "$rollback_export") == 0:600:1 ]] || die "rollback export ownership/mode mismatch"
+fi
 systemd-run --quiet --collect --unit="$unit" --on-active=10m "$rollback"
 armed=YES
 rollback_now(){ [[ ${armed:-NO} == YES ]] && "$rollback" || true; }
