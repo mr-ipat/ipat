@@ -42,6 +42,13 @@ class R993CustomerIngress(unittest.TestCase):
                           "record_tenant_domain_check"):
             self.assertNotIn(forbidden, combined)
 
+    def test_optional_exact_rollback_export_is_root_only_and_production_only(self):
+        self.assertIn("IPAT_R993_ROLLBACK_EXPORT_FILE", APPLY)
+        self.assertIn("rollback export is production-only", APPLY)
+        self.assertIn("/run/ipat-r998-r993-rollback-*.path", APPLY)
+        self.assertIn("rollback export ownership/mode mismatch", APPLY)
+        self.assertIn("chmod 0600", APPLY)
+
     def test_production_verifies_api_and_exact_oidc_start(self):
         self.assertIn('--resolve "$host:443:$ip"', APPLY)
         self.assertIn('"https://$host/"', APPLY)
