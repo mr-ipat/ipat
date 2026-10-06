@@ -1229,3 +1229,7 @@ MUST separate DNS ownership authority from routing/TLS/activation authority. DNS
 
 ## R9.95 — Deployable DNS ownership verifier MUST
 MUST provide a production-installable nonroot background service that takes saved tenant-domain TXT challenges from the restricted ownership queue and can only record ownership/error through the R9.94 ownership wrapper. Use a dedicated OS identity, passwordless local PostgreSQL peer role, private service-owned conninfo, no HTTP listener and no co-location with API/OIDC/lab/device modes. Activation must prove peer identity, raw-table denial and broad lifecycle denial and support rollback. A source/disposable PASS does not prove real authoritative customer DNS or public production readiness.
+
+
+## R9.96 — Recovery-gated first-install production foundation
+MUST provide a single deterministic first-install path for the reviewed runtime identities/systemd units and PostgreSQL18 local-socket database without opening HTTP/HTTPS. Before mutation it must verify exact source/binary hashes, clean source tree, Ubuntu26, no managed listeners or preexisting IPAT/DB state, and a recent root-owned independent recovery-readiness attestation. Component preparation order is fixed and failures must return the host to a safe state with no IPAT database cluster or active/public application service. Successful foundation creation explicitly remains public_go=false until real production offsite base/WAL PITR, IdP/MFA and trusted ingress acceptance are completed.

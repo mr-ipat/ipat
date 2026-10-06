@@ -623,6 +623,14 @@ jobs:
           cargo test --locked -p control-api tenant_domain_verifier::tests::r995_runtime_conninfo_accepts_only_dedicated_local_peer_shape -- --exact
           grep -Fq ipatdnsverify deploy/scripts/production/r987_bootstrap_postgres18.sh
           grep -Fq R9.95 docs/PROJECT_STATUS.md
+      - name: R9.96 recovery-gated production foundation source contract
+        run: |
+          bash -n deploy/scripts/production/r996_prepare_production_foundation.sh
+          python3 -m py_compile deploy/scripts/production/r996_validate_recovery_attestation.py
+          python3 -m unittest deploy/scripts/production/test_r996_production_foundation_source.py -v
+          grep -Fq APPLY_REVIEWED_PRODUCTION_FOUNDATION deploy/scripts/production/r996_prepare_production_foundation.sh
+          grep -Fq 'public_go":False' deploy/scripts/production/r996_prepare_production_foundation.sh
+          grep -Fq R9.96 docs/PROJECT_STATUS.md
       - name: R9.71 real disposable PostgreSQL HA-safe one-use OIDC state across Rust client instances
         run: |
           python3 -m unittest discover deploy/db/tests -p test_oidc_pending_integration.py -v

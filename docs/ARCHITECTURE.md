@@ -1234,3 +1234,7 @@ Domain activation is an ordered control plane separate from Nginx installation. 
 
 ## R9.95 — DNS ownership worker process topology
 `ipatdnsverify` executes the native Rust `tenant_domain_verifier` loop as an independent systemd process. It resolves public TXT records, reads only the narrow ownership queue over a local Unix-socket peer login and writes only through the ownership wrapper. It has no browser/API listener, no customer ingress/TLS activation role, no Platform/Tenant session database role and no device credentials. The subsequent R9.94 ingress verifier is a different OS/DB identity and timer, preserving split authority between DNS control proof and public routing/TLS proof.
+
+
+## R9.96 — Production foundation lifecycle boundary
+Provisioning now has a hard phase boundary. Foundation creates dedicated service identities, hardened disabled units and one PostgreSQL18 primary reachable only through the local Unix socket; no platform/tenant HTTP, OIDC, verifier, Nginx or public port is activated. Only after independent production backup/PITR acceptance may the later activation phase enable the distinct runtime services and R9.84/R9.93 ingress. This preserves rollback and prevents a half-provisioned database host from becoming externally reachable.

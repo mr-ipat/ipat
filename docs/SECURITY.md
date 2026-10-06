@@ -1323,3 +1323,7 @@ Treat public DNS observation and public HTTPS observation as separate service au
 
 ## R9.95 — DNS ownership runtime compromise boundary
 The DNS worker is isolated from business APIs and ingress activation. Its DB login is passwordless only through a single local peer mapping and must lack raw tenant-domain SELECT and the historical broad lifecycle function. Its conninfo is owner-only to the service identity and contains no secret. Process mode refuses all HTTP/OIDC/lab/private-device flags. Systemd strips capabilities and restricts filesystem, kernel, devices and namespaces. A compromised ownership worker therefore cannot directly activate TLS/routing, mint browser sessions, read tenant records or operate devices; R9.94's separate ingress verifier must independently recheck TXT before later transitions.
+
+
+## R9.96 — Recovery-gated bootstrap threat controls
+First-install automation must reject stale/missing recovery attestation, mismatched source commit, mutable/unverified binary, preexisting runtime identities/artifacts/DB clusters and managed-port listeners before the first host mutation. The recovery attestation is nonsecret and root-owned 0600; it is a reviewed gate, not cryptographic proof. Failure rollback disables runtime units, removes newly created runtime artifacts/identities and drops only the new IPAT cluster. Public ingress, firewall and physical-device operations are explicitly outside this phase. Production PostgreSQL PITR and real external MFA/TLS/tenant tests remain mandatory before public activation.
