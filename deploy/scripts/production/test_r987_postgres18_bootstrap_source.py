@@ -8,7 +8,7 @@ MANIFEST=(ROOT/"db/production/r987_migrations.sha256").read_text().splitlines()
 
 class R987BootstrapSource(unittest.TestCase):
     def test_manifest_is_pinned_and_complete(self):
-        self.assertEqual(len(MANIFEST),23)
+        self.assertEqual(len(MANIFEST),24)
         for line in MANIFEST:
             digest,path=line.split("  ")
             self.assertEqual(len(digest),64)
@@ -27,6 +27,7 @@ class R987BootstrapSource(unittest.TestCase):
         self.assertIn("ipatpoidc      ipat_platform_session_issuer_login",SCRIPT)
         self.assertIn("ipattapi       ipat_tenant_api_login",SCRIPT)
         self.assertIn("ipattoidc      ipat_oidc_session_issuer_login",SCRIPT)
+        self.assertIn("ipatdverify    ipat_domain_ingress_verifier_login",SCRIPT)
         self.assertIn("local   all        all                                 reject",SCRIPT)
         self.assertNotIn("PGPASSWORD=",SCRIPT)
 

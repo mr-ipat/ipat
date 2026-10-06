@@ -191,7 +191,7 @@ async fn advance_ownership(client: &tokio_postgres::Client, target: &OwnershipTa
     let digest = evidence_sha256(target);
     client
         .query_opt(
-            "SELECT ipat_platform.record_tenant_domain_check(
+            "SELECT ipat_platform.record_tenant_domain_ownership_check(
                 $1,'ownership_verified',$2,NULL
              )",
             &[&target.id, &digest],
@@ -205,7 +205,7 @@ async fn advance_ownership(client: &tokio_postgres::Client, target: &OwnershipTa
 async fn record_error(client: &tokio_postgres::Client, id: Uuid, code: &str) {
     let _ = client
         .query_opt(
-            "SELECT ipat_platform.record_tenant_domain_check(
+            "SELECT ipat_platform.record_tenant_domain_ownership_check(
                 $1,'check_failed',NULL,$2
              )",
             &[&id, &code],

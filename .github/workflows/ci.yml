@@ -603,6 +603,17 @@ jobs:
           python3 -m unittest deploy/scripts/production/test_r993_customer_ingress_source.py -v
           bash deploy/scripts/production/r993_nginx_customer_template_smoke.sh
           grep -Fq R9.93 docs/PROJECT_STATUS.md
+      - name: R9.94 split ownership and ingress domain verifier ordered activation
+        run: |
+          psql -X -v ON_ERROR_STOP=1 -f deploy/db/migrations/0033_tenant_domain_ingress_verifier.sql
+          python3 -m unittest deploy/db/tests/test_tenant_domain_ingress_verifier_integration.py -v
+          bash -n deploy/scripts/production/r994_prepare_domain_ingress_verifier.sh
+          bash -n deploy/scripts/production/r994_enable_domain_ingress_verifier.sh
+          bash -n deploy/scripts/production/r994_verify_customer_ingress.sh
+          bash -n deploy/scripts/production/r994_systemd_ubuntu26_verify.sh
+          python3 -m unittest deploy/scripts/production/test_r994_domain_ingress_verifier_source.py -v
+          grep -Fq record_tenant_domain_ownership_check apps/control-api/src/tenant_domain_verifier.rs
+          grep -Fq R9.94 docs/PROJECT_STATUS.md
       - name: R9.71 real disposable PostgreSQL HA-safe one-use OIDC state across Rust client instances
         run: |
           python3 -m unittest discover deploy/db/tests -p test_oidc_pending_integration.py -v
@@ -762,6 +773,15 @@ jobs:
           sudo install -d -m 0700 /etc/ipat/tenant-oidc
           sudo touch /etc/ipat/tenant-api.env /etc/ipat/tenant-oidc/customer.env
           systemd-analyze verify deploy/systemd/ipat-tenant-api.service deploy/systemd/ipat-tenant-oidc@.service
+      - name: R9.94 verify ingress-verifier systemd units on actual Ubuntu 26.04 runner
+        run: |
+          sudo useradd --system --home-dir /nonexistent --shell /usr/sbin/nologin ipatdverify
+          sudo install -d -m 0755 /opt/ipat/bin
+          printf '#!/bin/sh\nexit 0\n' | sudo tee /opt/ipat/bin/r994-verify-customer-ingress >/dev/null
+          sudo chmod 0755 /opt/ipat/bin/r994-verify-customer-ingress
+          sudo install -d -m 0700 /etc/ipat
+          sudo touch /etc/ipat/domain-ingress-verifier.env
+          systemd-analyze verify deploy/systemd/ipat-domain-ingress-verifier.service deploy/systemd/ipat-domain-ingress-verifier.timer
       - name: Install and smoke-test checksum-pinned K3s on disposable Ubuntu 26.04
         run: |
           timeout --signal=TERM --kill-after=15s 1200s bash             deploy/scripts/lab/k3s-ubuntu26-ephemeral-ci.sh

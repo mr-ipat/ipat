@@ -1,0 +1,32 @@
+[Unit]
+Description=IPAT customer-domain ingress verifier and ordered activator
+After=network-online.target postgresql.service
+Wants=network-online.target
+ConditionPathExists=/etc/ipat/domain-ingress-verifier.env
+
+[Service]
+Type=oneshot
+User=ipatdverify
+Group=ipatdverify
+EnvironmentFile=/etc/ipat/domain-ingress-verifier.env
+ExecStart=/opt/ipat/bin/r994-verify-customer-ingress
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+ProtectClock=true
+LockPersonality=true
+RestrictSUIDSGID=true
+CapabilityBoundingSet=
+AmbientCapabilities=
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+ProtectHostname=true
+MemoryDenyWriteExecute=true
+RestrictNamespaces=true
+SystemCallArchitectures=native
