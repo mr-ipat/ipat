@@ -2682,8 +2682,8 @@ mod pg_integration {
         let host = "tenant-r101.example.net";
         let admin_cookie = "fffffffffffffffffffffffffffffffffffffffffff";
         let admin_csrf = "ggggggggggggggggggggggggggggggggggggggggggg";
-        let help_cookie = "hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh";
-        let help_csrf = "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii";
+        let help_cookie = "jjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjj";
+        let help_csrf = "kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk";
 
         admin.execute("INSERT INTO ipat_platform.tenants(id,tenant_slug,state) VALUES($1,'r101-company','active')",&[&tenant]).await.unwrap();
         admin.execute("INSERT INTO ipat_platform.identity_memberships(tenant_id,issuer,subject,role,approved_by,expires_at) VALUES($1,$2,$3,'tenant_admin','r101-independent-reviewer',clock_timestamp()+interval '1 day'),($1,$2,$4,'helpdesk','r101-independent-reviewer',clock_timestamp()+interval '1 day')",
