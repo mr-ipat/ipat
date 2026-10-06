@@ -69,6 +69,21 @@ fn sanitize_agent(v: &Value) -> Option<Value> {
       "physical_writes_enabled":false,"device_adopted":false}),
     )
 }
+fn sanitize_refresh_error(v: &Value) -> Option<&'static str> {
+    let stage = v.get("error")?.as_str()?;
+    Some(match stage {
+        "C320_REFRESH_BOUNDARY_REJECTED" => "C320_REFRESH_BOUNDARY_REJECTED",
+        "C320_UNCONFIGURED_TABLE_UNSUPPORTED" => "C320_UNCONFIGURED_TABLE_UNSUPPORTED",
+        "C320_UNCONFIGURED_ROWS_OUT_OF_BOUNDS" => "C320_UNCONFIGURED_ROWS_OUT_OF_BOUNDS",
+        "C320_STATE_HEADER_UNSUPPORTED" => "C320_STATE_HEADER_UNSUPPORTED",
+        "C320_STATE_ROWS_UNSUPPORTED" => "C320_STATE_ROWS_UNSUPPORTED",
+        "C320_STATE_TOTALS_INCONSISTENT" => "C320_STATE_TOTALS_INCONSISTENT",
+        "C320_PON_CONFIG_SHAPE_INCOMPLETE" => "C320_PON_CONFIG_SHAPE_INCOMPLETE",
+        "C320_STATE_CONFIG_COUNT_MISMATCH" => "C320_STATE_CONFIG_COUNT_MISMATCH",
+        _ => "OWNER_READ_FAILED_OR_INVALID",
+    })
+}
+
 async fn refresh(
     headers: HeaderMap,
 ) -> Result<(HeaderMap, Json<Value>), (StatusCode, HeaderMap, Json<Value>)> {
@@ -99,6 +114,9 @@ async fn refresh(
         return Err(denied(StatusCode::BAD_GATEWAY, "AGENT_REPLY_REJECTED"));
     };
     let Some(response) = sanitize_agent(&v) else {
+        if let Some(stage) = sanitize_refresh_error(&v) {
+            return Err(denied(StatusCode::SERVICE_UNAVAILABLE, stage));
+        }
         return Err(denied(
             StatusCode::SERVICE_UNAVAILABLE,
             "OWNER_READ_FAILED_OR_INVALID",
@@ -679,6 +697,28 @@ mod tests {
     use super::*;
     use axum::{body::Body, http::Request};
     use tower::ServiceExt;
+    #[test]
+    fn refresh_diagnostic_never_forwards_arbitrary_agent_text() {
+        let known = json!({"error":"C320_STATE_HEADER_UNSUPPORTED"});
+        assert_eq!(
+            sanitize_refresh_error(&known),
+            Some("C320_STATE_HEADER_UNSUPPORTED")
+        );
+        for raw in [
+            "password=secret",
+            "serial=customer",
+            "C320_STATE_HEADER_UNSUPPORTED extra",
+            "UNKNOWN_VENDOR_OUTPUT",
+        ] {
+            let hostile = json!({"error": raw});
+            assert_eq!(
+                sanitize_refresh_error(&hostile),
+                Some("OWNER_READ_FAILED_OR_INVALID")
+            );
+        }
+        assert_eq!(sanitize_refresh_error(&json!({})), None);
+    }
+
     #[test]
     fn owner_catalog_never_authorizes_an_unqualified_command() {
         let connected = json!({"connector_online":true,"credentials_enrolled":true,
