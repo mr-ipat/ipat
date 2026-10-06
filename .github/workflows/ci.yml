@@ -657,6 +657,17 @@ jobs:
           grep -Fq 'BLOCKED_EXACT_ALIAS_REQUIRED' deploy/scripts/production/r1001_c320_exact_tuple_read.py
           grep -Fq 'physical_writes: 0' docs/evidence/R1001_DEV01_C320_TUPLE_20261006.yaml
           grep -Fq 'vendor alias unresolved' docs/PROJECT_STATUS.md
+      - name: R10.02 safe C320 REFRESH diagnostic contract
+        run: |
+          python3 -m unittest deploy/scripts/lab/r1002/test_safe_refresh_diagnostics.py -v
+          python3 -m unittest deploy/scripts/production/test_r1002_c320_paged_onu_read.py -v
+          python3 -m unittest discover deploy/scripts/lab/r945 -p test_persistent_connector.py -v
+          python3 -m py_compile deploy/scripts/lab/r945/persistent_c320_connector.py deploy/scripts/production/r1002_c320_paged_onu_read.py
+          bash -n deploy/scripts/lab/r1002/rollout_private_refresh_diagnostics.sh
+          cargo test --locked -p control-api c320_live_lab::tests::refresh_diagnostic_never_forwards_arbitrary_agent_text -- --exact
+          grep -Fq C320_STATE_HEADER_UNSUPPORTED deploy/scripts/lab/r945/persistent_c320_connector.py
+          grep -Fq R10.02 docs/PROJECT_STATUS.md
+          grep -Fq 'configured: 72' docs/evidence/R1002_DEV01_C320_PON111_COUNTS_20261006.yaml
       - name: R9.99 exact customer human MFA/browser acceptance release gate
         run: |
           bash -n deploy/scripts/production/r999_finalize_customer_release.sh
