@@ -614,6 +614,15 @@ jobs:
           python3 -m unittest deploy/scripts/production/test_r994_domain_ingress_verifier_source.py -v
           grep -Fq record_tenant_domain_ownership_check apps/control-api/src/tenant_domain_verifier.rs
           grep -Fq R9.94 docs/PROJECT_STATUS.md
+      - name: R9.95 dedicated DNS ownership verifier runtime source
+        run: |
+          bash -n deploy/scripts/production/r995_prepare_domain_ownership_verifier.sh
+          bash -n deploy/scripts/production/r995_enable_domain_ownership_verifier.sh
+          bash -n deploy/scripts/production/r995_systemd_ubuntu26_verify.sh
+          python3 -m unittest deploy/scripts/production/test_r995_domain_ownership_runtime_source.py -v
+          cargo test --locked -p control-api tenant_domain_verifier::tests::r995_runtime_conninfo_accepts_only_dedicated_local_peer_shape -- --exact
+          grep -Fq ipatdnsverify deploy/scripts/production/r987_bootstrap_postgres18.sh
+          grep -Fq R9.95 docs/PROJECT_STATUS.md
       - name: R9.71 real disposable PostgreSQL HA-safe one-use OIDC state across Rust client instances
         run: |
           python3 -m unittest discover deploy/db/tests -p test_oidc_pending_integration.py -v
@@ -782,6 +791,17 @@ jobs:
           sudo install -d -m 0700 /etc/ipat
           sudo touch /etc/ipat/domain-ingress-verifier.env
           systemd-analyze verify deploy/systemd/ipat-domain-ingress-verifier.service deploy/systemd/ipat-domain-ingress-verifier.timer
+      - name: R9.95 verify DNS ownership-verifier systemd unit on actual Ubuntu 26.04 runner
+        run: |
+          sudo useradd --system --home-dir /nonexistent --shell /usr/sbin/nologin ipatdnsverify
+          sudo install -d -m 0755 /opt/ipat/bin
+          printf '#!/bin/sh\nexit 0\n' | sudo tee /opt/ipat/bin/control-api >/dev/null
+          sudo chmod 0755 /opt/ipat/bin/control-api
+          sudo install -d -o ipatdnsverify -g ipatdnsverify -m 0700 /var/lib/ipat-domain-ownership-verifier
+          sudo touch /var/lib/ipat-domain-ownership-verifier/postgres.conninfo
+          sudo chown ipatdnsverify:ipatdnsverify /var/lib/ipat-domain-ownership-verifier/postgres.conninfo
+          sudo chmod 0600 /var/lib/ipat-domain-ownership-verifier/postgres.conninfo
+          systemd-analyze verify deploy/systemd/ipat-domain-ownership-verifier.service
       - name: Install and smoke-test checksum-pinned K3s on disposable Ubuntu 26.04
         run: |
           timeout --signal=TERM --kill-after=15s 1200s bash             deploy/scripts/lab/k3s-ubuntu26-ephemeral-ci.sh

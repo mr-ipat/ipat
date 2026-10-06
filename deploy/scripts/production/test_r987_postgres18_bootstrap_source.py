@@ -28,6 +28,8 @@ class R987BootstrapSource(unittest.TestCase):
         self.assertIn("ipattapi       ipat_tenant_api_login",SCRIPT)
         self.assertIn("ipattoidc      ipat_oidc_session_issuer_login",SCRIPT)
         self.assertIn("ipatdverify    ipat_domain_ingress_verifier_login",SCRIPT)
+        self.assertIn("ipatdnsverify  ipat_domain_verifier_login",SCRIPT)
+        self.assertIn("local   ipat_prod  ipat_domain_verifier_login                  peer map=ipat_runtime",SCRIPT)
         self.assertIn("local   all        all                                 reject",SCRIPT)
         self.assertNotIn("PGPASSWORD=",SCRIPT)
 

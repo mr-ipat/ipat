@@ -1,0 +1,39 @@
+[Unit]
+Description=IPAT tenant custom-domain DNS ownership verifier
+After=network-online.target postgresql.service
+Wants=network-online.target
+ConditionPathExists=/var/lib/ipat-domain-ownership-verifier/postgres.conninfo
+
+[Service]
+Type=simple
+User=ipatdnsverify
+Group=ipatdnsverify
+Environment=IPAT_TENANT_DOMAIN_VERIFIER=YES
+Environment=IPAT_TENANT_DOMAIN_VERIFIER_DB_CONNINFO_FILE=/var/lib/ipat-domain-ownership-verifier/postgres.conninfo
+Environment=IPAT_TENANT_DOMAIN_VERIFIER_INTERVAL_SECONDS=60
+ExecStart=/opt/ipat/bin/control-api
+Restart=on-failure
+RestartSec=15s
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectHostname=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+ProtectClock=true
+LockPersonality=true
+MemoryDenyWriteExecute=true
+RestrictNamespaces=true
+RestrictSUIDSGID=true
+CapabilityBoundingSet=
+AmbientCapabilities=
+SystemCallArchitectures=native
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+
+[Install]
+WantedBy=multi-user.target

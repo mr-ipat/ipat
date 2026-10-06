@@ -244,9 +244,14 @@ async fn main() {
     if std::env::var("IPAT_TENANT_DOMAIN_VERIFIER").as_deref() == Ok("YES")
         && (std::env::var("IPAT_R969_COMMERCIAL_SERVICE").as_deref() == Ok("YES")
             || std::env::var("IPAT_R970_OIDC_ISSUER_SERVICE").as_deref() == Ok("YES")
-            || std::env::var("IPAT_R981_PLATFORM_SERVICE").as_deref() == Ok("YES"))
+            || std::env::var("IPAT_R981_PLATFORM_SERVICE").as_deref() == Ok("YES")
+            || std::env::var("IPAT_R983_PLATFORM_OIDC_ISSUER_SERVICE").as_deref() == Ok("YES")
+            || std::env::var_os("IPAT_LAB_WEB").is_some()
+            || std::env::var_os("IPAT_RUN_K3S_LAB").is_some()
+            || std::env::var_os("IPAT_R911_PRIVATE_CANARY").is_some()
+            || std::env::var_os("IPAT_R940_PRIVATE_OWNER_READ").is_some())
     {
-        panic!("commercial API and separate DNS verifier cannot share a process");
+        panic!("DNS ownership verifier cannot share any HTTP/lab/device process");
     }
     if std::env::var("IPAT_TENANT_DOMAIN_VERIFIER").as_deref() == Ok("YES") {
         tenant_domain_verifier::run_loop(
