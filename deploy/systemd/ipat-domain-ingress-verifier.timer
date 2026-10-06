@@ -1,0 +1,12 @@
+[Unit]
+Description=IPAT customer-domain ingress verifier schedule
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=2min
+RandomizedDelaySec=20s
+Persistent=true
+Unit=ipat-domain-ingress-verifier.service
+
+[Install]
+WantedBy=timers.target
