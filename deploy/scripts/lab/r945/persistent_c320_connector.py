@@ -43,6 +43,13 @@ MAX_ATTEMPTS = 5
 WAIT_SECONDS = 900
 MODE = 'OWNER_SUPERVISED_REAL_C320_READ_ONLY'
 SAFE_ACTIONS = {b'REFRESH\n', b'CARDS\n', b'FIRMWARE\n'}
+PAGED_COMMANDS = (
+    'show gpon onu uncfg',
+    'show gpon onu state gpon-olt_1/1/1',
+    'show run interface gpon-olt_1/1/1',
+)
+PAGED_MAX_BYTES = 32768
+PAGED_MAX_PAGES = 12
 LOCK = threading.Lock()
 CLI_LOCK = threading.Lock()
 STATE = {'failures': 0, 'blocked_until': 0.0, 'last_verified': '', 'last_kind': '', 'poll_count': 0, 'last_monotonic': 0.0, 'ever_verified': False}
@@ -170,6 +177,25 @@ def get_password():
     return plaintext.decode('utf-8')
 
 
+def safe_failure_stage(detail):
+    """Map strict parser failures to fixed nonsecret diagnostic categories.
+
+    Never return raw CLI, addresses, usernames, serials, passwords, or arbitrary
+    exception text. Unknown failures remain generic.
+    """
+    mapping = {
+        'bounded command response rejected': 'C320_REFRESH_BOUNDARY_REJECTED',
+        'unconfigured ONU table unrecognized': 'C320_UNCONFIGURED_TABLE_UNSUPPORTED',
+        'unconfigured ONU rows not bounded': 'C320_UNCONFIGURED_ROWS_OUT_OF_BOUNDS',
+        'state output unsupported on actual firmware': 'C320_STATE_HEADER_UNSUPPORTED',
+        'actual ONU state rows unrecognized': 'C320_STATE_ROWS_UNSUPPORTED',
+        'actual state totals inconsistent': 'C320_STATE_TOTALS_INCONSISTENT',
+        'bounded PON config response incomplete': 'C320_PON_CONFIG_SHAPE_INCOMPLETE',
+        'state and config count discrepancy': 'C320_STATE_CONFIG_COUNT_MISMATCH',
+    }
+    return mapping.get(detail, 'DEVICE_CONNECTION_FAILED_UNCLASSIFIED')
+
+
 def safe_response(payload):
     return (json.dumps(payload, separators=(',', ':'), sort_keys=True) + '\n').encode('ascii')
 
@@ -237,13 +263,124 @@ def status():
             'device_adopted': False, 'device_writes': 0}
 
 
+def _paged_safe_chunk(chunk):
+    if not isinstance(chunk,bytes) or b'\0' in chunk or b'\x1b' in chunk:
+        raise ValueError('unsafe paged CLI chunk')
+    for byte in chunk:
+        if byte < 32 and byte not in (8,9,10,13):
+            raise ValueError('unsupported paged CLI control byte')
+
+def _normalize_pager_artifacts(raw,pages):
+    _paged_safe_chunk(raw)
+    if not isinstance(pages,int) or not 0 <= pages <= PAGED_MAX_PAGES:
+        raise ValueError('invalid pager count')
+    if b'\x08' not in raw:
+        return raw
+    if pages == 0:
+        raise ValueError('backspace without observed pager')
+    lines=raw.splitlines(keepends=True)
+    out=[];touched=0
+    for line in lines:
+        if b'\x08' not in line:
+            out.append(line);continue
+        touched += 1
+        if touched > pages or line.count(b'\x08') > 32:
+            raise ValueError('pager erase artifact exceeds bound')
+        stripped=line.lstrip(b' \t\x08')
+        prefix=line[:len(line)-len(stripped)]
+        if b'\x08' in stripped or any(x not in b' \t\x08' for x in prefix):
+            raise ValueError('backspace inside CLI data')
+        out.append(line.replace(b'\x08',b''))
+    clean=b''.join(out)
+    if len(clean) > PAGED_MAX_BYTES or b'\x08' in clean:
+        raise ValueError('pager normalization failed')
+    return clean
+
+def _paged_read(child,prompt,command,pexpect_module):
+    if command not in PAGED_COMMANDS:
+        raise ValueError('command outside paged read allowlist')
+    child.sendline(command.encode('ascii'))
+    chunks=[];total=0;pages=0
+    while True:
+        idx=child.expect([prompt,rb'--More--',pexpect_module.EOF,pexpect_module.TIMEOUT],timeout=15)
+        chunk=child.before or b''
+        _paged_safe_chunk(chunk)
+        total += len(chunk)
+        if total > PAGED_MAX_BYTES:
+            raise ValueError('paged read byte bound exceeded')
+        chunks.append(chunk)
+        if idx == 0:
+            return b''.join(chunks), pages
+        if idx == 1:
+            pages += 1
+            if pages > PAGED_MAX_PAGES:
+                raise ValueError('paged read page bound exceeded')
+            child.send(b' ')
+            continue
+        if idx == 2:
+            raise ValueError('paged read session closed')
+        raise ValueError('paged read timed out')
+
+def paged_refresh(reader_module,password):
+    import pexpect
+    m=reader_module
+    if tuple(getattr(m,'COMMANDS',())) != PAGED_COMMANDS:
+        raise ValueError('sealed parser command set changed')
+    ssh=['ssh','-F','/dev/null','-tt','-p',str(m.PORT),
+      '-o','HostKeyAlgorithms=ssh-rsa','-o','Ciphers=aes128-cbc',
+      '-o','KexAlgorithms=diffie-hellman-group14-sha256',
+      '-o','StrictHostKeyChecking=yes','-o',f'UserKnownHostsFile={m.PIN}',
+      '-o','GlobalKnownHostsFile=/dev/null','-o','NumberOfPasswordPrompts=1',
+      '-o','PreferredAuthentications=password','-o','PubkeyAuthentication=no',
+      '-o','ProxyCommand=none','-o','ClearAllForwardings=yes',
+      '-o','ConnectionAttempts=1','-o','ConnectTimeout=8',f'{m.USER}@{m.HOST}']
+    c=None
+    try:
+        c=pexpect.spawn(ssh[0],ssh[1:],encoding=None,timeout=12,echo=False,maxread=65536)
+        if c.expect([rb'(?i)password:\s*$',pexpect.EOF,pexpect.TIMEOUT]) != 0:
+            raise ValueError('private SSH challenge missing')
+        c.sendline(password.encode())
+        if c.expect([m.PROMPT,pexpect.EOF,pexpect.TIMEOUT],timeout=10) != 0:
+            raise ValueError('authenticated C320 prompt missing')
+        raw={};pages={}
+        for command in PAGED_COMMANDS:
+            raw[command],pages[command]=_paged_read(c,m.PROMPT,command,pexpect)
+        shapes=[]
+        for command in PAGED_COMMANDS:
+            clean=_normalize_pager_artifacts(raw[command],pages[command])
+            shapes.append(m.classify(command,m.bounded(clean,command)))
+        uncfg,state,config=shapes
+        if state.get('rows') != config.get('rows'):
+            raise ValueError('state and config count discrepancy')
+        if state.get('online',0) + state.get('offline',0) != state.get('rows'):
+            raise ValueError('state totals inconsistent')
+        return {
+          'mode':MODE,'read_kind':'ONU_INVENTORY','snapshot_is_live':True,
+          'port':'1/1/1','unconfigured':uncfg.get('rows'),
+          'configured':state.get('rows'),'online':state.get('online'),
+          'offline':state.get('offline'),'configuration_rows':config.get('rows'),
+          'serials_returned':False,'device_adopted':False,'provisioning_enabled':False,
+          'device_writes':0,'pagination_pages':{
+             'uncfg':pages[PAGED_COMMANDS[0]],'state':pages[PAGED_COMMANDS[1]],
+             'config':pages[PAGED_COMMANDS[2]]}}
+    finally:
+        if c is not None:
+            try:
+                if c.isalive():
+                    c.sendline(b'exit');c.expect(pexpect.EOF,timeout=2)
+            except Exception:
+                c.close(force=True)
+
 def read(request, reader, reader_module):
     if not enrolled():
         raise ValueError('not enrolled')
     if not CLI_LOCK.acquire(blocking=False):
         raise ValueError('device read busy')
     try:
-        result = reader.run_three_reads(reader_module, get_password(), request)
+        if request == b'REFRESH\n':
+            result = paged_refresh(reader_module, get_password())
+        else:
+            result = reader.run_three_reads(reader_module, get_password(), request)
         with LOCK:
             STATE['last_verified'] = datetime.now(timezone.utc).isoformat()
             STATE['last_kind'] = request.strip().decode('ascii')
@@ -368,7 +505,7 @@ def serve():
                 elif detail.startswith('already enrolled'):
                     stage = 'ALREADY_ENROLLED'
                 else:
-                    stage = 'DEVICE_CONNECTION_FAILED_UNCLASSIFIED'
+                    stage = safe_failure_stage(detail)
                 response = safe_response({'error':stage,'physical_writes_enabled':False})
             try:
                 self.request.sendall(response)

@@ -1,0 +1,47 @@
+run_id: "R1002-C320-PON111-COUNTS-20261006T125751Z"
+executed_at_utc: "2026-10-06T12:57:51Z"
+source_commit_used_for_read: "0c309647c0da0ea593f80906cde2c82fc07532fa"
+environment: "owner-private isolated lab"
+evidence_type: "physical"
+target: "DEV-01"
+vendor: "ZTE"
+chassis_family: "C320"
+pon: "1/1/1"
+transport_scope: "existing strict pinned owner-private SSH read path"
+qualified_commands:
+  - "show gpon onu uncfg"
+  - "show gpon onu state gpon-olt_1/1/1"
+  - "show run interface gpon-olt_1/1/1"
+pagination:
+  unconfigured_pages: 0
+  state_pages: 3
+  config_pages: 3
+diagnostic_before_normalization:
+  state_row_count: 69
+  recoverable_rows_if_backspace_removed: 3
+  lines_with_backspace: 3
+  backspace_bytes: 54
+  unique_state_row_count: 69
+  duplicate_state_rows: 0
+  summary_online: 0
+  summary_total: 72
+normalized_aggregate_result:
+  unconfigured: 0
+  configured: 72
+  online: 0
+  offline: 72
+  configuration_rows: 72
+physical_writes: 0
+serials_returned: false
+onu_ids_returned: false
+subscriber_data_returned: false
+raw_transcript_returned: false
+device_adopted: false
+provisioning_enabled: false
+outcome: "pass"
+validation_status: "partial"
+limitations:
+  - "Aggregate PON 1/1/1 inventory/state only; no ONU identity, serial, optical level, traffic, alarms or subscriber record was collected."
+  - "All 72 configured ONU rows were OffLine at this instant. This observation alone must not be interpreted as a fiber cut, service outage, or customer-impact root cause."
+  - "No SNMP, native backup/restore, write, firmware action or ONT provisioning was tested."
+  - "Exact result applies only to this observed DEV-01 chassis state and fixed command set."

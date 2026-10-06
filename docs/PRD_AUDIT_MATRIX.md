@@ -252,3 +252,6 @@ Source adds a fail-closed customer release validator/finalizer requiring real hu
 
 ### R9.99 exact source closure
 PR #194 exact head dda6d6943142cbe72f497f81fb313f5a40c15aff passed GitHub Actions run 37415794710 all four jobs and merged main dec6503027a983595dfda2778c59bde70a0de768. This closes source implementation of the customer release evidence gate only. AC-01/02/09/15/16 remain production BLOCKED until real public custom domains, real human MFA, hostile wrong-Host/cross-tenant browser/API tests, revocation and independent browser artifact review actually occur.
+
+### R10.02 DEV-01 PON aggregate physical read acceptance
+Exact R10.02 source on owner-private DEV-01 resolved the former REFRESH 503 as terminal pager/backspace parsing, not device disconnect. Aggregate-only fixed PON 1/1/1 read physically passed with 72 configured rows, 0 online, 72 offline, 0 unconfigured and 72 config rows across bounded pages; no ONU IDs/serial/subscriber/raw output and zero writes. AC-12 remains PARTIAL because alarms, optical metrics, traffic, SNMP, native restore/write, ONT/C-DATA/MikroTik/CWMP/USP physical interop remain open. The 72-offline observation is evidence only and is not a root-cause claim.
