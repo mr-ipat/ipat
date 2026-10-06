@@ -1,7 +1,7 @@
 # IPAT — Device & Interoperability Test Matrix v0.1
 
 **Date:** 2026-09-25 · **Scope:** inventory of *intended initial physical test targets*, **not supported-device list**.  
-**Current evidence:** user-approved brief supplies vendor/family only; no exact inventory/firmware/serial/test log supplied. **All device-feature combinations start `untested`.**
+**Current evidence:** initial targets began untested. DEV-01 now has narrow physical read-only evidence including exact observed card and running-version rows from R10.01; all untested vendors/features remain explicitly unqualified. No family-wide compatibility is implied.
 
 **R6.0 progress (2026-09-26):** Eight DEV-01..08 *target slots* now appear in the strictly private browser lab; an offline schema validator can create credential-free 0600 metadata staging files. **Physical inventory remains ZERO; all physical tests NOT RUN, compatibility UNTESTED**. No device addresses, serials, credentials, tenant binding or real physical registration have been supplied. See [R6.0 intake and approval rules](DEVICE_TESTING_R60.md).
 
@@ -9,7 +9,7 @@
 
 | ID | Class | Vendor / family | Exact model | HW rev | OS/firmware | Interfaces to inventory | Features to test | Status | Physical evidence |
 |---|---|---|---|---|---|---|---|---|---|
-| DEV-01 | OLT | ZTE C320 | C320 (exact board/line-card identities still **TBD**) | TBD | Exact software tuple / board mapping **not reconciled** | Owner-private fixed allowlisted SSH CLI reads physically observed; SNMPv3 still untested | OLT card inventory and bounded firmware-row summary physically read; PON/ONU/alarm/native restore/write remain unqualified | `partial` | R9.60 + R10.0: CARDS=3 and FIRMWARE rows=5 live; writes disabled; no serials |
+| DEV-01 | OLT | ZTE C320 | C320; observed slots 1/1/1 GTGH→GTGHK, 1/1/3 PRAM, 1/1/4 SMXA | observed HardVer V1.0.0 on all 3 in-service rows | card SoftVer V2.1.0 / V1.01 / V2.1.0; MVR: GTXK V2.1.0 (slot1, **alias unresolved**), none on PRAM, SMXA V2.1.0 (slot4) | Owner-private fixed allowlisted SSH CLI reads physically observed; SNMPv3 still untested | Exact sanitized card/running-version tuple plus bounded firmware inventory physically read; PON/ONU/alarm/native restore/write remain unqualified | `partial` | R10.01 physical tuple 2026-10-06; 3 cards/5 version rows; writes=0; no serial/subscriber data |
 | DEV-02 | OLT | C-DATA | **TBD exact model** | TBD | TBD | Verify SNMP/CLI/API physically | Discovery/read-only, PON/ONU/optical signal | `untested` | None supplied |
 | DEV-03 | ONT | VSOL | **TBD exact model** | TBD | TBD | Verify CWMP TR-069 and data model; USP optional only if actual agent exists | Inform, authentication, 1 known safe parameter RPC | `untested` | None supplied |
 | DEV-04 | ONT | ZTE | **TBD exact model** | TBD | TBD | Verify CWMP TR-069 and data model; USP optional only if actual agent exists | Inform, authentication, 1 known safe parameter RPC | `untested` | None supplied |
@@ -38,7 +38,7 @@ Do not mark a simulator as physical. Maintain a separate `evidence_type=simulato
 | TC-CWMP-01 | DEV-03/04 individually | CWMP | Authenticated Inform, InformResponse, session closed | Actual model/firmware known, CPE isolated lab | NOT RUN | TBD |
 | TC-CWMP-02 | DEV-03/04 individually | CWMP | One supported read-only parameter RPC and correct response | Confirm path from observed data model first | NOT RUN | TBD |
 | TC-USP-01 | Simulator/actual agent only if available | USP | Authenticated message correlation and controller identity | Broker MTP and agent capability confirmed | NOT RUN | TBD |
-| TC-OLT-01 | DEV-01 | Fixed vendor SSH read; SNMP still pending | Read-only OLT inventory, PON status/alarm | Restricted private connector; exact firmware mapping still incomplete | PARTIAL — CARDS/FIRMWARE fixed reads pass; PON/ONU REFRESH previously 503; alarms/SNMP not run | R10.0-C320-READ-20261006 |
+| TC-OLT-01 | DEV-01 | Fixed vendor SSH read; SNMP still pending | Read-only OLT inventory, PON status/alarm | Restricted private connector; exact slot/card/version rows now observed, vendor alias mapping still incomplete | PARTIAL — CARDS/FIRMWARE fixed reads pass; exact 3-card/5-version sanitized tuple captured; GTGH/GTGHK→GTXK alias unresolved; PON/ONU REFRESH previously 503; alarms/SNMP not run | R1001-C320-TUPLE-20261006T065143Z |
 | TC-OLT-02 | DEV-02 | Vendor/SNMP channel | Same read-only feature with C-DATA exact model | Model + firmware and access confirmed | NOT RUN | TBD |
 | TC-ROS-01 | DEV-05/06/07 each | API-SSL or HTTPS REST | Read inventory, PPPoE secret and active sessions under restricted role | Actual RouterOS/build and API confirmed | NOT RUN | TBD |
 | TC-ROS-02 | One authorized lab router only | API-SSL or HTTPS REST | Invalid CSV rejected, dry-run no changes, approval diff and idempotency, controlled small write | Backup, recovery/rollback, maintenance window | NOT RUN | TBD |
