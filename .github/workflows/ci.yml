@@ -596,6 +596,13 @@ jobs:
           python3 -m unittest deploy/scripts/production/test_r984_ip_tls_ingress_source.py -v
           bash deploy/scripts/production/r984_nginx_template_smoke.sh
           grep -Fq R9.84 docs/PROJECT_STATUS.md
+      - name: R9.93 exact customer-domain HTTPS ingress and rollback
+        run: |
+          bash -n deploy/scripts/production/r993_apply_customer_ingress.sh
+          bash -n deploy/scripts/production/r993_nginx_customer_template_smoke.sh
+          python3 -m unittest deploy/scripts/production/test_r993_customer_ingress_source.py -v
+          bash deploy/scripts/production/r993_nginx_customer_template_smoke.sh
+          grep -Fq R9.93 docs/PROJECT_STATUS.md
       - name: R9.71 real disposable PostgreSQL HA-safe one-use OIDC state across Rust client instances
         run: |
           python3 -m unittest discover deploy/db/tests -p test_oidc_pending_integration.py -v
