@@ -1,0 +1,20 @@
+{
+  "schema": "ipat.production-pitr-acceptance.v1",
+  "foundation_source_commit": "0123456789abcdef0123456789abcdef01234567",
+  "offsite_repository_verified": true,
+  "distinct_host_restore_verified": true,
+  "pg_verifybackup_passed": true,
+  "named_pitr_passed": true,
+  "tenant_rls_validation_passed": true,
+  "streaming_standby_failover_verified": true,
+  "fencing_verified": true,
+  "production_cluster_id_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "prepared_by": "sre-operator-placeholder",
+  "approved_by": "security-reviewer-placeholder",
+  "evidence_id": "pitr-evidence-placeholder",
+  "rpo_seconds": 30,
+  "approved_rpo_seconds": 60,
+  "rto_seconds": 120,
+  "approved_rto_seconds": 300,
+  "reviewed_at_utc": "2026-10-06T00:00:00+00:00"
+}

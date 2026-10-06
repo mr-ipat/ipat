@@ -631,6 +631,14 @@ jobs:
           grep -Fq APPLY_REVIEWED_PRODUCTION_FOUNDATION deploy/scripts/production/r996_prepare_production_foundation.sh
           grep -Fq 'public_go":False' deploy/scripts/production/r996_prepare_production_foundation.sh
           grep -Fq R9.96 docs/PROJECT_STATUS.md
+      - name: R9.97 production PITR-gated Platform edge activation source contract
+        run: |
+          bash -n deploy/scripts/production/r997_activate_platform_edge.sh
+          python3 -m py_compile deploy/scripts/production/r997_validate_pitr_acceptance.py
+          python3 -m unittest deploy/scripts/production/test_r997_platform_activation_source.py -v
+          grep -Fq ACTIVATE_REVIEWED_PLATFORM_EDGE deploy/scripts/production/r997_activate_platform_edge.sh
+          grep -Fq 'human_mfa_browser_acceptance' deploy/scripts/production/r997_activate_platform_edge.sh
+          grep -Fq R9.97 docs/PROJECT_STATUS.md
       - name: R9.71 real disposable PostgreSQL HA-safe one-use OIDC state across Rust client instances
         run: |
           python3 -m unittest discover deploy/db/tests -p test_oidc_pending_integration.py -v

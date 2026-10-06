@@ -1238,3 +1238,7 @@ Domain activation is an ordered control plane separate from Nginx installation. 
 
 ## R9.96 — Production foundation lifecycle boundary
 Provisioning now has a hard phase boundary. Foundation creates dedicated service identities, hardened disabled units and one PostgreSQL18 primary reachable only through the local Unix socket; no platform/tenant HTTP, OIDC, verifier, Nginx or public port is activated. Only after independent production backup/PITR acceptance may the later activation phase enable the distinct runtime services and R9.84/R9.93 ingress. This preserves rollback and prevents a half-provisioned database host from becoming externally reachable.
+
+
+## R9.97 — Post-recovery activation boundary
+The production lifecycle now has three explicit phases: R9.96 local foundation; R9.97 recovered-data Platform edge activation; then per-company OIDC/domain ingress activation. R9.97 brings up only loopback Platform API/OIDC, loopback shared tenant API, background DNS ownership verifier and exact-IP Nginx/ACME ingress. Customer identity issuers and customer SNI virtual hosts remain separate deployable instances. Platform edge rollback never destroys the R9.96 database foundation.
