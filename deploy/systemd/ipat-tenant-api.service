@@ -1,0 +1,35 @@
+[Unit]
+Description=IPAT commercial tenant API (loopback only)
+After=network.target postgresql.service
+ConditionPathExists=/etc/ipat/tenant-api.env
+
+[Service]
+Type=simple
+User=ipattapi
+Group=ipattapi
+EnvironmentFile=/etc/ipat/tenant-api.env
+ExecStart=/opt/ipat/bin/control-api
+Restart=on-failure
+RestartSec=2s
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+ProtectClock=true
+LockPersonality=true
+RestrictSUIDSGID=true
+SystemCallArchitectures=native
+CapabilityBoundingSet=
+AmbientCapabilities=
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+IPAddressDeny=any
+IPAddressAllow=localhost
+
+[Install]
+WantedBy=multi-user.target

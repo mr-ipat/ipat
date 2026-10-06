@@ -1310,3 +1310,7 @@ Backup secrets must not appear in repository files, shell history, prompts or ap
 
 ## R9.91 — Offsite backup credential and evidence controls
 Never put Restic passwords, cloud keys, signed URLs, tokens or password-bearing repository URLs in Git, CLI history, chat, audit JSON or dashboard responses. The read-only evidence gate accepts only external owner-only password files and rejects inline secret environment variables. Hash nonsecret repository/failure-domain identifiers in evidence. Snapshot presence does not prove immutability, independent ownership or recoverability; deletion rights, retention policy, distinct-host restore, PITR and RPO/RTO require separate reviewed evidence.
+
+
+## R9.92 tenant runtime isolation
+Tenant API and tenant OIDC run under dedicated nonlogin OS users and distinct peer-authenticated PostgreSQL roles, never Platform Owner roles. Tenant OIDC instances require durable DB pending state, real confidential IdP verification, exact lowercase DNS Host and a bounded loopback-only port; an instance cannot use a literal IP customer Host. Root-owned runtime env files and `ipattoidc`-owned 0600 secret/key files are required. Timed rollback is armed before first service activation. Scripts make no firewall, DNS, certificate, PostgreSQL schema or physical-device mutation. Customer Host/SNI ingress and actual human MFA remain independent activation gates.
