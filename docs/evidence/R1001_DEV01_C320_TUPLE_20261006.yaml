@@ -1,0 +1,60 @@
+run_id: "R1001-C320-TUPLE-20261006T065143Z"
+executed_at_utc: "2026-10-06T06:51:43.778916Z"
+source_commit_used_for_read: "4ef05aa351dcea12d435cecba19c7b00c03f71a6"
+private_sanitized_evidence_sha256: "df5ae23228e6db82003bf20a93ca7cb4450fae9bb1985a60edf9c7b81d8d6a06"
+environment: "owner-private isolated lab"
+evidence_type: "physical"
+target: "DEV-01"
+vendor: "ZTE"
+chassis_family: "C320"
+transport_scope: "existing strict pinned owner-private SSH read path"
+qualified_commands:
+  - "show card"
+  - "show version-running"
+physical_writes: 0
+serials_returned: false
+subscriber_data_returned: false
+in_service_cards: 3
+firmware_rows: 5
+observed_cards:
+  - location: "1/1/1"
+    configured_type: "GTGH"
+    real_type: "GTGHK"
+    hardware_version: "V1.0.0"
+    card_software_version: "V2.1.0"
+    mvr_file_type: "GTXK"
+    mvr_version_tag: "V2.1.0"
+    mvr_build: "2017-07-03T00:28:55"
+    correlation: "UNRESOLVED_VENDOR_ALIAS"
+  - location: "1/1/3"
+    configured_type: "PRAM"
+    real_type: "PRAM"
+    hardware_version: "V1.0.0"
+    card_software_version: "V1.01"
+    mvr_file_type: null
+    mvr_version_tag: null
+    mvr_build: null
+    correlation: "NO_MVR_ROW_OBSERVED"
+  - location: "1/1/4"
+    configured_type: "SMXA"
+    real_type: "SMXA"
+    hardware_version: "V1.0.0"
+    card_software_version: "V2.1.0"
+    mvr_file_type: "SMXA"
+    mvr_version_tag: "V2.1.0"
+    mvr_build: "2017-01-17T01:04:45"
+    correlation: "EXACT_MATCH"
+observed_firmware_rows:
+  - { location: "1/1/1", file_type: "GTXK", version_type: "MVR", version_tag: "V2.1.0", build: "2017-07-03T00:28:55" }
+  - { location: "1/1/1", file_type: "GTXK", version_type: "BT", version_tag: "V4.0.16", build: "2018-05-09T00:53:14" }
+  - { location: "1/1/4", file_type: "SMXA", version_type: "MVR", version_tag: "V2.1.0", build: "2017-01-17T01:04:45" }
+  - { location: "1/1/4", file_type: "SMXA", version_type: "BT", version_tag: "V4.0.13", build: "2017-04-26T09:53:13" }
+  - { location: "1/1/4", file_type: "SMXA", version_type: "FW", version_tag: "V2.1.0", build: "2017-06-23T03:42:13" }
+outcome: "partial"
+validation_status: "partial"
+mapping_status: "BLOCKED_EXACT_ALIAS_REQUIRED"
+limitations:
+  - "GTGH/GTGHK card versus GTXK MVR relationship is observed but not vendor-reconciled; no alias rule is inferred."
+  - "PRAM produced no MVR row in the bounded running-version inventory; this is not treated as failure or compatibility."
+  - "PON/ONU/alarm/SNMP/native backup/restore and all writes remain unqualified."
+  - "This evidence is exact to this observed chassis state only and does not establish ZTE C320 family-wide compatibility."
