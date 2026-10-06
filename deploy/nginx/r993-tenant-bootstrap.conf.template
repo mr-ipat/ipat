@@ -1,0 +1,16 @@
+# R9.93 exact customer-owned Host bootstrap for HTTP-01. Render __HOST__.
+server {
+    listen 80;
+    server_name __HOST__;
+    if ($host != "__HOST__") { return 421; }
+
+    location ^~ /.well-known/acme-challenge/ {
+        root /var/lib/ipat/acme-webroot;
+        default_type text/plain;
+        try_files $uri =404;
+        access_log off;
+    }
+
+    # Never serve credential-bearing application traffic before trusted TLS.
+    location / { return 503; }
+}

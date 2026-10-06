@@ -224,3 +224,6 @@ Closes a concrete deployment-source gap left after R9.85: customer tenant API/OI
 
 ### R9.92 final tenant-runtime source acceptance (2026-10-06)
 PR #187 exact head 301498609ec6da312969748274ade724a8f909dc passed exact GitHub Actions 37401239694 all 4/4 jobs and merged main 13b3a2b2639f3f7f8f07191498f13fb51a61ca95. Separate nonroot tenant API 3003, per-customer tenant OIDC instances, four-way Platform/Tenant PostgreSQL peer-role isolation, rollback and Ubuntu26 systemd verification are SOURCE/DISPOSABLE PASS. Actual customer DNS/TLS/SNI, real human IdP MFA, production service activation, offsite distinct-host recovery and physical device interoperability remain separate release gates; full public PRD is not yet PASS.
+
+## R9.93 exact customer HTTPS ingress source candidate (2026-10-06)
+Added two-phase customer-owned Host ingress templates and root-gated installer: exact DNS A prerequisite, plaintext 503 except ACME, exact customer certificate SAN, tenant API 3003/per-customer OIDC routing, fixed upstream Host, timed rollback and renewal dry-run. Local source tests 6/6 and pinned Nginx bootstrap+TLS syntax PASS. Source deliberately does not update domain activation state; actual DNS/TLS issuance, restricted verifier state transition, external hostile Host/SNI isolation and real human MFA remain public acceptance gates.
