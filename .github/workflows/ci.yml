@@ -656,7 +656,7 @@ jobs:
           python3 -m unittest discover deploy/scripts/production -p test_r1001_c320_exact_tuple_read.py -v
           grep -Fq 'BLOCKED_EXACT_ALIAS_REQUIRED' deploy/scripts/production/r1001_c320_exact_tuple_read.py
           grep -Fq 'physical_writes: 0' docs/evidence/R1001_DEV01_C320_TUPLE_20261006.yaml
-          grep -Fq 'GTGH/GTGHK→GTXK' docs/PROJECT_STATUS.md
+          grep -Fq 'vendor alias unresolved' docs/PROJECT_STATUS.md
       - name: R10.02 safe C320 REFRESH diagnostic contract
         run: |
           python3 -m unittest deploy/scripts/lab/r1002/test_safe_refresh_diagnostics.py -v
