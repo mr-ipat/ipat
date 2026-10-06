@@ -304,4 +304,21 @@ mod tests {
     fn r955_expected_runtime_role_is_dedicated() {
         assert_eq!(EXPECTED_VERIFIER_USER, "ipat_domain_verifier_login");
     }
+    #[test]
+    fn r995_runtime_conninfo_accepts_only_dedicated_local_peer_shape() {
+        let good = Config::from_str(
+            "host=/run/postgresql dbname=ipat_prod user=ipat_domain_verifier_login",
+        )
+        .unwrap();
+        assert!(valid_db_config(&good));
+        for bad in [
+            "host=/run/postgresql dbname=ipat_prod user=postgres",
+            "host=127.0.0.1 dbname=ipat_prod user=ipat_domain_verifier_login",
+            "host=/run/postgresql dbname=ipat_prod user=ipat_domain_verifier_login password=bad",
+            "host=/run/postgresql dbname=ipat_prod user=ipat_domain_verifier_login options=-csearch_path=public",
+        ] {
+            let cfg=Config::from_str(bad).unwrap();
+            assert!(!valid_db_config(&cfg),"{bad}");
+        }
+    }
 }

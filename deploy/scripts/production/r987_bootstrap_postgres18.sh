@@ -20,6 +20,7 @@ getent passwd ipatpoidc >/dev/null || die "R9.85 ipatpoidc user required first"
 getent passwd ipattapi >/dev/null || die "R9.92 ipattapi user required before PostgreSQL bootstrap"
 getent passwd ipattoidc >/dev/null || die "R9.92 ipattoidc user required before PostgreSQL bootstrap"
 getent passwd ipatdverify >/dev/null || die "R9.94 ipatdverify user required before PostgreSQL bootstrap"
+getent passwd ipatdnsverify >/dev/null || die "R9.95 ipatdnsverify user required before PostgreSQL bootstrap"
 ! getent passwd ipatpgmigrate >/dev/null || die "temporary migrator OS user already exists"
 if command -v pg_lsclusters >/dev/null; then
   [[ -z $(pg_lsclusters --no-header 2>/dev/null || true) ]] || die "existing PostgreSQL cluster requires separate migration review"
@@ -87,6 +88,7 @@ ipat_runtime    ipatpoidc      ipat_platform_session_issuer_login
 ipat_runtime    ipattapi       ipat_tenant_api_login
 ipat_runtime    ipattoidc      ipat_oidc_session_issuer_login
 ipat_runtime    ipatdverify    ipat_domain_ingress_verifier_login
+ipat_runtime    ipatdnsverify  ipat_domain_verifier_login
 IDENT
 cat > "$conf/pg_hba.conf" <<'HBA'
 local   all        postgres                            peer map=ipat_bootstrap
@@ -95,6 +97,7 @@ local   ipat_prod  ipat_platform_session_issuer_login peer map=ipat_runtime
 local   ipat_prod  ipat_tenant_api_login              peer map=ipat_runtime
 local   ipat_prod  ipat_oidc_session_issuer_login      peer map=ipat_runtime
 local   ipat_prod  ipat_domain_ingress_verifier_login          peer map=ipat_runtime
+local   ipat_prod  ipat_domain_verifier_login                  peer map=ipat_runtime
 local   all        all                                 reject
 HBA
 
@@ -120,6 +123,7 @@ ipat_runtime    ipatpoidc      ipat_platform_session_issuer_login
 ipat_runtime    ipattapi       ipat_tenant_api_login
 ipat_runtime    ipattoidc      ipat_oidc_session_issuer_login
 ipat_runtime    ipatdverify    ipat_domain_ingress_verifier_login
+ipat_runtime    ipatdnsverify  ipat_domain_verifier_login
 IDENT
 install -o postgres -g postgres -m 0640 "$conf/pg_ident.conf.final" "$conf/pg_ident.conf"
 rm -f "$conf/pg_ident.conf.final"
@@ -130,6 +134,7 @@ local   ipat_prod  ipat_platform_session_issuer_login peer map=ipat_runtime
 local   ipat_prod  ipat_tenant_api_login              peer map=ipat_runtime
 local   ipat_prod  ipat_oidc_session_issuer_login      peer map=ipat_runtime
 local   ipat_prod  ipat_domain_ingress_verifier_login          peer map=ipat_runtime
+local   ipat_prod  ipat_domain_verifier_login                  peer map=ipat_runtime
 local   all        all                                 reject
 HBA
 install -o postgres -g postgres -m 0640 "$conf/pg_hba.conf.final" "$conf/pg_hba.conf"
@@ -144,11 +149,13 @@ oidc=$(runuser -u ipatpoidc -- psql -X -w -h /run/postgresql -U ipat_platform_se
 tenant_api=$(runuser -u ipattapi -- psql -X -w -h /run/postgresql -U ipat_tenant_api_login -d ipat_prod -Atqc 'select current_user' 2>/dev/null || true)
 tenant_oidc=$(runuser -u ipattoidc -- psql -X -w -h /run/postgresql -U ipat_oidc_session_issuer_login -d ipat_prod -Atqc 'select current_user' 2>/dev/null || true)
 domain_verifier=$(runuser -u ipatdverify -- psql -X -w -h /run/postgresql -U ipat_domain_ingress_verifier_login -d ipat_prod -Atqc 'select current_user' 2>/dev/null || true)
+ownership_verifier=$(runuser -u ipatdnsverify -- psql -X -w -h /run/postgresql -U ipat_domain_verifier_login -d ipat_prod -Atqc 'select current_user' 2>/dev/null || true)
 [[ $api == ipat_platform_session_api_login ]] || die "restricted Platform API peer auth failed"
 [[ $oidc == ipat_platform_session_issuer_login ]] || die "restricted Platform OIDC peer auth failed"
 [[ $tenant_api == ipat_tenant_api_login ]] || die "restricted tenant API peer auth failed"
 [[ $tenant_oidc == ipat_oidc_session_issuer_login ]] || die "restricted tenant OIDC peer auth failed"
-[[ $domain_verifier == ipat_domain_ingress_verifier_login ]] || die "restricted domain verifier peer auth failed"
+[[ $domain_verifier == ipat_domain_ingress_verifier_login ]] || die "restricted ingress verifier peer auth failed"
+[[ $ownership_verifier == ipat_domain_verifier_login ]] || die "restricted ownership verifier peer auth failed"
 created=NO
 trap - ERR INT TERM
 echo R987_POSTGRES18_LOCAL_SOCKET_SCHEMA_READY_NOT_HA_NOT_PITR
