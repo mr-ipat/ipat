@@ -249,3 +249,6 @@ Migration 0034 adds a read-only exact activation result for the ingress verifier
 
 ## R9.99 exact customer browser acceptance candidate
 Source adds a fail-closed customer release validator/finalizer requiring real human MFA browser evidence, menu/direct-URL/API denial, wrong-Host/cross-tenant replay denial, logout/revocation, stale-session denial, distinct control tenant, artifact SHA256 and fresh maker/checker review. It reads only the exact R9.98 active domain through the restricted verifier function. Source tests do not satisfy production acceptance until a real external browser run generates and reviewers approve the required artifact.
+
+### R9.99 exact source closure
+PR #194 exact head dda6d6943142cbe72f497f81fb313f5a40c15aff passed GitHub Actions run 37415794710 all four jobs and merged main dec6503027a983595dfda2778c59bde70a0de768. This closes source implementation of the customer release evidence gate only. AC-01/02/09/15/16 remain production BLOCKED until real public custom domains, real human MFA, hostile wrong-Host/cross-tenant browser/API tests, revocation and independent browser artifact review actually occur.
