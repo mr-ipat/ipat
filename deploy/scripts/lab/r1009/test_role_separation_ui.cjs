@@ -1,0 +1,27 @@
+'use strict';
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const html=fs.readFileSync('web/console/tenant/dashboard.html','utf8');
+const js=fs.readFileSync('web/console/tenant/app.js','utf8');
+const api=fs.readFileSync('apps/control-api/src/commercial_tenant_api.rs','utf8');
+const sql=fs.readFileSync('deploy/db/migrations/0039_commercial_role_separation.sql','utf8');
+
+assert(html.includes('id="pppoe-create-workspace" hidden'));
+assert(html.includes('Provisioning Officers'));
+assert(html.includes('Security Admins'));
+assert(html.includes('Tenant Admin alone cannot substitute'));
+assert(js.includes('can_create_pppoe_plans'));
+assert(js.includes('can_review_pppoe_plans'));
+assert(js.includes("$('pppoe-create-workspace').hidden=!state.canCreatePppoePlans"));
+assert(js.includes('Awaiting current Security Admin'));
+assert(api.includes('pppoe_role_capabilities'));
+assert(api.includes('if !can_create {'));
+assert(api.includes('if !can_review {'));
+assert(api.includes('"can_create_pppoe_plans":can_create_pppoe_plans'));
+assert(api.includes('"can_review_pppoe_plans":can_review_pppoe_plans'));
+assert(sql.includes("'provisioning_officer'"));
+assert(sql.includes("'security_admin'"));
+assert(sql.includes('pppoe_batch_create_capability'));
+assert(sql.includes('pppoe_batch_review_capability'));
+assert(!sql.includes('execute_pppoe_batch'));
+console.log('R1009_COMMERCIAL_ROLE_SEPARATION_UI_AND_API_CONTRACT=PASS');

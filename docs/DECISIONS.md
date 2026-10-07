@@ -814,3 +814,7 @@ Normalize an exact access-device aggregate observation (configured>0, online=0, 
 
 ## ADR-104 — R10.07 PPPoE mass change begins as non-executable durable CSV plan (2026-10-07)
 Bulk PPPoE cannot jump directly from browser CSV to RouterOS. First persist a bounded exact tenant, router, and subscriber dry-run with server digest, idempotency, secret references only, and independent human review. Database must structurally keep execution disabled. Current canonical tenant role vocabulary is insufficient for final physical high-risk approval, so R10.07 uses distinct Tenant Admin maker/checker only as an interim source gate and explicitly does not claim final provisioning and security role separation. Physical write work starts only after exact MikroTik tuple and readback, new role policy, fresh MFA, rate and serialization, Unknown plus reconcile, and rollback evidence.
+
+
+## ADR-101 — R10.09 enforce commercial provisioning/security role separation (2026-10-07)
+PPPoE mass-change preparation is not a Tenant Admin privilege. The durable commercial membership model now includes the full PRD role vocabulary. Provisioning Officer is the only current role allowed to create PPPoE dry-runs; Security Admin is the only current role allowed to approve/reject them. Tenant Admin retains tenant inventory/subscriber administration but cannot substitute for maker or checker. UI visibility and backend authorization are derived independently from current PostgreSQL membership and revocation. No physical execution right is introduced by role separation.

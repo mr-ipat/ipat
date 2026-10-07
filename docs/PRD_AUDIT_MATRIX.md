@@ -283,3 +283,11 @@ FR-020/AC-05 software planning slice now has strict CSV parsing for 1–128 rows
 
 ### R10.07 final reviewed source acceptance
 PR #205 exact head 9009e51b4014ab61917a453296ad60c0306690ed passed GitHub Actions run 37601532538 SUCCESS 4/4 and merged main 8c421bc59b2ff8d0680873f9efd45d9de5924213. Verified source evidence includes PG16 67/67, rootless pinned Rust control-api 114/114, strict CSV UI contract, 29-entry migration hash verification and clean Ubuntu26/PostgreSQL18 local-socket bootstrap. Actual Axum+PostgreSQL CI proves current-session Host/CSRF denial, idempotent dry-run creation, distinct maker/checker review, secret non-return and execution_allowed=false. AC-05 remains BLOCKED for the physical RouterOS portion; source acceptance is not a device-support claim.
+
+
+## R10.09 commercial role-separation candidate (2026-10-07)
+Source now adds the complete PRD tenant role vocabulary and replaces the temporary R10.07 Tenant-Admin-vs-Tenant-Admin PPPoE review model with Provisioning Officer maker + Security Admin checker. PostgreSQL and Axum both fail closed; Tenant Admin sees no PPPoE capability and direct calls are denied. Approval remains non-executable and secretless. Source/disposable acceptance does not satisfy AC-05 physical MikroTik interoperability/execution, and no production identity records are changed by this migration until an authorized production migration is separately performed.
+
+
+### R10.09 local acceptance evidence
+Disposable PostgreSQL role separation 4/4 PASS; clean Ubuntu26/PostgreSQL18 first-install with 30 pinned migrations PASS; exact Axum + PostgreSQL browser-role test PASS after fixing the discovered old session-role allowlist; exact rootless control-api 115/115 PASS. Tenant Admin has no PPPoE capability, Provisioning Officer can create but not review, Security Admin can review but not create, and approval stays non-executable. GitHub exact-head CI/merge and physical MikroTik interoperability/execution remain open.
