@@ -22,7 +22,7 @@ test('fail-closed approved reads cannot be edited via server-provided endpoints'
  assert.match(js,/Object\.freeze\(\{/);
  assert.match(js,/cards: '\/lab\/c320-owner-live-cards'/);
  assert.match(js,/firmware: '\/lab\/c320-owner-live-firmware'/);
- assert.doesNotMatch(js,/\/lab\/c320-owner-live-refresh'/);
+ assert.match(js,/onu_counts: '\/lab\/c320-owner-live-refresh'/);
  assert.match(js,/catalog\.connected && capability\.state === 'AVAILABLE_READ_ONLY'/);
  assert.match(js,/capability\.endpoint === endpoints\[capability\.id\]/);
  assert.match(js,/v\.physical_writes_enabled !== false/);
@@ -31,11 +31,12 @@ test('fail-closed approved reads cannot be edited via server-provided endpoints'
 });
 test('writes remain visible in private owner lab only, non-dispatchable by construction',()=>{
  for (const name of ['onu_provision','onu_deprovision','vlan_service','ont_cwmp','ont_usp',
-   'reboot','config_backup','config_restore','firmware_upgrade','alarms','optical_levels','traffic'])
+   'reboot','config_backup','config_restore','firmware_upgrade','alarms','optical_levels','traffic']) {
     assert.ok(api.includes('"id":"'+name+'"'),name);
+    assert.match(api,new RegExp('"id":"'+name+'"[\\s\\S]{0,260}?"endpoint":null'),name+' endpoint');
+ }
  assert.match(api,/owner_catalog_response/);
  assert.match(api,/APPROVAL_AND_DRIVER_REQUIRED/);
- assert.match(api,/"state":"DEGRADED"/);
  assert.match(api,/fn owner_catalog_never_authorizes_an_unqualified_command/);
 });
 

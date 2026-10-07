@@ -1,6 +1,6 @@
 'use strict';
-/* R9.60 English-first owner-private capabilities; never grants permissions.
- * Server emits immutable allowlisted status. Only the two actually verified
+/* R10.03 English-first owner-private capabilities; never grants permissions.
+ * Server emits immutable allowlisted status. Only the three physically accepted
  * bounded read operations have browser execution handlers in this release. */
 (() => {
   const el = id => document.getElementById(id);
@@ -12,7 +12,8 @@
   const refresh = el('ipat-c320-refresh-capabilities');
   const endpoints = Object.freeze({
     cards: '/lab/c320-owner-live-cards',
-    firmware: '/lab/c320-owner-live-firmware'
+    firmware: '/lab/c320-owner-live-firmware',
+    onu_counts: '/lab/c320-owner-live-refresh'
   });
   let busy = false;
   const notices = {
@@ -72,6 +73,17 @@
           && v.firmware_reconciled === false) {
         summary = 'Firmware inventory: ' + v.firmware_rows
           + ' records. Exact board/version mapping is NOT yet validated.';
+      } else if (id === 'onu_counts' && v.pon === '1/1/1'
+          && Number.isSafeInteger(v.configured) && Number.isSafeInteger(v.unconfigured)
+          && Number.isSafeInteger(v.online) && Number.isSafeInteger(v.offline)
+          && v.configured >= 0 && v.configured <= 128
+          && v.unconfigured >= 0 && v.unconfigured <= 128
+          && v.online >= 0 && v.offline >= 0
+          && v.online + v.offline === v.configured
+          && v.serials_returned === false) {
+        summary = 'PON 1/1/1 aggregate: ' + v.configured + ' configured, '
+          + v.online + ' online, ' + v.offline + ' offline, '
+          + v.unconfigured + ' unconfigured. No ONU identity/serial displayed.';
       } else {
         throw Error('Unexpected device response; not displaying unverified output');
       }

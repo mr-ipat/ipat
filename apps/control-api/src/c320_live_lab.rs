@@ -612,8 +612,8 @@ fn owner_catalog_response(connection: &Value) -> Value {
          "state":read,"operation":"READ","endpoint":"/lab/c320-owner-live-firmware",
          "scope":"Live firmware row count; board/version mapping remains unverified."},
         {"id":"onu_counts","group":"PON & ONU","label":"Read PON 1/1/1 ONU counts",
-         "state":"DEGRADED","operation":"READ","endpoint":null,
-         "scope":"The current live test returned HTTP 503; command/parser requires repair and fresh acceptance."},
+         "state":read,"operation":"READ","endpoint":"/lab/c320-owner-live-refresh",
+         "scope":"R10.02 exact DEV-01 aggregate read accepted: configured/unconfigured and online/offline counts only; no ONU identity, serial, optics or subscriber data."},
         {"id":"onu_details","group":"PON & ONU","label":"Read per-ONU operational status",
          "state":"NOT_QUALIFIED","operation":"READ","endpoint":null,
          "scope":"Only historical sanitized ONU IDs exist; no current per-ONU CLI test."},
@@ -733,9 +733,12 @@ mod tests {
             .iter()
             .filter(|entry| entry["state"] == "AVAILABLE_READ_ONLY")
             .collect();
-        assert_eq!(runnable.len(), 2);
+        assert_eq!(runnable.len(), 3);
         assert_eq!(runnable[0]["endpoint"], "/lab/c320-owner-live-cards");
         assert_eq!(runnable[1]["endpoint"], "/lab/c320-owner-live-firmware");
+        assert_eq!(runnable[2]["id"], "onu_counts");
+        assert_eq!(runnable[2]["endpoint"], "/lab/c320-owner-live-refresh");
+        assert!(runnable[2]["scope"].as_str().unwrap().contains("aggregate"));
         for entry in entries {
             if entry["operation"] != "READ" {
                 assert!(entry["endpoint"].is_null());
