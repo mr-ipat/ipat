@@ -1,0 +1,30 @@
+schema: ipat.c320.active-alarm-shape.evidence.v1
+target: DEV-01
+vendor: ZTE
+chassis_family: C320
+observed_date: 2026-10-07
+evidence_type: physical
+transport: owner-private strict pinned SSH
+command_id: ACTIVE_ALARM_FIXED
+command_text_public_safe: show alarm crtv-active
+historical_firmware_help_advertised_command: true
+current_command_accepted: true
+current_command_rejected: false
+exact_command_echo_removed: true
+payload_empty_after_exact_echo: true
+payload_line_count: 0
+payload_byte_count: 0
+pager_pages: 0
+physical_writes: 0
+raw_alarm_records_persisted: false
+alarm_source_values_persisted: false
+onu_ids_persisted: false
+serials_persisted: false
+subscriber_data_persisted: false
+alarm_health_semantically_validated: false
+capability_state: DEGRADED
+limitations:
+  - Empty payload is not interpreted as no-active-alarms without exact firmware semantics corroboration.
+  - No polling endpoint is enabled.
+  - No optics, SNMP, traffic, ONU detail, native restore or write capability is implied.
+  - Device remains not production-adopted and physical writes remain disabled.

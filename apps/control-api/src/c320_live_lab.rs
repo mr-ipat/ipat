@@ -621,8 +621,8 @@ fn owner_catalog_response(connection: &Value) -> Value {
          "state":"NOT_QUALIFIED","operation":"READ","endpoint":null,
          "scope":"Exact model/firmware and bounded optical command not verified."},
         {"id":"alarms","group":"Diagnostics","label":"Read current alarms",
-         "state":"NOT_QUALIFIED","operation":"READ","endpoint":null,
-         "scope":"Alarm command/format not yet observed on the connected hardware."},
+         "state":"DEGRADED","operation":"READ","endpoint":null,
+         "scope":"R10.04 exact DEV-01 command is physically accepted, but current empty payload semantics are not vendor-corroborated; no alarm-health conclusion or polling endpoint."},
         {"id":"traffic","group":"Diagnostics","label":"Read PON/port traffic and utilization",
          "state":"NOT_QUALIFIED","operation":"READ","endpoint":null,
          "scope":"Counter widths, poll interval and firmware-specific parsing need testing."},
@@ -739,6 +739,16 @@ mod tests {
         assert_eq!(runnable[2]["id"], "onu_counts");
         assert_eq!(runnable[2]["endpoint"], "/lab/c320-owner-live-refresh");
         assert!(runnable[2]["scope"].as_str().unwrap().contains("aggregate"));
+        let alarms = entries
+            .iter()
+            .find(|entry| entry["id"] == "alarms")
+            .unwrap();
+        assert_eq!(alarms["state"], "DEGRADED");
+        assert!(alarms["endpoint"].is_null());
+        assert!(alarms["scope"]
+            .as_str()
+            .unwrap()
+            .contains("no alarm-health conclusion"));
         for entry in entries {
             if entry["operation"] != "READ" {
                 assert!(entry["endpoint"].is_null());
