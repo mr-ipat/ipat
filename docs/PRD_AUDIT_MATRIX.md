@@ -261,3 +261,6 @@ PR #198 exact final head `9c19ad6fb66d8050ae277eb2e934caa2c34a44ff` passed GitHu
 
 ### R10.03 — truthful DEV-01 operation catalog candidate
 After R10.02 protected HTTP aggregate PON read passed physically, the private capability catalog now exposes only the same verified fixed `onu_counts` read as AVAILABLE_READ_ONLY alongside cards and firmware. Disconnect/credential/write-safety failure removes availability; all alarm/optics/per-ONU/write operations remain nonexecutable. Source/CI/private preview rollout remain separately verified before closure.
+
+### R10.04 DEV-01 active-alarm read shape
+Exact current physical show alarm crtv-active read over owner-private strict pinned SSH is accepted after a bounded one-shot probe. Corrected parser removes the exact command echo; the resulting payload is empty (0 lines/0 bytes), with 0 pages and 0 physical writes. This is NOT sufficient to infer alarm-free health without exact vendor/firmware semantic corroboration. Alarm operation becomes DEGRADED/no endpoint, not AVAILABLE. AC-12 remains PARTIAL; optics, per-ONU detail, SNMP, traffic, native restore/write and other devices remain open.
