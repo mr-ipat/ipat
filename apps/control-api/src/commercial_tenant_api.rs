@@ -2700,12 +2700,12 @@ mod pg_integration {
         let maker = "r1009-http-provisioner";
         let checker = "r1009-http-security";
         let host = "tenant-r1009.example.net";
-        let admin_cookie = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
-        let admin_csrf = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb";
-        let maker_cookie = "ccccccccccccccccccccccccccccccccccccccccccc";
-        let maker_csrf = "ddddddddddddddddddddddddddddddddddddddddddd";
-        let checker_cookie = "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee";
-        let checker_csrf = "fffffffffffffffffffffffffffffffffffffffffff";
+        let admin_cookie = "r1009ar1009ar1009ar1009ar1009ar1009ar1009ax";
+        let admin_csrf = "r1009br1009br1009br1009br1009br1009br1009bx";
+        let maker_cookie = "r1009cr1009cr1009cr1009cr1009cr1009cr1009cx";
+        let maker_csrf = "r1009dr1009dr1009dr1009dr1009dr1009dr1009dx";
+        let checker_cookie = "r1009er1009er1009er1009er1009er1009er1009ex";
+        let checker_csrf = "r1009fr1009fr1009fr1009fr1009fr1009fr1009fx";
 
         admin
             .execute(
