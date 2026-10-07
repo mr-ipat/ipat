@@ -4,7 +4,7 @@
 (() => {
  const $=id=>document.getElementById(id);
  const notice=text=>{$('notice').textContent=text};
- const state={page:null,sites:[],pops:[],popNext:null,devices:[],catalog:[],next:null,editId:null,editRevision:null,pendingSite:null,nocPops:[],realNocPops:[],nocMembers:[],nocAccess:[],pendingNocRequest:null,subscribers:[],subscriberEdit:null,canReadSubscribers:false,canManageSubscribers:false,canManagePppoePlans:false,pendingPppoe:null};
+ const state={page:null,sites:[],pops:[],popNext:null,devices:[],catalog:[],next:null,editId:null,editRevision:null,pendingSite:null,nocPops:[],realNocPops:[],nocMembers:[],nocAccess:[],pendingNocRequest:null,subscribers:[],subscriberEdit:null,canReadSubscribers:false,canManageSubscribers:false,canManagePppoePlans:false,canCreatePppoePlans:false,canReviewPppoePlans:false,pendingPppoe:null};
  const csrf=()=>document.cookie.split(';').map(x=>x.trim()).find(x=>x.startsWith('__Host-ipat_csrf='))?.split('=')[1];
  async function api(path,method='GET',body){
   const headers={'Accept':'application/json'};
@@ -274,7 +274,7 @@
    if(p.state==='awaiting_approval'&&p.can_review){
     btn(actions,'Approve dry-run',async()=>{try{await api('/api/v1/pppoe-plans/'+encodeURIComponent(p.id)+'/review','POST',{approve:true});await refreshPppoePlans();notice('Dry-run approved. It is STILL non-executable and no RouterOS command ran.')}catch(e){notice(e.message)}});
     btn(actions,'Reject',async()=>{try{await api('/api/v1/pppoe-plans/'+encodeURIComponent(p.id)+'/review','POST',{approve:false});await refreshPppoePlans();notice('Dry-run rejected.')}catch(e){notice(e.message)}});
-   }else if(p.state==='awaiting_approval')actions.append(document.createTextNode(' Awaiting a different Tenant Admin'));
+   }else if(p.state==='awaiting_approval')actions.append(document.createTextNode(' Awaiting current Security Admin'));
    rows.append(tr);
   }
  }
@@ -396,7 +396,10 @@
   state.canReadSubscribers=r.can_read_subscribers===true;
   state.canManageSubscribers=r.can_manage_subscribers===true;
   state.canManagePppoePlans=r.can_manage_pppoe_plans===true;
+  state.canCreatePppoePlans=r.can_create_pppoe_plans===true;
+  state.canReviewPppoePlans=r.can_review_pppoe_plans===true;
   if(state.canManagePppoePlans)$('nav-pppoe').hidden=false;
+  $('pppoe-create-workspace').hidden=!state.canCreatePppoePlans;
   if(state.canReadSubscribers){$('nav-subscribers').hidden=false;$('nav-diagnostics').hidden=false}
   $('subscriber-manage').hidden=!state.canManageSubscribers;
   if(r.can_manage_sites){for(const n of ['pops','sites','devices','domains','noc-access'])$('nav-'+n).hidden=false;await loadCatalog()}
