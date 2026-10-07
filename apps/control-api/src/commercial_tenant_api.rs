@@ -2525,21 +2525,27 @@ mod pg_integration {
         // dedicated R10.09 integration below covers the full create/review
         // flow with Provisioning Officer + Security Admin. This older test
         // still proves that the dry-run never gains an execution function.
-        if role_split_ready {
-            assert_eq!(created.status(), StatusCode::FORBIDDEN);
-            let no_execute: bool = admin
-                .query_one(
-                    "SELECT to_regprocedure('ipat_platform.execute_pppoe_batch(uuid)') IS NULL",
-                    &[],
-                )
-                .await
-                .unwrap()
-                .get(0);
-            assert!(no_execute);
+        // The R10.09 BFF source is fail-closed both before and after the
+        // append-only 0039 migration: before 0039 the role-specific functions
+        // do not exist, after 0039 a Tenant Admin is intentionally not either
+        // PPPoE workflow role. Never preserve the legacy Tenant Admin success
+        // just to keep an older integration fixture green.
+        assert_eq!(created.status(), StatusCode::FORBIDDEN);
+        let no_execute: bool = admin
+            .query_one(
+                "SELECT to_regprocedure('ipat_platform.execute_pppoe_batch(uuid)') IS NULL",
+                &[],
+            )
+            .await
+            .unwrap()
+            .get(0);
+        assert!(no_execute);
+        if !role_split_ready {
+            // Expected rolling-deploy safety state: new BFF with old schema
+            // denies the high-risk module until 0039 is applied.
             return;
         }
-
-        assert_eq!(created.status(), StatusCode::CREATED);
+        return;
         let created_json = body_json(created).await;
         assert_eq!(created_json["id"], request_id.to_string());
         assert_eq!(created_json["execution_allowed"], false);
