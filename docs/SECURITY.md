@@ -1339,3 +1339,6 @@ Before customer mutation, require a fresh maker/checker Platform Owner browser-M
 
 ## R9.99 — Browser acceptance cannot be inferred from backend green tests
 Synthetic OIDC/Rust/PostgreSQL tests cannot promote a customer to release. Require a real browser artifact with a distinct control tenant and exact public Hosts, independently reviewed maker/checker evidence and explicit revocation/replay checks. The release finalizer has no network or lifecycle mutation authority and consumes only root-owned acceptance plus restricted exact active-domain state.
+
+## R10.05 — Subscriber/diagnostic security controls
+Subscriber identifiers, PPPoE usernames and topology metadata are tenant business data; raw table access is removed from general application/tenant login roles and exposed through current-membership/scope functions only. PPPoE passwords, device credentials, raw alarm/CLI payloads and ONT secrets are forbidden. Topology verification and diagnostic ingestion use separate no-login executor roles; tenant API/OIDC identities cannot call them. Stale pre-change topology evidence cannot reverify a changed tuple. Neighbor/CWMP/optical/PPPoE subscriber signals require an exact subscriber association. All fault-domain hypotheses are non-remediating and current topology verification is mandatory for strong classification.

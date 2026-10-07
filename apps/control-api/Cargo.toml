@@ -12,6 +12,7 @@ libc = "=0.2.189"
 tokio = { version = "1", features = ["macros", "rt-multi-thread", "net", "time"] }
 authz-core = { path = "../../crates/authz-core" }
 tenant-core = { path = "../../crates/tenant-core" }
+diagnostic-core = { path = "../../crates/diagnostic-core" }
 tokio-postgres = { version = "=0.7.13", features = ["with-uuid-1"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
