@@ -498,3 +498,7 @@ A fresh existing fixed REFRESH on 2026-10-06 again returned sanitized HTTP503 OW
 ## R10.06 DEV-01 OLT-side PON optical command evidence — 2026-10-07
 
 One bounded owner-private fixed read used `show pon power olt-tx gpon-olt_1/1/1` on actual DEV-01. Current firmware accepted the command and returned the channel table with measurement `N/A`; no numeric dBm measurement was available. Zero physical writes; no ONU IDs, serials, subscriber data or raw transcript returned. Both protected private services remained ACTIVE. Classification is **PARTIAL / DEGRADED** for this exact OLT-side command only. Do not infer healthy/bad optics, ONU optical interoperability or thresholds. ONU RX/TX, attenuation, transceiver thresholds and optical alarms remain unqualified.
+
+## R10.08 diagnostic use of DEV-01 aggregate evidence — source semantics only
+
+R10.08 performs no additional device command and does not expand ZTE C320 compatibility. It defines how the already accepted R10.02 sanitized PON 1/1/1 aggregate shape (configured 72, online 0, offline 72, zero writes/no serials) may later be normalized by an authenticated tenant telemetry worker. The aggregate is access/PON evidence, never proof of a distribution failure or fiber cut. A diagnostic access_pon_segment hypothesis additionally requires current verified Subscriber360 topology and at least two fresh subscriber-unreachable observations mapped to the same exact access OLT. DEV-01 remains PARTIAL; no ONU detail, per-ONT optics, native restore or write compatibility is promoted.

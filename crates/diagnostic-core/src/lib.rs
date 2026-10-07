@@ -15,6 +15,7 @@ pub enum Signal {
     OntOpticalNormal,
     PppoeAuthenticationRejected,
     CwmpInformMissing,
+    AccessPonAllConfiguredOffline,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -23,6 +24,7 @@ pub struct Observation {
     pub pop_id: String,
     pub distribution_id: String,
     pub subscriber_id: Option<String>,
+    pub access_id: Option<String>,
     pub signal: Signal,
     pub source_id: String,
     pub observed_at_epoch: u64,
@@ -42,6 +44,7 @@ pub enum Hypothesis {
     DistributionPath,
     OntAccess,
     PppoeAuthentication,
+    AccessPonSegment,
     InsufficientEvidence,
     ConflictingEvidence,
 }
@@ -108,6 +111,9 @@ pub fn diagnose(
         }
         if !safe_source_label(&o.source_id)
             || o.subscriber_id.as_deref().is_some_and(|s| !safe_label(s))
+            || o.access_id
+                .as_deref()
+                .is_some_and(|s| !safe_source_label(s))
         {
             return Err(DiagnosticError::InvalidObservation);
         }
@@ -121,6 +127,11 @@ pub fn diagnose(
                 | Signal::CwmpInformMissing
         );
         if requires_subscriber && o.subscriber_id.is_none() {
+            return Err(DiagnosticError::InvalidObservation);
+        }
+        if o.signal == Signal::AccessPonAllConfiguredOffline
+            && (o.subscriber_id.is_some() || o.access_id.is_none())
+        {
             return Err(DiagnosticError::InvalidObservation);
         }
         if o.observed_at_epoch > now_epoch {
@@ -160,6 +171,25 @@ pub fn diagnose(
         .collect();
     let neighbor_healthy = fresh.iter().any(|o| o.signal == Signal::NeighborOntHealthy);
     let optical_conflict = optical_los.intersection(&optical_normal).next().is_some();
+    let access_all_offline: BTreeSet<String> = fresh
+        .iter()
+        .filter(|o| o.signal == Signal::AccessPonAllConfiguredOffline)
+        .filter_map(|o| o.access_id.clone())
+        .collect();
+    let mut access_affected = BTreeSet::new();
+    if scope.topology_verified {
+        for access in &access_all_offline {
+            let mapped_unreachable = fresh
+                .iter()
+                .filter(|o| o.signal == Signal::SubscriberUnreachable)
+                .filter(|o| o.access_id.as_deref() == Some(access.as_str()))
+                .filter_map(|o| o.subscriber_id.clone())
+                .collect::<BTreeSet<_>>();
+            if mapped_unreachable.len() >= 2 {
+                access_affected.extend(mapped_unreachable);
+            }
+        }
+    }
 
     let distribution = scope.topology_verified && uplink_down && reachable_lost.len() >= 2;
     let ont_access = scope.topology_verified
@@ -177,7 +207,11 @@ pub fn diagnose(
     } else {
         BTreeSet::new()
     };
-    let candidates = u8::from(distribution) + u8::from(ont_access) + u8::from(!pppoe.is_empty());
+    let access_pon = !access_affected.is_empty();
+    let candidates = u8::from(distribution)
+        + u8::from(ont_access)
+        + u8::from(!pppoe.is_empty())
+        + u8::from(access_pon);
     let hypothesis = if optical_conflict || (uplink_down && uplink_healthy) || candidates > 1 {
         Hypothesis::ConflictingEvidence
     } else if distribution {
@@ -186,6 +220,8 @@ pub fn diagnose(
         Hypothesis::OntAccess
     } else if !pppoe.is_empty() {
         Hypothesis::PppoeAuthentication
+    } else if access_pon {
+        Hypothesis::AccessPonSegment
     } else {
         Hypothesis::InsufficientEvidence
     };
@@ -193,6 +229,7 @@ pub fn diagnose(
         Hypothesis::DistributionPath => reachable_lost.into_iter().collect(),
         Hypothesis::OntAccess => optical_los.into_iter().collect(),
         Hypothesis::PppoeAuthentication => pppoe.into_iter().collect(),
+        Hypothesis::AccessPonSegment => access_affected.into_iter().collect(),
         _ => vec![],
     };
     Ok(Diagnostic {
@@ -226,6 +263,7 @@ mod tests {
             pop_id: "pop-a".into(),
             distribution_id: "dist-a".into(),
             subscriber_id: subscriber.map(str::to_owned),
+            access_id: subscriber.map(|_| "access-a".to_owned()),
             signal,
             source_id: "simulator".into(),
             observed_at_epoch: NOW,
@@ -286,6 +324,41 @@ mod tests {
                 .hypothesis,
             Hypothesis::InsufficientEvidence
         );
+    }
+
+    #[test]
+    fn verified_access_aggregate_plus_two_mapped_unreachable_is_access_segment() {
+        let mut aggregate = observation(Signal::AccessPonAllConfiguredOffline, None);
+        aggregate.access_id = Some("access-a".into());
+        let result = run(vec![
+            aggregate,
+            observation(Signal::SubscriberUnreachable, Some("sub-a")),
+            observation(Signal::SubscriberUnreachable, Some("sub-b")),
+        ]);
+        assert_eq!(result.hypothesis, Hypothesis::AccessPonSegment);
+        assert_eq!(result.affected_subscribers, ["sub-a", "sub-b"]);
+        assert!(!result.remediation_permitted);
+
+        let mut other = observation(Signal::SubscriberUnreachable, Some("sub-c"));
+        other.access_id = Some("access-b".into());
+        let mut aggregate = observation(Signal::AccessPonAllConfiguredOffline, None);
+        aggregate.access_id = Some("access-a".into());
+        let insufficient = run(vec![aggregate, other]);
+        assert_eq!(insufficient.hypothesis, Hypothesis::InsufficientEvidence);
+    }
+
+    #[test]
+    fn access_aggregate_never_overrides_distribution_conflict() {
+        let mut aggregate = observation(Signal::AccessPonAllConfiguredOffline, None);
+        aggregate.access_id = Some("access-a".into());
+        let result = run(vec![
+            aggregate,
+            observation(Signal::DistributionUplinkDown, None),
+            observation(Signal::SubscriberUnreachable, Some("sub-a")),
+            observation(Signal::SubscriberUnreachable, Some("sub-b")),
+        ]);
+        assert_eq!(result.hypothesis, Hypothesis::ConflictingEvidence);
+        assert!(result.affected_subscribers.is_empty());
     }
 
     #[test]
