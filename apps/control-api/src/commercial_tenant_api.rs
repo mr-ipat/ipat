@@ -2494,6 +2494,17 @@ mod pg_integration {
             .unwrap();
         assert_eq!(wrong_host.status(), StatusCode::UNAUTHORIZED);
 
+        let role_split_ready: bool = admin
+            .query_one(
+                "SELECT to_regprocedure(
+                   'ipat_platform.pppoe_batch_create_capability(text,text,uuid)'
+                 ) IS NOT NULL",
+                &[],
+            )
+            .await
+            .unwrap()
+            .get(0);
+
         let created = app
             .clone()
             .oneshot(req(
@@ -2506,6 +2517,28 @@ mod pg_integration {
             ))
             .await
             .unwrap();
+
+        // R10.07 historically used two distinct Tenant Admins because the
+        // commercial vocabulary did not yet contain the final maker/checker
+        // roles. Once append-only R10.09 is present in a shared CI database,
+        // retaining that old right would be a privilege-regression. The
+        // dedicated R10.09 integration below covers the full create/review
+        // flow with Provisioning Officer + Security Admin. This older test
+        // still proves that the dry-run never gains an execution function.
+        if role_split_ready {
+            assert_eq!(created.status(), StatusCode::FORBIDDEN);
+            let no_execute: bool = admin
+                .query_one(
+                    "SELECT to_regprocedure('ipat_platform.execute_pppoe_batch(uuid)') IS NULL",
+                    &[],
+                )
+                .await
+                .unwrap()
+                .get(0);
+            assert!(no_execute);
+            return;
+        }
+
         assert_eq!(created.status(), StatusCode::CREATED);
         let created_json = body_json(created).await;
         assert_eq!(created_json["id"], request_id.to_string());
