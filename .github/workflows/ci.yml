@@ -616,6 +616,14 @@ jobs:
           python3 -m unittest deploy/scripts/production/test_r994_domain_ingress_verifier_source.py -v
           grep -Fq record_tenant_domain_ownership_check apps/control-api/src/tenant_domain_verifier.rs
           grep -Fq R9.94 docs/PROJECT_STATUS.md
+      - name: R10.06 C320 bounded PON OLT transmit-power evidence
+        run: |
+          python3 -m unittest deploy/scripts/production/test_r1006_c320_pon_tx_probe.py -v
+          python3 -m py_compile deploy/scripts/production/r1006_c320_pon_tx_probe.py
+          cargo test --locked -p control-api c320_live_lab::tests::owner_catalog_never_authorizes_an_unqualified_command -- --exact
+          grep -Fq 'measurement_available: false' docs/evidence/R1006_DEV01_C320_PON111_OLT_TX_20261007.yaml
+          grep -Fq 'diagnostic_health_inferred: false' docs/evidence/R1006_DEV01_C320_PON111_OLT_TX_20261007.yaml
+          grep -Fq R10.06 docs/PROJECT_STATUS.md
       - name: R10.05 Subscriber360 declared topology scoped diagnostics
         run: |
           psql -X -v ON_ERROR_STOP=1 -f deploy/db/migrations/0035_subscriber360_diagnostics.sql
