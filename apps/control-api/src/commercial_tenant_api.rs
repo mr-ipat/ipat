@@ -11,8 +11,9 @@ use axum::{
     Json, Router,
 };
 use diagnostic_core::{diagnose, Hypothesis, Observation, Scope, Signal};
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
+use sha2::{Digest, Sha256};
 use std::{fs::File, io::Read, path::PathBuf, sync::Arc};
 use tenant_core::TenantId;
 use tokio_postgres::{Client, Config, NoTls};
@@ -122,6 +123,21 @@ async fn capabilities(
     } else {
         (false, false)
     };
+    let pppoe_schema_ready=s.db.query_one(
+        "SELECT to_regprocedure('ipat_platform.pppoe_batch_capability(text,text,uuid)') IS NOT NULL",
+        &[],
+    ).await.ok().is_some_and(|row|row.get::<_,bool>(0));
+    let can_manage_pppoe_plans = if pppoe_schema_ready {
+        s.db.query_one(
+            "SELECT ipat_platform.pppoe_batch_capability($1,$2,$3::uuid)",
+            &[&a.issuer, &a.subject, &a.tenant_id],
+        )
+        .await
+        .ok()
+        .is_some_and(|row| row.get::<_, bool>(0))
+    } else {
+        false
+    };
     let scoped =
         s.db.query(
             "SELECT pop_id FROM ipat_platform.current_noc_pop_scopes($1,$2,$3::uuid)",
@@ -159,6 +175,7 @@ async fn capabilities(
         "can_read_subscribers":can_read_subscribers,
         "can_manage_subscribers":can_manage_subscribers,
         "can_read_diagnostics":can_read_subscribers,
+        "can_manage_pppoe_plans":can_manage_pppoe_plans,
         "noc_pops":noc_pops,"real_noc_pops":real_noc_pops,
         "can_read_noc":can_read_noc}),
     )
@@ -1560,6 +1577,226 @@ async fn upsert_subscriber360(
         None => denied(StatusCode::CONFLICT),
     }
 }
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+struct PppoePlanItem {
+    subscriber_id: String,
+    action: String,
+    username: Option<String>,
+    profile: Option<String>,
+    secret_ref: Option<String>,
+}
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+struct PppoePlanCreate {
+    request_id: String,
+    router_id: String,
+    items: Vec<PppoePlanItem>,
+}
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct PppoePlanReview {
+    approve: bool,
+}
+fn pppoe_plan_digest(router: Uuid, items: &[PppoePlanItem]) -> Option<String> {
+    if items.is_empty() || items.len() > 128 {
+        return None;
+    }
+    let canonical = json!({"router_id":router.to_string(),"items":items});
+    let bytes = serde_json::to_vec(&canonical).ok()?;
+    let mut digest = String::with_capacity(64);
+    for byte in Sha256::digest(bytes) {
+        use std::fmt::Write as _;
+        write!(&mut digest, "{byte:02x}").ok()?;
+    }
+    Some(digest)
+}
+async fn list_pppoe_plans(
+    State(s): State<Arc<StateData>>,
+    headers: HeaderMap,
+) -> (StatusCode, HeaderMap, Json<Value>) {
+    let Some(a) = actor(&s.db, &headers, false).await else {
+        return denied(StatusCode::UNAUTHORIZED);
+    };
+    let rows =
+        s.db.query(
+            "SELECT id,router_id,site_code,pop_code,idempotency_key,plan_digest,item_count,
+                state,requested_by,reviewed_by,requested_at::text,reviewed_at::text,
+                approval_expires_at::text,rate_limit_per_minute,execution_allowed,
+                physical_readback_verified,basis,can_review
+         FROM ipat_platform.list_pppoe_batch_dry_runs($1,$2,$3::uuid)",
+            &[&a.issuer, &a.subject, &a.tenant_id],
+        )
+        .await;
+    let Ok(rows) = rows else {
+        return denied(StatusCode::SERVICE_UNAVAILABLE);
+    };
+    let plans = rows
+        .into_iter()
+        .map(|r| {
+            json!({
+                "id":r.get::<_,Uuid>(0).to_string(),"router_id":r.get::<_,Uuid>(1).to_string(),
+                "site_code":r.get::<_,String>(2),"pop_code":r.get::<_,String>(3),
+                "idempotency_key":r.get::<_,String>(4),"plan_digest":r.get::<_,String>(5),
+                "item_count":r.get::<_,i32>(6),"state":r.get::<_,String>(7),
+                "requested_by":r.get::<_,String>(8),"reviewed_by":r.get::<_,Option<String>>(9),
+                "requested_at":r.get::<_,String>(10),"reviewed_at":r.get::<_,Option<String>>(11),
+                "approval_expires_at":r.get::<_,Option<String>>(12),
+                "rate_limit_per_minute":r.get::<_,i32>(13),
+                "execution_allowed":r.get::<_,bool>(14),
+                "physical_readback_verified":r.get::<_,bool>(15),
+                "basis":r.get::<_,String>(16),"can_review":r.get::<_,bool>(17),
+            })
+        })
+        .collect::<Vec<_>>();
+    response(
+        StatusCode::OK,
+        json!({"ok":true,"plans":plans,
+        "physical_execution_available":false}),
+    )
+}
+async fn pppoe_plan_items(
+    State(s): State<Arc<StateData>>,
+    headers: HeaderMap,
+    Path(id_raw): Path<String>,
+) -> (StatusCode, HeaderMap, Json<Value>) {
+    let Some(a) = actor(&s.db, &headers, false).await else {
+        return denied(StatusCode::UNAUTHORIZED);
+    };
+    let Ok(id) = Uuid::parse_str(&id_raw) else {
+        return denied(StatusCode::UNPROCESSABLE_ENTITY);
+    };
+    let rows =
+        s.db.query(
+            "SELECT ordinal,subscriber_id,action,before_username,desired_username,
+                profile_name,has_secret_ref
+         FROM ipat_platform.list_pppoe_batch_items($1,$2,$3::uuid,$4::uuid)",
+            &[&a.issuer, &a.subject, &a.tenant_id, &id],
+        )
+        .await;
+    let Ok(rows) = rows else {
+        return denied(StatusCode::SERVICE_UNAVAILABLE);
+    };
+    let items = rows
+        .into_iter()
+        .map(|r| {
+            json!({
+                "ordinal":r.get::<_,i32>(0),"subscriber_id":r.get::<_,String>(1),
+                "action":r.get::<_,String>(2),"before_username":r.get::<_,Option<String>>(3),
+                "desired_username":r.get::<_,Option<String>>(4),
+                "profile":r.get::<_,Option<String>>(5),"has_secret_ref":r.get::<_,bool>(6)
+            })
+        })
+        .collect::<Vec<_>>();
+    if items.is_empty() {
+        return denied(StatusCode::NOT_FOUND);
+    }
+    response(
+        StatusCode::OK,
+        json!({"ok":true,"items":items,
+        "secret_values_returned":false,"physical_execution_available":false}),
+    )
+}
+async fn create_pppoe_plan(
+    State(s): State<Arc<StateData>>,
+    headers: HeaderMap,
+    Json(q): Json<PppoePlanCreate>,
+) -> (StatusCode, HeaderMap, Json<Value>) {
+    let Some(a) = actor(&s.db, &headers, true).await else {
+        return denied(StatusCode::UNAUTHORIZED);
+    };
+    let (Ok(request), Ok(router)) = (
+        Uuid::parse_str(&q.request_id),
+        Uuid::parse_str(&q.router_id),
+    ) else {
+        return denied(StatusCode::UNPROCESSABLE_ENTITY);
+    };
+    let Some(digest) = pppoe_plan_digest(router, &q.items) else {
+        return denied(StatusCode::UNPROCESSABLE_ENTITY);
+    };
+    if q.items.iter().any(|i| {
+        !valid_code(&i.subscriber_id)
+            || !matches!(i.action.as_str(), "create" | "update" | "disable")
+            || i.username.as_deref().is_some_and(|x| {
+                x.is_empty()
+                    || x.len() > 128
+                    || x.trim() != x
+                    || x.bytes()
+                        .any(|b| b.is_ascii_whitespace() || b.is_ascii_control())
+            })
+            || i.profile.as_deref().is_some_and(|x| {
+                x.is_empty()
+                    || x.len() > 64
+                    || !x
+                        .bytes()
+                        .all(|b| b.is_ascii_alphanumeric() || b"_.:-".contains(&b))
+            })
+            || i.secret_ref
+                .as_deref()
+                .is_some_and(|x| x.len() > 255 || !x.starts_with("vault://tenant/"))
+    }) {
+        return denied(StatusCode::UNPROCESSABLE_ENTITY);
+    }
+    let items = serde_json::to_string(&q.items).expect("serializable PPPoE plan items");
+    let key = format!("request:{request}");
+    let row =
+        s.db.query_one(
+            "SELECT ipat_platform.create_pppoe_batch_dry_run(
+          $1,$2,$3::uuid,$4::uuid,$5::uuid,$6::uuid,$7,$8,$9::text::jsonb)",
+            &[
+                &a.issuer,
+                &a.subject,
+                &a.tenant_id,
+                &request,
+                &request,
+                &router,
+                &key,
+                &digest,
+                &items,
+            ],
+        )
+        .await;
+    match row.ok().and_then(|r| r.get::<_, Option<Uuid>>(0)) {
+        Some(id) => response(
+            StatusCode::CREATED,
+            json!({"ok":true,
+          "id":id.to_string(),"state":"awaiting_approval","plan_digest":digest,
+          "execution_allowed":false,"physical_readback_verified":false,
+          "next":"A different current Tenant Admin must review this dry-run. Approval still does not execute RouterOS."}),
+        ),
+        None => denied(StatusCode::CONFLICT),
+    }
+}
+async fn review_pppoe_plan(
+    State(s): State<Arc<StateData>>,
+    headers: HeaderMap,
+    Path(id_raw): Path<String>,
+    Json(q): Json<PppoePlanReview>,
+) -> (StatusCode, HeaderMap, Json<Value>) {
+    let Some(a) = actor(&s.db, &headers, true).await else {
+        return denied(StatusCode::UNAUTHORIZED);
+    };
+    let Ok(id) = Uuid::parse_str(&id_raw) else {
+        return denied(StatusCode::UNPROCESSABLE_ENTITY);
+    };
+    let row =
+        s.db.query_one(
+            "SELECT ipat_platform.review_pppoe_batch_dry_run($1,$2,$3::uuid,$4::uuid,$5)",
+            &[&a.issuer, &a.subject, &a.tenant_id, &id, &q.approve],
+        )
+        .await;
+    if row.ok().is_some_and(|r| r.get::<_, bool>(0)) {
+        response(
+            StatusCode::OK,
+            json!({"ok":true,
+          "state":if q.approve{"approved"}else{"rejected"},
+          "execution_allowed":false,"physical_execution_available":false}),
+        )
+    } else {
+        denied(StatusCode::CONFLICT)
+    }
+}
+
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
 struct DiagnosticQuery {
@@ -1842,6 +2079,15 @@ pub(super) fn router(db: Arc<Client>) -> Router {
             "/api/v1/subscribers",
             get(list_subscribers360).post(upsert_subscriber360),
         )
+        .route(
+            "/api/v1/pppoe-plans",
+            get(list_pppoe_plans).post(create_pppoe_plan),
+        )
+        .route("/api/v1/pppoe-plans/{id}", get(pppoe_plan_items))
+        .route(
+            "/api/v1/pppoe-plans/{id}/review",
+            axum::routing::post(review_pppoe_plan),
+        )
         .route("/api/v1/diagnostics", get(diagnostic_snapshot))
         .route("/api/v1/domains", get(list_domains).post(create_domain))
         .route("/api/v1/domains/{id}/dns", get(customer_domain_dns))
@@ -1972,6 +2218,363 @@ mod pg_integration {
     }
     async fn body_json(r: axum::response::Response) -> Value {
         serde_json::from_slice(&to_bytes(r.into_body(), 1024 * 64).await.unwrap()).unwrap()
+    }
+
+    #[tokio::test]
+    async fn r1007_real_pg_axum_pppoe_batch_dry_run_never_executes_routeros() {
+        if std::env::var("IPAT_PG_EPHEMERAL_TEST").as_deref() != Ok("1")
+            || std::env::var("PGDATABASE").as_deref() != Ok("ipat_synthetic")
+        {
+            return;
+        }
+        let admin = connect_admin().await;
+        let schema_ready: bool = admin
+            .query_one(
+                "SELECT to_regprocedure(
+                 'ipat_platform.create_pppoe_batch_dry_run(text,text,uuid,uuid,uuid,uuid,text,text,jsonb)'
+                 ) IS NOT NULL",
+                &[],
+            )
+            .await
+            .unwrap()
+            .get(0);
+        if !schema_ready {
+            return;
+        }
+
+        let tenant = Uuid::parse_str("a1070000-0000-4000-8000-000000000001").unwrap();
+        let domain = Uuid::parse_str("a1070000-0000-4000-8000-000000000002").unwrap();
+        let router_id = Uuid::parse_str("a1070000-0000-4000-8000-000000000003").unwrap();
+        let maker_session = Uuid::parse_str("a1070000-0000-4000-8000-000000000004").unwrap();
+        let checker_session = Uuid::parse_str("a1070000-0000-4000-8000-000000000005").unwrap();
+        let request_id = Uuid::parse_str("a1070000-0000-4000-8000-000000000006").unwrap();
+        let issuer = "https://identity.r1007.synthetic.invalid/realms/ipat";
+        let maker = "r1007-http-maker";
+        let checker = "r1007-http-checker";
+        let host = "tenant-r1007.example.net";
+        let maker_cookie = "mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm";
+        let maker_csrf = "nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn";
+        let checker_cookie = "ooooooooooooooooooooooooooooooooooooooooooo";
+        let checker_csrf = "ppppppppppppppppppppppppppppppppppppppppppp";
+
+        admin
+            .execute(
+                "INSERT INTO ipat_platform.tenants(id,tenant_slug,state)
+             VALUES($1,'r1007-http','active')",
+                &[&tenant],
+            )
+            .await
+            .unwrap();
+        for subject in [maker, checker] {
+            admin.execute(
+                "INSERT INTO ipat_platform.identity_memberships(
+                 tenant_id,issuer,subject,role,approved_by,expires_at)
+                 VALUES($1,$2,$3,'tenant_admin','independent-r1007-review',clock_timestamp()+interval '1 day')",
+                &[&tenant, &issuer, &subject],
+            )
+            .await
+            .unwrap();
+        }
+        admin
+            .execute(
+                "INSERT INTO ipat_platform.tenant_domains(
+             id,tenant_id,hostname,domain_type,verification_state,verification_method,verified_at,
+             routing_mode,verification_name,verification_value,requested_by_issuer,
+             requested_by_subject,requested_at,activation_state,ownership_verified_at,
+             routing_ready_at,tls_ready_at,activated_at)
+             VALUES($1,$2,$3,'custom_domain','verified','dns_txt',clock_timestamp(),'a_record',
+             $4,$5,$6,$7,clock_timestamp(),'active',clock_timestamp(),clock_timestamp(),
+             clock_timestamp(),clock_timestamp())",
+                &[
+                    &domain,
+                    &tenant,
+                    &host,
+                    &format!("_ipat-verify.{host}"),
+                    &format!("ipat-domain={domain}"),
+                    &issuer,
+                    &maker,
+                ],
+            )
+            .await
+            .unwrap();
+
+        assert_eq!(
+            admin.query_one(
+                "SELECT ipat_platform.create_tenant_pop($1,$2,$3::uuid,'POP-R1007','R1007 POP')",
+                &[&issuer,&maker,&tenant]
+            ).await.unwrap().get::<_,Option<String>>(0).as_deref(),
+            Some("POP-R1007")
+        );
+        assert_eq!(
+            admin.query_one(
+                "SELECT ipat_platform.create_tenant_site($1,$2,$3::uuid,'SITE-R1007','R1007 Site')",
+                &[&issuer,&maker,&tenant]
+            ).await.unwrap().get::<_,Option<String>>(0).as_deref(),
+            Some("SITE-R1007")
+        );
+        assert_eq!(
+            admin
+                .query_one(
+                    "SELECT ipat_platform.assign_tenant_site_to_pop(
+                 $1,$2,$3::uuid,'SITE-R1007','POP-R1007',1)",
+                    &[&issuer, &maker, &tenant]
+                )
+                .await
+                .unwrap()
+                .get::<_, Option<i64>>(0),
+            Some(2)
+        );
+        let router_request = Uuid::parse_str("a1070000-0000-4000-8000-000000000007").unwrap();
+        assert_eq!(
+            admin
+                .query_one(
+                    "SELECT ipat_platform.register_managed_device(
+                 $1,$2,$3::uuid,$4::uuid,$5::uuid,'SITE-R1007',
+                 'R1007 synthetic MikroTik','router','MikroTik','TEST-ONLY',
+                 'routeros_api_ssl','router.invalid',8729,NULL)",
+                    &[&issuer, &maker, &tenant, &router_id, &router_request]
+                )
+                .await
+                .unwrap()
+                .get::<_, Option<Uuid>>(0),
+            Some(router_id)
+        );
+        for (sid, current) in [
+            ("SUB-R1007-CREATE", None),
+            ("SUB-R1007-UPDATE", Some("old-r1007")),
+        ] {
+            let revision: Option<i64> = admin
+                .query_one(
+                    "SELECT ipat_platform.upsert_subscriber360(
+                 $1,$2,$3::uuid,$4,$4,$5,'POP-R1007','SITE-R1007',$6::uuid,NULL,NULL,0)",
+                    &[&issuer, &maker, &tenant, &sid, &current, &router_id],
+                )
+                .await
+                .unwrap()
+                .get(0);
+            assert_eq!(revision, Some(1));
+        }
+
+        let issuer_db = connect_admin().await;
+        issuer_db
+            .batch_execute("SET ROLE ipat_oidc_session_issuer_login")
+            .await
+            .unwrap();
+        let issued_maker: Option<Uuid> = issuer_db
+            .query_one(
+                "SELECT ipat_platform.issue_tenant_browser_session(
+             $1,$2,$3::uuid,$4::uuid,$5::uuid,$6,$7,clock_timestamp()+interval '10 minutes')",
+                &[
+                    &issuer,
+                    &maker,
+                    &tenant,
+                    &domain,
+                    &maker_session,
+                    &hex(maker_cookie),
+                    &hex(maker_csrf),
+                ],
+            )
+            .await
+            .unwrap()
+            .get(0);
+        assert_eq!(issued_maker, Some(maker_session));
+        let issued_checker: Option<Uuid> = issuer_db
+            .query_one(
+                "SELECT ipat_platform.issue_tenant_browser_session(
+             $1,$2,$3::uuid,$4::uuid,$5::uuid,$6,$7,clock_timestamp()+interval '10 minutes')",
+                &[
+                    &issuer,
+                    &checker,
+                    &tenant,
+                    &domain,
+                    &checker_session,
+                    &hex(checker_cookie),
+                    &hex(checker_csrf),
+                ],
+            )
+            .await
+            .unwrap()
+            .get(0);
+        assert_eq!(issued_checker, Some(checker_session));
+
+        let api_db = connect_admin().await;
+        api_db
+            .batch_execute("SET ROLE ipat_tenant_api_login")
+            .await
+            .unwrap();
+        let app = router(Arc::new(api_db));
+        let vault_create = format!("vault://tenant/{tenant}/pppoe/SUB-R1007-CREATE");
+        let vault_update = format!("vault://tenant/{tenant}/pppoe/SUB-R1007-UPDATE");
+        let body = json!({
+            "request_id":request_id.to_string(),
+            "router_id":router_id.to_string(),
+            "items":[
+                {"subscriber_id":"SUB-R1007-CREATE","action":"create",
+                 "username":"new-r1007-create","profile":"default","secret_ref":vault_create},
+                {"subscriber_id":"SUB-R1007-UPDATE","action":"update",
+                 "username":"new-r1007-update","profile":"premium","secret_ref":vault_update}
+            ]
+        })
+        .to_string();
+
+        let no_session = app
+            .clone()
+            .oneshot(req(
+                "POST",
+                "/api/v1/pppoe-plans",
+                host,
+                None,
+                Some(maker_csrf),
+                Some(&body),
+            ))
+            .await
+            .unwrap();
+        assert_eq!(no_session.status(), StatusCode::UNAUTHORIZED);
+        let wrong_host = app
+            .clone()
+            .oneshot(req(
+                "POST",
+                "/api/v1/pppoe-plans",
+                "wrong-r1007.example.net",
+                Some(maker_cookie),
+                Some(maker_csrf),
+                Some(&body),
+            ))
+            .await
+            .unwrap();
+        assert_eq!(wrong_host.status(), StatusCode::UNAUTHORIZED);
+
+        let created = app
+            .clone()
+            .oneshot(req(
+                "POST",
+                "/api/v1/pppoe-plans",
+                host,
+                Some(maker_cookie),
+                Some(maker_csrf),
+                Some(&body),
+            ))
+            .await
+            .unwrap();
+        assert_eq!(created.status(), StatusCode::CREATED);
+        let created_json = body_json(created).await;
+        assert_eq!(created_json["id"], request_id.to_string());
+        assert_eq!(created_json["execution_allowed"], false);
+        assert_eq!(created_json["physical_readback_verified"], false);
+
+        let exact_replay = app
+            .clone()
+            .oneshot(req(
+                "POST",
+                "/api/v1/pppoe-plans",
+                host,
+                Some(maker_cookie),
+                Some(maker_csrf),
+                Some(&body),
+            ))
+            .await
+            .unwrap();
+        assert_eq!(exact_replay.status(), StatusCode::CREATED);
+
+        let list = app
+            .clone()
+            .oneshot(req(
+                "GET",
+                "/api/v1/pppoe-plans",
+                host,
+                Some(maker_cookie),
+                None,
+                None,
+            ))
+            .await
+            .unwrap();
+        assert_eq!(list.status(), StatusCode::OK);
+        let list_json = body_json(list).await;
+        assert_eq!(list_json["physical_execution_available"], false);
+        assert!(list_json["plans"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|p| p["id"] == request_id.to_string()
+                && p["state"] == "awaiting_approval"
+                && p["execution_allowed"] == false));
+
+        let detail = app
+            .clone()
+            .oneshot(req(
+                "GET",
+                &format!("/api/v1/pppoe-plans/{request_id}"),
+                host,
+                Some(maker_cookie),
+                None,
+                None,
+            ))
+            .await
+            .unwrap();
+        assert_eq!(detail.status(), StatusCode::OK);
+        let detail_json = body_json(detail).await;
+        assert_eq!(detail_json["secret_values_returned"], false);
+        assert_eq!(detail_json["physical_execution_available"], false);
+        let detail_text = detail_json.to_string();
+        assert!(!detail_text.contains("vault://"));
+        assert!(!detail_text.contains("password"));
+
+        let maker_approve = app
+            .clone()
+            .oneshot(req(
+                "POST",
+                &format!("/api/v1/pppoe-plans/{request_id}/review"),
+                host,
+                Some(maker_cookie),
+                Some(maker_csrf),
+                Some(r#"{"approve":true}"#),
+            ))
+            .await
+            .unwrap();
+        assert_eq!(maker_approve.status(), StatusCode::CONFLICT);
+
+        let checker_approve = app
+            .clone()
+            .oneshot(req(
+                "POST",
+                &format!("/api/v1/pppoe-plans/{request_id}/review"),
+                host,
+                Some(checker_cookie),
+                Some(checker_csrf),
+                Some(r#"{"approve":true}"#),
+            ))
+            .await
+            .unwrap();
+        assert_eq!(checker_approve.status(), StatusCode::OK);
+        let approved = body_json(checker_approve).await;
+        assert_eq!(approved["state"], "approved");
+        assert_eq!(approved["execution_allowed"], false);
+        assert_eq!(approved["physical_execution_available"], false);
+
+        let row = admin
+            .query_one(
+                "SELECT state,execution_allowed,physical_readback_verified,
+             approval_expires_at>reviewed_at,
+             approval_expires_at<=reviewed_at+interval '30 minutes'
+             FROM ipat_ops.pppoe_batch_plans WHERE tenant_id=$1 AND id=$2",
+                &[&tenant, &request_id],
+            )
+            .await
+            .unwrap();
+        assert_eq!(row.get::<_, String>(0), "approved");
+        assert!(!row.get::<_, bool>(1));
+        assert!(!row.get::<_, bool>(2));
+        assert!(row.get::<_, bool>(3));
+        assert!(row.get::<_, bool>(4));
+        let no_execute: bool = admin
+            .query_one(
+                "SELECT to_regprocedure('ipat_platform.execute_pppoe_batch(uuid)') IS NULL",
+                &[],
+            )
+            .await
+            .unwrap()
+            .get(0);
+        assert!(no_execute);
     }
 
     #[tokio::test]

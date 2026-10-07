@@ -639,6 +639,18 @@ jobs:
           grep -Fq record_access_pon_aggregate_observation deploy/db/migrations/0038_access_pon_aggregate_diagnostics.sql
           grep -Fq AccessPonSegment crates/diagnostic-core/src/lib.rs
           grep -Fq R10.08 docs/PROJECT_STATUS.md
+      - name: R10.07 tenant-safe PPPoE CSV dry-run and independent approval
+        run: |
+          psql -X -v ON_ERROR_STOP=1 -f deploy/db/migrations/0037_pppoe_batch_dry_run.sql
+          python3 -m unittest deploy/db/tests/test_pppoe_batch_dry_run_integration.py -v
+          cargo test --locked -p control-api commercial_tenant_api::pg_integration::r1007_real_pg_axum_pppoe_batch_dry_run_never_executes_routeros -- --exact
+          node --check web/console/tenant/app.js
+          node deploy/scripts/lab/r1007/test_pppoe_dry_run_ui.cjs
+          bash -n deploy/db/tests/r1007_docker_repro.sh
+          python3 -m unittest deploy/scripts/production/test_r987_postgres18_bootstrap_source.py -v
+          grep -Fq 'CHECK(execution_allowed=false)' deploy/db/migrations/0037_pppoe_batch_dry_run.sql
+          grep -Fq '0037_pppoe_batch_dry_run.sql' deploy/db/production/r987_migrations.sha256
+          grep -Fq R10.07 docs/PROJECT_STATUS.md
       - name: R9.95 dedicated DNS ownership verifier runtime source
         run: |
           bash -n deploy/scripts/production/r995_prepare_domain_ownership_verifier.sh
