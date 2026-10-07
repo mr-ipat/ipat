@@ -804,3 +804,7 @@ A database-active customer custom domain is not equivalent to commercial release
 
 ## ADR-102 — R10.05 declared Subscriber 360 topology requires independent evidence verification (2026-10-07)
 Reuse the canonical tenant subscriber master and bind Subscriber 360 to existing tenant POP/Site/device masters with compound tenant keys. Tenant Admin may declare but cannot self-promote topology to verified. A separate function-only topology verifier must attest the exact current tuple after topology_declared_at; any topology change invalidates prior evidence. Diagnostic ingest is a separate function-only authority and stores normalized evidence hashes, never credentials/raw CLI. Distribution, ONT/access and PPPoE root-cause hypotheses require verified topology, always expose evidence/uncertainty, require human review and can never auto-remediate. Missing CWMP Inform alone remains insufficient evidence of fiber failure.
+
+
+## ADR-103 — R10.06 OLT optical N/A is evidence of availability state, never health (2026-10-07)
+Permit only an exact fixed OLT-PON transmit-power query for the already-qualified DEV-01 private pilot. Accept a numeric dBm only from the documented one-line shape or exact channel-1 GPON table; accept N/A only as `measurement_available=false`. Never infer optical health, thresholds or ONU state from N/A. Do not expose a production/private polling endpoint until a real numeric signal, exact thresholds/freshness and diagnostic semantics are separately qualified.

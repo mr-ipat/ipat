@@ -618,8 +618,8 @@ fn owner_catalog_response(connection: &Value) -> Value {
          "state":"NOT_QUALIFIED","operation":"READ","endpoint":null,
          "scope":"Only historical sanitized ONU IDs exist; no current per-ONU CLI test."},
         {"id":"optical_levels","group":"PON & ONU","label":"Read optical diagnostics",
-         "state":"NOT_QUALIFIED","operation":"READ","endpoint":null,
-         "scope":"Exact model/firmware and bounded optical command not verified."},
+         "state":"DEGRADED","operation":"READ","endpoint":null,
+         "scope":"R10.06 exact DEV-01 OLT-side PON 1/1/1 Tx-power command is physically accepted but returns N/A; no optical-health inference, ONU optics, threshold qualification or polling endpoint."},
         {"id":"alarms","group":"Diagnostics","label":"Read current alarms",
          "state":"DEGRADED","operation":"READ","endpoint":null,
          "scope":"R10.04 exact DEV-01 command is physically accepted, but current empty payload semantics are not vendor-corroborated; no alarm-health conclusion or polling endpoint."},
@@ -745,6 +745,13 @@ mod tests {
             .unwrap();
         assert_eq!(alarms["state"], "DEGRADED");
         assert!(alarms["endpoint"].is_null());
+        let optics = entries
+            .iter()
+            .find(|entry| entry["id"] == "optical_levels")
+            .unwrap();
+        assert_eq!(optics["state"], "DEGRADED");
+        assert!(optics["endpoint"].is_null());
+        assert!(optics["scope"].as_str().unwrap().contains("returns N/A"));
         assert!(alarms["scope"]
             .as_str()
             .unwrap()

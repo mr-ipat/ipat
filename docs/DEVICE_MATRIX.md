@@ -493,3 +493,8 @@ Runtime provenance for this read is limited but recorded: protected owner-privat
 
 ## R10.02 — DEV-01 REFRESH diagnostic scope
 A fresh existing fixed REFRESH on 2026-10-06 again returned sanitized HTTP503 OWNER_READ_FAILED_OR_INVALID while DEV-01 remained CONNECTED and writes disabled. R10.02 adds only fixed nonsecret parser-stage diagnosis; it does not yet change the failed physical result or qualify ONU/PON behavior. TC-OLT-01 remains PARTIAL until a separately reviewed parser adaptation and fresh bounded aggregate read succeed.
+
+
+## R10.06 DEV-01 OLT-side PON optical command evidence — 2026-10-07
+
+One bounded owner-private fixed read used `show pon power olt-tx gpon-olt_1/1/1` on actual DEV-01. Current firmware accepted the command and returned the channel table with measurement `N/A`; no numeric dBm measurement was available. Zero physical writes; no ONU IDs, serials, subscriber data or raw transcript returned. Both protected private services remained ACTIVE. Classification is **PARTIAL / DEGRADED** for this exact OLT-side command only. Do not infer healthy/bad optics, ONU optical interoperability or thresholds. ONU RX/TX, attenuation, transceiver thresholds and optical alarms remain unqualified.

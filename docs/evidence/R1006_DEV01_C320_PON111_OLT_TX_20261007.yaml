@@ -1,0 +1,31 @@
+schema: ipat.physical-evidence.v1
+evidence_id: R1006_DEV01_C320_PON111_OLT_TX_20261007
+observed_at_utc: 2026-10-07T05:31:59Z
+target: DEV-01
+vendor: ZTE
+chassis_family: C320
+pon_port: 1/1/1
+operation: READ_ONLY_FIXED_OLT_TX_POWER
+command_id: PON_111_OLT_TX_FIXED
+command_text_public_safe: show pon power olt-tx gpon-olt_1/1/1
+command_accepted: true
+exact_command_echo_removed: true
+measurement_available: false
+tx_power_dbm: null
+result_semantics: MEASUREMENT_UNAVAILABLE_NA
+diagnostic_health_inferred: false
+raw_cli_returned: false
+onu_ids_returned: false
+serials_returned: false
+subscriber_data_returned: false
+physical_writes: 0
+device_adopted: false
+probe_source_blob: e582431d9005e8a6480a84f3990d57d019bc698a
+private_preview_service_after: active
+private_connector_service_after: active
+qualification: PARTIAL_COMMAND_ACCEPTED_NO_MEASUREMENT
+limitations:
+  - No optical health or loss threshold inferred from N/A.
+  - No ONU-side RX/TX optical read was executed.
+  - No serial, subscriber, raw CLI or configuration data was collected.
+  - This evidence applies only to DEV-01 and PON 1/1/1 at the observed time.
