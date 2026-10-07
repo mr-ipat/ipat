@@ -4,7 +4,7 @@
 (() => {
  const $=id=>document.getElementById(id);
  const notice=text=>{$('notice').textContent=text};
- const state={page:null,sites:[],pops:[],popNext:null,devices:[],catalog:[],next:null,editId:null,editRevision:null,pendingSite:null,nocPops:[],realNocPops:[],nocMembers:[],nocAccess:[],pendingNocRequest:null};
+ const state={page:null,sites:[],pops:[],popNext:null,devices:[],catalog:[],next:null,editId:null,editRevision:null,pendingSite:null,nocPops:[],realNocPops:[],nocMembers:[],nocAccess:[],pendingNocRequest:null,subscribers:[],subscriberEdit:null,canReadSubscribers:false,canManageSubscribers:false};
  const csrf=()=>document.cookie.split(';').map(x=>x.trim()).find(x=>x.startsWith('__Host-ipat_csrf='))?.split('=')[1];
  async function api(path,method='GET',body){
   const headers={'Accept':'application/json'};
@@ -132,6 +132,71 @@
  }
  async function refreshDomains(){const r=await api('/api/v1/domains');$('domain-rows').replaceChildren();for(const d of r.domains){const tr=document.createElement('tr');cell(tr,d.hostname);cell(tr,d.verification_name?`${d.verification_name} TXT ${d.verification_value||''}`:'Awaiting instructions');cell(tr,d.activation_state);
  const actions=cell(tr,'');actions.textContent='';if(d.activation_state!=='disabled')btn(actions,'DNS instructions',async()=>{try{await showDomainDns(d.id)}catch(e){notice(e.message)}});btn(actions,'Disable',async()=>{if(!confirm(`Disable domain request ${d.hostname}?`))return;try{await api('/api/v1/domains/'+encodeURIComponent(d.id),'DELETE');notice('Domain request disabled.');await refreshDomains()}catch(e){notice(e.message)}});$('domain-rows').append(tr)}}
+ function refreshDiagnosticChoices(){
+  const diag=$('diagnostic-distribution');const previous=diag.value;diag.replaceChildren();
+  option(diag,'Select an authorized distribution router','');
+  const ids=[...new Set(state.subscribers.map(x=>x.distribution_device_id).filter(Boolean))];
+  for(const id of ids){
+    const d=state.devices.find(x=>x.id===id);
+    option(diag,d?d.display_name+' · '+d.vendor:id,id);
+  }
+  if(ids.includes(previous))diag.value=previous;
+ }
+ function refreshSubscriberChoices(){
+  if(!state.canManageSubscribers)return;
+  const pop=$('subscriber-pop');pop.replaceChildren();option(pop,'Select registered POP','');
+  state.pops.forEach(p=>option(pop,p.display_name+' ('+p.code+')',p.code));
+  const site=$('subscriber-site');site.replaceChildren();option(site,'Select registered Site','');
+  state.sites.forEach(x=>option(site,x.display_name+' ('+x.code+')',x.code));
+  const distribution=$('subscriber-distribution');
+  distribution.replaceChildren();option(distribution,'Select registered distribution router','');
+  for(const d of state.devices.filter(x=>x.device_kind==='router')){
+    const label=d.display_name+' · '+d.vendor;option(distribution,label,d.id);
+  }
+  const access=$('subscriber-access');access.replaceChildren();option(access,'No access device assigned','');
+  for(const d of state.devices.filter(x=>['olt','ont'].includes(x.device_kind)))
+    option(access,d.display_name+' · '+d.device_kind.toUpperCase()+' / '+d.vendor,d.id);
+ }
+ async function refreshSubscribers(){
+  const r=await api('/api/v1/subscribers');state.subscribers=r.subscribers||[];
+  const rows=$('subscriber-rows');rows.replaceChildren();
+  for(const x of state.subscribers){
+    const tr=document.createElement('tr');cell(tr,x.subscriber_id+' · '+x.display_name);cell(tr,x.pppoe_username||'—');
+    cell(tr,x.pop_code+' / '+x.site_code);cell(tr,x.distribution_device_id);cell(tr,x.access_device_id||'—');
+    const topo=x.topology_state==='verified'
+      ?'VERIFIED · '+(x.topology_source_id||'evidence')+' · '+(x.topology_verified_epoch||'')
+      :'DECLARED · not independently verified';
+    cell(tr,topo);cell(tr,x.revision);
+    const actions=cell(tr,'');actions.textContent='';
+    if(state.canManageSubscribers){
+      btn(actions,'Edit',()=>{state.subscriberEdit={id:x.subscriber_id,revision:x.revision};
+        $('subscriber-id').value=x.subscriber_id;$('subscriber-id').readOnly=true;$('subscriber-name').value=x.display_name;
+        $('subscriber-pppoe').value=x.pppoe_username||'';$('subscriber-pop').value=x.pop_code;$('subscriber-site').value=x.site_code;
+        $('subscriber-distribution').value=x.distribution_device_id;$('subscriber-access').value=x.access_device_id||'';
+        $('subscriber-ont').value=x.ont_reference||'';$('subscriber-cancel').hidden=false;
+        notice('Editing Subscriber 360 metadata. Changing topology invalidates previous verification. No network action will run.');});
+    }else actions.textContent='Read-only scope';
+    rows.append(tr);
+  }
+  refreshDiagnosticChoices();
+ }
+ function clearSubscriberEdit(){state.subscriberEdit=null;$('subscriber-form').reset();$('subscriber-id').readOnly=false;$('subscriber-cancel').hidden=true;refreshSubscriberChoices()}
+ async function loadSubscriberWorkspace(){
+  if(state.canManageSubscribers){
+    await refreshPops();await refreshSites();await refreshDevices();refreshSubscriberChoices();
+  }
+  await refreshSubscribers();
+}
+ async function runDiagnostic(){
+  const id=$('diagnostic-distribution').value,age=Number($('diagnostic-age').value);
+  if(!id||!Number.isInteger(age)||age<1||age>3600)throw Error('Select a router and valid freshness window.');
+  const r=await api('/api/v1/diagnostics?distribution_device_id='+encodeURIComponent(id)+'&max_age_seconds='+age);
+  $('diagnostic-result').hidden=false;$('diagnostic-title').textContent='Hypothesis: '+String(r.hypothesis).replaceAll('_',' ');
+  $('diagnostic-summary').textContent='Uncertainty: '+r.uncertainty+' · topology verified: '+r.topology_verified+' · affected: '+(r.affected_subscribers?.length||0)+' · stale discarded: '+r.discarded_stale+' · operator review: '+r.requires_operator_review+' · remediation: '+r.remediation_permitted+(r.reason?' · reason: '+r.reason:'');
+  const evidence=$('diagnostic-evidence');evidence.replaceChildren();
+  for(const e of r.evidence||[]){const p=document.createElement('p');p.textContent=(e.subscriber_id||'path')+' · '+e.signal+' · '+e.source_id+' · '+e.observed_at_epoch+' · '+e.evidence_sha256;evidence.append(p);}
+ }
+
  function refreshNocAccessChoices(){
   const member=$('noc-access-member');member.replaceChildren();
   option(member,'Select a current NOC member','');
@@ -180,7 +245,7 @@
   $('noc-device-rows').replaceChildren();
   for(const d of devices.devices){const tr=document.createElement('tr');cell(tr,d.display_name);cell(tr,d.site);cell(tr,d.device_kind+' / '+d.vendor);cell(tr,d.lifecycle_state==='SAVED'?'Saved — not connected':d.lifecycle_state);$('noc-device-rows').append(tr)}
  }
- async function page(name){if(!['pops','sites','devices','domains','noc-access','noc'].includes(name)||$('nav-'+name)?.hidden)return;state.page=name;$('welcome').hidden=true;document.querySelectorAll('[data-panel]').forEach(p=>p.hidden=p.dataset.panel!==name);notice('Loading current tenant data…');try{if(name==='pops')await refreshPops();if(name==='sites'){await refreshPops();await refreshSites()}if(name==='devices'){await refreshPops();await refreshSites();await refreshDevices()}if(name==='domains')await refreshDomains();if(name==='noc-access'){await refreshPops();await refreshNocAccess()}if(name==='noc')await refreshNoc();notice('Data loaded. Operations remain subject to current authorization.')}catch(e){notice(e.message)}}
+ async function page(name){if(!['pops','sites','devices','domains','subscribers','diagnostics','noc-access','noc'].includes(name)||$('nav-'+name)?.hidden)return;state.page=name;$('welcome').hidden=true;document.querySelectorAll('[data-panel]').forEach(p=>p.hidden=p.dataset.panel!==name);notice('Loading current tenant data…');try{if(name==='pops')await refreshPops();if(name==='sites'){await refreshPops();await refreshSites()}if(name==='devices'){await refreshPops();await refreshSites();await refreshDevices()}if(name==='domains')await refreshDomains();if(name==='subscribers')await loadSubscriberWorkspace();if(name==='diagnostics')await refreshSubscribers();if(name==='noc-access'){await refreshPops();await refreshNocAccess()}if(name==='noc')await refreshNoc();notice('Data loaded. Operations remain subject to current authorization.')}catch(e){notice(e.message)}}
  async function submit(form,callback){const button=form.querySelector('button[type=submit],button:not([type])');if(button)button.disabled=true;try{await callback()}catch(e){notice(e.message)}finally{if(button)button.disabled=false}}
  document.querySelectorAll('.nav').forEach(b=>{b.id='nav-'+b.dataset.page;b.addEventListener('click',()=>page(b.dataset.page))});
  $('create-site-link').addEventListener('click',e=>{e.preventDefault();page('sites')});
@@ -217,6 +282,13 @@
  $('device-create').addEventListener('submit',e=>{e.preventDefault();const f=e.currentTarget;submit(f,async()=>{const d=Object.fromEntries(new FormData(f));if(['cwmp','usp'].includes(d.management_transport)){d.management_host=null;d.management_port=null}else{d.management_port=Number(d.management_port)};d.request_id=crypto.randomUUID();d.intended_model=d.intended_model||null;await api('/api/v1/devices','POST',d);clearForm(f);syncCatalog();await refreshDevices();notice('Device saved as metadata. Physical connection not yet established.')})});
  $('device-edit').addEventListener('submit',e=>{e.preventDefault();const f=e.currentTarget;submit(f,async()=>{const d=Object.fromEntries(new FormData(f));d.expected_revision=state.editRevision;d.intended_model=d.intended_model||null;d.management_host=d.management_host||null;d.management_port=d.management_port?Number(d.management_port):null;await api('/api/v1/devices/'+encodeURIComponent(state.editId),'PATCH',d);$('device-edit-panel').hidden=true;state.editId=null;await refreshDevices();notice('Saved device metadata updated.')})});
  $('edit-cancel').addEventListener('click',()=>{$('device-edit-panel').hidden=true;state.editId=null});
+ $('subscriber-cancel').addEventListener('click',clearSubscriberEdit);
+ $('subscriber-form').addEventListener('submit',e=>{e.preventDefault();const f=e.currentTarget;submit(f,async()=>{
+  const d=Object.fromEntries(new FormData(f));for(const k of ['pppoe_username','access_device_id','ont_reference'])if(!d[k])d[k]=null;
+  d.expected_revision=state.subscriberEdit?.revision||0;await api('/api/v1/subscribers','POST',d);clearSubscriberEdit();await refreshSubscribers();
+  notice('Subscriber 360 metadata saved. No device or PPPoE configuration changed.');
+ })});
+ $('diagnostic-form').addEventListener('submit',e=>{e.preventDefault();submit(e.currentTarget,runDiagnostic)});
  $('domain-create').addEventListener('submit',e=>{e.preventDefault();const f=e.currentTarget;submit(f,async()=>{await api('/api/v1/domains','POST',Object.fromEntries(new FormData(f)));clearForm(f);await refreshDomains();notice('Domain saved as pending. Open DNS instructions for unique TXT proof and the reviewed routing plan.')})});
  $('logout').addEventListener('click',async()=>{try{await api('/api/v1/logout','POST');location.assign('/auth/oidc/start')}catch(e){notice(e.message)}});
  (async()=>{try{
@@ -227,9 +299,13 @@
   for(const p of state.realNocPops)option($('noc-pop'),'Real POP: '+p,'real:'+p);
   for(const p of state.nocPops)option($('noc-pop'),'Legacy exact Site: '+p,'site:'+p);
   if(state.nocPops.length||state.realNocPops.length)$('nav-noc').hidden=false;
+  state.canReadSubscribers=r.can_read_subscribers===true;
+  state.canManageSubscribers=r.can_manage_subscribers===true;
+  if(state.canReadSubscribers){$('nav-subscribers').hidden=false;$('nav-diagnostics').hidden=false}
+  $('subscriber-manage').hidden=!state.canManageSubscribers;
   if(r.can_manage_sites){for(const n of ['pops','sites','devices','domains','noc-access'])$('nav-'+n).hidden=false;await loadCatalog()}
   $('logout').hidden=false;
-  notice(r.can_manage_sites||state.nocPops.length||state.realNocPops.length?'Tenant permissions verified. Select a permitted module.':'No operations modules assigned to your current identity.');
+  notice(r.can_manage_sites||state.canReadSubscribers||state.nocPops.length||state.realNocPops.length?'Tenant permissions verified. Select a permitted module.':'No operations modules assigned to your current identity.');
 
  }catch(e){notice(e.message);$('signin').hidden=false;$('identity').textContent='Sign-in required'}})();
 })();

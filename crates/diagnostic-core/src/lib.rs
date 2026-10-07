@@ -72,6 +72,12 @@ fn safe_label(value: &str) -> bool {
             .bytes()
             .all(|b| b.is_ascii_alphanumeric() || b == b'-' || b == b'_')
 }
+fn safe_source_label(value: &str) -> bool {
+    (1..=128).contains(&value.len())
+        && value
+            .bytes()
+            .all(|b| b.is_ascii_alphanumeric() || matches!(b, b'-' | b'_' | b'.' | b':'))
+}
 
 /// Fail closed on tenant/path inconsistencies. Observations are intentionally
 /// caller-provided synthetic normalized events; no inference from missing
@@ -100,15 +106,19 @@ pub fn diagnose(
         {
             return Err(DiagnosticError::CrossTenantOrWrongScope);
         }
-        if !safe_label(&o.source_id) || o.subscriber_id.as_deref().is_some_and(|s| !safe_label(s)) {
+        if !safe_source_label(&o.source_id)
+            || o.subscriber_id.as_deref().is_some_and(|s| !safe_label(s))
+        {
             return Err(DiagnosticError::InvalidObservation);
         }
         let requires_subscriber = matches!(
             o.signal,
             Signal::SubscriberUnreachable
                 | Signal::OntOpticalLos
+                | Signal::NeighborOntHealthy
                 | Signal::OntOpticalNormal
                 | Signal::PppoeAuthenticationRejected
+                | Signal::CwmpInformMissing
         );
         if requires_subscriber && o.subscriber_id.is_none() {
             return Err(DiagnosticError::InvalidObservation);
@@ -152,9 +162,13 @@ pub fn diagnose(
     let optical_conflict = optical_los.intersection(&optical_normal).next().is_some();
 
     let distribution = scope.topology_verified && uplink_down && reachable_lost.len() >= 2;
-    let ont_access =
-        uplink_healthy && neighbor_healthy && optical_los.len() == 1 && !optical_conflict;
-    let pppoe: BTreeSet<String> = if uplink_healthy && !optical_conflict {
+    let ont_access = scope.topology_verified
+        && uplink_healthy
+        && neighbor_healthy
+        && optical_los.len() == 1
+        && !optical_conflict;
+    let pppoe: BTreeSet<String> = if scope.topology_verified && uplink_healthy && !optical_conflict
+    {
         pppoe_failure
             .intersection(&optical_normal)
             .filter(|id| !optical_los.contains(*id))
@@ -259,6 +273,19 @@ mod tests {
         ]);
         assert_eq!(result.hypothesis, Hypothesis::OntAccess);
         assert_eq!(result.affected_subscribers, ["sub-a"]);
+        let mut unverified = scope();
+        unverified.topology_verified = false;
+        let evidence = vec![
+            observation(Signal::DistributionUplinkHealthy, None),
+            observation(Signal::NeighborOntHealthy, Some("neighbor-a")),
+            observation(Signal::OntOpticalLos, Some("sub-a")),
+        ];
+        assert_eq!(
+            diagnose(&unverified, &evidence, NOW, 120)
+                .unwrap()
+                .hypothesis,
+            Hypothesis::InsufficientEvidence
+        );
     }
 
     #[test]
@@ -271,6 +298,19 @@ mod tests {
         ]);
         assert_eq!(result.hypothesis, Hypothesis::PppoeAuthentication);
         assert_eq!(result.affected_subscribers, ["sub-a"]);
+        let mut unverified = scope();
+        unverified.topology_verified = false;
+        let evidence = vec![
+            observation(Signal::DistributionUplinkHealthy, None),
+            observation(Signal::OntOpticalNormal, Some("sub-a")),
+            observation(Signal::PppoeAuthenticationRejected, Some("sub-a")),
+        ];
+        assert_eq!(
+            diagnose(&unverified, &evidence, NOW, 120)
+                .unwrap()
+                .hypothesis,
+            Hypothesis::InsufficientEvidence
+        );
     }
 
     #[test]
@@ -347,7 +387,7 @@ mod tests {
             .unwrap_err(),
             DiagnosticError::UnboundedInput
         );
-        let mut input = observation(Signal::CwmpInformMissing, None);
+        let mut input = observation(Signal::CwmpInformMissing, Some("sub-a"));
         input.source_id = "bad source".into();
         assert_eq!(
             diagnose(&scope(), &[input.clone()], NOW, 120).unwrap_err(),
@@ -358,6 +398,23 @@ mod tests {
         assert_eq!(
             diagnose(&scope(), &[input], NOW, 120).unwrap_err(),
             DiagnosticError::FutureObservation
+        );
+    }
+
+    #[test]
+    fn namespaced_source_is_safe_but_missing_cwmp_still_needs_subscriber() {
+        let mut input = observation(Signal::CwmpInformMissing, Some("sub-a"));
+        input.source_id = "cwmp.worker:01".into();
+        assert!(diagnose(&scope(), &[input], NOW, 120).is_ok());
+        let missing = observation(Signal::CwmpInformMissing, None);
+        assert_eq!(
+            diagnose(&scope(), &[missing], NOW, 120).unwrap_err(),
+            DiagnosticError::InvalidObservation
+        );
+        let anonymous_neighbor = observation(Signal::NeighborOntHealthy, None);
+        assert_eq!(
+            diagnose(&scope(), &[anonymous_neighbor], NOW, 120).unwrap_err(),
+            DiagnosticError::InvalidObservation
         );
     }
 

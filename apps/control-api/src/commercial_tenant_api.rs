@@ -10,9 +10,11 @@ use axum::{
     routing::get,
     Json, Router,
 };
+use diagnostic_core::{diagnose, Hypothesis, Observation, Scope, Signal};
 use serde::Deserialize;
 use serde_json::{json, Value};
 use std::{fs::File, io::Read, path::PathBuf, sync::Arc};
+use tenant_core::TenantId;
 use tokio_postgres::{Client, Config, NoTls};
 use uuid::Uuid;
 
@@ -98,6 +100,28 @@ async fn capabilities(
         return denied(StatusCode::SERVICE_UNAVAILABLE);
     };
     let admin: bool = row.get(0);
+    // Rolling migration safety: until 0035 exists, the new modules remain
+    // invisible and their routes fail closed. Never turn a missing schema into
+    // an authorization fallback.
+    let subscriber_schema_ready = s.db.query_one(
+        "SELECT to_regprocedure('ipat_platform.subscriber_diagnostic_ui_capabilities(text,text,uuid)') IS NOT NULL",
+        &[],
+    ).await;
+    let subscriber_schema_ready = subscriber_schema_ready
+        .ok()
+        .is_some_and(|row| row.get::<_, bool>(0));
+    let (can_read_subscribers, can_manage_subscribers) = if subscriber_schema_ready {
+        let caps=s.db.query_one(
+            "SELECT can_read,can_manage FROM ipat_platform.subscriber_diagnostic_ui_capabilities($1,$2,$3::uuid)",
+            &[&a.issuer,&a.subject,&a.tenant_id],
+        ).await;
+        let Ok(caps) = caps else {
+            return denied(StatusCode::SERVICE_UNAVAILABLE);
+        };
+        (caps.get::<_, bool>(0), caps.get::<_, bool>(1))
+    } else {
+        (false, false)
+    };
     let scoped =
         s.db.query(
             "SELECT pop_id FROM ipat_platform.current_noc_pop_scopes($1,$2,$3::uuid)",
@@ -132,6 +156,9 @@ async fn capabilities(
         json!({"ok":true,"tenant_id":a.tenant_id.to_string(),
         "can_manage_sites":admin,"can_manage_pops":admin,
         "can_manage_devices":admin,"can_manage_domains":admin,
+        "can_read_subscribers":can_read_subscribers,
+        "can_manage_subscribers":can_manage_subscribers,
+        "can_read_diagnostics":can_read_subscribers,
         "noc_pops":noc_pops,"real_noc_pops":real_noc_pops,
         "can_read_noc":can_read_noc}),
     )
@@ -1406,6 +1433,339 @@ async fn delete_domain(
     }
 }
 
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct Subscriber360Upsert {
+    subscriber_id: String,
+    display_name: String,
+    pppoe_username: Option<String>,
+    pop_code: String,
+    site_code: String,
+    distribution_device_id: String,
+    access_device_id: Option<String>,
+    ont_reference: Option<String>,
+    expected_revision: i64,
+}
+async fn list_subscribers360(
+    State(s): State<Arc<StateData>>,
+    headers: HeaderMap,
+) -> (StatusCode, HeaderMap, Json<Value>) {
+    let Some(a) = actor(&s.db, &headers, false).await else {
+        return denied(StatusCode::UNAUTHORIZED);
+    };
+    let rows =
+        s.db.query(
+            "SELECT subscriber_id,display_name,pppoe_username,pop_code,site_code,
+                distribution_device_id,access_device_id,ont_reference,revision,
+                topology_state,topology_source_id,topology_verified_epoch
+         FROM ipat_platform.list_subscriber360($1,$2,$3::uuid)",
+            &[&a.issuer, &a.subject, &a.tenant_id],
+        )
+        .await;
+    let Ok(rows) = rows else {
+        return denied(StatusCode::SERVICE_UNAVAILABLE);
+    };
+    let subscribers = rows
+        .into_iter()
+        .map(|r| {
+            json!({
+                "subscriber_id":r.get::<_,String>(0),
+                "display_name":r.get::<_,String>(1),
+                "pppoe_username":r.get::<_,Option<String>>(2),
+                "pop_code":r.get::<_,String>(3),
+                "site_code":r.get::<_,String>(4),
+                "distribution_device_id":r.get::<_,Uuid>(5).to_string(),
+                "access_device_id":r.get::<_,Option<Uuid>>(6).map(|x|x.to_string()),
+                "ont_reference":r.get::<_,Option<String>>(7),
+                "revision":r.get::<_,i64>(8),
+                "topology_state":r.get::<_,String>(9),
+                "topology_source_id":r.get::<_,Option<String>>(10),
+                "topology_verified_epoch":r.get::<_,Option<i64>>(11),
+            })
+        })
+        .collect::<Vec<_>>();
+    response(StatusCode::OK, json!({"ok":true,"subscribers":subscribers}))
+}
+async fn upsert_subscriber360(
+    State(s): State<Arc<StateData>>,
+    headers: HeaderMap,
+    Json(q): Json<Subscriber360Upsert>,
+) -> (StatusCode, HeaderMap, Json<Value>) {
+    let Some(a) = actor(&s.db, &headers, true).await else {
+        return denied(StatusCode::UNAUTHORIZED);
+    };
+    if !valid_code(&q.subscriber_id)
+        || !valid_name(&q.display_name)
+        || !valid_code(&q.pop_code)
+        || !valid_code(&q.site_code)
+        || q.expected_revision < 0
+        || q.pppoe_username.as_deref().is_some_and(|x| {
+            x.is_empty()
+                || x.len() > 128
+                || x.trim() != x
+                || x.bytes()
+                    .any(|b| b.is_ascii_control() || b.is_ascii_whitespace())
+        })
+        || q.ont_reference.as_deref().is_some_and(|x| {
+            x.is_empty()
+                || x.len() > 128
+                || !x
+                    .bytes()
+                    .all(|b| b.is_ascii_alphanumeric() || b"_.:/-".contains(&b))
+        })
+    {
+        return denied(StatusCode::UNPROCESSABLE_ENTITY);
+    }
+    let Ok(distribution) = Uuid::parse_str(&q.distribution_device_id) else {
+        return denied(StatusCode::UNPROCESSABLE_ENTITY);
+    };
+    let access = match q.access_device_id.as_deref() {
+        None => None,
+        Some(v) => match Uuid::parse_str(v) {
+            Ok(x) => Some(x),
+            Err(_) => return denied(StatusCode::UNPROCESSABLE_ENTITY),
+        },
+    };
+    let row =
+        s.db.query_one(
+            "SELECT ipat_platform.upsert_subscriber360(
+           $1,$2,$3::uuid,$4,$5,$6,$7,$8,$9::uuid,$10::uuid,$11,$12::bigint)",
+            &[
+                &a.issuer,
+                &a.subject,
+                &a.tenant_id,
+                &q.subscriber_id,
+                &q.display_name,
+                &q.pppoe_username,
+                &q.pop_code,
+                &q.site_code,
+                &distribution,
+                &access,
+                &q.ont_reference,
+                &q.expected_revision,
+            ],
+        )
+        .await;
+    let revision = row.ok().and_then(|r| r.get::<_, Option<i64>>(0));
+    match revision {
+        Some(revision) => response(
+            if q.expected_revision == 0 {
+                StatusCode::CREATED
+            } else {
+                StatusCode::OK
+            },
+            json!({"ok":true,"subscriber_id":q.subscriber_id,"revision":revision,
+            "remediation_permitted":false}),
+        ),
+        None => denied(StatusCode::CONFLICT),
+    }
+}
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct DiagnosticQuery {
+    distribution_device_id: String,
+    max_age_seconds: Option<u64>,
+}
+fn diagnostic_signal(raw: &str) -> Option<Signal> {
+    Some(match raw {
+        "distribution_uplink_down" => Signal::DistributionUplinkDown,
+        "distribution_uplink_healthy" => Signal::DistributionUplinkHealthy,
+        "subscriber_unreachable" => Signal::SubscriberUnreachable,
+        "ont_optical_los" => Signal::OntOpticalLos,
+        "neighbor_ont_healthy" => Signal::NeighborOntHealthy,
+        "ont_optical_normal" => Signal::OntOpticalNormal,
+        "pppoe_authentication_rejected" => Signal::PppoeAuthenticationRejected,
+        "cwmp_inform_missing" => Signal::CwmpInformMissing,
+        _ => return None,
+    })
+}
+fn diagnostic_signal_name(value: Signal) -> &'static str {
+    match value {
+        Signal::DistributionUplinkDown => "distribution_uplink_down",
+        Signal::DistributionUplinkHealthy => "distribution_uplink_healthy",
+        Signal::SubscriberUnreachable => "subscriber_unreachable",
+        Signal::OntOpticalLos => "ont_optical_los",
+        Signal::NeighborOntHealthy => "neighbor_ont_healthy",
+        Signal::OntOpticalNormal => "ont_optical_normal",
+        Signal::PppoeAuthenticationRejected => "pppoe_authentication_rejected",
+        Signal::CwmpInformMissing => "cwmp_inform_missing",
+    }
+}
+fn hypothesis_name(value: Hypothesis) -> &'static str {
+    match value {
+        Hypothesis::DistributionPath => "distribution_path",
+        Hypothesis::OntAccess => "ont_access",
+        Hypothesis::PppoeAuthentication => "pppoe_authentication",
+        Hypothesis::InsufficientEvidence => "insufficient_evidence",
+        Hypothesis::ConflictingEvidence => "conflicting_evidence",
+    }
+}
+async fn diagnostic_snapshot(
+    State(s): State<Arc<StateData>>,
+    headers: HeaderMap,
+    Query(q): Query<DiagnosticQuery>,
+) -> (StatusCode, HeaderMap, Json<Value>) {
+    let Some(a) = actor(&s.db, &headers, false).await else {
+        return denied(StatusCode::UNAUTHORIZED);
+    };
+    let Ok(distribution) = Uuid::parse_str(&q.distribution_device_id) else {
+        return denied(StatusCode::UNPROCESSABLE_ENTITY);
+    };
+    let max_age = q.max_age_seconds.unwrap_or(300);
+    if !(1..=3600).contains(&max_age) {
+        return denied(StatusCode::UNPROCESSABLE_ENTITY);
+    }
+    let subscribers =
+        s.db.query(
+            "SELECT subscriber_id,pop_code,distribution_device_id,
+                    topology_state,topology_verified_epoch
+         FROM ipat_platform.list_subscriber360($1,$2,$3::uuid)",
+            &[&a.issuer, &a.subject, &a.tenant_id],
+        )
+        .await;
+    let Ok(subscribers) = subscribers else {
+        return denied(StatusCode::SERVICE_UNAVAILABLE);
+    };
+    let now_epoch = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .ok()
+        .map(|x| x.as_secs())
+        .unwrap_or(0);
+    let mut pops = std::collections::BTreeSet::new();
+    let mut topology_verified = true;
+    let mut topology_oldest_verified_epoch: Option<u64> = None;
+    let mut distribution_subscribers = 0usize;
+    for row in &subscribers {
+        if row.get::<_, Uuid>(2) == distribution {
+            distribution_subscribers += 1;
+            pops.insert(row.get::<_, String>(1));
+            let state: String = row.get(3);
+            let verified: Option<i64> = row.get(4);
+            let current = state == "verified"
+                && verified.is_some_and(|epoch| {
+                    epoch >= 0
+                        && (epoch as u64) <= now_epoch
+                        && now_epoch.saturating_sub(epoch as u64) <= 86_400
+                });
+            topology_verified &= current;
+            if current {
+                let epoch = verified.expect("checked verified timestamp") as u64;
+                topology_oldest_verified_epoch =
+                    Some(topology_oldest_verified_epoch.map_or(epoch, |old| old.min(epoch)));
+            }
+        }
+    }
+    if pops.len() != 1 || distribution_subscribers == 0 {
+        return response(
+            StatusCode::OK,
+            json!({"ok":true,
+          "hypothesis":"insufficient_evidence","affected_subscribers":[],
+          "evidence":[],"discarded_stale":0,"uncertainty":"high",
+          "reason":"TOPOLOGY_SCOPE_NOT_UNIQUE_OR_EMPTY",
+          "requires_operator_review":true,"remediation_permitted":false}),
+        );
+    }
+    let pop = pops.into_iter().next().expect("one pop");
+    let rows =
+        s.db.query(
+            "SELECT subscriber_id,signal,source_id,observed_epoch,evidence_sha256
+         FROM ipat_platform.list_diagnostic_observations($1,$2,$3::uuid,$4::uuid)",
+            &[&a.issuer, &a.subject, &a.tenant_id, &distribution],
+        )
+        .await;
+    let Ok(rows) = rows else {
+        return denied(StatusCode::SERVICE_UNAVAILABLE);
+    };
+    let tenant = match TenantId::parse(&a.tenant_id.to_string()) {
+        Ok(v) => v,
+        Err(_) => return denied(StatusCode::SERVICE_UNAVAILABLE),
+    };
+    let mut observations = Vec::with_capacity(rows.len());
+    let mut evidence_hashes =
+        std::collections::BTreeMap::<(String, u64, Option<String>, String), String>::new();
+    for row in rows {
+        let signal_raw: String = row.get(1);
+        let Some(signal) = diagnostic_signal(&signal_raw) else {
+            return denied(StatusCode::SERVICE_UNAVAILABLE);
+        };
+        let observed: i64 = row.get(3);
+        if observed < 0 {
+            return denied(StatusCode::SERVICE_UNAVAILABLE);
+        }
+        let subscriber_id: Option<String> = row.get(0);
+        let source_id: String = row.get(2);
+        let evidence_sha: String = row.get(4);
+        let key = (
+            source_id.clone(),
+            observed as u64,
+            subscriber_id.clone(),
+            signal_raw.clone(),
+        );
+        if evidence_hashes.insert(key, evidence_sha).is_some() {
+            return denied(StatusCode::SERVICE_UNAVAILABLE);
+        }
+        observations.push(Observation {
+            tenant_id: tenant.clone(),
+            pop_id: pop.clone(),
+            distribution_id: distribution.to_string(),
+            subscriber_id,
+            signal,
+            source_id,
+            observed_at_epoch: observed as u64,
+        });
+    }
+    let scope = Scope {
+        tenant_id: tenant,
+        pop_id: pop.clone(),
+        distribution_id: distribution.to_string(),
+        topology_verified,
+    };
+    let result = match diagnose(&scope, &observations, now_epoch, max_age) {
+        Ok(v) => v,
+        Err(_) => return denied(StatusCode::SERVICE_UNAVAILABLE),
+    };
+    let uncertainty = match result.hypothesis {
+        Hypothesis::DistributionPath | Hypothesis::OntAccess | Hypothesis::PppoeAuthentication
+            if topology_verified && result.evidence.len() >= 3 =>
+        {
+            "medium"
+        }
+        _ => "high",
+    };
+    let evidence = result
+        .evidence
+        .iter()
+        .map(|o| {
+            let key = (
+                o.source_id.clone(),
+                o.observed_at_epoch,
+                o.subscriber_id.clone(),
+                diagnostic_signal_name(o.signal).to_string(),
+            );
+            json!({
+                "subscriber_id":o.subscriber_id,
+                "signal":diagnostic_signal_name(o.signal),
+                "source_id":o.source_id,
+                "observed_at_epoch":o.observed_at_epoch,
+                "evidence_sha256":evidence_hashes.get(&key),
+            })
+        })
+        .collect::<Vec<_>>();
+    response(
+        StatusCode::OK,
+        json!({"ok":true,
+      "hypothesis":hypothesis_name(result.hypothesis),
+      "affected_subscribers":result.affected_subscribers,
+      "evidence":evidence,"discarded_stale":result.discarded_stale,
+      "uncertainty":uncertainty,"pop_code":pop,
+      "distribution_device_id":distribution.to_string(),
+      "topology_verified":topology_verified,
+      "topology_oldest_verified_epoch":topology_oldest_verified_epoch,
+      "requires_operator_review":result.requires_operator_review,
+      "remediation_permitted":result.remediation_permitted}),
+    )
+}
+
 pub(super) fn router(db: Arc<Client>) -> Router {
     let state = Arc::new(StateData { db });
     Router::new()
@@ -1456,6 +1816,11 @@ pub(super) fn router(db: Arc<Client>) -> Router {
             "/api/v1/devices/{id}",
             get(device_detail).patch(edit_device).delete(delete_device),
         )
+        .route(
+            "/api/v1/subscribers",
+            get(list_subscribers360).post(upsert_subscriber360),
+        )
+        .route("/api/v1/diagnostics", get(diagnostic_snapshot))
         .route("/api/v1/domains", get(list_domains).post(create_domain))
         .route("/api/v1/domains/{id}/dns", get(customer_domain_dns))
         .route(
@@ -1535,7 +1900,7 @@ mod pg_integration {
 
     async fn connect_admin() -> Client {
         let mut c = Config::new();
-        c.host("127.0.0.1");
+        c.host(std::env::var("PGHOST").as_deref().unwrap_or("127.0.0.1"));
         c.port(
             std::env::var("PGPORT")
                 .ok()
@@ -2525,6 +2890,447 @@ mod pg_integration {
         admin
             .execute(
                 "DELETE FROM ipat_ops.tenant_sites WHERE tenant_id=$1",
+                &[&tenant],
+            )
+            .await
+            .unwrap();
+        admin
+            .execute(
+                "DELETE FROM ipat_platform.tenant_domains WHERE tenant_id=$1",
+                &[&tenant],
+            )
+            .await
+            .unwrap();
+        admin
+            .execute(
+                "DELETE FROM ipat_platform.identity_memberships WHERE tenant_id=$1",
+                &[&tenant],
+            )
+            .await
+            .unwrap();
+        admin
+            .execute("DELETE FROM ipat_platform.tenants WHERE id=$1", &[&tenant])
+            .await
+            .unwrap();
+    }
+
+    #[tokio::test]
+    async fn r1005_real_pg_axum_scoped_subscriber360_and_verified_diagnostics() {
+        if std::env::var("IPAT_PG_EPHEMERAL_TEST").as_deref() != Ok("1")
+            || std::env::var("PGDATABASE").as_deref() != Ok("ipat_synthetic")
+        {
+            return;
+        }
+        let admin = connect_admin().await;
+        let has_0035: bool = admin
+            .query_one(
+                "SELECT to_regprocedure('ipat_platform.upsert_subscriber360(text,text,uuid,text,text,text,text,text,uuid,uuid,text,bigint)') IS NOT NULL",
+                &[],
+            )
+            .await
+            .unwrap()
+            .get(0);
+        if !has_0035 {
+            return;
+        }
+
+        let tenant = Uuid::parse_str("a5a5a5a5-a5a5-45a5-85a5-a5a5a5a5a5a1").unwrap();
+        let domain = Uuid::parse_str("a5a5a5a5-a5a5-45a5-85a5-a5a5a5a5a5a2").unwrap();
+        let router_id = Uuid::parse_str("a5a5a5a5-a5a5-45a5-85a5-a5a5a5a5a5a3").unwrap();
+        let olt_id = Uuid::parse_str("a5a5a5a5-a5a5-45a5-85a5-a5a5a5a5a5a4").unwrap();
+        let issuer = "https://id.r1005.synthetic.invalid/realms/ipat";
+        let admin_subject = "r1005-http-admin";
+        let help_subject = "r1005-http-helpdesk";
+        let host = "tenant-r1005.example.net";
+
+        admin.execute("INSERT INTO ipat_platform.tenants(id,tenant_slug,state) VALUES($1,'r1005-http','active')",&[&tenant]).await.unwrap();
+        admin.execute(
+            "INSERT INTO ipat_platform.identity_memberships(tenant_id,issuer,subject,role,approved_by,expires_at) VALUES
+             ($1,$2,$3,'tenant_admin','independent-http',clock_timestamp()+interval '1 day'),
+             ($1,$2,$4,'helpdesk','independent-http',clock_timestamp()+interval '1 day')",
+            &[&tenant,&issuer,&admin_subject,&help_subject],
+        ).await.unwrap();
+        admin.execute(
+            "INSERT INTO ipat_platform.tenant_domains(id,tenant_id,hostname,domain_type,verification_state,
+             verification_method,verified_at,routing_mode,verification_name,verification_value,
+             requested_by_issuer,requested_by_subject,requested_at,activation_state,
+             ownership_verified_at,routing_ready_at,tls_ready_at,activated_at)
+             VALUES($1,$2,$3,'custom_domain','verified','dns_txt',clock_timestamp(),'a_record',
+             $4,$5,$6,$7,clock_timestamp(),'active',clock_timestamp(),clock_timestamp(),
+             clock_timestamp(),clock_timestamp())",
+            &[&domain,&tenant,&host,&format!("_ipat-verify.{host}"),
+              &format!("ipat-domain={domain}"),&issuer,&admin_subject],
+        ).await.unwrap();
+        assert_eq!(admin.query_one(
+            "SELECT ipat_platform.create_tenant_pop($1,$2,$3::uuid,'POP-R1005','POP R1005')",
+            &[&issuer,&admin_subject,&tenant]).await.unwrap().get::<_,Option<String>>(0).as_deref(),
+            Some("POP-R1005"));
+        assert_eq!(admin.query_one(
+            "SELECT ipat_platform.create_tenant_site($1,$2,$3::uuid,'SITE-R1005','Site R1005')",
+            &[&issuer,&admin_subject,&tenant]).await.unwrap().get::<_,Option<String>>(0).as_deref(),
+            Some("SITE-R1005"));
+        assert_eq!(admin.query_one(
+            "SELECT ipat_platform.assign_tenant_site_to_pop($1,$2,$3::uuid,'SITE-R1005','POP-R1005',1)",
+            &[&issuer,&admin_subject,&tenant]).await.unwrap().get::<_,Option<i64>>(0),Some(2));
+        admin.execute(
+            "INSERT INTO ipat_platform.identity_pop_grants(tenant_id,issuer,subject,role,pop_id)
+             VALUES($1,$2,$3,'helpdesk','SITE-R1005')",
+            &[&tenant,&issuer,&help_subject],
+        ).await.unwrap();
+
+        async fn register(
+            db: &Client,
+            issuer: &str,
+            subject: &str,
+            tenant: Uuid,
+            id: Uuid,
+            site: &str,
+            name: &str,
+            kind: &str,
+            vendor: &str,
+            transport: &str,
+            host: &str,
+            port: i32,
+        ) {
+            let request = Uuid::new_v4();
+            let row = db
+                .query_one(
+                    "SELECT ipat_platform.register_managed_device(
+                 $1,$2,$3::uuid,$4::uuid,$5::uuid,$6,$7,$8,$9,NULL,$10,$11,$12,NULL)",
+                    &[
+                        &issuer, &subject, &tenant, &id, &request, &site, &name, &kind, &vendor,
+                        &transport, &host, &port,
+                    ],
+                )
+                .await
+                .unwrap();
+            assert_eq!(row.get::<_, Option<Uuid>>(0), Some(id));
+        }
+        register(
+            &admin,
+            issuer,
+            admin_subject,
+            tenant,
+            router_id,
+            "SITE-R1005",
+            "Distribution R1005",
+            "router",
+            "MikroTik",
+            "routeros_api_ssl",
+            "router.r1005.invalid",
+            8729,
+        )
+        .await;
+        register(
+            &admin,
+            issuer,
+            admin_subject,
+            tenant,
+            olt_id,
+            "SITE-R1005",
+            "OLT R1005",
+            "olt",
+            "ZTE",
+            "ssh",
+            "olt.r1005.invalid",
+            22,
+        )
+        .await;
+
+        let admin_cookie = "mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm";
+        let admin_csrf = "nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn";
+        let help_cookie = "ooooooooooooooooooooooooooooooooooooooooooo";
+        let help_csrf = "ppppppppppppppppppppppppppppppppppppppppppp";
+        let issuer_db = connect_admin().await;
+        issuer_db
+            .batch_execute("SET ROLE ipat_oidc_session_issuer_login")
+            .await
+            .unwrap();
+        for (subject, cookie, csrf, sid) in [
+            (
+                admin_subject,
+                admin_cookie,
+                admin_csrf,
+                Uuid::parse_str("a5a5a5a5-a5a5-45a5-85a5-a5a5a5a5a5b1").unwrap(),
+            ),
+            (
+                help_subject,
+                help_cookie,
+                help_csrf,
+                Uuid::parse_str("a5a5a5a5-a5a5-45a5-85a5-a5a5a5a5a5b2").unwrap(),
+            ),
+        ] {
+            let row = issuer_db
+                .query_one(
+                    "SELECT ipat_platform.issue_tenant_browser_session(
+                 $1,$2,$3::uuid,$4::uuid,$5::uuid,$6,$7,clock_timestamp()+interval '10 minutes')",
+                    &[
+                        &issuer,
+                        &subject,
+                        &tenant,
+                        &domain,
+                        &sid,
+                        &hex(cookie),
+                        &hex(csrf),
+                    ],
+                )
+                .await
+                .unwrap();
+            assert_eq!(row.get::<_, Option<Uuid>>(0), Some(sid));
+        }
+        let api_db = connect_admin().await;
+        api_db
+            .batch_execute("SET ROLE ipat_tenant_api_login")
+            .await
+            .unwrap();
+        let app = router(Arc::new(api_db));
+
+        let admin_caps = app
+            .clone()
+            .oneshot(req(
+                "GET",
+                "/api/v1/capabilities",
+                host,
+                Some(admin_cookie),
+                None,
+                None,
+            ))
+            .await
+            .unwrap();
+        assert_eq!(admin_caps.status(), StatusCode::OK);
+        let admin_caps = body_json(admin_caps).await;
+        assert_eq!(admin_caps["can_read_subscribers"], true);
+        assert_eq!(admin_caps["can_manage_subscribers"], true);
+
+        let help_caps = app
+            .clone()
+            .oneshot(req(
+                "GET",
+                "/api/v1/capabilities",
+                host,
+                Some(help_cookie),
+                None,
+                None,
+            ))
+            .await
+            .unwrap();
+        assert_eq!(help_caps.status(), StatusCode::OK);
+        let help_caps = body_json(help_caps).await;
+        assert_eq!(help_caps["can_read_subscribers"], true);
+        assert_eq!(help_caps["can_manage_subscribers"], false);
+
+        let subscriber_body = |id: &str, name: &str, ont: &str| {
+            json!({
+                "subscriber_id":id,"display_name":name,"pppoe_username":Value::Null,
+                "pop_code":"POP-R1005","site_code":"SITE-R1005",
+                "distribution_device_id":router_id.to_string(),
+                "access_device_id":olt_id.to_string(),"ont_reference":ont,
+                "expected_revision":0
+            })
+            .to_string()
+        };
+        for (id, name, ont) in [
+            ("SUB-R1005-A", "Customer A", "1/1/1:1"),
+            ("SUB-R1005-B", "Customer B", "1/1/1:2"),
+        ] {
+            let created = app
+                .clone()
+                .oneshot(req(
+                    "POST",
+                    "/api/v1/subscribers",
+                    host,
+                    Some(admin_cookie),
+                    Some(admin_csrf),
+                    Some(&subscriber_body(id, name, ont)),
+                ))
+                .await
+                .unwrap();
+            assert_eq!(created.status(), StatusCode::CREATED);
+        }
+        let help_write = app
+            .clone()
+            .oneshot(req(
+                "POST",
+                "/api/v1/subscribers",
+                host,
+                Some(help_cookie),
+                Some(help_csrf),
+                Some(&subscriber_body("SUB-R1005-X", "Forbidden", "1/1/1:9")),
+            ))
+            .await
+            .unwrap();
+        assert_eq!(help_write.status(), StatusCode::CONFLICT);
+
+        let help_list = app
+            .clone()
+            .oneshot(req(
+                "GET",
+                "/api/v1/subscribers",
+                host,
+                Some(help_cookie),
+                None,
+                None,
+            ))
+            .await
+            .unwrap();
+        assert_eq!(help_list.status(), StatusCode::OK);
+        let help_list = body_json(help_list).await;
+        assert_eq!(help_list["subscribers"].as_array().unwrap().len(), 2);
+        assert!(help_list["subscribers"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .all(|row| row["topology_state"] == "declared"));
+
+        let diag = connect_admin().await;
+        diag.batch_execute("SET ROLE ipat_diag_ingest_exec")
+            .await
+            .unwrap();
+        let evidence = "2".repeat(64);
+        for (subscriber, signal) in [
+            (None, "distribution_uplink_down"),
+            (Some("SUB-R1005-A"), "subscriber_unreachable"),
+            (Some("SUB-R1005-B"), "subscriber_unreachable"),
+        ] {
+            let row = diag
+                .query_one(
+                    "SELECT ipat_platform.record_diagnostic_observation(
+                 $1::uuid,$2::uuid,$3,$4,'telemetry.http:01',clock_timestamp(),$5)",
+                    &[&tenant, &router_id, &subscriber, &signal, &evidence],
+                )
+                .await
+                .unwrap();
+            assert!(row.get::<_, Option<i64>>(0).is_some());
+        }
+
+        let path =
+            format!("/api/v1/diagnostics?distribution_device_id={router_id}&max_age_seconds=300");
+        let before = app
+            .clone()
+            .oneshot(req("GET", &path, host, Some(help_cookie), None, None))
+            .await
+            .unwrap();
+        assert_eq!(before.status(), StatusCode::OK);
+        let before = body_json(before).await;
+        assert_eq!(before["hypothesis"], "insufficient_evidence");
+        assert_eq!(before["topology_verified"], false);
+        assert_eq!(before["remediation_permitted"], false);
+
+        let topology = connect_admin().await;
+        topology
+            .batch_execute("SET ROLE ipat_topology_verify_exec")
+            .await
+            .unwrap();
+        for (subscriber, ont) in [("SUB-R1005-A", "1/1/1:1"), ("SUB-R1005-B", "1/1/1:2")] {
+            let row = topology
+                .query_one(
+                    "SELECT ipat_platform.record_subscriber_topology_verification(
+                 $1::uuid,$2,'POP-R1005','SITE-R1005',$3::uuid,$4::uuid,$5,
+                 'topology.http:01',clock_timestamp(),$6)",
+                    &[&tenant, &subscriber, &router_id, &olt_id, &ont, &evidence],
+                )
+                .await
+                .unwrap();
+            assert!(row.get::<_, bool>(0));
+        }
+        let after = app
+            .clone()
+            .oneshot(req("GET", &path, host, Some(help_cookie), None, None))
+            .await
+            .unwrap();
+        assert_eq!(after.status(), StatusCode::OK);
+        let after = body_json(after).await;
+        assert_eq!(after["hypothesis"], "distribution_path");
+        assert_eq!(after["topology_verified"], true);
+        assert_eq!(after["affected_subscribers"].as_array().unwrap().len(), 2);
+        assert_eq!(after["remediation_permitted"], false);
+        assert!(after["evidence"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .all(|e| e["evidence_sha256"] == evidence));
+
+        let wrong_host = app
+            .clone()
+            .oneshot(req(
+                "GET",
+                "/api/v1/subscribers",
+                "other-r1005.example.net",
+                Some(help_cookie),
+                None,
+                None,
+            ))
+            .await
+            .unwrap();
+        assert_eq!(wrong_host.status(), StatusCode::UNAUTHORIZED);
+
+        // Remove synthetic fixtures in FK-safe order.
+        admin
+            .execute(
+                "DELETE FROM ipat_ops.diagnostic_observations WHERE tenant_id=$1",
+                &[&tenant],
+            )
+            .await
+            .unwrap();
+        admin
+            .execute(
+                "DELETE FROM ipat_ops.subscribers WHERE tenant_id=$1",
+                &[&tenant],
+            )
+            .await
+            .unwrap();
+        admin
+            .execute(
+                "DELETE FROM ipat_platform.tenant_browser_sessions WHERE tenant_id=$1",
+                &[&tenant],
+            )
+            .await
+            .unwrap();
+        admin
+            .execute(
+                "DELETE FROM ipat_platform.identity_pop_grants WHERE tenant_id=$1",
+                &[&tenant],
+            )
+            .await
+            .unwrap();
+        admin
+            .execute(
+                "DELETE FROM ipat_ops.managed_device_audit WHERE tenant_id=$1",
+                &[&tenant],
+            )
+            .await
+            .unwrap();
+        admin
+            .execute(
+                "DELETE FROM ipat_ops.managed_devices WHERE tenant_id=$1",
+                &[&tenant],
+            )
+            .await
+            .unwrap();
+        admin
+            .execute(
+                "DELETE FROM ipat_ops.tenant_site_events WHERE tenant_id=$1",
+                &[&tenant],
+            )
+            .await
+            .unwrap();
+        admin
+            .execute(
+                "DELETE FROM ipat_ops.tenant_sites WHERE tenant_id=$1",
+                &[&tenant],
+            )
+            .await
+            .unwrap();
+        admin
+            .execute(
+                "DELETE FROM ipat_ops.tenant_pop_events WHERE tenant_id=$1",
+                &[&tenant],
+            )
+            .await
+            .unwrap();
+        admin
+            .execute(
+                "DELETE FROM ipat_ops.tenant_pops WHERE tenant_id=$1",
                 &[&tenant],
             )
             .await

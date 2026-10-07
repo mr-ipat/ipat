@@ -255,6 +255,7 @@ dependencies = [
  "authz-core",
  "axum",
  "base64",
+ "diagnostic-core",
  "hickory-resolver",
  "identity-core",
  "jsonwebtoken",

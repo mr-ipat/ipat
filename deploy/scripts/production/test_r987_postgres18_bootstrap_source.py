@@ -8,7 +8,7 @@ MANIFEST=(ROOT/"db/production/r987_migrations.sha256").read_text().splitlines()
 
 class R987BootstrapSource(unittest.TestCase):
     def test_manifest_is_pinned_and_complete(self):
-        self.assertEqual(len(MANIFEST),25)
+        self.assertEqual(len(MANIFEST),26)
         for line in MANIFEST:
             digest,path=line.split("  ")
             self.assertEqual(len(digest),64)

@@ -1250,3 +1250,6 @@ Customer ingress is a one-customer transaction layered after the shared R9.97 pl
 
 ## R9.99 — Evidence-only customer release marker
 R9.98 owns customer OIDC/domain activation; R9.99 owns only the final release evidence boundary. It validates a real-browser acceptance artifact and reads exact active domain state through the ingress-verifier security-definer function, then writes a root-owned release marker. No service restart, ingress mutation, DNS update or device action occurs at this layer.
+
+## R10.05 — Subscriber topology and diagnostic evidence boundary
+Subscriber 360 extends the canonical tenant subscriber row and references existing POP, Site and managed-device masters using tenant-compound foreign keys. Browser/API declarations are not telemetry truth. A separate topology verifier can promote only an exact tuple observed after its declaration timestamp, while a distinct diagnostic-ingest executor can append normalized observations. The commercial API reads only scope-filtered rows/functions, constructs a verified server-side diagnostic scope and invokes diagnostic-core; it never trusts tenant, role, POP or topology flags from browser input. Diagnostic output has no write/remediation path.
