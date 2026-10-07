@@ -267,3 +267,10 @@ Exact current physical show alarm crtv-active read over owner-private strict pin
 
 ## R10.05 Subscriber 360 + diagnostics source candidate (2026-10-07)
 Adds tenant-compound Subscriber 360 topology, scoped read/CAS admin declaration, separately attested topology, normalized bounded evidence ingestion and commercial read-only diagnostic endpoint/UI. Audit hardened stale topology replay, anonymous neighbor evidence, missing-CWMP overclaim and unverified-topology ONT/PPPoE classification. Disposable PostgreSQL16 selected commercial regression + R10.05 is 59/59 PASS. This advances diagnostic product scope and tenant/RBAC source isolation, but production remains PARTIAL/BLOCKED until exact-head CI, PostgreSQL18 first-install, real external two-tenant browser acceptance and independently qualified physical telemetry producers.
+
+
+## R10.06 DEV-01 bounded OLT-side optical read
+Actual fixed read on PON 1/1/1 confirms the C320 accepts the OLT transmit-power query, but current result is N/A. This is useful command-path evidence, not an optical measurement or health verdict. Zero writes and no subscriber/ONU identity data. AC-12 remains PARTIAL: aggregate ONU counts are accepted, alarms remain semantically unresolved, OLT Tx measurement unavailable, ONU optics/traffic/SNMP/native restore and all untested device families remain open.
+
+### R10.06 diagnostic freshness timing correction
+R10.06 CI exposed a real R10.05 time-boundary bug: PostgreSQL epoch numeric-to-bigint rounding could serialize a fresh observation one second ahead of the Rust floored clock, intermittently turning an otherwise valid diagnostic request into HTTP503. Migration 0036 is append-only and replaces only Subscriber360/diagnostic epoch outputs with explicit floor. Regression proves the rounding difference and exact function definitions. This hardens AC-06 source behavior; it does not change physical telemetry qualification or public production status.
