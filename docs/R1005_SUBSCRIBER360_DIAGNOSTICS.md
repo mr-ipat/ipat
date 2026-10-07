@@ -29,4 +29,4 @@ Rust diagnostic-core returns distribution-path, ONT/access, PPPoE-authentication
 - Physical telemetry producers remain independently unqualified until actual device tests pass.
 
 ## Pre-publication isolated evidence
-Exact candidate source passed pinned Rust1.98.1 formatting, diagnostic-core 11/11 and full locked offline control-api 113/113 on a clean rootless owner-VPS checkout. A clean pinned Ubuntu26/PostgreSQL18 first-install rehearsal applied the 26-file manifest including migration 0035 and passed all restricted local-socket identity/no-TCP checks. These are source/disposable proofs, not production telemetry or public tenant acceptance.
+Exact candidate source passed pinned Rust1.98.1 formatting, diagnostic-core 11/11 and full locked offline control-api 113/113 on a clean rootless owner-VPS checkout. A clean pinned Ubuntu26/PostgreSQL18 first-install rehearsal applied the 27-file manifest including migration 0035 and passed all restricted local-socket identity/no-TCP checks. These are source/disposable proofs, not production telemetry or public tenant acceptance.

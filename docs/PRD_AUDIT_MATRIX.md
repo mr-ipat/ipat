@@ -271,3 +271,6 @@ Adds tenant-compound Subscriber 360 topology, scoped read/CAS admin declaration,
 
 ## R10.06 DEV-01 bounded OLT-side optical read
 Actual fixed read on PON 1/1/1 confirms the C320 accepts the OLT transmit-power query, but current result is N/A. This is useful command-path evidence, not an optical measurement or health verdict. Zero writes and no subscriber/ONU identity data. AC-12 remains PARTIAL: aggregate ONU counts are accepted, alarms remain semantically unresolved, OLT Tx measurement unavailable, ONU optics/traffic/SNMP/native restore and all untested device families remain open.
+
+### R10.06 diagnostic freshness timing correction
+R10.06 CI exposed a real R10.05 time-boundary bug: PostgreSQL epoch numeric-to-bigint rounding could serialize a fresh observation one second ahead of the Rust floored clock, intermittently turning an otherwise valid diagnostic request into HTTP503. Migration 0036 is append-only and replaces only Subscriber360/diagnostic epoch outputs with explicit floor. Regression proves the rounding difference and exact function definitions. This hardens AC-06 source behavior; it does not change physical telemetry qualification or public production status.

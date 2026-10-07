@@ -236,5 +236,26 @@ class Subscriber360(unittest.TestCase):
           "'ipat_platform.record_diagnostic_observation(uuid,uuid,text,text,text,timestamptz,text)',"
           "'EXECUTE')::int").stdout.strip(),"0")
 
+
+    def test_06_integer_epoch_never_rounds_fraction_into_future(self):
+        # PostgreSQL numeric -> bigint rounds .5+ upward. Runtime freshness uses
+        # floored Unix seconds, so function output must explicitly floor.
+        row=sql(
+          "SELECT floor(extract(epoch from timestamp with time zone "
+          "'2030-01-01 00:00:00.999999+00'))::bigint||'|'||"
+          "(extract(epoch from timestamp with time zone "
+          "'2030-01-01 00:00:00.999999+00')::bigint)"
+        ).stdout.strip()
+        floor_value,rounded_value=map(int,row.split('|'))
+        self.assertEqual(rounded_value,floor_value+1)
+        definition=sql(
+          "SELECT pg_get_functiondef('ipat_platform.list_diagnostic_observations(text,text,uuid,uuid)'::regprocedure)"
+        ).stdout
+        self.assertIn("floor(extract(epoch from o.observed_at))::bigint",definition)
+        subscriber_def=sql(
+          "SELECT pg_get_functiondef('ipat_platform.list_subscriber360(text,text,uuid)'::regprocedure)"
+        ).stdout
+        self.assertIn("floor(extract(epoch from s.topology_verified_at))::bigint",subscriber_def)
+
 if __name__=="__main__":
     unittest.main()
