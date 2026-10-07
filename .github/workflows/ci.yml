@@ -657,6 +657,11 @@ jobs:
           grep -Fq 'BLOCKED_EXACT_ALIAS_REQUIRED' deploy/scripts/production/r1001_c320_exact_tuple_read.py
           grep -Fq 'physical_writes: 0' docs/evidence/R1001_DEV01_C320_TUPLE_20261006.yaml
           grep -Fq 'vendor alias unresolved' docs/PROJECT_STATUS.md
+      - name: R10.03 C320 capability catalog reflects R10.02 physical acceptance
+        run: |
+          cargo test --locked -p control-api c320_live_lab::tests::owner_catalog_never_authorizes_an_unqualified_command -- --exact
+          grep -Fq '"endpoint":"/lab/c320-owner-live-refresh"' apps/control-api/src/c320_live_lab.rs
+          grep -Fq R10.03 docs/PROJECT_STATUS.md
       - name: R10.02 safe C320 REFRESH diagnostic contract
         run: |
           python3 -m unittest deploy/scripts/lab/r1002/test_safe_refresh_diagnostics.py -v

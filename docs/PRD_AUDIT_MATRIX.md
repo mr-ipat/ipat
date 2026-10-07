@@ -258,3 +258,6 @@ Exact R10.02 source on owner-private DEV-01 resolved the former REFRESH 503 as t
 
 ### R10.02 final — DEV-01 protected aggregate PON count read
 PR #198 exact final head `9c19ad6fb66d8050ae277eb2e934caa2c34a44ff` passed GitHub Actions run `37471279408` SUCCESS 4/4 and merged canonical main `cea5bd6fde20fb0b72dc0ea69831225a3ffe1369`. Isolated owner-VPS connector/parser tests 16/16 and full control-api 112/112 passed before publication. After merge, transactional nonroot private connector rollout preserved rollback evidence and both private services. The normal protected HTTP REFRESH returned exact PON 1/1/1 aggregate result: 72 configured, 0 online, 72 offline, 0 unconfigured; no serial/subscriber detail and no physical write. AC-12 remains PARTIAL because alarms/optics/SNMP/native restore/write eligibility and other pilot devices remain unqualified.
+
+### R10.03 — truthful DEV-01 operation catalog candidate
+After R10.02 protected HTTP aggregate PON read passed physically, the private capability catalog now exposes only the same verified fixed `onu_counts` read as AVAILABLE_READ_ONLY alongside cards and firmware. Disconnect/credential/write-safety failure removes availability; all alarm/optics/per-ONU/write operations remain nonexecutable. Source/CI/private preview rollout remain separately verified before closure.
