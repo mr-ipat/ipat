@@ -1576,6 +1576,7 @@ fn diagnostic_signal(raw: &str) -> Option<Signal> {
         "ont_optical_normal" => Signal::OntOpticalNormal,
         "pppoe_authentication_rejected" => Signal::PppoeAuthenticationRejected,
         "cwmp_inform_missing" => Signal::CwmpInformMissing,
+        "access_pon_all_configured_offline" => Signal::AccessPonAllConfiguredOffline,
         _ => return None,
     })
 }
@@ -1589,6 +1590,7 @@ fn diagnostic_signal_name(value: Signal) -> &'static str {
         Signal::OntOpticalNormal => "ont_optical_normal",
         Signal::PppoeAuthenticationRejected => "pppoe_authentication_rejected",
         Signal::CwmpInformMissing => "cwmp_inform_missing",
+        Signal::AccessPonAllConfiguredOffline => "access_pon_all_configured_offline",
     }
 }
 fn hypothesis_name(value: Hypothesis) -> &'static str {
@@ -1596,6 +1598,7 @@ fn hypothesis_name(value: Hypothesis) -> &'static str {
         Hypothesis::DistributionPath => "distribution_path",
         Hypothesis::OntAccess => "ont_access",
         Hypothesis::PppoeAuthentication => "pppoe_authentication",
+        Hypothesis::AccessPonSegment => "access_pon_segment",
         Hypothesis::InsufficientEvidence => "insufficient_evidence",
         Hypothesis::ConflictingEvidence => "conflicting_evidence",
     }
@@ -1617,7 +1620,7 @@ async fn diagnostic_snapshot(
     }
     let subscribers =
         s.db.query(
-            "SELECT subscriber_id,pop_code,distribution_device_id,
+            "SELECT subscriber_id,pop_code,distribution_device_id,access_device_id,
                     topology_state,topology_verified_epoch
          FROM ipat_platform.list_subscriber360($1,$2,$3::uuid)",
             &[&a.issuer, &a.subject, &a.tenant_id],
@@ -1635,12 +1638,16 @@ async fn diagnostic_snapshot(
     let mut topology_verified = true;
     let mut topology_oldest_verified_epoch: Option<u64> = None;
     let mut distribution_subscribers = 0usize;
+    let mut subscriber_access = std::collections::BTreeMap::<String, Option<String>>::new();
     for row in &subscribers {
         if row.get::<_, Uuid>(2) == distribution {
             distribution_subscribers += 1;
             pops.insert(row.get::<_, String>(1));
-            let state: String = row.get(3);
-            let verified: Option<i64> = row.get(4);
+            let subscriber_id: String = row.get(0);
+            let access_id: Option<Uuid> = row.get(3);
+            subscriber_access.insert(subscriber_id, access_id.map(|v| v.to_string()));
+            let state: String = row.get(4);
+            let verified: Option<i64> = row.get(5);
             let current = state == "verified"
                 && verified.is_some_and(|epoch| {
                     epoch >= 0
@@ -1668,7 +1675,7 @@ async fn diagnostic_snapshot(
     let pop = pops.into_iter().next().expect("one pop");
     let rows =
         s.db.query(
-            "SELECT subscriber_id,signal,source_id,observed_epoch,evidence_sha256
+            "SELECT subscriber_id,access_device_id,signal,source_id,observed_epoch,evidence_sha256
          FROM ipat_platform.list_diagnostic_observations($1,$2,$3::uuid,$4::uuid)",
             &[&a.issuer, &a.subject, &a.tenant_id, &distribution],
         )
@@ -1681,24 +1688,33 @@ async fn diagnostic_snapshot(
         Err(_) => return denied(StatusCode::SERVICE_UNAVAILABLE),
     };
     let mut observations = Vec::with_capacity(rows.len());
-    let mut evidence_hashes =
-        std::collections::BTreeMap::<(String, u64, Option<String>, String), String>::new();
+    let mut evidence_hashes = std::collections::BTreeMap::<
+        (String, u64, Option<String>, Option<String>, String),
+        String,
+    >::new();
     for row in rows {
-        let signal_raw: String = row.get(1);
+        let signal_raw: String = row.get(2);
         let Some(signal) = diagnostic_signal(&signal_raw) else {
             return denied(StatusCode::SERVICE_UNAVAILABLE);
         };
-        let observed: i64 = row.get(3);
+        let observed: i64 = row.get(4);
         if observed < 0 {
             return denied(StatusCode::SERVICE_UNAVAILABLE);
         }
         let subscriber_id: Option<String> = row.get(0);
-        let source_id: String = row.get(2);
-        let evidence_sha: String = row.get(4);
+        let stored_access_id: Option<Uuid> = row.get(1);
+        let access_id = stored_access_id.map(|v| v.to_string()).or_else(|| {
+            subscriber_id
+                .as_ref()
+                .and_then(|id| subscriber_access.get(id).cloned().flatten())
+        });
+        let source_id: String = row.get(3);
+        let evidence_sha: String = row.get(5);
         let key = (
             source_id.clone(),
             observed as u64,
             subscriber_id.clone(),
+            access_id.clone(),
             signal_raw.clone(),
         );
         if evidence_hashes.insert(key, evidence_sha).is_some() {
@@ -1709,6 +1725,7 @@ async fn diagnostic_snapshot(
             pop_id: pop.clone(),
             distribution_id: distribution.to_string(),
             subscriber_id,
+            access_id,
             signal,
             source_id,
             observed_at_epoch: observed as u64,
@@ -1725,7 +1742,10 @@ async fn diagnostic_snapshot(
         Err(_) => return denied(StatusCode::SERVICE_UNAVAILABLE),
     };
     let uncertainty = match result.hypothesis {
-        Hypothesis::DistributionPath | Hypothesis::OntAccess | Hypothesis::PppoeAuthentication
+        Hypothesis::DistributionPath
+        | Hypothesis::OntAccess
+        | Hypothesis::PppoeAuthentication
+        | Hypothesis::AccessPonSegment
             if topology_verified && result.evidence.len() >= 3 =>
         {
             "medium"
@@ -1740,10 +1760,12 @@ async fn diagnostic_snapshot(
                 o.source_id.clone(),
                 o.observed_at_epoch,
                 o.subscriber_id.clone(),
+                o.access_id.clone(),
                 diagnostic_signal_name(o.signal).to_string(),
             );
             json!({
                 "subscriber_id":o.subscriber_id,
+                "access_device_id":o.access_id,
                 "signal":diagnostic_signal_name(o.signal),
                 "source_id":o.source_id,
                 "observed_at_epoch":o.observed_at_epoch,
@@ -3188,7 +3210,6 @@ mod pg_integration {
             .unwrap();
         let evidence = "2".repeat(64);
         for (subscriber, signal) in [
-            (None, "distribution_uplink_down"),
             (Some("SUB-R1005-A"), "subscriber_unreachable"),
             (Some("SUB-R1005-B"), "subscriber_unreachable"),
         ] {
@@ -3233,22 +3254,76 @@ mod pg_integration {
                 .unwrap();
             assert!(row.get::<_, bool>(0));
         }
-        let after = app
+        let verified_without_access = app
             .clone()
             .oneshot(req("GET", &path, host, Some(help_cookie), None, None))
             .await
             .unwrap();
-        assert_eq!(after.status(), StatusCode::OK);
-        let after = body_json(after).await;
-        assert_eq!(after["hypothesis"], "distribution_path");
-        assert_eq!(after["topology_verified"], true);
-        assert_eq!(after["affected_subscribers"].as_array().unwrap().len(), 2);
-        assert_eq!(after["remediation_permitted"], false);
-        assert!(after["evidence"]
+        assert_eq!(verified_without_access.status(), StatusCode::OK);
+        let verified_without_access = body_json(verified_without_access).await;
+        assert_eq!(
+            verified_without_access["hypothesis"],
+            "insufficient_evidence"
+        );
+        assert_eq!(verified_without_access["topology_verified"], true);
+
+        let pon = diag
+            .query_one(
+                "SELECT ipat_platform.record_access_pon_aggregate_observation(
+                 $1::uuid,$2::uuid,$3::uuid,'c320.http:dev01',
+                 clock_timestamp(),$4,72,0,72)",
+                &[&tenant, &router_id, &olt_id, &evidence],
+            )
+            .await
+            .unwrap();
+        assert!(pon.get::<_, Option<i64>>(0).is_some());
+
+        let access = app
+            .clone()
+            .oneshot(req("GET", &path, host, Some(help_cookie), None, None))
+            .await
+            .unwrap();
+        assert_eq!(access.status(), StatusCode::OK);
+        let access = body_json(access).await;
+        assert_eq!(access["hypothesis"], "access_pon_segment");
+        assert_eq!(access["topology_verified"], true);
+        assert_eq!(access["affected_subscribers"].as_array().unwrap().len(), 2);
+        assert_eq!(access["remediation_permitted"], false);
+        assert!(access["evidence"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|e| e["signal"] == "access_pon_all_configured_offline"
+                && e["access_device_id"] == olt_id.to_string()));
+        assert!(access["evidence"]
             .as_array()
             .unwrap()
             .iter()
             .all(|e| e["evidence_sha256"] == evidence));
+
+        let distribution = diag
+            .query_one(
+                "SELECT ipat_platform.record_diagnostic_observation(
+                 $1::uuid,$2::uuid,NULL,'distribution_uplink_down',
+                 'telemetry.http:01',clock_timestamp(),$3)",
+                &[&tenant, &router_id, &evidence],
+            )
+            .await
+            .unwrap();
+        assert!(distribution.get::<_, Option<i64>>(0).is_some());
+        let conflict = app
+            .clone()
+            .oneshot(req("GET", &path, host, Some(help_cookie), None, None))
+            .await
+            .unwrap();
+        assert_eq!(conflict.status(), StatusCode::OK);
+        let conflict = body_json(conflict).await;
+        assert_eq!(conflict["hypothesis"], "conflicting_evidence");
+        assert!(conflict["affected_subscribers"]
+            .as_array()
+            .unwrap()
+            .is_empty());
+        assert_eq!(conflict["remediation_permitted"], false);
 
         let wrong_host = app
             .clone()

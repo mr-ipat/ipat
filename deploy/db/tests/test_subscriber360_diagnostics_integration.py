@@ -237,7 +237,46 @@ class Subscriber360(unittest.TestCase):
           "'EXECUTE')::int").stdout.strip(),"0")
 
 
-    def test_06_integer_epoch_never_rounds_fraction_into_future(self):
+    def test_06_access_pon_aggregate_is_device_bound_and_count_strict(self):
+        signature=("ipat_platform.record_access_pon_aggregate_observation("
+          "uuid,uuid,uuid,text,timestamptz,text,integer,integer,integer)")
+        self.assertEqual(sql(
+          f"SELECT has_function_privilege('ipat_tenant_api_login','{signature}','EXECUTE')::int"
+        ).stdout.strip(),"0")
+        good=sql(
+          "SELECT ipat_platform.record_access_pon_aggregate_observation("
+          f"'{T1}','{ROUTER1}','{OLT1}','c320.owner:dev01',now(),'{SHA}',72,0,72)",
+          "ipat_diag_ingest_exec").stdout.strip()
+        self.assertRegex(good,r"^\d+$")
+        for bad in [
+          f"'{T1}','{ROUTER1}','{OLT1}','c320.owner:dev01',now(),'{SHA}',72,1,71",
+          f"'{T1}','{ROUTER1}','{OLT1}','c320.owner:dev01',now(),'{SHA}',0,0,0",
+          f"'{T1}','{ROUTER1}','{OLT1B}','c320.owner:dev01',now(),'{SHA}',72,0,72",
+          f"'{T1}','{OLT1}','{OLT1}','c320.owner:dev01',now(),'{SHA}',72,0,72",
+        ]:
+            self.assertEqual(sql(
+              "SELECT ipat_platform.record_access_pon_aggregate_observation("+bad+")",
+              "ipat_diag_ingest_exec").stdout.strip(),"")
+        row=sql(
+          "SELECT coalesce(subscriber_id,'-')||'|'||coalesce(access_device_id::text,'-')||'|'||signal "
+          "FROM ipat_platform.list_diagnostic_observations("
+          f"'{ISS}','{ADMIN1}','{T1}','{ROUTER1}') "
+          "WHERE signal='access_pon_all_configured_offline'",
+          "ipat_tenant_api_login").stdout.strip()
+        self.assertEqual(row,f"-|{OLT1}|access_pon_all_configured_offline")
+
+    def test_07_access_aggregate_cannot_cross_scope_or_raw_table(self):
+        self.assertEqual(sql(
+          "SELECT signal FROM ipat_platform.list_diagnostic_observations("
+          f"'{ISS}','{HELP_NO_SCOPE}','{T1}','{ROUTER1}') "
+          "WHERE signal='access_pon_all_configured_offline'",
+          "ipat_tenant_api_login").stdout.strip(),"")
+        for role in ("ipat_tenant_api_login","ipat_app_runtime"):
+            denied=sql("SELECT access_device_id FROM ipat_ops.diagnostic_observations LIMIT 1",
+                       role,check=False)
+            self.assertNotEqual(denied.returncode,0)
+
+    def test_08_integer_epoch_never_rounds_fraction_into_future(self):
         # PostgreSQL numeric -> bigint rounds .5+ upward. Runtime freshness uses
         # floored Unix seconds, so function output must explicitly floor.
         row=sql(

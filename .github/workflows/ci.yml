@@ -624,10 +624,11 @@ jobs:
           grep -Fq 'measurement_available: false' docs/evidence/R1006_DEV01_C320_PON111_OLT_TX_20261007.yaml
           grep -Fq 'diagnostic_health_inferred: false' docs/evidence/R1006_DEV01_C320_PON111_OLT_TX_20261007.yaml
           grep -Fq R10.06 docs/PROJECT_STATUS.md
-      - name: R10.05 Subscriber360 declared topology scoped diagnostics
+      - name: R10.08 Subscriber360 verified access-PON aggregate diagnostics
         run: |
           psql -X -v ON_ERROR_STOP=1 -f deploy/db/migrations/0035_subscriber360_diagnostics.sql
           psql -X -v ON_ERROR_STOP=1 -f deploy/db/migrations/0036_diagnostic_epoch_floor.sql
+          psql -X -v ON_ERROR_STOP=1 -f deploy/db/migrations/0038_access_pon_aggregate_diagnostics.sql
           python3 -m unittest deploy/db/tests/test_subscriber360_diagnostics_integration.py -v
           cargo test --locked -p diagnostic-core -q
           cargo test --locked -p control-api commercial_tenant_api::pg_integration::r1005_real_pg_axum_scoped_subscriber360_and_verified_diagnostics -- --exact
@@ -635,7 +636,9 @@ jobs:
           node deploy/scripts/lab/r1005/test_subscriber_diagnostics_ui.cjs
           python3 -m unittest deploy/scripts/production/test_r987_postgres18_bootstrap_source.py -v
           grep -Fq record_subscriber_topology_verification deploy/db/migrations/0035_subscriber360_diagnostics.sql
-          grep -Fq R10.05 docs/PROJECT_STATUS.md
+          grep -Fq record_access_pon_aggregate_observation deploy/db/migrations/0038_access_pon_aggregate_diagnostics.sql
+          grep -Fq AccessPonSegment crates/diagnostic-core/src/lib.rs
+          grep -Fq R10.08 docs/PROJECT_STATUS.md
       - name: R9.95 dedicated DNS ownership verifier runtime source
         run: |
           bash -n deploy/scripts/production/r995_prepare_domain_ownership_verifier.sh
