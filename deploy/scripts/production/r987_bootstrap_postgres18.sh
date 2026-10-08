@@ -104,7 +104,7 @@ HBA
 useradd --system --no-create-home --home-dir /nonexistent --shell /usr/sbin/nologin ipatpgmigrate
 pg_ctlcluster --skip-systemctl-redirect 18 ipat start
 ready=NO
-for _ in {1..30}; do
+for _ in {1..31}; do
   if runuser -u postgres -- psql -X -Atqc 'select 1' postgres >/dev/null 2>&1; then ready=YES; break; fi
   sleep .2
 done

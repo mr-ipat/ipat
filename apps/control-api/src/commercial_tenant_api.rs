@@ -123,12 +123,13 @@ async fn capabilities(
     } else {
         (false, false)
     };
-    let (can_create_pppoe_plans, can_review_pppoe_plans) =
+    let (can_create_pppoe_plans, can_review_pppoe_plans, can_arm_pppoe_plans) =
         match pppoe_role_capabilities(&s.db, &a).await {
             Ok(caps) => caps,
             Err(status) => return denied(status),
         };
-    let can_manage_pppoe_plans = can_create_pppoe_plans || can_review_pppoe_plans;
+    let can_manage_pppoe_plans =
+        can_create_pppoe_plans || can_review_pppoe_plans || can_arm_pppoe_plans;
     let scoped =
         s.db.query(
             "SELECT pop_id FROM ipat_platform.current_noc_pop_scopes($1,$2,$3::uuid)",
@@ -169,6 +170,7 @@ async fn capabilities(
         "can_manage_pppoe_plans":can_manage_pppoe_plans,
         "can_create_pppoe_plans":can_create_pppoe_plans,
         "can_review_pppoe_plans":can_review_pppoe_plans,
+        "can_arm_pppoe_plans":can_arm_pppoe_plans,
         "noc_pops":noc_pops,"real_noc_pops":real_noc_pops,
         "can_read_noc":can_read_noc}),
     )
@@ -394,6 +396,19 @@ async fn actor(
     )
     .await
 }
+async fn high_risk_actor(
+    db: &Client,
+    headers: &HeaderMap,
+) -> Option<durable_tenant_session::HighRiskSessionContext> {
+    let h = host(headers)?;
+    let c = cookie(headers)?;
+    let csrf_token = csrf(headers)?;
+    if !mutation_origin(headers, &h) {
+        return None;
+    }
+    durable_tenant_session::authenticate_high_risk(db, c, csrf_token, &h).await
+}
+
 fn uuid_v4() -> Option<Uuid> {
     let mut b = [0u8; 16];
     File::open("/dev/urandom").ok()?.read_exact(&mut b).ok()?;
@@ -466,30 +481,45 @@ struct NocGrantRevoke {
 async fn pppoe_role_capabilities(
     db: &Client,
     actor: &durable_tenant_session::DurableSessionContext,
-) -> Result<(bool, bool), StatusCode> {
-    let ready = db
+) -> Result<(bool, bool, bool), StatusCode> {
+    let row = db
         .query_one(
             "SELECT
               to_regprocedure('ipat_platform.pppoe_batch_create_capability(text,text,uuid)') IS NOT NULL
-              AND to_regprocedure('ipat_platform.pppoe_batch_review_capability(text,text,uuid)') IS NOT NULL",
+              AND to_regprocedure('ipat_platform.pppoe_batch_review_capability(text,text,uuid)') IS NOT NULL,
+              to_regprocedure('ipat_platform.pppoe_execution_arm_capability(text,text,uuid)') IS NOT NULL",
             &[],
         )
         .await
-        .map_err(|_| StatusCode::SERVICE_UNAVAILABLE)?
-        .get::<_, bool>(0);
-    if !ready {
-        return Ok((false, false));
+        .map_err(|_| StatusCode::SERVICE_UNAVAILABLE)?;
+    let base_ready: bool = row.get(0);
+    let arm_ready: bool = row.get(1);
+    if !base_ready {
+        return Ok((false, false, false));
+    }
+    if !arm_ready {
+        let row = db
+            .query_one(
+                "SELECT
+                   ipat_platform.pppoe_batch_create_capability($1,$2,$3::uuid),
+                   ipat_platform.pppoe_batch_review_capability($1,$2,$3::uuid)",
+                &[&actor.issuer, &actor.subject, &actor.tenant_id],
+            )
+            .await
+            .map_err(|_| StatusCode::SERVICE_UNAVAILABLE)?;
+        return Ok((row.get(0), row.get(1), false));
     }
     let row = db
         .query_one(
             "SELECT
                ipat_platform.pppoe_batch_create_capability($1,$2,$3::uuid),
-               ipat_platform.pppoe_batch_review_capability($1,$2,$3::uuid)",
+               ipat_platform.pppoe_batch_review_capability($1,$2,$3::uuid),
+               ipat_platform.pppoe_execution_arm_capability($1,$2,$3::uuid)",
             &[&actor.issuer, &actor.subject, &actor.tenant_id],
         )
         .await
         .map_err(|_| StatusCode::SERVICE_UNAVAILABLE)?;
-    Ok((row.get(0), row.get(1)))
+    Ok((row.get(0), row.get(1), row.get(2)))
 }
 
 async fn tenant_admin_actor(
@@ -1620,6 +1650,12 @@ struct PppoePlanCreate {
 struct PppoePlanReview {
     approve: bool,
 }
+
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct PppoeExecutionArm {
+    confirm: String,
+}
 fn pppoe_plan_digest(router: Uuid, items: &[PppoePlanItem]) -> Option<String> {
     if items.is_empty() || items.len() > 128 {
         return None;
@@ -1640,11 +1676,11 @@ async fn list_pppoe_plans(
     let Some(a) = actor(&s.db, &headers, false).await else {
         return denied(StatusCode::UNAUTHORIZED);
     };
-    let (can_create, can_review) = match pppoe_role_capabilities(&s.db, &a).await {
+    let (can_create, can_review, can_arm) = match pppoe_role_capabilities(&s.db, &a).await {
         Ok(caps) => caps,
         Err(status) => return denied(status),
     };
-    if !(can_create || can_review) {
+    if !(can_create || can_review || can_arm) {
         return denied(StatusCode::FORBIDDEN);
     }
     let rows =
@@ -1675,6 +1711,8 @@ async fn list_pppoe_plans(
                 "execution_allowed":r.get::<_,bool>(14),
                 "physical_readback_verified":r.get::<_,bool>(15),
                 "basis":r.get::<_,String>(16),"can_review":r.get::<_,bool>(17),
+                "can_arm":can_arm && r.get::<_,String>(7)=="approved"
+                    && !r.get::<_,bool>(14),
             })
         })
         .collect::<Vec<_>>();
@@ -1692,11 +1730,11 @@ async fn pppoe_plan_items(
     let Some(a) = actor(&s.db, &headers, false).await else {
         return denied(StatusCode::UNAUTHORIZED);
     };
-    let (can_create, can_review) = match pppoe_role_capabilities(&s.db, &a).await {
+    let (can_create, can_review, can_arm) = match pppoe_role_capabilities(&s.db, &a).await {
         Ok(caps) => caps,
         Err(status) => return denied(status),
     };
-    if !(can_create || can_review) {
+    if !(can_create || can_review || can_arm) {
         return denied(StatusCode::FORBIDDEN);
     }
     let Ok(id) = Uuid::parse_str(&id_raw) else {
@@ -1741,7 +1779,7 @@ async fn create_pppoe_plan(
     let Some(a) = actor(&s.db, &headers, true).await else {
         return denied(StatusCode::UNAUTHORIZED);
     };
-    let (can_create, _) = match pppoe_role_capabilities(&s.db, &a).await {
+    let (can_create, _, _) = match pppoe_role_capabilities(&s.db, &a).await {
         Ok(caps) => caps,
         Err(status) => return denied(status),
     };
@@ -1819,7 +1857,7 @@ async fn review_pppoe_plan(
     let Some(a) = actor(&s.db, &headers, true).await else {
         return denied(StatusCode::UNAUTHORIZED);
     };
-    let (_, can_review) = match pppoe_role_capabilities(&s.db, &a).await {
+    let (_, can_review, _) = match pppoe_role_capabilities(&s.db, &a).await {
         Ok(caps) => caps,
         Err(status) => return denied(status),
     };
@@ -1844,6 +1882,138 @@ async fn review_pppoe_plan(
         )
     } else {
         denied(StatusCode::CONFLICT)
+    }
+}
+
+async fn arm_pppoe_execution(
+    State(s): State<Arc<StateData>>,
+    headers: HeaderMap,
+    Path(id_raw): Path<String>,
+    Json(q): Json<PppoeExecutionArm>,
+) -> (StatusCode, HeaderMap, Json<Value>) {
+    if q.confirm != "ARM_REVIEWED_PPPOE_EXECUTION" {
+        return denied(StatusCode::UNPROCESSABLE_ENTITY);
+    }
+    let Some(high) = high_risk_actor(&s.db, &headers).await else {
+        return denied(StatusCode::UNAUTHORIZED);
+    };
+    let (_, _, can_arm) = match pppoe_role_capabilities(&s.db, &high.actor).await {
+        Ok(caps) => caps,
+        Err(status) => return denied(status),
+    };
+    if !can_arm {
+        return denied(StatusCode::FORBIDDEN);
+    }
+    let Ok(plan) = Uuid::parse_str(&id_raw) else {
+        return denied(StatusCode::UNPROCESSABLE_ENTITY);
+    };
+    let Some(attempt) = uuid_v4() else {
+        return denied(StatusCode::SERVICE_UNAVAILABLE);
+    };
+    let ready =
+        s.db.query_one(
+            "SELECT to_regprocedure(
+              'ipat_platform.arm_pppoe_batch_execution(text,text,text,uuid,uuid)'
+             ) IS NOT NULL",
+            &[],
+        )
+        .await
+        .ok()
+        .is_some_and(|r| r.get::<_, bool>(0));
+    if !ready {
+        return denied(StatusCode::SERVICE_UNAVAILABLE);
+    }
+    let row =
+        s.db.query_one(
+            "SELECT ipat_platform.arm_pppoe_batch_execution(
+              $1,$2,$3,$4::uuid,$5::uuid)",
+            &[
+                &high.cookie_sha256,
+                &high.hostname,
+                &high.csrf_sha256,
+                &plan,
+                &attempt,
+            ],
+        )
+        .await;
+    match row.ok().and_then(|r| r.get::<_, Option<Uuid>>(0)) {
+        Some(id) if id == attempt => response(
+            StatusCode::CREATED,
+            json!({
+                "ok":true,
+                "attempt_id":id.to_string(),
+                "state":"armed",
+                "physical_execution_adapter_enabled":false,
+                "next":"A restricted RouterOS worker must independently claim one item at a time. No generic command path exists."
+            }),
+        ),
+        _ => denied(StatusCode::CONFLICT),
+    }
+}
+
+async fn pppoe_execution_status(
+    State(s): State<Arc<StateData>>,
+    headers: HeaderMap,
+    Path(id_raw): Path<String>,
+) -> (StatusCode, HeaderMap, Json<Value>) {
+    let Some(a) = actor(&s.db, &headers, false).await else {
+        return denied(StatusCode::UNAUTHORIZED);
+    };
+    let (can_create, can_review, can_arm) = match pppoe_role_capabilities(&s.db, &a).await {
+        Ok(v) => v,
+        Err(status) => return denied(status),
+    };
+    if !(can_create || can_review || can_arm) {
+        return denied(StatusCode::FORBIDDEN);
+    }
+    let Ok(plan) = Uuid::parse_str(&id_raw) else {
+        return denied(StatusCode::UNPROCESSABLE_ENTITY);
+    };
+    let available =
+        s.db.query_one(
+            "SELECT to_regprocedure(
+              'ipat_platform.get_pppoe_execution_status(text,text,uuid,uuid)'
+             ) IS NOT NULL",
+            &[],
+        )
+        .await
+        .ok()
+        .is_some_and(|r| r.get::<_, bool>(0));
+    if !available {
+        return response(
+            StatusCode::OK,
+            json!({"ok":true,"attempt":null,"physical_execution_adapter_enabled":false}),
+        );
+    }
+    let row =
+        s.db.query_opt(
+            "SELECT attempt_id,state,armed_at::text,updated_at::text,item_count,
+                    pending_count,unknown_count,verified_count,
+                    physical_execution_adapter_enabled
+             FROM ipat_platform.get_pppoe_execution_status($1,$2,$3::uuid,$4::uuid)",
+            &[&a.issuer, &a.subject, &a.tenant_id, &plan],
+        )
+        .await;
+    match row {
+        Ok(Some(r)) => response(
+            StatusCode::OK,
+            json!({"ok":true,"attempt":{
+                "id":r.get::<_,Uuid>(0).to_string(),
+                "state":r.get::<_,String>(1),
+                "armed_at":r.get::<_,String>(2),
+                "updated_at":r.get::<_,String>(3),
+                "item_count":r.get::<_,i32>(4),
+                "pending_count":r.get::<_,i32>(5),
+                "unknown_count":r.get::<_,i32>(6),
+                "verified_count":r.get::<_,i32>(7),
+                "physical_execution_adapter_enabled":r.get::<_,bool>(8)
+            }}),
+        ),
+        Ok(None) => response(
+            StatusCode::OK,
+            json!({"ok":true,"attempt":null,"physical_execution_adapter_enabled":false}),
+        ),
+        Err(_) => denied(StatusCode::SERVICE_UNAVAILABLE),
     }
 }
 
@@ -2137,6 +2307,14 @@ pub(super) fn router(db: Arc<Client>) -> Router {
         .route(
             "/api/v1/pppoe-plans/{id}/review",
             axum::routing::post(review_pppoe_plan),
+        )
+        .route(
+            "/api/v1/pppoe-plans/{id}/arm",
+            axum::routing::post(arm_pppoe_execution),
+        )
+        .route(
+            "/api/v1/pppoe-plans/{id}/execution",
+            get(pppoe_execution_status),
         )
         .route("/api/v1/diagnostics", get(diagnostic_snapshot))
         .route("/api/v1/domains", get(list_domains).post(create_domain))

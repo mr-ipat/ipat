@@ -4,7 +4,7 @@
 (() => {
  const $=id=>document.getElementById(id);
  const notice=text=>{$('notice').textContent=text};
- const state={page:null,sites:[],pops:[],popNext:null,devices:[],catalog:[],next:null,editId:null,editRevision:null,pendingSite:null,nocPops:[],realNocPops:[],nocMembers:[],nocAccess:[],pendingNocRequest:null,subscribers:[],subscriberEdit:null,canReadSubscribers:false,canManageSubscribers:false,canManagePppoePlans:false,canCreatePppoePlans:false,canReviewPppoePlans:false,pendingPppoe:null};
+ const state={page:null,sites:[],pops:[],popNext:null,devices:[],catalog:[],next:null,editId:null,editRevision:null,pendingSite:null,nocPops:[],realNocPops:[],nocMembers:[],nocAccess:[],pendingNocRequest:null,subscribers:[],subscriberEdit:null,canReadSubscribers:false,canManageSubscribers:false,canManagePppoePlans:false,canCreatePppoePlans:false,canReviewPppoePlans:false,canArmPppoePlans:false,pendingPppoe:null};
  const csrf=()=>document.cookie.split(';').map(x=>x.trim()).find(x=>x.startsWith('__Host-ipat_csrf='))?.split('=')[1];
  async function api(path,method='GET',body){
   const headers={'Accept':'application/json'};
@@ -258,7 +258,8 @@
    cell(tr,(router?.display_name||p.router_id)+' · '+p.pop_code+' / '+p.site_code);
    cell(tr,p.item_count);cell(tr,p.state);
    cell(tr,p.requested_by+(p.reviewed_by?' / '+p.reviewed_by:''));
-   cell(tr,'rate '+p.rate_limit_per_minute+'/min · execution '+p.execution_allowed+' · readback '+p.physical_readback_verified);
+   cell(tr,'rate '+p.rate_limit_per_minute+'/min · execution gate '+p.execution_allowed+
+     ' · physical readback '+p.physical_readback_verified+' · generic RouterOS adapter disabled');
    const actions=cell(tr,'');actions.textContent='';
    btn(actions,'View',async()=>{try{
     const x=await api('/api/v1/pppoe-plans/'+encodeURIComponent(p.id));
@@ -272,9 +273,26 @@
     notice('Dry-run detail loaded. Secret references and values are not returned.');
    }catch(e){notice(e.message)}});
    if(p.state==='awaiting_approval'&&p.can_review){
-    btn(actions,'Approve dry-run',async()=>{try{await api('/api/v1/pppoe-plans/'+encodeURIComponent(p.id)+'/review','POST',{approve:true});await refreshPppoePlans();notice('Dry-run approved. It is STILL non-executable and no RouterOS command ran.')}catch(e){notice(e.message)}});
+    btn(actions,'Approve dry-run',async()=>{try{await api('/api/v1/pppoe-plans/'+encodeURIComponent(p.id)+'/review','POST',{approve:true});await refreshPppoePlans();notice('Dry-run approved by Security Admin. A distinct current System Admin plus fresh physical readiness is still required.')}catch(e){notice(e.message)}});
     btn(actions,'Reject',async()=>{try{await api('/api/v1/pppoe-plans/'+encodeURIComponent(p.id)+'/review','POST',{approve:false});await refreshPppoePlans();notice('Dry-run rejected.')}catch(e){notice(e.message)}});
    }else if(p.state==='awaiting_approval')actions.append(document.createTextNode(' Awaiting current Security Admin'));
+   if(p.state==='approved'&&p.can_arm){
+    btn(actions,'Arm reviewed execution',async()=>{try{
+      if(!confirm('Arm this approved PPPoE batch only if current physical API-SSL readback and tested recovery evidence exist? No generic RouterOS command is exposed.'))return;
+      const x=await api('/api/v1/pppoe-plans/'+encodeURIComponent(p.id)+'/arm','POST',{confirm:'ARM_REVIEWED_PPPOE_EXECUTION'});
+      await refreshPppoePlans();
+      notice('Execution safety state armed as '+x.state+'. Worker transport remains separately restricted; no generic RouterOS command was sent by this dashboard.');
+    }catch(e){notice(e.message)}});
+   }
+   if(p.state==='approved'||p.execution_allowed){
+    btn(actions,'Execution status',async()=>{try{
+      const x=await api('/api/v1/pppoe-plans/'+encodeURIComponent(p.id)+'/execution');
+      const a=x.attempt;
+      notice(a?('Execution '+a.state+' · pending '+a.pending_count+' · unknown '+a.unknown_count+
+        ' · verified '+a.verified_count+' · physical adapter '+a.physical_execution_adapter_enabled)
+        :'No execution attempt exists. Physical readiness and System Admin release are required.');
+    }catch(e){notice(e.message)}});
+   }
    rows.append(tr);
   }
  }
@@ -398,6 +416,7 @@
   state.canManagePppoePlans=r.can_manage_pppoe_plans===true;
   state.canCreatePppoePlans=r.can_create_pppoe_plans===true;
   state.canReviewPppoePlans=r.can_review_pppoe_plans===true;
+  state.canArmPppoePlans=r.can_arm_pppoe_plans===true;
   if(state.canManagePppoePlans)$('nav-pppoe').hidden=false;
   $('pppoe-create-workspace').hidden=!state.canCreatePppoePlans;
   if(state.canReadSubscribers){$('nav-subscribers').hidden=false;$('nav-diagnostics').hidden=false}

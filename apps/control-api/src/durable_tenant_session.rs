@@ -26,6 +26,15 @@ pub(super) struct DurableSessionContext {
     pub subject: String,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(super) struct HighRiskSessionContext {
+    pub session_id: Uuid,
+    pub actor: DurableSessionContext,
+    pub hostname: String,
+    pub cookie_sha256: String,
+    pub csrf_sha256: String,
+}
+
 pub(super) struct IssuedDurableSession {
     cookie: String,
     csrf: String,
@@ -157,6 +166,40 @@ pub(super) async fn authenticate(
         domain_id: row.get(1),
         issuer: row.get(2),
         subject: row.get(3),
+    })
+}
+
+/// High-risk mutation authentication. The database first performs the same
+/// Host/session/CSRF/current-membership checks as authenticate(), then additionally
+/// requires the MFA-derived session itself to have been issued <=5 minutes ago.
+pub(super) async fn authenticate_high_risk(
+    db: &Client,
+    cookie: &str,
+    csrf: &str,
+    request_host: &str,
+) -> Option<HighRiskSessionContext> {
+    let host = canonical_request_host(request_host)?;
+    let cookie_hash = sha256_hex(cookie)?;
+    let csrf_hash = sha256_hex(csrf)?;
+    let row = db
+        .query_opt(
+            "SELECT session_id,tenant_id,domain_id,issuer,subject
+             FROM ipat_platform.authenticate_tenant_browser_session_high_risk($1,$2,$3)",
+            &[&cookie_hash, &host.as_str(), &csrf_hash],
+        )
+        .await
+        .ok()??;
+    Some(HighRiskSessionContext {
+        session_id: row.get(0),
+        actor: DurableSessionContext {
+            tenant_id: row.get(1),
+            domain_id: row.get(2),
+            issuer: row.get(3),
+            subject: row.get(4),
+        },
+        hostname: host.as_str().to_string(),
+        cookie_sha256: cookie_hash,
+        csrf_sha256: csrf_hash,
     })
 }
 
