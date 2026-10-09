@@ -668,7 +668,9 @@ jobs:
         run: |
           psql -X -v ON_ERROR_STOP=1 -f deploy/db/migrations/0040_pppoe_execution_safety_state.sql
           python3 -m unittest deploy/db/tests/test_pppoe_execution_safety_integration.py -v
-          cargo test --locked -p control-api -q
+          # The unit-tests job already runs the complete Rust suite in a fresh fixture.
+          # Re-running all PG tests here corrupts shared synthetic IDs and lab roles.
+          cargo test --locked -p control-api --no-run
           node --check web/console/tenant/app.js
           node deploy/scripts/lab/r1010/test_pppoe_execution_ui.cjs
           bash -n deploy/db/tests/r1010_docker_repro.sh
