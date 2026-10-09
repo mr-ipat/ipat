@@ -68,6 +68,18 @@ done
 [[ -z $(ss -H -ltn '( sport = :80 or sport = :443 or sport = :3003 or sport = :3005 or sport = :3006 )' 2>/dev/null || true) ]] \
   || die "public/runtime listener already active before reviewed activation"
 
+# Rollback may remove ONLY artifacts not present before this operation.
+# A stale file, directory or dangling symlink requires independent recovery;
+# never arm cleanup that could erase an earlier deployment's state.
+. "$root/deploy/scripts/production/r1014_require_absent.sh"
+r1014_require_absent \
+  "/etc/ipat/platform-api.env" \
+  "/etc/ipat/platform-oidc.env" \
+  "/etc/ipat/tenant-api.env" \
+  "/var/lib/ipat-domain-ownership-verifier" \
+  "/var/lib/ipat/r997-platform-edge.json" \
+  || die "R997_PREEXISTING_ACTIVATION_ARTIFACT requires explicit recovery review"
+
 # Subscripts independently revalidate their own exact env, peer roles and rollback.
 rollback_armed=YES
 trap rollback ERR INT TERM

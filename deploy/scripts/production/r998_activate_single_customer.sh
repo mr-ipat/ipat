@@ -121,6 +121,16 @@ raise SystemExit(0 if expected in vals else 1)' "$verification_value" \
   exit 0
 fi
 
+# Protect already existing customer configuration against a failed retry.
+# All rollback-owned paths must be absent BEFORE any rollback is armed.
+. "$root/deploy/scripts/production/r1014_require_absent.sh"
+r1014_require_absent \
+  "/etc/ipat/tenant-oidc/$instance.env" \
+  "/var/lib/ipat/customer-activations/$domain.json" \
+  || die "R998_PREEXISTING_CUSTOMER_ARTIFACT requires explicit recovery review"
+[[ $(systemctl is-active "ipat-tenant-oidc@$instance.service" 2>/dev/null || true) != active ]] \
+  || die "R998_CUSTOMER_OIDC_ALREADY_ACTIVE requires explicit recovery review"
+
 # First mutation starts only after all exact authority and MFA preflight passed.
 rollback_armed=YES
 trap rollback ERR INT TERM
@@ -136,9 +146,6 @@ else
   install -o root -g root -m 0755 "$verifier_src" "$verifier"
   installed_verifier=YES
 fi
-
-[[ ! -e "/etc/ipat/tenant-oidc/$instance.env" && ! -L "/etc/ipat/tenant-oidc/$instance.env" ]] || die "customer OIDC instance already exists"
-[[ $(systemctl is-active "ipat-tenant-oidc@$instance.service" 2>/dev/null || true) != active ]] || die "customer OIDC service already active"
 
 IPAT_R992_ADD_OIDC=ADD_REVIEWED_TENANT_OIDC_INSTANCE \
 IPAT_R992_OIDC_ENV_SOURCE="$oidc_env" IPAT_R992_OIDC_INSTANCE="$instance" \
