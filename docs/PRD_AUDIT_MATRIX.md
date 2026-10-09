@@ -345,3 +345,13 @@ Commercial tenant UI/API branding source from old PR #195 is rebased on current 
 R10.15 role-reconciliation note: active authenticated users with any of the nine commercial roles must be able to READ company identity branding, because the shared dashboard loads that header before showing their authorized menus; only current Tenant Admin may PATCH. The source now aligns branding's database membership check with R10.09's full role vocabulary. Cross-role browser/OIDC acceptance still requires the real public deployment.
 
 R10.15 shared Postgres regression: initial PR #213 CI 3/4 PASS with branding Rust test failing on duplicate synthetic cookie hash from an unrelated R9.68 fixture. This protects the real uniqueness invariant; subsequent source fix uses distinct non-production fixture data only. Do not count the 3/4 run as a release or source PASS; exact corrected head must return 4/4.
+
+### R10.15 source closure — reviewed main versus live production (2026-10-09)
+
+| Surface | Accepted evidence | Release classification |
+| --- | --- | --- |
+| Company text branding (nine current tenant roles READ, current Tenant Admin only PATCH), finite 6 accent tokens, exact Host/CSRF/CAS/idempotency, no raw tables/foreign media | PR #213 reviewed head `b57379c2`, Actions `37905147363` SUCCESS **4/4**, merged main `7efc99ed`, exact identical tested tree `7bbd3c4a`; backend real Rust/Axum + shared PostgreSQL test included | **SOURCE PASS**, external tenant browser AC-09/15/16 still BLOCKED |
+| Immutable schema + fresh install | `0042_tenant_safe_branding.sql` SHA-pinned behind prior 32 migrations; clean Ubuntu26/PG18 disposable first-install PASS; local PG18 role/security chain 50/50 PASS | **DISPOSABLE PASS**, off-host PG HA/PITR/replicated/fenced live AC-07/13 BLOCKED |
+| Public customer SaaS | 2026-10-09 owner-VPS verified no public trusted HTTPS443 and Platform API/OIDC/production PostgreSQL inactive; root key-based SSH failed and sudo -n unavailable | **PUBLIC NO_GO**, no impersonated or synthetic evidence counted as real operator approval |
+
+Old PR #195 was closed without merge due immutable migration 0035 collision. Physical CWMP/USP, C-DATA/ONT/MikroTik qualification and PPPoE actual apply/reconcile/rollback are still independent MUST acceptance items, not implied by dashboard branding code.
