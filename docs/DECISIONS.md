@@ -827,3 +827,7 @@ A Tenant Admin requires an active Host-bound tenant domain to establish a commer
 
 ## ADR-105 — R10.12 First RouterOS read is private certificate-pinned TLS, never generic API-SSL
 A first physical RouterOS REST read must use a fixed GET, private RFC1918 management address, exact certificate IP SAN and separately reviewed CA plus leaf pin. API-SSL binary 8729 is a different protocol and is not an automatic fallback. No HTTP downgrade, public customer scan, tenant permission, enrollment or device mutation occurs. Actual exact model/firmware and physical interop remain independently unverified.
+
+## ADR-108 — R10.15 commercial tenant branding preserves canonical migration order (2026-10-09)
+
+Baseline R10.1 source is rebased onto the current R10.14 main without overwriting migration `0035_subscriber360_diagnostics.sql` or subsequent PPPoE/activation migrations. Reserve `0042_tenant_safe_branding.sql`, appended to the pinned 33-entry production first-install manifest. Branding is one text-only, finite-theme-token record per tenant, read only by current members and editable only by current Tenant Admin with exact Host-bound signed session, CSRF, CAS revision and idempotent request. No external images, arbitrary CSS, HTML or cross-tenant access. This is a migration-order integration decision, not evidence of production rollout or human MFA browser acceptance.
