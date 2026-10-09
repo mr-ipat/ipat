@@ -530,6 +530,12 @@ jobs:
           bash -n deploy/db/tests/r980_docker_repro.sh
           grep -Fq ipat_platform_session_api_login deploy/db/migrations/0032_platform_owner_browser_sessions.sql
           grep -Fq R9.80 docs/PROJECT_STATUS.md
+      - name: R10.12 strict RouterOS 7 private HTTPS read-only source
+        run: |
+          cargo test --locked -p routeros-core --all-targets
+          grep -Fq 'GET /rest/system/resource HTTP/1.1' crates/routeros-core/src/secure_read.rs
+          grep -Fq 'ROUTEROS_READ_ONLY_UNREVIEWED' crates/routeros-core/src/bin/routeros-secure-read.rs
+          grep -Fq R10.12 docs/DEVICE_MATRIX.md
       - name: R9.81 actual restricted Platform Owner Axum HTTP + disposable PostgreSQL
         run: |
           cargo test --locked -p control-api platform_owner_api::pg_integration::r981_real_pg_platform_api_owner_exact_host_csrf_suspended_reservation_logout -- --exact
