@@ -102,5 +102,27 @@ class Branding(unittest.TestCase):
             "'ipat_platform.set_tenant_branding(text,text,uuid,uuid,bigint,text,text,text)',"
             "'EXECUTE')::int").stdout.strip(),"1")
 
+    def test_06_current_commercial_roles_can_read_but_not_write(self):
+        expanded = sql(
+            "SELECT pg_get_constraintdef(oid) LIKE '%provisioning_officer%' "
+            "FROM pg_constraint WHERE conname='identity_memberships_role_check'"
+        ).stdout.strip()
+        if expanded != "t":
+            if os.getenv("IPAT_R1015_FULL_ROLES_EXPECTED") == "1":
+                self.fail("R10.09 nine-role schema missing from canonical integration")
+            self.skipTest("Older isolated pre-0039 role vocabulary; current CI runs full migration")
+        for i, role in enumerate(("system_admin", "security_admin", "noc_manager",
+                                  "provisioning_officer", "field_technician")):
+            subject = "r101-member-" + role
+            sql(f"INSERT INTO ipat_platform.identity_memberships("
+                f"tenant_id,issuer,subject,role,approved_by,expires_at) VALUES("
+                f"'{T1}','{ISS}','{subject}','{role}','r101-reviewer',"
+                f"clock_timestamp()+interval '1 day') "
+                f"ON CONFLICT(tenant_id,issuer,subject,role) DO UPDATE "
+                f"SET revoked_at=NULL,expires_at=clock_timestamp()+interval '1 day'")
+            self.assertEqual(get(subject), "r101-one|North Fiber NOC|NF|emerald|2", role)
+            request = f"10101010-1010-4010-8010-10101010103{i}"
+            self.assertEqual(set_brand(subject,request,2,"Unauthorized","NO","amber"), "", role)
+
 if __name__=="__main__":
     unittest.main()

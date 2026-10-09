@@ -81,7 +81,9 @@ BEGIN
       FROM ipat_platform.identity_memberships m
       JOIN ipat_platform.tenants t ON t.id=m.tenant_id
       WHERE m.tenant_id=p_tenant AND m.issuer=p_issuer AND m.subject=p_subject
-        AND m.role IN ('tenant_admin','noc_engineer','helpdesk','auditor')
+        AND m.role IN ('tenant_admin','system_admin','security_admin','noc_manager',
+                       'noc_engineer','provisioning_officer','helpdesk',
+                       'field_technician','auditor')
         AND m.revoked_at IS NULL
         AND m.created_at<=statement_timestamp()
         AND m.expires_at>statement_timestamp()
