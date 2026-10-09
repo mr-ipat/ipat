@@ -9,7 +9,7 @@ const sql=fs.readFileSync('deploy/db/migrations/0039_commercial_role_separation.
 assert(html.includes('id="pppoe-create-workspace" hidden'));
 assert(html.includes('Provisioning Officers'));
 assert(html.includes('Security Admins'));
-assert(html.includes('Tenant Admin alone cannot substitute'));
+assert(html.includes('Tenant Admin cannot substitute'));
 assert(js.includes('can_create_pppoe_plans'));
 assert(js.includes('can_review_pppoe_plans'));
 assert(js.includes("$('pppoe-create-workspace').hidden=!state.canCreatePppoePlans"));
