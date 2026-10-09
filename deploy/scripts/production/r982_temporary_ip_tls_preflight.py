@@ -9,6 +9,7 @@ import argparse
 import importlib.util
 import ipaddress
 import json
+import re
 import socket
 import ssl
 from datetime import datetime, timezone
@@ -49,7 +50,7 @@ def report(ip, remote=None, tcp=None, tls=None):
     live=r963.remote() if remote is None else remote
     configured=live.get("PRIVATE_DOMAIN_IP") if live.get("available") else None
     exact=bool(configured and configured==ip)
-    listener=bool(live.get("available") and live.get("PORT443") not in ("0",None,""))
+    listener=bool(live.get("available") and re.fullmatch(r"[1-9][0-9]{0,3}", str(live.get("PORT443", ""))))
     reachable=bool(r963.tcp_connect(ip,443) if tcp is None else tcp) if exact else False
     trusted=bool(trusted_ip_san_tls(ip) if tls is None else tls) if exact and reachable else False
     return {

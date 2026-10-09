@@ -30,6 +30,12 @@ class TemporaryIpv4Readiness(unittest.TestCase):
                 with self.assertRaises(ValueError):
                     m.report(ip)
             remote.assert_not_called()
+    def test_malformed_listener_count_never_means_active(self):
+        for count in ("", "0", "unknown", "1;malicious", "-1", "9" * 5000, None):
+            live = {**LIVE, "PORT443": count}
+            out = m.report("202.162.204.121", remote=live, tcp=False, tls=False)
+            self.assertFalse(out["vps_443_listener_observed"], count)
+
     def test_ssl_uses_ca_and_exact_ip_match(self):
         fake_socket=object()
         class TLS:
