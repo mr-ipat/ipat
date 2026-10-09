@@ -10,6 +10,21 @@
 <form id="reserve-form"><label>Company slug <input id="slug" required minlength="1" maxlength="63" pattern="[a-z0-9]+([a-z0-9-]*[a-z0-9])?"></label>
 <button type="submit">Reserve suspended company</button></form>
 <table><caption>Reserved companies</caption><thead><tr><th>Company slug</th><th>Current state</th><th>Reserved UTC</th><th>Tenant ID</th></tr></thead><tbody id="rows"></tbody></table>
+<section id="activation-panel">
+<h2>Company activation requests</h2>
+<p>Activation requires two different current Platform Owners. Approval creates the first Tenant Admin identity binding and one pending customer-owned domain only. Customer login remains blocked until DNS ownership and trusted HTTPS become active.</p>
+<form id="activation-form">
+<label>Tenant ID <input name="tenant_id" required></label>
+<label>Customer hostname <input name="hostname" required placeholder="portal.customer.tld"></label>
+<label>Routing <select name="routing_mode"><option value="a_record">A / AAAA</option><option value="cname">CNAME</option><option value="nameserver">Nameservers</option></select></label>
+<label>Tenant Admin issuer <input name="admin_issuer" required placeholder="https://identity.example/realm/customer"></label>
+<label>Tenant Admin subject <input name="admin_subject" required></label>
+<label>Admin expires at <input name="admin_expires_at" type="datetime-local" required></label>
+<label>External acceptance SHA-256 <input name="evidence_sha256" pattern="[0-9a-f]{64}" required></label>
+<button type="submit">Request activation</button>
+</form>
+<table><caption>Activation queue</caption><thead><tr><th>Company</th><th>Hostname</th><th>Initial admin</th><th>State</th><th>DNS proof after approval</th><th>Actions</th></tr></thead><tbody id="activation-rows"></tbody></table>
+</section>
 </section>
 </main><script src="/platform/assets/app.js" defer></script>
 </body></html>
