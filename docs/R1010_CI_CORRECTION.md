@@ -1,0 +1,7 @@
+# R10.10 — CI rerun isolation correction (2026-10-09)
+
+PR #207 previously ran a complete `cargo test --locked -p control-api -q` a second time *after* earlier Axum/PostgreSQL integration stages had written fixed synthetic IDs to the same disposable database. Exact-head run 37715433886 consequently failed the second full-suite replay (103 passed / 12 failed) with fixture unique-key conflicts, missing lab role credentials, and derivative HTTP errors. The initial `unit-tests` job had already passed independently; the R10.10 SQL safety integration stage had also passed before the repeated Rust suite ran. This is an orchestration regression, **not** permission to weaken the denied operations or mark real RouterOS ready.
+
+The R10.10 PostgreSQL stage now uses `cargo test --locked -p control-api --no-run` to verify compilation, and retains the independent `unit-tests` job for the complete Rust workspace, while preserving R10.10 real disposable PostgreSQL tests, UI/source checks and CI safety checks. Exact-head four-job GitHub CI still MUST succeed before ready/merge. A workflow-only GitHub update may not trigger a fresh Actions run until this source commit.
+
+Do not merge against older `main` blindly: resolve R10.11 `0041_company_activation_lifecycle.sql` with R10.10 `0040_pppoe_execution_safety_state.sql`, update migration hash manifest/count and rerun combined Rust/Axum/PG18-first-install tests. No production DB, devices, network exposure, firewall or DNS touched. PPPoE physical execution adapter remains OFF; AC-05 physical acceptance remains BLOCKED.
