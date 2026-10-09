@@ -1505,8 +1505,14 @@ dependencies = [
 name = "routeros-core"
 version = "0.1.0"
 dependencies = [
+ "base64",
+ "libc",
+ "rustls",
  "serde",
  "serde_json",
+ "sha2",
+ "tokio",
+ "tokio-rustls",
 ]
 
 [[package]]

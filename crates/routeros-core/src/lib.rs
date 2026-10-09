@@ -9,6 +9,7 @@ use std::fmt;
 
 /// Offline validation of PRIVATE redacted R6.1 probe output. Still untrusted.
 pub mod evidence;
+pub mod secure_read;
 
 const MAX_RESOURCE_BYTES: usize = 32_768;
 const MAX_FIELDS: usize = 64;
