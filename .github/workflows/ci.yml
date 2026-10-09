@@ -703,7 +703,7 @@ jobs:
       - name: R10.15 tenant-safe branding integration with reserved migration 0042
         run: |
           psql -X -v ON_ERROR_STOP=1 -f deploy/db/migrations/0042_tenant_safe_branding.sql
-          python3 -m unittest deploy/db/tests/test_tenant_branding_integration.py -v
+          IPAT_R1015_FULL_ROLES_EXPECTED=1 python3 -m unittest deploy/db/tests/test_tenant_branding_integration.py -v
           cargo test --locked -p control-api commercial_tenant_api::pg_integration::r101_real_pg_host_bound_tenant_branding_admin_and_reader -- --exact
           node --check web/console/tenant/app.js
           node deploy/scripts/lab/r101/test_tenant_branding_ui.cjs
