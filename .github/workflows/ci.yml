@@ -556,6 +556,7 @@ jobs:
           node --check web/console/tenant/app.js
           node deploy/scripts/lab/r982/test_customer_dns_ui.cjs
           python3 -m unittest discover deploy/scripts/production -p test_r982_temporary_ip_tls_preflight.py -v
+          python3 -m unittest discover deploy/scripts/production -p test_r1013_public_access_audit.py -v
           grep -Fq R9.82 docs/PROJECT_STATUS.md
       - name: R9.83 dedicated Platform Owner signed OIDC MFA to current PostgreSQL session
         run: |

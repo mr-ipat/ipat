@@ -326,3 +326,10 @@ R10.11 exact head 08b800d8 successfully passed all 4/4 GitHub jobs in workflow 3
 | GitHub merge gate | PR #208 and #207 held until exact-head all four CI jobs SUCCESS; squash merge Git tree matches tested head | **PROCESS PASS FOR THESE TWO PRS; MAIN BRANCH PROTECTION STILL DISABLED**; enable required checks/ruleset separately |
 
 This audit records tested implementation versus absent production evidence. It does not alter remaining physical compatibility or commercial-release status, and it does not authorize live device/infrastructure changes.
+
+## R10.13 — live public-access negative diagnostic, 2026-10-09
+
+- `deploy/scripts/production/r1013_public_access_audit.py` performs read-only owner-SSH unit and deployment marker presence checks plus exact public IPv4/TLS evidence; no root privileges, credentials, SQL mutations or device commands.
+- `deploy/scripts/production/r982_temporary_ip_tls_preflight.py` refuses malformed listener counts instead of treating any nonempty SSH output as a real port443 listener.
+- Live read-only audit for reviewed `202.162.204.121`: private SSH and source IP matching PASS; foundation/edge markers, PostgreSQL, Nginx, Platform API/OIDC, tenant API, public 443 and browser-trusted IP SAN TLS FAILED/NOT OBSERVED. Exit 3/NO_GO is expected, not a production success.
+- Synthetic tests cannot establish actual rescue-console root login, independent full-host restore, PostgreSQL base+WAL PITR/HA, human MFA or hostile-Host/SNI/cross-tenant browser acceptance. AC-01/02/07/09/13/15/16 remain **PUBLIC BLOCKED**. Even an all-green synthetic service observation never makes this audit authorize release.
