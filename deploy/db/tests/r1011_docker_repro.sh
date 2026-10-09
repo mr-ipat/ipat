@@ -33,4 +33,5 @@ while read -r _ path; do
 done < "$root/deploy/db/production/r987_migrations.sha256"
 [[ $count -eq 31 ]] || { echo "unexpected migration count: $count" >&2; exit 3; }
 python3 -m unittest "$root/deploy/db/tests/test_company_activation_lifecycle_integration.py" -v
+python3 -m unittest "$root/deploy/db/tests/test_company_activation_session_wrapper_integration.py" -v
 echo R1011_DISPOSABLE_PG16_COMPANY_ACTIVATION=PASS

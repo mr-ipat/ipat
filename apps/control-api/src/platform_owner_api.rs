@@ -457,7 +457,7 @@ async fn create_activation_request(
     let row =
         s.db.query_one(
             "SELECT ipat_platform.request_company_activation_from_platform_session(\
-             $1,$2,$3,$4::uuid,$5::uuid,$6::uuid,$7,$8,$9,$10,$11::timestamptz,$12)",
+             $1,$2,$3,$4::uuid,$5::uuid,$6::uuid,$7,$8,$9,$10,$11::text::timestamptz,$12)",
             &[
                 &cookie,
                 &host,
@@ -474,12 +474,18 @@ async fn create_activation_request(
             ],
         )
         .await;
-    match row.ok().and_then(|r| r.get::<_, Option<Uuid>>(0)) {
-        Some(id) => json_resp(
-            StatusCode::CREATED,
-            json!({"ok":true,"request_id":id.to_string(),"state":"REQUESTED"}),
-        ),
-        None => denied(StatusCode::CONFLICT),
+    // A text wire parameter must be cast inside PostgreSQL; tokio-postgres cannot
+    // serialize String directly as TIMESTAMPTZ. A driver/DB failure is not a
+    // business conflict, and its details must never be exposed to the caller.
+    match row {
+        Ok(r) => match r.get::<_, Option<Uuid>>(0) {
+            Some(id) => json_resp(
+                StatusCode::CREATED,
+                json!({"ok":true,"request_id":id.to_string(),"state":"REQUESTED"}),
+            ),
+            None => denied(StatusCode::CONFLICT),
+        },
+        Err(_) => denied(StatusCode::SERVICE_UNAVAILABLE),
     }
 }
 
