@@ -355,3 +355,8 @@ R10.15 shared Postgres regression: initial PR #213 CI 3/4 PASS with branding Rus
 | Public customer SaaS | 2026-10-09 owner-VPS verified no public trusted HTTPS443 and Platform API/OIDC/production PostgreSQL inactive; root key-based SSH failed and sudo -n unavailable | **PUBLIC NO_GO**, no impersonated or synthetic evidence counted as real operator approval |
 
 Old PR #195 was closed without merge due immutable migration 0035 collision. Physical CWMP/USP, C-DATA/ONT/MikroTik qualification and PPPoE actual apply/reconcile/rollback are still independent MUST acceptance items, not implied by dashboard branding code.
+
+
+## R10.16 — native Linux release build on actual owner VPS (2026-10-09)
+
+The exact reviewed `main` `331a443db47d0447cb6dba947e7b5db85c0c36e3` built successfully on actual Ubuntu26.04 x86_64 VPS using pre-existing rootless Rust1.98.1, offline locked release builds for `control-api` and all workspace binaries. Eight x86_64 executables were privately staged with `SHA256SUMS`, exact source marker, restrictive modes, and fresh 8/8 checksum checks; final `control-api` SHA256 `8b763e4e4dd35b5c259204cec66a4cf5e0992bcffbac2be8d266d5214d3d0dfb`. This is **binary/build-artifact PASS ONLY**. No production root/sudo install, Nginx/HTTPS, PostgreSQL HA/PITR, real MFA login, external customer browser, K3s cluster or physical device write/readback was attempted. Therefore AC-01/02/05/07/09/12/13/15/16 and all-MUST/public release remain **BLOCKED / NO_GO**. The current owner-VPS sudo credential path is unavailable for noninteractive reviewed production execution; do not bypass independent restore and administrative approval gates.
