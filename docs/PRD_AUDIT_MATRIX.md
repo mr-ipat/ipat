@@ -315,3 +315,14 @@ PR #208 CI run `37876034338` caught a real Axum/PostgreSQL regression: valid act
 
 ### R10.11 source final CI and R10.10 merge-order candidate (2026-10-09)
 R10.11 exact head 08b800d8 successfully passed all 4/4 GitHub jobs in workflow 37885351768 and merged as 28ae91a. R10.10 isolated PG16 9/9 PASS and compile-only-in-shared-DB orchestration correction remain source validation, not physical execution. Combined migration 0040→0041, manifest 32/32 checksums, Ubuntu26/PostgreSQL18 clean disposable first install and combined R10.11 PostgreSQL16 6/6 have passed on owner Mac. R10.11 actual PostgreSQL/Axum integration and full four-job CI must pass again on exact merged PR207 head before its merge. Public Platform/Tenant browser, cert-trusted HTTPS, independently restored HA/PITR, real roles, and physical RouterOS access still BLOCKED.
+
+### R10.10 + R10.11 FINAL exact-head CI / public release boundary — 2026-10-09
+| Acceptance slice | Verified evidence | Release verdict |
+| --- | --- | --- |
+| First company activation source, distinct Platform Owners, initial Tenant Admin, pending DNS | PR #208 `08b800d8`, GitHub CI run `37885351768` 4/4 SUCCESS; merged `28ae91af`; disposable SQL 6/6 incl exact Host/session wrapper | **SOURCE PASS; LIVE AC-16 BLOCKED** until actual independent MFA, authoritative TXT, TLS/SNI and hostile-Host browser tests |
+| PPPoE maker/checker/System Admin safety state; no physical executor | PR #207 `fa60355c`, GitHub CI run `37886017598` 4/4 SUCCESS; merged `e80d3989`; disposable PostgreSQL 9/9 role/state-machine tests | **SOURCE PASS; AC-05 PHYSICAL BLOCKED** until pinned real RouterOS identity and authorized tested apply/reconcile/rollback |
+| Combined Ubuntu26/PostgreSQL18 bootstrap | 32/32 exact SHA256 manifest; disposable fresh Ubuntu26/PG18 first install PASS, Unix socket only/peer roles | **SOURCE/DISPOSABLE PASS; AC-07/13 BLOCKED** until independently restored live off-host encrypted base+WAL PITR, HA/fencing, measured RPO/RTO |
+| Public Platform Owner and customer dashboard | 2026-10-09 owner-authorized read-only SSH: Nginx/PG/K3s/Platform API/OIDC inactive, 443 unavailable, only 127.0.0.1:3002 observed | **PUBLIC NO_GO**; no user-visible HTTPS/MFA acceptance possible on this actual VPS |
+| GitHub merge gate | PR #208 and #207 held until exact-head all four CI jobs SUCCESS; squash merge Git tree matches tested head | **PROCESS PASS FOR THESE TWO PRS; MAIN BRANCH PROTECTION STILL DISABLED**; enable required checks/ruleset separately |
+
+This audit records tested implementation versus absent production evidence. It does not alter remaining physical compatibility or commercial-release status, and it does not authorize live device/infrastructure changes.
