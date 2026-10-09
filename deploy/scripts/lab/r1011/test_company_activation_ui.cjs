@@ -1,0 +1,18 @@
+'use strict';
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const html=fs.readFileSync('web/console/platform/dashboard.html','utf8');
+const js=fs.readFileSync('web/console/platform/app.js','utf8');
+const rs=fs.readFileSync('apps/control-api/src/platform_owner_api.rs','utf8');
+assert(html.includes('Company activation requests'));
+assert(html.includes('two different current Platform Owners'));
+assert(html.includes('pending customer-owned domain'));
+assert(js.includes('pendingActivation'));
+assert(js.includes('fingerprint'));
+assert(js.includes('activation-requests'));
+assert(js.includes("['Approve',true]"));
+assert(!js.includes('innerHTML'));
+assert(rs.includes('request_company_activation_from_platform_session'));
+assert(rs.includes('review_company_activation_from_platform_session'));
+assert(rs.includes('safe_admin_identity'));
+console.log('R1011_COMPANY_ACTIVATION_MAKER_CHECKER_UI=PASS');

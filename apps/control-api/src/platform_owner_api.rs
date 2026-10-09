@@ -2,7 +2,7 @@
 //! This router accepts only a previously issued real-MFA platform session;
 //! it deliberately has no unverified login or role-claim endpoint.
 use axum::{
-    extract::State,
+    extract::{Path, State},
     http::{header, HeaderMap, HeaderName, HeaderValue, StatusCode},
     response::{Html, IntoResponse, Response},
     routing::get,
@@ -343,6 +343,175 @@ async fn create(
         None => denied(StatusCode::CONFLICT),
     }
 }
+
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct ActivationRequestInput {
+    request_id: String,
+    tenant_id: String,
+    domain_id: String,
+    hostname: String,
+    routing_mode: String,
+    admin_issuer: String,
+    admin_subject: String,
+    admin_expires_at: String,
+    evidence_sha256: String,
+}
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct ActivationReviewInput {
+    approve: bool,
+}
+
+fn safe_admin_identity(issuer: &str, subject: &str) -> bool {
+    issuer.len() >= 10
+        && issuer.len() <= 512
+        && issuer.starts_with("https://")
+        && !issuer.bytes().any(|b| b.is_ascii_whitespace())
+        && !subject.is_empty()
+        && subject.len() <= 128
+        && subject
+            .bytes()
+            .all(|b| b.is_ascii_alphanumeric() || matches!(b, b'_' | b':' | b'/' | b'.' | b'-'))
+}
+fn safe_sha256(value: &str) -> bool {
+    value.len() == 64
+        && value
+            .bytes()
+            .all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b))
+}
+fn safe_rfc3339_shape(value: &str) -> bool {
+    value.len() >= 20
+        && value.len() <= 40
+        && value.contains('T')
+        && (value.ends_with('Z') || value.rfind(['+', '-']).is_some_and(|i| i > 10))
+        && value.bytes().all(|b| b.is_ascii_graphic())
+}
+
+async fn list_activation_requests(
+    State(s): State<Arc<PlatformState>>,
+    h: HeaderMap,
+) -> (StatusCode, HeaderMap, Json<Value>) {
+    let Some((cookie, host, _)) = verified(&s, &h, false).await else {
+        return denied(StatusCode::UNAUTHORIZED);
+    };
+    let rows =
+        s.db.query(
+            "SELECT request_id,tenant_id,tenant_slug,state,customer_hostname,routing_mode,\
+             admin_issuer,admin_subject,admin_expires_at::text,evidence_sha256,\
+             requested_by_subject,requested_at::text,reviewed_by_subject,reviewed_at::text,\
+             verification_name,verification_value \
+             FROM ipat_platform.list_company_activation_requests_from_platform_session($1,$2)",
+            &[&cookie, &host],
+        )
+        .await;
+    let Ok(rows) = rows else {
+        return denied(StatusCode::SERVICE_UNAVAILABLE);
+    };
+    json_resp(
+        StatusCode::OK,
+        json!({"ok":true,"requests":rows.into_iter().map(|r|json!({
+          "request_id":r.get::<_,Uuid>(0).to_string(),
+          "tenant_id":r.get::<_,Uuid>(1).to_string(),
+          "tenant_slug":r.get::<_,String>(2),
+          "state":r.get::<_,String>(3),
+          "hostname":r.get::<_,String>(4),
+          "routing_mode":r.get::<_,String>(5),
+          "admin_issuer":r.get::<_,String>(6),
+          "admin_subject":r.get::<_,String>(7),
+          "admin_expires_at":r.get::<_,String>(8),
+          "evidence_sha256":r.get::<_,String>(9),
+          "requested_by":r.get::<_,String>(10),
+          "requested_at":r.get::<_,String>(11),
+          "reviewed_by":r.get::<_,Option<String>>(12),
+          "reviewed_at":r.get::<_,Option<String>>(13),
+          "verification_name":r.get::<_,Option<String>>(14),
+          "verification_value":r.get::<_,Option<String>>(15)
+        })).collect::<Vec<_>>() }),
+    )
+}
+
+async fn create_activation_request(
+    State(s): State<Arc<PlatformState>>,
+    h: HeaderMap,
+    Json(v): Json<ActivationRequestInput>,
+) -> (StatusCode, HeaderMap, Json<Value>) {
+    let Some((cookie, host, csrf)) = verified(&s, &h, true).await else {
+        return denied(StatusCode::UNAUTHORIZED);
+    };
+    let (Ok(request), Ok(tenant), Ok(domain)) = (
+        Uuid::parse_str(&v.request_id),
+        Uuid::parse_str(&v.tenant_id),
+        Uuid::parse_str(&v.domain_id),
+    ) else {
+        return denied(StatusCode::UNPROCESSABLE_ENTITY);
+    };
+    if !strict_host(&v.hostname)
+        || !matches!(v.routing_mode.as_str(), "a_record" | "cname" | "nameserver")
+        || !safe_admin_identity(&v.admin_issuer, &v.admin_subject)
+        || !safe_sha256(&v.evidence_sha256)
+        || !safe_rfc3339_shape(&v.admin_expires_at)
+    {
+        return denied(StatusCode::UNPROCESSABLE_ENTITY);
+    }
+    let row =
+        s.db.query_one(
+            "SELECT ipat_platform.request_company_activation_from_platform_session(\
+             $1,$2,$3,$4::uuid,$5::uuid,$6::uuid,$7,$8,$9,$10,$11::timestamptz,$12)",
+            &[
+                &cookie,
+                &host,
+                &csrf,
+                &request,
+                &tenant,
+                &domain,
+                &v.hostname,
+                &v.routing_mode,
+                &v.admin_issuer,
+                &v.admin_subject,
+                &v.admin_expires_at,
+                &v.evidence_sha256,
+            ],
+        )
+        .await;
+    match row.ok().and_then(|r| r.get::<_, Option<Uuid>>(0)) {
+        Some(id) => json_resp(
+            StatusCode::CREATED,
+            json!({"ok":true,"request_id":id.to_string(),"state":"REQUESTED"}),
+        ),
+        None => denied(StatusCode::CONFLICT),
+    }
+}
+
+async fn review_activation_request(
+    State(s): State<Arc<PlatformState>>,
+    h: HeaderMap,
+    Path(id): Path<String>,
+    Json(v): Json<ActivationReviewInput>,
+) -> (StatusCode, HeaderMap, Json<Value>) {
+    let Some((cookie, host, csrf)) = verified(&s, &h, true).await else {
+        return denied(StatusCode::UNAUTHORIZED);
+    };
+    let Ok(id) = Uuid::parse_str(&id) else {
+        return denied(StatusCode::UNPROCESSABLE_ENTITY);
+    };
+    let row =
+        s.db.query_one(
+            "SELECT ipat_platform.review_company_activation_from_platform_session(\
+             $1,$2,$3,$4::uuid,$5)",
+            &[&cookie, &host, &csrf, &id, &v.approve],
+        )
+        .await;
+    if row.ok().is_some_and(|r| r.get::<_, bool>(0)) {
+        json_resp(
+            StatusCode::OK,
+            json!({"ok":true,"reviewed":true,"approved":v.approve}),
+        )
+    } else {
+        denied(StatusCode::CONFLICT)
+    }
+}
+
 async fn logout(
     State(s): State<Arc<PlatformState>>,
     h: HeaderMap,
@@ -382,6 +551,14 @@ pub(super) fn router(db: Arc<Client>, expected_host: String) -> Router {
         .route("/platform/assets/app.js", get(js))
         .route("/platform/assets/style.css", get(css))
         .route("/api/v1/platform/reservations", get(list).post(create))
+        .route(
+            "/api/v1/platform/activation-requests",
+            get(list_activation_requests).post(create_activation_request),
+        )
+        .route(
+            "/api/v1/platform/activation-requests/{id}/review",
+            axum::routing::post(review_activation_request),
+        )
         .route("/api/v1/platform/logout", axum::routing::post(logout))
         .with_state(state)
 }
@@ -403,6 +580,22 @@ mod tests {
             false,
             false
         ));
+        assert!(safe_admin_identity(
+            "https://identity.customer.net/realm/main",
+            "initial-admin_01"
+        ));
+        assert!(!safe_admin_identity(
+            "http://identity.customer.net",
+            "admin"
+        ));
+        assert!(!safe_admin_identity(
+            "https://identity.customer.net",
+            "bad subject"
+        ));
+        assert!(safe_sha256(&"a".repeat(64)));
+        assert!(!safe_sha256(&"A".repeat(64)));
+        assert!(safe_rfc3339_shape("2026-11-01T00:00:00Z"));
+        assert!(!safe_rfc3339_shape("tomorrow"));
         for bad in [
             "a",
             "admin.EXAMPLE.org",
@@ -706,5 +899,237 @@ mod pg_integration {
             .await
             .unwrap();
         assert_eq!(replay.status(), StatusCode::UNAUTHORIZED);
+    }
+    #[tokio::test]
+    async fn r1011_real_pg_platform_company_activation_requires_independent_owner_and_keeps_domain_pending(
+    ) {
+        if std::env::var("IPAT_PG_EPHEMERAL_TEST").as_deref() != Ok("1")
+            || std::env::var("PGDATABASE").as_deref() != Ok("ipat_synthetic")
+        {
+            return;
+        }
+        const H: &str = "platform-r1011.synthetic.net";
+        const I: &str = "https://identity.r1011.synthetic.invalid/realm/platform";
+        const O1: &str = "owner-r1011-maker-http";
+        const O2: &str = "owner-r1011-checker-http";
+        const C1: &str = "mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm";
+        const X1: &str = "nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn";
+        const C2: &str = "ooooooooooooooooooooooooooooooooooooooooooo";
+        const X2: &str = "ppppppppppppppppppppppppppppppppppppppppppp";
+        let admin = db().await;
+        admin.execute(
+            "INSERT INTO ipat_platform.platform_principals(issuer,subject,role,approved_by,expires_at)
+             VALUES($1,$2,'platform_owner','r1011-review',clock_timestamp()+interval '1 day'),
+                   ($1,$3,'platform_owner','r1011-review',clock_timestamp()+interval '1 day')",
+            &[&I, &O1, &O2],
+        ).await.unwrap();
+        admin.execute(
+            "INSERT INTO ipat_platform.platform_console_hosts(hostname,verified_at,tls_ready_at)
+             VALUES($1,clock_timestamp()-interval '1 day',clock_timestamp()-interval '1 hour')",
+            &[&H],
+        ).await.unwrap();
+        let issuer_db = db().await;
+        issuer_db
+            .batch_execute("SET ROLE ipat_platform_session_issuer_login")
+            .await
+            .unwrap();
+        for (subject, cookie, csrf, sid) in [
+            (O1, C1, X1, "11111111-1111-4111-8111-111111111111"),
+            (O2, C2, X2, "11111111-1111-4111-8111-111111111112"),
+        ] {
+            let sid = Uuid::parse_str(sid).unwrap();
+            let issued = issuer_db
+                .query_one(
+                    "SELECT ipat_platform.issue_platform_browser_session(
+                 $1,$2,$3,$4::uuid,$5,$6,clock_timestamp()+interval '8 minutes')",
+                    &[
+                        &I,
+                        &subject,
+                        &H,
+                        &sid,
+                        &sha256_hex(cookie),
+                        &sha256_hex(csrf),
+                    ],
+                )
+                .await
+                .unwrap();
+            assert_eq!(issued.get::<_, Option<Uuid>>(0), Some(sid));
+        }
+        let api_db = db().await;
+        api_db
+            .batch_execute("SET ROLE ipat_platform_session_api_login")
+            .await
+            .unwrap();
+        let app = router(Arc::new(api_db), H.to_string());
+
+        let tenant = "11111111-1111-4111-8111-111111111121";
+        let reserve = json!({
+            "request_id":"11111111-1111-4111-8111-111111111122",
+            "tenant_id":tenant,
+            "slug":"r1011-http-company"
+        })
+        .to_string();
+        let reserved = app
+            .clone()
+            .oneshot(req(
+                "POST",
+                "/api/v1/platform/reservations",
+                H,
+                Some(C1),
+                Some(X1),
+                Some(&reserve),
+            ))
+            .await
+            .unwrap();
+        assert_eq!(reserved.status(), StatusCode::CREATED);
+
+        let expires: String = admin
+            .query_one(
+                "SELECT to_char((clock_timestamp()+interval '30 days') AT TIME ZONE 'UTC',
+             'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"')",
+                &[],
+            )
+            .await
+            .unwrap()
+            .get(0);
+        let activation = json!({
+            "request_id":"11111111-1111-4111-8111-111111111123",
+            "tenant_id":tenant,
+            "domain_id":"11111111-1111-4111-8111-111111111124",
+            "hostname":"portal.r1011-company.net",
+            "routing_mode":"a_record",
+            "admin_issuer":"https://identity.r1011-company.net/realm/customer",
+            "admin_subject":"initial-admin-r1011-http",
+            "admin_expires_at":expires,
+            "evidence_sha256":"eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+        })
+        .to_string();
+
+        let missing_csrf = app
+            .clone()
+            .oneshot(req(
+                "POST",
+                "/api/v1/platform/activation-requests",
+                H,
+                Some(C1),
+                None,
+                Some(&activation),
+            ))
+            .await
+            .unwrap();
+        assert_eq!(missing_csrf.status(), StatusCode::UNAUTHORIZED);
+        let created = app
+            .clone()
+            .oneshot(req(
+                "POST",
+                "/api/v1/platform/activation-requests",
+                H,
+                Some(C1),
+                Some(X1),
+                Some(&activation),
+            ))
+            .await
+            .unwrap();
+        assert_eq!(created.status(), StatusCode::CREATED);
+        let retry = app
+            .clone()
+            .oneshot(req(
+                "POST",
+                "/api/v1/platform/activation-requests",
+                H,
+                Some(C1),
+                Some(X1),
+                Some(&activation),
+            ))
+            .await
+            .unwrap();
+        assert_eq!(retry.status(), StatusCode::CREATED);
+
+        let self_review = app
+            .clone()
+            .oneshot(req(
+                "POST",
+                "/api/v1/platform/activation-requests/11111111-1111-4111-8111-111111111123/review",
+                H,
+                Some(C1),
+                Some(X1),
+                Some(r#"{"approve":true}"#),
+            ))
+            .await
+            .unwrap();
+        assert_eq!(self_review.status(), StatusCode::CONFLICT);
+        let approved = app
+            .clone()
+            .oneshot(req(
+                "POST",
+                "/api/v1/platform/activation-requests/11111111-1111-4111-8111-111111111123/review",
+                H,
+                Some(C2),
+                Some(X2),
+                Some(r#"{"approve":true}"#),
+            ))
+            .await
+            .unwrap();
+        assert_eq!(approved.status(), StatusCode::OK);
+
+        let tenant_id = Uuid::parse_str(tenant).unwrap();
+        let state: String = admin
+            .query_one(
+                "SELECT state FROM ipat_platform.tenants WHERE id=$1",
+                &[&tenant_id],
+            )
+            .await
+            .unwrap()
+            .get(0);
+        assert_eq!(state, "active");
+        let membership: i64 = admin
+            .query_one(
+                "SELECT count(*) FROM ipat_platform.identity_memberships
+             WHERE tenant_id=$1 AND role='tenant_admin' AND revoked_at IS NULL",
+                &[&tenant_id],
+            )
+            .await
+            .unwrap()
+            .get(0);
+        assert_eq!(membership, 1);
+        let domain_state: String = admin
+            .query_one(
+                "SELECT activation_state FROM ipat_platform.tenant_domains WHERE tenant_id=$1",
+                &[&tenant_id],
+            )
+            .await
+            .unwrap()
+            .get(0);
+        assert_eq!(domain_state, "pending_dns");
+
+        let listing = app
+            .clone()
+            .oneshot(req(
+                "GET",
+                "/api/v1/platform/activation-requests",
+                H,
+                Some(C2),
+                None,
+                None,
+            ))
+            .await
+            .unwrap();
+        assert_eq!(listing.status(), StatusCode::OK);
+        let body = json_body(listing).await;
+        let row = body["requests"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|x| x["tenant_id"] == tenant)
+            .unwrap();
+        assert_eq!(row["state"], "APPROVED");
+        assert_eq!(
+            row["verification_name"],
+            "_ipat-verify.portal.r1011-company.net"
+        );
+        assert_eq!(
+            row["verification_value"],
+            "ipat-domain=11111111-1111-4111-8111-111111111124"
+        );
     }
 }

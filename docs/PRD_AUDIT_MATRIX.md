@@ -291,3 +291,9 @@ Source now adds the complete PRD tenant role vocabulary and replaces the tempora
 
 ### R10.09 local acceptance evidence
 Disposable PostgreSQL role separation 4/4 PASS; clean Ubuntu26/PostgreSQL18 first-install with 30 pinned migrations PASS; exact Axum + PostgreSQL browser-role test PASS after fixing the discovered old session-role allowlist; exact rootless control-api 115/115 PASS. Tenant Admin has no PPPoE capability, Provisioning Officer can create but not review, Security Admin can review but not create, and approval stays non-executable. GitHub exact-head CI/merge and physical MikroTik interoperability/execution remain open.
+
+## R10.09 final source acceptance (2026-10-09 closure)
+Final R10.09 head f1268a302565110128efee83482a0d0704e683bc passed GitHub Actions run 37631325295 all 4/4 jobs. Canonical main 1df0b8407dc8ca92c32dea74f137f16648aef5d3 has the exact same Git tree 3bd618acf794d31ea1391c57aee0a5584b7a008a as that green head, including all fail-closed rolling-schema and unique-session-fixture corrections. Provisioning Officer maker plus Security Admin checker is therefore source/disposable PASS. AC-05 remains physically BLOCKED because no real RouterOS execution is qualified.
+
+## R10.11 company activation source candidate
+Adds two-current-Platform-Owner maker/checker activation, exact initial external-IdP Tenant Admin binding and one pending customer-owned domain/TXT bootstrap. Disposable PostgreSQL acceptance proves exact retry, self-review denial, role/table denial, atomic initial membership/domain creation and continued tenant-login denial while the domain remains pending. HTTP/Axum, exact CI and production evidence remain separate. This advances AC-16 source lifecycle only; actual human MFA, public DNS/TLS, production recovery and external customer browser isolation remain production BLOCKED.
