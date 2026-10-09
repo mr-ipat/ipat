@@ -291,3 +291,6 @@ Source now adds the complete PRD tenant role vocabulary and replaces the tempora
 
 ### R10.09 local acceptance evidence
 Disposable PostgreSQL role separation 4/4 PASS; clean Ubuntu26/PostgreSQL18 first-install with 30 pinned migrations PASS; exact Axum + PostgreSQL browser-role test PASS after fixing the discovered old session-role allowlist; exact rootless control-api 115/115 PASS. Tenant Admin has no PPPoE capability, Provisioning Officer can create but not review, Security Admin can review but not create, and approval stays non-executable. GitHub exact-head CI/merge and physical MikroTik interoperability/execution remain open.
+
+## R10.12 routeros-core secure read-only source candidate
+R10.12 adds an independently bounded, exact private-IP/cert-pinned native Rust RouterOS REST HTTPS GET transport and nonroot private-file CLI with strict expected DEV-08 resource normalization, no write paths. Existing R10.07/R10.09 PPPoE maker-checker dry-run is unchanged and still non-executable. Source test PASS must be supported by exact-head locked Rust CI; physical RouterOS authenticated readback, real model/version tuple, PPPoE read, actual customer tenant binding and eventual safety-reviewed execution remain AC-05/FR-019 BLOCKED.

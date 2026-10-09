@@ -818,3 +818,6 @@ Bulk PPPoE cannot jump directly from browser CSV to RouterOS. First persist a bo
 
 ## ADR-101 — R10.09 enforce commercial provisioning/security role separation (2026-10-07)
 PPPoE mass-change preparation is not a Tenant Admin privilege. The durable commercial membership model now includes the full PRD role vocabulary. Provisioning Officer is the only current role allowed to create PPPoE dry-runs; Security Admin is the only current role allowed to approve/reject them. Tenant Admin retains tenant inventory/subscriber administration but cannot substitute for maker or checker. UI visibility and backend authorization are derived independently from current PostgreSQL membership and revocation. No physical execution right is introduced by role separation.
+
+## ADR-105 — R10.12 First RouterOS read is private certificate-pinned TLS, never generic API-SSL
+A first physical RouterOS REST read must use a fixed GET, private RFC1918 management address, exact certificate IP SAN and separately reviewed CA plus leaf pin. API-SSL binary 8729 is a different protocol and is not an automatic fallback. No HTTP downgrade, public customer scan, tenant permission, enrollment or device mutation occurs. Actual exact model/firmware and physical interop remain independently unverified.
