@@ -31,7 +31,11 @@ assert(api.includes('set_tenant_branding'));
 assert(api.includes('"can_manage_branding":admin'));
 assert(api.includes('valid_accent_token'));
 assert(migration.includes("m.role='tenant_admin'"));
-assert(migration.includes("m.role IN ('tenant_admin','noc_engineer','helpdesk','auditor')"));
+assert(migration.includes("m.role IN ('tenant_admin','system_admin'"));
+for(const role of ['tenant_admin','system_admin','security_admin','noc_manager',
+                   'noc_engineer','provisioning_officer','helpdesk','field_technician','auditor']){
+  assert(migration.includes("'"+role+"'"),role);
+}
 assert(migration.includes('tenant_branding_events'));
 assert(migration.includes('pg_advisory_xact_lock'));
 console.log('R101_TENANT_SAFE_BRANDING_UI_CONTRACT=PASS');

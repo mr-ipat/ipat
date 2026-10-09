@@ -4806,8 +4806,9 @@ mod pg_integration {
         let host = "tenant-r101.example.net";
         let admin_cookie = "fffffffffffffffffffffffffffffffffffffffffff";
         let admin_csrf = "ggggggggggggggggggggggggggggggggggggggggggg";
-        let help_cookie = "jjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjj";
-        let help_csrf = "kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk";
+        // Distinct from earlier R9.68 browser-session fixtures in shared PostgreSQL CI.
+        let help_cookie = "r101-brand-helpdesk-cookie-nonprod-20261009";
+        let help_csrf = "r101-brand-helpdesk-csrf-nonprod-20261009";
 
         admin.execute("INSERT INTO ipat_platform.tenants(id,tenant_slug,state) VALUES($1,'r101-company','active')",&[&tenant]).await.unwrap();
         admin.execute("INSERT INTO ipat_platform.identity_memberships(tenant_id,issuer,subject,role,approved_by,expires_at) VALUES($1,$2,$3,'tenant_admin','r101-independent-reviewer',clock_timestamp()+interval '1 day'),($1,$2,$4,'helpdesk','r101-independent-reviewer',clock_timestamp()+interval '1 day')",
