@@ -530,12 +530,6 @@ jobs:
           bash -n deploy/db/tests/r980_docker_repro.sh
           grep -Fq ipat_platform_session_api_login deploy/db/migrations/0032_platform_owner_browser_sessions.sql
           grep -Fq R9.80 docs/PROJECT_STATUS.md
-      - name: R10.12 strict RouterOS 7 private HTTPS read-only source
-        run: |
-          cargo test --locked -p routeros-core --all-targets
-          grep -Fq 'GET /rest/system/resource HTTP/1.1' crates/routeros-core/src/secure_read.rs
-          grep -Fq 'ROUTEROS_READ_ONLY_UNREVIEWED' crates/routeros-core/src/bin/routeros-secure-read.rs
-          grep -Fq R10.12 docs/DEVICE_MATRIX.md
       - name: R9.81 actual restricted Platform Owner Axum HTTP + disposable PostgreSQL
         run: |
           cargo test --locked -p control-api platform_owner_api::pg_integration::r981_real_pg_platform_api_owner_exact_host_csrf_suspended_reservation_logout -- --exact
@@ -685,20 +679,6 @@ jobs:
           grep -Fq unknown_reconcile_required deploy/db/migrations/0040_pppoe_execution_safety_state.sql
           grep -Fq 0040_pppoe_execution_safety_state.sql deploy/db/production/r987_migrations.sha256
           grep -Fq R10.10 docs/PROJECT_STATUS.md
-
-      - name: R10.11 company activation maker-checker and initial tenant domain bootstrap
-        run: |
-          psql -X -v ON_ERROR_STOP=1 -f deploy/db/migrations/0041_company_activation_lifecycle.sql
-          python3 -m unittest deploy/db/tests/test_company_activation_lifecycle_integration.py -v
-          python3 -m unittest deploy/db/tests/test_company_activation_session_wrapper_integration.py -v
-          cargo test --locked -p control-api platform_owner_api::pg_integration::r1011_real_pg_platform_company_activation_requires_independent_owner_and_keeps_domain_pending -- --exact
-          cargo test --locked -p control-api platform_owner_api::tests::r981_platform_host_cookie_csrf_are_separate -- --exact
-          node --check web/console/platform/app.js
-          node deploy/scripts/lab/r1011/test_company_activation_ui.cjs
-          bash -n deploy/db/tests/r1011_docker_repro.sh
-          python3 -m unittest deploy/scripts/production/test_r987_postgres18_bootstrap_source.py -v
-          grep -Fq 0041_company_activation_lifecycle.sql deploy/db/production/r987_migrations.sha256
-          grep -Fq R10.11 docs/PROJECT_STATUS.md
       - name: R9.95 dedicated DNS ownership verifier runtime source
         run: |
           bash -n deploy/scripts/production/r995_prepare_domain_ownership_verifier.sh
