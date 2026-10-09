@@ -505,3 +505,6 @@ R10.08 performs no additional device command and does not expand ZTE C320 compat
 
 ## R10.12 — First RouterOS strict read-only transport (2026-10-09)
 DEV-08 owner-reported MikroTik RB951Ui-2HnD, mipsbe, RouterOS 7.23.7 is NOT physically verified. New native Rust module sends only fixed /rest/system/resource GET over private-IP strict rustls HTTPS443 with approved CA DER, independent leaf pin, external credentials and exact response tuple normalization. No read was sent to a real MikroTik in this milestone; no PPPoE secret/session observed; no device enrollment, interoperability validation, RouterOS API-SSL binary proof or configuration writes. Classification remains **untested physically / source-only**.
+
+### R10.12 acceptance closure — source-only RouterOS read (2026-10-09)
+Merged source main 78713d2b145fd9bc3f653f85454dd16afbcb7794 with reviewed PR #209 CI 4/4 PASS (new safe REST identity reader and all prior regressions). Firmware/model qualification remains explicitly UNTESTED on actual DEV-08 MikroTik; do not claim API-SSL 8729, PPPoE secret/session read, authenticated physical tuple or customer router adoption. There was no device connection, no SSH/public Telnet, no firmware mutation and no provisioning job execution in this milestone.
