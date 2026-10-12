@@ -39,6 +39,54 @@ printf '%s\n%s\n' "$IPAT_R987_BOOTSTRAP" "$IPAT_R987_SOURCE_ROOT"
                 ["CREATE_REVIEWED_LOCAL_POSTGRES18", td],
             )
 
+    def test_r1020_rollback_owned_trees_absent_before_mutation(self):
+        # These complete directory trees are removed by R9.96 rollback.
+        # An existing OIDC secret/state directory must never be removed on retry.
+        paths = (
+            "/opt/ipat",
+            "/etc/ipat",
+            "/var/lib/ipat",
+            "/var/lib/ipat-platform-oidc",
+            "/var/lib/ipat-tenant-oidc",
+            "/var/lib/ipat-domain-ownership-verifier",
+        )
+        start = self.s.index('r1014_require_absent \\')
+        finish = self.s.index('|| die "R996_ROLLBACK_OWNED_TREE_EXISTS', start)
+        guarded = self.s[start:finish]
+        for path in paths:
+            self.assertIn(path, guarded)
+        self.assertLess(finish, self.s.index("rollback_armed=YES"))
+        self.assertLess(finish, self.s.index("IPAT_R985_PREPARE="))
+        self.assertIn('. "$root/deploy/scripts/production/r1014_require_absent.sh"', self.s[:start])
+        self.assertIn("rm -rf /var/lib/ipat-platform-oidc", self.s)
+        self.assertIn("/var/lib/ipat-tenant-oidc /var/lib/ipat-domain-ownership-verifier", self.s)
+
+    def test_r1020_existing_directory_file_and_dangling_symlink_refused_intact(self):
+        helper = ROOT / "deploy/scripts/production/r1014_require_absent.sh"
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            for kind in ("dir", "file", "symlink"):
+                target = root / kind
+                if kind == "dir":
+                    target.mkdir()
+                    (target / "tenant-secret.fixture").write_text("MUST_BE_PRESERVED")
+                elif kind == "file":
+                    target.write_text("MUST_BE_PRESERVED")
+                else:
+                    target.symlink_to(root / "does-not-exist")
+                argv = ["bash", "-c",
+                        'set -e; source "$1"; r1014_require_absent "$2"; echo SHOULD_NOT_PASS',
+                        "r1020-test", str(helper), str(target)]
+                p = subprocess.run(argv, text=True, capture_output=True, timeout=3)
+                self.assertNotEqual(p.returncode, 0, kind)
+                self.assertNotIn("SHOULD_NOT_PASS", p.stdout)
+                self.assertIn("R1014_PREEXISTING_ARTIFACT_REFUSED", p.stderr)
+                self.assertTrue(target.is_symlink() or target.exists())
+                if kind == "dir":
+                    self.assertEqual((target / "tenant-secret.fixture").read_text(), "MUST_BE_PRESERVED")
+                elif kind == "file":
+                    self.assertEqual(target.read_text(), "MUST_BE_PRESERVED")
+
     def test_dependency_order_is_locked(self):
         marks=[
           "r985_prepare_platform_runtime.sh",
