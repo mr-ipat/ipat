@@ -59,6 +59,18 @@ artifacts=(
 for p in "${artifacts[@]}"; do
   [[ ! -e $p && ! -L $p ]] || die "existing artifact requires explicit upgrade/recovery review: $p"
 done
+# R10.20: rollback owns the COMPLETE trees below, not just their unit files.
+# Refuse existing files, directories AND dangling symlinks before arming rollback:
+# otherwise an installer failure may remove pre-existing tenant/OIDC state.
+. "$root/deploy/scripts/production/r1014_require_absent.sh"
+r1014_require_absent \
+  /opt/ipat \
+  /etc/ipat \
+  /var/lib/ipat \
+  /var/lib/ipat-platform-oidc \
+  /var/lib/ipat-tenant-oidc \
+  /var/lib/ipat-domain-ownership-verifier \
+  || die "R996_ROLLBACK_OWNED_TREE_EXISTS requires independent recovery review"
 if command -v pg_lsclusters >/dev/null; then
   [[ -z $(pg_lsclusters --no-header 2>/dev/null || true) ]] || die "existing PostgreSQL cluster requires separate migration review"
 fi

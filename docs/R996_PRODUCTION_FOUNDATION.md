@@ -31,3 +31,8 @@ On success it writes a root-only `/var/lib/ipat/r996-foundation.json` that recor
 ## Current acceptance
 
 Source tests verify ordering, pre-mutation recovery/source/listener checks, no public ingress/firewall/device call, fail-closed attestation semantics and rollback coverage. The current owner VPS still lacks noninteractive root access, so the live foundation has not been executed. That is an infrastructure acceptance blocker, not permission to bypass root/recovery controls.
+
+
+## R10.20 — strict ownership of first-install rollback trees
+
+The R9.96 first-install rollback includes recursive removal of three IPAT-owned OIDC/domain runtime-state directories. Earlier preflight checked individual unit/binary paths but not these directories and could erase pre-existing state on a failed retry. R10.20 adds fail-closed `r1014_require_absent` checks for `/opt/ipat`, `/etc/ipat`, `/var/lib/ipat`, `/var/lib/ipat-platform-oidc`, `/var/lib/ipat-tenant-oidc`, and `/var/lib/ipat-domain-ownership-verifier` before rollback is armed. Pre-existing directories, ordinary files or symlinks (including dangling) require separate recovery/migration review: never auto-clear these paths just to rerun the installer. Disposable tests prove rejection preserves existing directory contents. This does not authorize root installation without genuine provider rescue and independently tested full-host restore evidence.
