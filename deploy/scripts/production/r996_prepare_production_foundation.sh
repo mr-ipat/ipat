@@ -105,7 +105,9 @@ IPAT_R994_PREPARE=PREPARE_REVIEWED_DOMAIN_INGRESS_VERIFIER \
 IPAT_R995_PREPARE=PREPARE_REVIEWED_DOMAIN_OWNERSHIP_VERIFIER \
   "$root/deploy/scripts/production/r995_prepare_domain_ownership_verifier.sh"
 
-"$root/deploy/scripts/production/r987_bootstrap_postgres18.sh"
+IPAT_R987_BOOTSTRAP=CREATE_REVIEWED_LOCAL_POSTGRES18 \
+IPAT_R987_SOURCE_ROOT="$root" \
+  "$root/deploy/scripts/production/r987_bootstrap_postgres18.sh"
 
 for unit in ipat-platform-api.service ipat-platform-oidc.service ipat-tenant-api.service \
             ipat-domain-ingress-verifier.timer ipat-domain-ownership-verifier.service; do

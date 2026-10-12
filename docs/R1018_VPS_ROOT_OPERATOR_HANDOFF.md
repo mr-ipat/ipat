@@ -55,3 +55,7 @@ ssh ipat-lab 'cd ~/.local/share/ipat/release-candidates/845eeac1f039168fd08af7f8
 ```
 
 The first two tests validate source/shell and refusal of running a privileged script from an untrusted location. No automated test can prove rescue-console authentication or distinct-host backup restore.
+
+## Integration defect corrected during this handoff
+
+R9.96 originally omitted R9.87's required child opt-in/source-root environment and would always reject before creating the PostgreSQL18 cluster. R10.18 source correction now explicitly exports both on just that subprocess invocation. The regression executes the Bash child call in an isolated temporary directory and tests both variables; no actual DB or VPS installation occurs. **After merge, build/install from the final reviewed main commit, not an earlier user-home checkout**. The pinned R10.18 root-readiness script and initial candidate SHA above remain a limited, read-only root-authentication handoff and are *not* an installer authorization for the corrected future commit.
