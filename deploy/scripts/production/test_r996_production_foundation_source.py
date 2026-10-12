@@ -1,4 +1,4 @@
-import json, os, tempfile, unittest
+import json, os, tempfile, unittest, subprocess, shlex
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 import importlib.util
@@ -13,6 +13,31 @@ class R996Source(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.s=SCRIPT.read_text()
+
+    def test_r987_explicit_child_optin_and_exact_root_are_propagated(self):
+        # Prove the real Bash env-prefix executes, not just a static grep.
+        first = self.s.index("IPAT_R987_BOOTSTRAP=CREATE_REVIEWED_LOCAL_POSTGRES18")
+        last = self.s.index("\n\nfor unit in", first)
+        child_call = self.s[first:last]
+        self.assertIn('IPAT_R987_SOURCE_ROOT="$root"', child_call)
+        self.assertIn('"$root/deploy/scripts/production/r987_bootstrap_postgres18.sh"', child_call)
+        with tempfile.TemporaryDirectory() as td:
+            child = Path(td) / "deploy/scripts/production/r987_bootstrap_postgres18.sh"
+            child.parent.mkdir(parents=True)
+            child.write_text(
+                """#!/usr/bin/env bash
+printf '%s\n%s\n' "$IPAT_R987_BOOTSTRAP" "$IPAT_R987_SOURCE_ROOT"
+"""
+            )
+            child.chmod(0o700)
+            result = subprocess.run(
+                ["bash", "-c", f"root={shlex.quote(td)}\n{child_call}"],
+                capture_output=True, text=True, timeout=3, check=True,
+            )
+            self.assertEqual(
+                result.stdout.splitlines(),
+                ["CREATE_REVIEWED_LOCAL_POSTGRES18", td],
+            )
 
     def test_dependency_order_is_locked(self):
         marks=[
