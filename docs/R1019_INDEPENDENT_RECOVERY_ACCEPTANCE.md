@@ -34,6 +34,6 @@ ssh ipat-lab 'cd ~/.local/share/ipat/release-candidates/9f61ea5587ad6d7157cce7c7
 ssh ipat-lab 'systemctl --user is-active ipat-r911-preview.service'
 ```
 
-Neither command requires sudo or mutates production. Keep raw backup credentials, root keys, proprietary device configs and actual host restore archives out of GitHub and chat. See `docs/R996_PRODUCTION_FOUNDATION.md`, `docs/R997_PLATFORM_ACTIVATION.md` and `docs/PRODUCTION_INFRA_RECOVERY_R55.md`.
+Neither command requires sudo or mutates production. Keep raw backup credentials, root keys, proprietary device configs and actual host restore archives out of GitHub and chat. See `docs/R996_PRODUCTION_FOUNDATION.md`, `docs/R997_PLATFORM_EDGE_ACTIVATION.md` and `docs/PRODUCTION_INFRA_RECOVERY_R55.md`.
 
 **Verdict:** interactive root PASS; exact main binary PASS; independent host rescue/full restore **BLOCKED**; real production database PITR/HA, MFA, TLS and hardware acceptance untested; **PUBLIC GO=FALSE**.
