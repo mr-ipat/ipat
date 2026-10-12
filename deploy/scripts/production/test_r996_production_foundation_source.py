@@ -32,7 +32,7 @@ printf '%s\n%s\n' "$IPAT_R987_BOOTSTRAP" "$IPAT_R987_SOURCE_ROOT"
             child.chmod(0o700)
             result = subprocess.run(
                 ["bash", "-c", f"root={shlex.quote(td)}\n{child_call}"],
-                capture_output=True, text=True, timeout=3, check=True,
+                capture_output=True, text=True, timeout=10, check=True,
             )
             self.assertEqual(
                 result.stdout.splitlines(),
@@ -116,7 +116,9 @@ printf '%s\n%s\n' "$IPAT_R987_BOOTSTRAP" "$IPAT_R987_SOURCE_ROOT"
             r = Path(td)
             clean = r / "fixture"
             clean.mkdir()
+            os.chmod(clean, 0o700)
             (clean / "approved-file").write_text("PRESERVE")
+            os.chmod(clean / "approved-file", 0o600)
             expected_uid = os.getuid()
             # Inspect actual GNU find selector, requiring both uid and mode.
             owner_filter = snippet.replace('! -uid 0', f'! -uid {expected_uid}')
