@@ -1,4 +1,4 @@
-import json, os, tempfile, unittest, subprocess, shlex
+import json, os, tempfile, unittest, subprocess, shlex, sys
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 import importlib.util
@@ -86,6 +86,69 @@ printf '%s\n%s\n' "$IPAT_R987_BOOTSTRAP" "$IPAT_R987_SOURCE_ROOT"
                     self.assertEqual((target / "tenant-secret.fixture").read_text(), "MUST_BE_PRESERVED")
                 elif kind == "file":
                     self.assertEqual(target.read_text(), "MUST_BE_PRESERVED")
+
+    def test_r1021_root_owned_checkout_and_binary_gated_before_git_and_mutation(self):
+        start = self.s.index("# R10.21: a root-run orchestrator")
+        end = self.s.index("actual_source=$(git -C", start)
+        guarded = self.s[start:end]
+        for marker in (
+            '[[ $root == /*',
+            '[[ $binary == /*',
+            'for trusted_path in "$root" "$(dirname -- "$binary")"',
+            'stat -c \'%u %a\' "$trusted_path"',
+            'group/world-writable source/binary ancestor',
+            'binary requires root-owned single-link file',
+            'unsafe_source=$(find "$root"',
+            '-type l -o ! -uid 0 -o -perm /022',
+            'untrusted checkout inode',
+        ):
+            self.assertIn(marker, guarded)
+        self.assertLess(end, self.s.index('r996_validate_recovery_attestation.py'))
+        self.assertLess(end, self.s.index('rollback_armed=YES'))
+        self.assertNotIn('IPAT_R1021_ALLOW_UNSAFE', guarded)
+
+    @unittest.skipUnless(sys.platform.startswith("linux"), "GNU find is required by Ubuntu26 installer")
+    def test_r1021_gnu_find_refuses_untrusted_tree_without_modification(self):
+        start = self.s.index('unsafe_source=$(find "$root"')
+        end = self.s.index('\n[[ -z $unsafe_source ]]', start)
+        snippet = self.s[start:end]
+        with tempfile.TemporaryDirectory() as td:
+            r = Path(td)
+            clean = r / "fixture"
+            clean.mkdir()
+            (clean / "approved-file").write_text("PRESERVE")
+            expected_uid = os.getuid()
+            # Inspect actual GNU find selector, requiring both uid and mode.
+            owner_filter = snippet.replace('! -uid 0', f'! -uid {expected_uid}')
+            for kind in ("symlink", "writable", "directory"):
+                target = clean / "untrusted"
+                if kind == "symlink":
+                    target.symlink_to(r / "not-present")
+                elif kind == "writable":
+                    target.write_text("PRESERVE")
+                    os.chmod(target, 0o666)
+                else:
+                    target.mkdir()
+                    os.chmod(target, 0o777)
+                command = (
+                    'root="$1"; die(){ exit 4; }; '
+                    + owner_filter + '\n'
+                    + 'printf "%s\\n" "$unsafe_source"'
+                )
+                p = subprocess.run(
+                    ["bash", "-c", command, "r1021", str(clean)],
+                    capture_output=True, text=True, timeout=4,
+                )
+                self.assertEqual(p.returncode, 0, p.stderr)
+                self.assertIn(str(target), p.stdout)
+                self.assertEqual((clean / "approved-file").read_text(), "PRESERVE")
+                if target.is_symlink():
+                    target.unlink()
+                elif target.is_dir():
+                    target.rmdir()
+                else:
+                    self.assertEqual(target.read_text(), "PRESERVE")
+                    target.unlink()
 
     def test_dependency_order_is_locked(self):
         marks=[

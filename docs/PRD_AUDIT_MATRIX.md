@@ -384,3 +384,8 @@ The owner actually authenticated interactive `sudo` on the reviewed Ubuntu VPS a
 ## R10.20 — AC-07/13 first-install rollback ownership containment
 
 R9.96 rollback could recursively delete an existing `/var/lib/ipat-platform-oidc`, `/var/lib/ipat-tenant-oidc` or `/var/lib/ipat-domain-ownership-verifier` directory after a failed setup despite individual executable/unit-file preflight. R10.20 fixes this security/data-preservation regression by rejecting all six root-owned rollback trees, including regular and dangling symlinks, **before arming rollback or any privileged write**. Actual isolated Bash test preserves tenant-marker data after refusal; R9.96 source tests 9/9 local PASS. This is **code safety acceptance, not actual production restore**. AC-07/13, root out-of-band rescue/distinct-host restore, production PG PITR/HA/fencing and ALL-MUST/public SaaS remain **BLOCKED/NO_GO**.
+
+
+## R10.21 — root-install untrusted source code/ELF denial (AC-07, AC-13)
+
+R9.96 now requires root-owned, root-controlled, non-group/other-writable **entire** source path/checkout and executable file and all their ancestors; no source symlink and no mutable binary/hardlink or relative executable path. The former exact commit/clean-Git/SHA checks remain separately enforced. This prevents the reviewed production installer from mistakenly trusting the unprivileged SSH user checkout. CI and Linux host tests required; **source policy only** and does not substitute out-of-band rescue, independent full-host restore, production HA/PITR, MFA/TLS/Host isolation or vendor-native interop. All-MUST/public remains NO_GO.

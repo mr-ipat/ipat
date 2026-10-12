@@ -25,12 +25,38 @@ binary_sha=${IPAT_R996_BINARY_SHA256:-}
 [[ $binary_sha =~ ^[0-9a-f]{64}$ ]] || die "exact binary SHA256 required"
 [[ -n $att && -n $binary ]] || die "recovery attestation and binary source required"
 
-for c in git python3 sha256sum stat ss getent systemctl userdel rmdir rm install mktemp; do
+for c in git python3 sha256sum stat ss getent systemctl userdel rmdir rm install mktemp find dirname; do
   command -v "$c" >/dev/null || die "missing base tool: $c"
 done
 . /etc/os-release
 [[ ${ID:-} == ubuntu && ${VERSION_ID:-} == 26.04 ]] || die "Ubuntu Server 26.04 required"
 
+# R10.21: a root-run orchestrator must NEVER execute child shell/Python from
+# an unprivileged, replaceable SSH checkout or copy an untrusted mutable binary.
+# Every checkout inode must be root-owned, not writable by group/others and
+# not a symlink. Inspect all ancestor directories to defeat parent replacement.
+[[ $root == /* && -d $root && ! -L $root ]] || die "untrusted production source root"
+[[ $binary == /* && -f $binary && ! -L $binary ]] || die "untrusted or relative production binary path"
+for trusted_path in "$root" "$(dirname -- "$binary")"; do
+  while :; do
+    [[ -d $trusted_path && ! -L $trusted_path ]] || die "untrusted source/binary ancestor"
+    owner_mode=$(stat -c '%u %a' "$trusted_path") || die "cannot stat trusted directory"
+    read -r owner mode <<<"$owner_mode"
+    [[ $owner == 0 && $mode =~ ^[0-7]{3,4}$ ]] || die "non-root-owned source/binary ancestor"
+    (( (8#$mode & 8#022) == 0 )) || die "group/world-writable source/binary ancestor"
+    [[ $trusted_path == / ]] && break
+    trusted_path=$(dirname -- "$trusted_path")
+  done
+done
+binary_owner_mode=$(stat -c '%u %a %h' "$binary") || die "cannot stat release executable"
+read -r owner mode links <<<"$binary_owner_mode"
+[[ $owner == 0 && $links == 1 && $mode =~ ^[0-7]{3,4}$ ]] || die "binary requires root-owned single-link file"
+(( (8#$mode & 8#022) == 0 )) || die "group/world-writable release executable"
+unsafe_source=$(find "$root" \( -type l -o ! -uid 0 -o -perm /022 -o ! -type f -a ! -type d \) -print -quit 2>/dev/null) \
+  || die "source ownership scan failed"
+[[ -z $unsafe_source ]] || die "untrusted checkout inode (ownership, write mode, or symlink)"
+# The R9.96 manifest and exact source check below are additionally required;
+# file permissions alone are not sufficient proof of provenance.
 actual_source=$(git -C "$root" rev-parse HEAD 2>/dev/null || true)
 [[ $actual_source == "$expected" ]] || die "running repository commit mismatch"
 [[ -z $(git -C "$root" status --porcelain --untracked-files=no) ]] || die "tracked working tree must be clean"
