@@ -1360,3 +1360,8 @@ An RFC1918 management address, explicit read-only request approval, external mod
 ## R10.22 first-install recovery attestation trust-boundary correction (2026-10-14)
 
 R9.96 recovery evidence is a high-impact root-only first-install gate. A separate pathname metadata check and path reopening could admit substituted bytes after an earlier UID/mode check. `r996_validate_recovery_attestation.py` now uses one `O_NOFOLLOW` FD, `fstat` metadata, a bounded binary read, final inode/path recheck and strict duplicate-free UTF-8 JSON. It explicitly rejects symlink, hardlink, FIFO and changed pathname fixtures. This is a defense-in-depth software control and does **not** establish independent evidence custody or authority to change live production systems. Physical provider console login, encrypted independently restored full-host image, appropriate reviewers and PostgreSQL PITR/HA/fencing are still separately gated and auditable.
+
+
+## R10.23 reviewed root source provenance and interpreter isolation
+
+Even after R10.21 requires a root-owned/controlled checkout, a malicious or accidental untracked/ignored Python module could be root-owned while absent from the reviewed Git commit and shadow a standard library import during the R9.96 privileged attestation check. The foundation installer now denies ALL tracked/untracked/ignored Git status output, fails on Git command errors, and uses `python3 -I` for the privileged attestation validator. Real disposable Git and Python import tests exercise the negative case. This is a code/source trust-boundary mitigation, not a replacement for host-level backup/restore or MFA evidence.
