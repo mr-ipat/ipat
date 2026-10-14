@@ -159,9 +159,9 @@ printf '%s\n%s\n' "$IPAT_R987_BOOTSTRAP" "$IPAT_R987_SOURCE_ROOT"
         with tempfile.TemporaryDirectory() as td:
             root=Path(td)/"source"
             root.mkdir()
-            (root/".gitignore").write_text("shadowed.py\\n")
+            (root/".gitignore").write_text("shadowed.py"+chr(10))
             tracked=root/"reviewed.py"
-            tracked.write_text("print('reviewed')\\n")
+            tracked.write_text("print('reviewed')"+chr(10))
             subprocess.run(["git","init","--quiet",str(root)],check=True,timeout=10)
             subprocess.run(["git","-C",str(root),"add",".gitignore","reviewed.py"],check=True,timeout=10)
             subprocess.run(
@@ -175,10 +175,10 @@ printf '%s\n%s\n' "$IPAT_R987_BOOTSTRAP" "$IPAT_R987_SOURCE_ROOT"
             self.assertEqual(clean.stdout,"")
             for path,marker in ((root/"shadowed.py","!! "),
                                 (root/"unknown.py","?? ")):
-                path.write_text("raise RuntimeError('UNREVIEWED')\\n")
+                path.write_text("raise RuntimeError('UNREVIEWED')"+chr(10))
                 status=subprocess.run(cmd,text=True,capture_output=True,check=True,timeout=10)
                 self.assertIn(marker+path.name,status.stdout)
-            tracked.write_text("raise RuntimeError('MODIFIED')\\n")
+            tracked.write_text("raise RuntimeError('MODIFIED')"+chr(10))
             status=subprocess.run(cmd,text=True,capture_output=True,check=True,timeout=10)
             self.assertIn(" M reviewed.py",status.stdout)
         guard=self.s.index("source_status=$(git -C")
@@ -193,7 +193,7 @@ printf '%s\n%s\n' "$IPAT_R987_BOOTSTRAP" "$IPAT_R987_SOURCE_ROOT"
             self.s,
         )
         with tempfile.TemporaryDirectory() as td:
-            (Path(td)/"argparse.py").write_text("raise RuntimeError('SHADOWED')\\n")
+            (Path(td)/"argparse.py").write_text("raise RuntimeError('SHADOWED')"+chr(10))
             regular=subprocess.run([sys.executable,"-c","import argparse"],cwd=td,
                                    capture_output=True,text=True,timeout=10)
             self.assertNotEqual(regular.returncode,0)
