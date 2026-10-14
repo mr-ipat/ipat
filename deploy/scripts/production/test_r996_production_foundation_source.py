@@ -153,6 +153,54 @@ printf '%s\n%s\n' "$IPAT_R987_BOOTSTRAP" "$IPAT_R987_SOURCE_ROOT"
                     self.assertEqual(target.read_text(), "PRESERVE")
                     target.unlink()
 
+    def test_r1023_git_checkout_requires_zero_tracked_untracked_or_ignored_files(self):
+        # Execute the exact production Git status arguments against a real
+        # disposable repository, not merely substring-assert expected flags.
+        with tempfile.TemporaryDirectory() as td:
+            root=Path(td)/"source"
+            root.mkdir()
+            (root/".gitignore").write_text("shadowed.py"+chr(10))
+            tracked=root/"reviewed.py"
+            tracked.write_text("print('reviewed')"+chr(10))
+            subprocess.run(["git","init","--quiet",str(root)],check=True,timeout=10)
+            subprocess.run(["git","-C",str(root),"add",".gitignore","reviewed.py"],check=True,timeout=10)
+            subprocess.run(
+                ["git","-C",str(root),"-c","user.name=IPAT CI",
+                 "-c","user.email=ci@example.invalid","commit","--quiet","-m","fixture"],
+                check=True,timeout=10,
+            )
+            cmd=["git","-C",str(root),"status","--porcelain",
+                 "--untracked-files=all","--ignored=matching"]
+            clean=subprocess.run(cmd,text=True,capture_output=True,check=True,timeout=10)
+            self.assertEqual(clean.stdout,"")
+            for path,marker in ((root/"shadowed.py","!! "),
+                                (root/"unknown.py","?? ")):
+                path.write_text("raise RuntimeError('UNREVIEWED')"+chr(10))
+                status=subprocess.run(cmd,text=True,capture_output=True,check=True,timeout=10)
+                self.assertIn(marker+path.name,status.stdout)
+            tracked.write_text("raise RuntimeError('MODIFIED')"+chr(10))
+            status=subprocess.run(cmd,text=True,capture_output=True,check=True,timeout=10)
+            self.assertIn(" M reviewed.py",status.stdout)
+        guard=self.s.index("source_status=$(git -C")
+        self.assertIn("--untracked-files=all --ignored=matching",self.s[guard:guard+200])
+        self.assertIn('|| die "cannot verify Git checkout cleanliness"',self.s[guard:guard+300])
+        self.assertLess(guard,self.s.index("r996_validate_recovery_attestation.py"))
+        self.assertLess(guard,self.s.index("rollback_armed=YES"))
+
+    def test_r1023_python_isolation_does_not_import_local_shadow(self):
+        self.assertIn(
+            'python3 -I "$root/deploy/scripts/production/r996_validate_recovery_attestation.py"',
+            self.s,
+        )
+        with tempfile.TemporaryDirectory() as td:
+            (Path(td)/"argparse.py").write_text("raise RuntimeError('SHADOWED')"+chr(10))
+            regular=subprocess.run([sys.executable,"-c","import argparse"],cwd=td,
+                                   capture_output=True,text=True,timeout=10)
+            self.assertNotEqual(regular.returncode,0)
+            isolated=subprocess.run([sys.executable,"-I","-c","import argparse"],
+                                    cwd=td,capture_output=True,text=True,timeout=10)
+            self.assertEqual(isolated.returncode,0,isolated.stderr)
+
     def test_dependency_order_is_locked(self):
         marks=[
           "r985_prepare_platform_runtime.sh",
@@ -173,7 +221,7 @@ printf '%s\n%s\n' "$IPAT_R987_BOOTSTRAP" "$IPAT_R987_SOURCE_ROOT"
 
     def test_first_mutation_follows_global_preflight(self):
         first=self.s.index("IPAT_R985_PREPARE=PREPARE_REVIEWED_PLATFORM_RUNTIME")
-        for required in ("r996_validate_recovery_attestation.py","tracked working tree must be clean",
+        for required in ("r996_validate_recovery_attestation.py","tracked, untracked and ignored source artifacts",
                          "existing IPAT runtime identity","managed/public/runtime port already has a listener"):
             self.assertLess(self.s.index(required),first)
 

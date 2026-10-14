@@ -59,10 +59,15 @@ unsafe_source=$(find "$root" \( -type l -o ! -uid 0 -o -perm /022 -o ! -type f -
 # file permissions alone are not sufficient proof of provenance.
 actual_source=$(git -C "$root" rev-parse HEAD 2>/dev/null || true)
 [[ $actual_source == "$expected" ]] || die "running repository commit mismatch"
-[[ -z $(git -C "$root" status --porcelain --untracked-files=no) ]] || die "tracked working tree must be clean"
+# R10.23: a Git-clean tracked tree alone is not enough for root execution.
+# Ignore rules and untracked Python modules could shadow reviewed dependencies.
+# Check failure MUST NOT be mistaken for an empty/clean checkout.
+source_status=$(git -C "$root" status --porcelain --untracked-files=all --ignored=matching) \
+  || die "cannot verify Git checkout cleanliness"
+[[ -z $source_status ]] || die "tracked, untracked and ignored source artifacts must all be absent"
 [[ -f $binary && ! -L $binary ]] || die "binary source must be regular non-symlink"
 [[ $(sha256sum "$binary" | awk '{print $1}') == "$binary_sha" ]] || die "binary SHA256 mismatch"
-python3 "$root/deploy/scripts/production/r996_validate_recovery_attestation.py" \
+python3 -I "$root/deploy/scripts/production/r996_validate_recovery_attestation.py" \
   --path "$att" --expected-source "$expected" >/dev/null \
   || die "reviewed recovery attestation rejected"
 
