@@ -17,7 +17,11 @@ for u in ipat-platform-api.service ipat-platform-oidc.service ipat-tenant-api.se
 done
 if command -v ss >/dev/null 2>&1; then
   for p in 80 443 5432 3003 3005 3006; do
-    if ss -H -ltn "( sport = :$p )" 2>/dev/null | grep -q .; then state=LISTENING; else state=NOT_OBSERVED; fi
+    if snapshot=$(ss -H -ltn "( sport = :$p )" 2>/dev/null); then
+      if [[ -n $snapshot ]]; then state=LISTENING; else state=NOT_OBSERVED; fi
+    else
+      state=UNKNOWN_INSPECTION_FAILED
+    fi
     printf 'PORT_%s=%s\n' "$p" "$state"
   done
 else
