@@ -153,6 +153,26 @@ printf '%s\n%s\n' "$IPAT_R987_BOOTSTRAP" "$IPAT_R987_SOURCE_ROOT"
                     self.assertEqual(target.read_text(), "PRESERVE")
                     target.unlink()
 
+    def test_r1025_attestation_ancestry_runtime_denies_writable_directory(self):
+        src = "a" * 40
+        with tempfile.TemporaryDirectory() as td:
+            parent = Path(td) / "evidence"
+            parent.mkdir(mode=0o700)
+            file = parent / "attestation.json"
+            file.write_text("{}")
+            file.chmod(0o600)
+            parent.chmod(0o777)
+            with self.assertRaisesRegex(ValueError, "ancestor must be root-owned and non-writable"):
+                m.validate_file(file, src, os.geteuid(), trusted_parent=True)
+
+    def test_r1025_attestation_ancestry_refuses_writable_parent(self):
+        source = (ROOT / "deploy/scripts/production/r996_validate_recovery_attestation.py").read_text()
+        self.assertIn("os.lstat(ancestor)", source)
+        self.assertIn("trusted_parent=True", source)
+        self.assertIn("metadata.st_uid!=required_uid", source)
+        self.assertIn("stat.S_IMODE(metadata.st_mode) & 0o022", source)
+        self.assertLess(source.index("os.lstat(ancestor)"), source.index("fd=os.open(path,flags)"))
+
     def test_r1023_git_checkout_requires_zero_tracked_untracked_or_ignored_files(self):
         # Execute the exact production Git status arguments against a real
         # disposable repository, not merely substring-assert expected flags.

@@ -65,7 +65,7 @@ def _reject_duplicate_keys(pairs:list[tuple[str,object]])->dict:
 def _reject_nonfinite(value:str)->None:
     raise ValueError("attestation contains non-JSON numeric constant")
 
-def validate_file(path:Path, expected_source:str, required_uid:int=0)->dict:
+def validate_file(path:Path, expected_source:str, required_uid:int=0, *, trusted_parent:bool=False)->dict:
     """Inspect and read ONE already-opened inode, never stat then reopen its path.
 
     On Ubuntu O_NOFOLLOW excludes final-component symlink traversal, O_NONBLOCK
@@ -74,6 +74,19 @@ def validate_file(path:Path, expected_source:str, required_uid:int=0)->dict:
     """
     if not path.is_absolute():
         raise ValueError("attestation must have an absolute path")
+    # A protected leaf alone is insufficient if a non-root owner can swap
+    # one of its parent directories between path resolution and use.
+    # Enforce root-only, non-writable and non-symlink ancestry on Linux.
+    if trusted_parent:
+        ancestor=path.parent
+        while True:
+            metadata=os.lstat(ancestor)
+            if (not stat.S_ISDIR(metadata.st_mode) or metadata.st_uid!=required_uid
+                    or (stat.S_IMODE(metadata.st_mode) & 0o022)):
+                raise ValueError("attestation ancestor must be root-owned and non-writable")
+            if ancestor==ancestor.parent:
+                break
+            ancestor=ancestor.parent
     if not all(hasattr(os,key) for key in ("O_NOFOLLOW","O_CLOEXEC","O_NONBLOCK")):
         raise ValueError("required Linux no-follow open flags unavailable")
     flags=os.O_RDONLY|os.O_NOFOLLOW|os.O_CLOEXEC|os.O_NONBLOCK
@@ -117,7 +130,7 @@ def main()->int:
     p.add_argument("--expected-source",required=True)
     a=p.parse_args()
     try:
-        out=validate_file(a.path,a.expected_source,0)
+        out=validate_file(a.path,a.expected_source,0,trusted_parent=True)
     except (OSError,ValueError) as e:
         print(json.dumps({"ok":False,"error":str(e),"public_go":False},sort_keys=True))
         return 4

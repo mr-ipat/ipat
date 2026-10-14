@@ -1365,3 +1365,7 @@ R9.96 recovery evidence is a high-impact root-only first-install gate. A separat
 ## R10.23 reviewed root source provenance and interpreter isolation
 
 Even after R10.21 requires a root-owned/controlled checkout, a malicious or accidental untracked/ignored Python module could be root-owned while absent from the reviewed Git commit and shadow a standard library import during the R9.96 privileged attestation check. The foundation installer now denies ALL tracked/untracked/ignored Git status output, fails on Git command errors, and uses `python3 -I` for the privileged attestation validator. Real disposable Git and Python import tests exercise the negative case. This is a code/source trust-boundary mitigation, not a replacement for host-level backup/restore or MFA evidence.
+
+## R10.25 — Recovery attestation ancestor custody (2026-10-14)
+
+An independently reviewed recovery evidence file is not trustworthy solely because the leaf is root-owned mode 0600: each ancestor of the root-executed attestation path MUST also be a real non-symlink directory owned by root, with neither group nor other write access. The R9.96 Python verifier now checks this before opening the leaf. This defends against user-replaceable parent components but is not proof of independent rescue console access or successful full-host restore, and it does not authorize public edge activation.
