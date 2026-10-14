@@ -193,11 +193,11 @@ printf '%s\n%s\n' "$IPAT_R987_BOOTSTRAP" "$IPAT_R987_SOURCE_ROOT"
             self.s,
         )
         with tempfile.TemporaryDirectory() as td:
-            (Path(td)/"json.py").write_text("raise RuntimeError('SHADOWED')\\n")
-            regular=subprocess.run([sys.executable,"-c","import json"],cwd=td,
+            (Path(td)/"argparse.py").write_text("raise RuntimeError('SHADOWED')\\n")
+            regular=subprocess.run([sys.executable,"-c","import argparse"],cwd=td,
                                    capture_output=True,text=True,timeout=10)
             self.assertNotEqual(regular.returncode,0)
-            isolated=subprocess.run([sys.executable,"-I","-c","import json"],
+            isolated=subprocess.run([sys.executable,"-I","-c","import argparse"],
                                     cwd=td,capture_output=True,text=True,timeout=10)
             self.assertEqual(isolated.returncode,0,isolated.stderr)
 
