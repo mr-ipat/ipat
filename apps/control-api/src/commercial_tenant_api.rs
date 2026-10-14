@@ -2778,17 +2778,6 @@ mod pg_integration {
             .unwrap();
         assert_eq!(wrong_host.status(), StatusCode::UNAUTHORIZED);
 
-        let role_split_ready: bool = admin
-            .query_one(
-                "SELECT to_regprocedure(
-                   'ipat_platform.pppoe_batch_create_capability(text,text,uuid)'
-                 ) IS NOT NULL",
-                &[],
-            )
-            .await
-            .unwrap()
-            .get(0);
-
         let created = app
             .clone()
             .oneshot(req(
@@ -2824,130 +2813,10 @@ mod pg_integration {
             .unwrap()
             .get(0);
         assert!(no_execute);
-        if !role_split_ready {
-            // Expected rolling-deploy safety state: new BFF with old schema
-            // denies the high-risk module until 0039 is applied.
-            return;
-        }
-        return;
-        let created_json = body_json(created).await;
-        assert_eq!(created_json["id"], request_id.to_string());
-        assert_eq!(created_json["execution_allowed"], false);
-        assert_eq!(created_json["physical_readback_verified"], false);
-
-        let exact_replay = app
-            .clone()
-            .oneshot(req(
-                "POST",
-                "/api/v1/pppoe-plans",
-                host,
-                Some(maker_cookie),
-                Some(maker_csrf),
-                Some(&body),
-            ))
-            .await
-            .unwrap();
-        assert_eq!(exact_replay.status(), StatusCode::CREATED);
-
-        let list = app
-            .clone()
-            .oneshot(req(
-                "GET",
-                "/api/v1/pppoe-plans",
-                host,
-                Some(maker_cookie),
-                None,
-                None,
-            ))
-            .await
-            .unwrap();
-        assert_eq!(list.status(), StatusCode::OK);
-        let list_json = body_json(list).await;
-        assert_eq!(list_json["physical_execution_available"], false);
-        assert!(list_json["plans"]
-            .as_array()
-            .unwrap()
-            .iter()
-            .any(|p| p["id"] == request_id.to_string()
-                && p["state"] == "awaiting_approval"
-                && p["execution_allowed"] == false));
-
-        let detail = app
-            .clone()
-            .oneshot(req(
-                "GET",
-                &format!("/api/v1/pppoe-plans/{request_id}"),
-                host,
-                Some(maker_cookie),
-                None,
-                None,
-            ))
-            .await
-            .unwrap();
-        assert_eq!(detail.status(), StatusCode::OK);
-        let detail_json = body_json(detail).await;
-        assert_eq!(detail_json["secret_values_returned"], false);
-        assert_eq!(detail_json["physical_execution_available"], false);
-        let detail_text = detail_json.to_string();
-        assert!(!detail_text.contains("vault://"));
-        assert!(!detail_text.contains("password"));
-
-        let maker_approve = app
-            .clone()
-            .oneshot(req(
-                "POST",
-                &format!("/api/v1/pppoe-plans/{request_id}/review"),
-                host,
-                Some(maker_cookie),
-                Some(maker_csrf),
-                Some(r#"{"approve":true}"#),
-            ))
-            .await
-            .unwrap();
-        assert_eq!(maker_approve.status(), StatusCode::CONFLICT);
-
-        let checker_approve = app
-            .clone()
-            .oneshot(req(
-                "POST",
-                &format!("/api/v1/pppoe-plans/{request_id}/review"),
-                host,
-                Some(checker_cookie),
-                Some(checker_csrf),
-                Some(r#"{"approve":true}"#),
-            ))
-            .await
-            .unwrap();
-        assert_eq!(checker_approve.status(), StatusCode::OK);
-        let approved = body_json(checker_approve).await;
-        assert_eq!(approved["state"], "approved");
-        assert_eq!(approved["execution_allowed"], false);
-        assert_eq!(approved["physical_execution_available"], false);
-
-        let row = admin
-            .query_one(
-                "SELECT state,execution_allowed,physical_readback_verified,
-             approval_expires_at>reviewed_at,
-             approval_expires_at<=reviewed_at+interval '30 minutes'
-             FROM ipat_ops.pppoe_batch_plans WHERE tenant_id=$1 AND id=$2",
-                &[&tenant, &request_id],
-            )
-            .await
-            .unwrap();
-        assert_eq!(row.get::<_, String>(0), "approved");
-        assert!(!row.get::<_, bool>(1));
-        assert!(!row.get::<_, bool>(2));
-        assert!(row.get::<_, bool>(3));
-        assert!(row.get::<_, bool>(4));
-        let no_execute: bool = admin
-            .query_one(
-                "SELECT to_regprocedure('ipat_platform.execute_pppoe_batch(uuid)') IS NULL",
-                &[],
-            )
-            .await
-            .unwrap()
-            .get(0);
-        assert!(no_execute);
+        // R10.09 supersedes the former Tenant Admin success path. This
+        // endpoint must deny Tenant Admin regardless of the schema rolling-
+        // upgrade phase; R10.09 tests the authorized provisioning/security
+        // pair and its durable maker/checker lifecycle separately.
     }
 
     #[tokio::test]
