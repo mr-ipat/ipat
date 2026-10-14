@@ -394,3 +394,8 @@ R9.96 now requires root-owned, root-controlled, non-group/other-writable **entir
 ## R10.22 — recovery attestation inode and JSON ambiguity protections
 
 Recovery readiness metadata in R9.96 is now opened/read through one no-follow descriptor, checked for owner-only regular inode, strict UTF-8/JSON without duplicate keys/nonfinite values, bounded file size and unchanged named inode. Regression includes deterministic post-open pathname swap, dangling link, hardlink, FIFO, and malformed or oversized evidence. These security checks prevent acceptance of a substituted attestation **in source** only; they cannot prove the owner-reported provider rescue and independent whole-host restore occurred. AC-07/13 actual production full-host restore and live PostgreSQL PITR/HA remain **UNVERIFIED**, and entire commercial public release is **NO_GO** until live evidence.
+
+
+## R10.23 — AC-07/13 root-first-install Python import and Git provenance hardening
+
+R9.96 now refuses **any** tracked modification, untracked or ignored checkout file (including Python-module shadows), and explicitly fails on an unsuccessful Git status command; the production root attestation validator is invoked under `python3 -I`. Disposable Git/Python negative tests cover clean, modified, untracked and ignored source trees, and ordinary versus isolated Python module lookup. This is source-level defense in depth, **not** an assertion that the owner-reported real backup/restore receipts have been reviewed or that R9.96/PITR/HA/public SaaS have been activated. AC-07/13/live recovery/ALL MUST remain NO_GO pending separately observed acceptance.
