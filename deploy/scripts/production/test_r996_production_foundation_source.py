@@ -226,7 +226,7 @@ printf '%s\n%s\n' "$IPAT_R987_BOOTSTRAP" "$IPAT_R987_SOURCE_ROOT"
             p.write_text(ordinary[:-1]+', "unsupported_metric": NaN}')
             with self.assertRaisesRegex(ValueError,"non-JSON numeric constant"):
                 m.validate_file(p,src,os.geteuid())
-            p.write_bytes(b"\\xff"+ordinary.encode("utf-8"))
+            p.write_bytes(bytes([255])+ordinary.encode("utf-8"))
             with self.assertRaisesRegex(ValueError,"UTF-8 JSON invalid"):
                 m.validate_file(p,src,os.geteuid())
 
