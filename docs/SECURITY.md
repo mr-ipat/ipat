@@ -1355,3 +1355,8 @@ PPPoE batch application is a high-impact operation. Enforce three distinct curre
 
 ## R10.12 — RouterOS REST read-only trust and secret boundary
 An RFC1918 management address, explicit read-only request approval, external mode-0600 credential and certificate-authority DER files, strict rustls exact IP SAN and independently pinned leaf certificate SHA256 are required before the only allowed REST GET operation. No HTTP downgrade or generic API-SSL protocol fallback, no public customer endpoint, no write method, no browser-controlled URL, and no raw device reply/credential logging. Per-operation and global connection deadlines plus bounded JSON framing protect workers. A syntactically accepted peer and model do not imply tenant authorization or physical compatibility; separately audited equipment/firmware proof remains required.
+
+
+## R10.22 first-install recovery attestation trust-boundary correction (2026-10-14)
+
+R9.96 recovery evidence is a high-impact root-only first-install gate. A separate pathname metadata check and path reopening could admit substituted bytes after an earlier UID/mode check. `r996_validate_recovery_attestation.py` now uses one `O_NOFOLLOW` FD, `fstat` metadata, a bounded binary read, final inode/path recheck and strict duplicate-free UTF-8 JSON. It explicitly rejects symlink, hardlink, FIFO and changed pathname fixtures. This is a defense-in-depth software control and does **not** establish independent evidence custody or authority to change live production systems. Physical provider console login, encrypted independently restored full-host image, appropriate reviewers and PostgreSQL PITR/HA/fencing are still separately gated and auditable.
