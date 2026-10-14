@@ -1,6 +1,7 @@
 import json, os, tempfile, unittest, subprocess, shlex, sys
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
+from unittest import mock
 import importlib.util
 
 ROOT=Path(__file__).resolve().parents[3]
@@ -202,6 +203,90 @@ printf '%s\n%s\n' "$IPAT_R987_BOOTSTRAP" "$IPAT_R987_SOURCE_ROOT"
         with self.assertRaises(ValueError):m.validate_document(bad,src,now)
         stale=dict(data,reviewed_at_utc=(now-timedelta(days=15)).isoformat())
         with self.assertRaises(ValueError):m.validate_document(stale,src,now)
+
+    def test_r1022_recovery_attestation_fd_refuses_duplicate_keys_and_nonfinite(self):
+        src="a"*40
+        now=datetime.now(timezone.utc)
+        data={"schema":"ipat.recovery-readiness.v1","source_commit":src,
+              "provider_rescue_root_console_verified":True,
+              "independent_full_host_restore_verified":True,
+              "independent_backup_destination_verified":True,
+              "reviewed_at_utc":now.isoformat(),
+              "reviewer_id":"security-reviewer-1","evidence_id":"offhost-restore-1"}
+        with tempfile.TemporaryDirectory() as td:
+            p=Path(td)/"evidence.json"
+            ordinary=json.dumps(data)
+            p.write_text(ordinary)
+            os.chmod(p,0o600)
+            self.assertFalse(m.validate_file(p,src,os.geteuid())["public_go"])
+            duplicate=ordinary.replace('"source_commit":', '"source_commit":"'+("b"*40)+'", "source_commit":',1)
+            p.write_text(duplicate)
+            with self.assertRaisesRegex(ValueError,"duplicate JSON key"):
+                m.validate_file(p,src,os.geteuid())
+            p.write_text(ordinary[:-1]+', "unsupported_metric": NaN}')
+            with self.assertRaisesRegex(ValueError,"non-JSON numeric constant"):
+                m.validate_file(p,src,os.geteuid())
+            p.write_bytes(bytes([255])+ordinary.encode("utf-8"))
+            with self.assertRaisesRegex(ValueError,"UTF-8 JSON invalid"):
+                m.validate_file(p,src,os.geteuid())
+
+    def test_r1022_recovery_attestation_rejects_symlink_hardlink_and_fifo(self):
+        src="a"*40
+        doc={"schema":"ipat.recovery-readiness.v1","source_commit":src,
+             "provider_rescue_root_console_verified":True,
+             "independent_full_host_restore_verified":True,
+             "independent_backup_destination_verified":True,
+             "reviewed_at_utc":datetime.now(timezone.utc).isoformat(),
+             "reviewer_id":"security-reviewer-1","evidence_id":"offhost-restore-1"}
+        with tempfile.TemporaryDirectory() as td:
+            p=Path(td)/"valid.json"
+            p.write_text(json.dumps(doc))
+            os.chmod(p,0o600)
+            link=Path(td)/"symlink.json"
+            link.symlink_to(p)
+            with self.assertRaises(ValueError):
+                m.validate_file(link,src,os.geteuid())
+            hardlink=Path(td)/"hardlink.json"
+            os.link(p,hardlink)
+            with self.assertRaisesRegex(ValueError,"single-link"):
+                m.validate_file(p,src,os.geteuid())
+            hardlink.unlink()
+            fifo=Path(td)/"fifo"
+            os.mkfifo(fifo,0o600)
+            with self.assertRaisesRegex(ValueError,"single-link"):
+                m.validate_file(fifo,src,os.geteuid())
+            p.write_bytes(b"X"*8193)
+            with self.assertRaisesRegex(ValueError,"size invalid"):
+                m.validate_file(p,src,os.geteuid())
+
+    def test_r1022_attestation_path_swap_after_open_fails_closed(self):
+        src="a"*40
+        doc={"schema":"ipat.recovery-readiness.v1","source_commit":src,
+             "provider_rescue_root_console_verified":True,
+             "independent_full_host_restore_verified":True,
+             "independent_backup_destination_verified":True,
+             "reviewed_at_utc":datetime.now(timezone.utc).isoformat(),
+             "reviewer_id":"security-reviewer-1","evidence_id":"offhost-restore-1"}
+        with tempfile.TemporaryDirectory() as td:
+            p=Path(td)/"evidence.json"
+            p.write_text(json.dumps(doc))
+            os.chmod(p,0o600)
+            original_open=os.open
+            observed_flags=[]
+            def swap_after_open(path,flags,*args,**kwargs):
+                fd=original_open(path,flags,*args,**kwargs)
+                observed_flags.append(flags)
+                p.rename(Path(td)/"previous.json")
+                p.write_text(json.dumps(dict(doc,source_commit="b"*40)))
+                os.chmod(p,0o600)
+                return fd
+            with mock.patch.object(m.os,"open",side_effect=swap_after_open):
+                with self.assertRaisesRegex(ValueError,"path changed during validation"):
+                    m.validate_file(p,src,os.geteuid())
+            self.assertEqual(len(observed_flags),1)
+            self.assertTrue(observed_flags[0]&os.O_NOFOLLOW)
+            self.assertTrue(observed_flags[0]&os.O_NONBLOCK)
+            self.assertTrue(observed_flags[0]&os.O_CLOEXEC)
 
     def test_attestation_file_mode_and_owner_are_enforced(self):
         src="a"*40

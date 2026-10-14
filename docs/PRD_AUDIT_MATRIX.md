@@ -389,3 +389,8 @@ R9.96 rollback could recursively delete an existing `/var/lib/ipat-platform-oidc
 ## R10.21 — root-install untrusted source code/ELF denial (AC-07, AC-13)
 
 R9.96 now requires root-owned, root-controlled, non-group/other-writable **entire** source path/checkout and executable file and all their ancestors; no source symlink and no mutable binary/hardlink or relative executable path. The former exact commit/clean-Git/SHA checks remain separately enforced. This prevents the reviewed production installer from mistakenly trusting the unprivileged SSH user checkout. CI and Linux host tests required; **source policy only** and does not substitute out-of-band rescue, independent full-host restore, production HA/PITR, MFA/TLS/Host isolation or vendor-native interop. All-MUST/public remains NO_GO.
+
+
+## R10.22 — recovery attestation inode and JSON ambiguity protections
+
+Recovery readiness metadata in R9.96 is now opened/read through one no-follow descriptor, checked for owner-only regular inode, strict UTF-8/JSON without duplicate keys/nonfinite values, bounded file size and unchanged named inode. Regression includes deterministic post-open pathname swap, dangling link, hardlink, FIFO, and malformed or oversized evidence. These security checks prevent acceptance of a substituted attestation **in source** only; they cannot prove the owner-reported provider rescue and independent whole-host restore occurred. AC-07/13 actual production full-host restore and live PostgreSQL PITR/HA remain **UNVERIFIED**, and entire commercial public release is **NO_GO** until live evidence.
