@@ -44,4 +44,5 @@ assert(oidc.includes('child.kill()'));
 assert(!oidc.includes('let out = child.wait_with_output()'));
 assert(oidc.includes("/auth/oidc/complete.js"));
 assert(!oidc.includes('danger_accept_user_claims'));
+require('./test_device_site_independent.cjs');
 console.log('R970_STATIC_DEFAULT_DENY_SAME_ORIGIN_MENU_VENDOR_CSRF_SESSION_SOURCE=PASS');
