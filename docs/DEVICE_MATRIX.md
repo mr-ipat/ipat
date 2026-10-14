@@ -508,3 +508,11 @@ DEV-08 owner-reported MikroTik RB951Ui-2HnD, mipsbe, RouterOS 7.23.7 is NOT phys
 
 ### R10.12 acceptance closure — source-only RouterOS read (2026-10-09)
 Merged source main 78713d2b145fd9bc3f653f85454dd16afbcb7794 with reviewed PR #209 CI 4/4 PASS (new safe REST identity reader and all prior regressions). Firmware/model qualification remains explicitly UNTESTED on actual DEV-08 MikroTik; do not claim API-SSL 8729, PPPoE secret/session read, authenticated physical tuple or customer router adoption. There was no device connection, no SSH/public Telnet, no firmware mutation and no provisioning job execution in this milestone.
+
+## R10.28 — DEV-01 direct VPS-to-OLT management network observation (2026-10-14)
+
+Read-only probe from existing IPAT Ubuntu 26.04.1 VPS (src=10.0.0.230, route via 10.0.0.1 dev eth0) to authorized owner laboratory C320 at 10.10.13.233: **TCP 321 PASS**, received SSH- server identification prefix (20 bytes); **TCP 323 PASS**, received Telnet IAC negotiation prefix (0xff, 15 bytes). Connect time about 1 ms for a single observation; this is NOT a latency or reliability SLO. Probes sent ZERO credentials and ZERO CLI/device commands. Telnet reachability does NOT authorize Telnet credential submission; the existing device connector remains private and SSH-only.
+
+Existing private connector HTTP GET /lab/c320-owner-connection reported CONNECTED, credentials_enrolled=true, connector_online=true, production_adopted=false, physical_writes_enabled=false, last_verified_at_utc=2026-10-14T09:57:16.578716+00:00. This is the protected read-only lab connector's status, not a newly executed authenticated command or full commercial adoption. SSH host key remains NETWORK_OBSERVED_SSH_PIN, not independently corroborated through the physical management path. DEV-01 remains PARTIAL, previously tested slot/firmware observations unchanged; no Telnet/vendor-native recovery, provisioning, ONT, USP, or write interoperability was newly verified.
+
+R10.28 application source adds fixed-address dual-port bounded network diagnostic and independent operator button to the PRIVATE Device Workbench. TCP success, SSH identification and Telnet negotiation are separate from current authenticated read status and cannot grant production adoption. Rollout/CI must be separately reported.
