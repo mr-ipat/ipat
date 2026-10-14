@@ -46,3 +46,8 @@ For any root-executed R9.96 foundation, use a fresh, reviewed **root-owned** che
 ## R10.22 — attestation identity locked to a single opened descriptor
 
 The root-owned 0600 single-link recovery-readiness JSON is now opened once with `O_NOFOLLOW`, `O_CLOEXEC` and `O_NONBLOCK`; Linux `fstat` enforces inode ownership, mode, size and link count before bounded parsing. The verifier checks inode stability and named-path identity and rejects duplicate JSON fields, nonfinite numeric constants and non-UTF8 content. This defends against a metadata-check/pathname-read race and ambiguous reviewer evidence; the underlying independent provider rescue/whole-host restore and signed maker/checker review must still have genuinely taken place. A file containing positive booleans alone is never real-world proof. No public or database service is started by this validation.
+
+
+## R10.23 — require a fully pristine production checkout and isolated validator imports
+
+Do not stage a root-owned production source by copying a contaminated developer checkout and changing ownership; a root-owned file can still be **untracked or ignored** by Git. R9.96 checks `git status --porcelain --untracked-files=all --ignored=matching` before any root mutation and rejects any result, including untracked/ignored shadow modules, plus any Git status execution failure. The recovery-attestation verifier is invoked via `python3 -I` to prevent accidental import of Python modules from current/script directory and PYTHONPATH. Prepare a fresh root-only exact-SHA checkout with no ignored build caches or test artifacts. This patch does not change the existing independent rescue/full-host restore, reviewer, source SHA, binary SHA or PostgreSQL/PITR/MFA/TLS public gates.
