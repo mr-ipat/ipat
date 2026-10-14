@@ -5,6 +5,8 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const path=require('node:path');
 const base=path.resolve(__dirname,'../../../..');
+// R10.28: run read-only dual-port probe contracts via existing CI suite.
+require('../r1028/test_dual_transport_contract.cjs');
 const html=fs.readFileSync(path.join(base,'web/lab/device-workbench.html'),'utf8');
 const ui=fs.readFileSync(path.join(base,'web/lab/c320-connection-setup.js'),'utf8');
 const api=fs.readFileSync(path.join(base,'apps/control-api/src/c320_live_lab.rs'),'utf8');

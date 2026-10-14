@@ -178,15 +178,39 @@
       if(!response.ok)throw Error('Network diagnostic unavailable (HTTP '+response.status+').');
       const data=await response.json();
       const messages={
-        TCP_REACHABLE_AUTH_NOT_TESTED:'TCP port reachable. SSH credentials and physical device identity have NOT been verified.',
-        SSH_PORT_REFUSED:'Connection refused: SSH service may be disabled or configured on a different port.',
-        NETWORK_UNREACHABLE:'Network unreachable: check routes, tunnel configuration and management ACL.',
-        NETWORK_OR_PORT_ERROR:'Network or management port error: inspect route, firewall and SSH listener.',
-        TCP_TIMEOUT_NETWORK_OR_PORT:'Connection timeout: management route, firewall and SSH port cannot be distinguished by TCP alone.'
+        TCP_REACHABLE_AUTH_NOT_TESTED:'TCP reachable; authentication not tested.',
+        SSH_PORT_REFUSED:'SSH port refused.',
+        TELNET_PORT_REFUSED:'Telnet port refused.',
+        NETWORK_UNREACHABLE:'Network unreachable; check VPS routing and ACL.',
+        NETWORK_OR_PORT_ERROR:'Network or management port error.',
+        TCP_TIMEOUT_NETWORK_OR_PORT:'TCP timeout; check route, firewall and management listener.'
       };
-      return messages[data.probe_stage]||'Network diagnostic returned an unknown state.';
+      const stageText=stage=>messages[stage]||'Unknown network state.';
+      // Reject incomplete/forged transport contracts without making false
+      // claims of physical device identity or successful login.
+      if(data.target!=='DEV-01'||!data.ssh||!data.telnet
+        ||data.ssh.port!==321||data.telnet.port!==323
+        ||data.ssh_authentication_verified!==false
+        ||data.telnet_authentication_verified!==false
+        ||data.production_adopted!==false||data.physical_writes_enabled!==false){
+        return 'Invalid network diagnostic contract; no connection asserted.';
+      }
+      const ssh='SSH 10.10.13.233:321 — '+stageText(data.ssh.probe_stage)
+        +(data.ssh.server_banner_observed===true?' SSH server banner observed.':'');
+      const telnet='Telnet 10.10.13.233:323 — '+stageText(data.telnet.probe_stage)
+        +(data.telnet.negotiation_observed===true?' Telnet negotiation observed.':'');
+      return ssh+' '+telnet+' No credentials or OLT commands sent; production adoption NOT verified.';
+
     }catch{return 'Network diagnostic could not run; the device status remains Pending.';}
   }
+  const checkNetwork=get('ipat-c320-check-network');
+  if(checkNetwork)checkNetwork.addEventListener('click',async()=>{
+    if(checkNetwork.disabled)return;
+    checkNetwork.disabled=true;
+    diagnostic.textContent='Menguji dua port manajemen OLT dari VPS (tanpa autentikasi)...';
+    try{diagnostic.textContent=await probe();}
+    finally{checkNetwork.disabled=false;}
+  });
   form.addEventListener('submit',async(event)=>{
     event.preventDefault();
     if(busy||button.disabled||!exactProfile())return;

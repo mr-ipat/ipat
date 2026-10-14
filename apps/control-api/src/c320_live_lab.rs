@@ -460,38 +460,71 @@ async fn save_draft(
     ))
 }
 
-async fn fixed_network_probe(
-    headers: HeaderMap,
-) -> Result<(HeaderMap, Json<Value>), (StatusCode, HeaderMap, Json<Value>)> {
-    if !strict_private(&headers, false) {
-        return Err(denied(StatusCode::FORBIDDEN, "PRIVATE_PANEL_ONLY"));
-    }
-    // A deliberately fixed lab target, not a browser-controlled network scanner.
-    // A successful TCP handshake does NOT prove SSH login or physical adoption.
-    let stage = match tokio::time::timeout(
+// R10.28: read-only, fixed-target transport reachability; no credentials, CLI
+// commands, server-controlled addresses from request data or raw banners exposed.
+const C320_MANAGEMENT_SSH: &str = "10.10.13.233:321";
+const C320_MANAGEMENT_TELNET: &str = "10.10.13.233:323";
+
+async fn bounded_transport_probe(
+    endpoint: &str,
+    signature: &[u8],
+    refusal: &'static str,
+) -> (&'static str, bool) {
+    let result = tokio::time::timeout(
         Duration::from_secs(3),
-        tokio::net::TcpStream::connect("10.10.13.233:321"),
+        tokio::net::TcpStream::connect(endpoint),
     )
-    .await
-    {
-        Ok(Ok(_)) => "TCP_REACHABLE_AUTH_NOT_TESTED",
-        Ok(Err(e)) if e.kind() == std::io::ErrorKind::ConnectionRefused => "SSH_PORT_REFUSED",
+    .await;
+    let mut stream = match result {
+        Ok(Ok(stream)) => stream,
+        Ok(Err(e)) if e.kind() == std::io::ErrorKind::ConnectionRefused => {
+            return (refusal, false);
+        }
         Ok(Err(e))
             if matches!(
                 e.kind(),
                 std::io::ErrorKind::HostUnreachable | std::io::ErrorKind::NetworkUnreachable
             ) =>
         {
-            "NETWORK_UNREACHABLE"
+            return ("NETWORK_UNREACHABLE", false);
         }
-        Ok(Err(_)) => "NETWORK_OR_PORT_ERROR",
-        Err(_) => "TCP_TIMEOUT_NETWORK_OR_PORT",
+        Ok(Err(_)) => return ("NETWORK_OR_PORT_ERROR", false),
+        Err(_) => return ("TCP_TIMEOUT_NETWORK_OR_PORT", false),
     };
+    // Read only the first bounded bytes. Never send a username, password,
+    // command, Telnet option or SSH client handshake to the target.
+    let mut first = [0u8; 96];
+    let observed = matches!(
+        tokio::time::timeout(Duration::from_millis(600), stream.read(&mut first)).await,
+        Ok(Ok(n)) if n >= signature.len() && first[..n].starts_with(signature)
+    );
+    ("TCP_REACHABLE_AUTH_NOT_TESTED", observed)
+}
+
+async fn fixed_network_probe(
+    headers: HeaderMap,
+) -> Result<(HeaderMap, Json<Value>), (StatusCode, HeaderMap, Json<Value>)> {
+    if !strict_private(&headers, false) {
+        return Err(denied(StatusCode::FORBIDDEN, "PRIVATE_PANEL_ONLY"));
+    }
+    // This diagnostic probes exactly two reviewed lab ports, concurrently.
+    // A reachable port or a recognized initial banner is NOT device adoption.
+    let (ssh, telnet) = tokio::join!(
+        bounded_transport_probe(C320_MANAGEMENT_SSH, b"SSH-", "SSH_PORT_REFUSED"),
+        bounded_transport_probe(C320_MANAGEMENT_TELNET, &[255u8], "TELNET_PORT_REFUSED")
+    );
     Ok((
         super::private_lab_headers("application/json; charset=utf-8"),
-        Json(json!({"target":"DEV-01","probe_stage":stage,
-        "ssh_authentication_verified":false,"production_adopted":false,
-        "physical_writes_enabled":false})),
+        Json(json!({"target":"DEV-01","probe_stage":ssh.0,
+        "ssh":{"port":321,"probe_stage":ssh.0,
+               "tcp_reachable":ssh.0=="TCP_REACHABLE_AUTH_NOT_TESTED",
+               "server_banner_observed":ssh.1},
+        "telnet":{"port":323,"probe_stage":telnet.0,
+                  "tcp_reachable":telnet.0=="TCP_REACHABLE_AUTH_NOT_TESTED",
+                  "negotiation_observed":telnet.1},
+        "ssh_authentication_verified":false,"telnet_authentication_verified":false,
+        "device_identity_verified_by_network_probe":false,
+        "production_adopted":false,"physical_writes_enabled":false})),
     ))
 }
 
@@ -697,6 +730,69 @@ mod tests {
     use super::*;
     use axum::{body::Body, http::Request};
     use tower::ServiceExt;
+    #[tokio::test]
+    async fn r1028_bounded_transport_probe_distinguishes_tcp_from_device_auth() {
+        use tokio::net::TcpListener;
+        let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let endpoint = listener.local_addr().unwrap();
+        let peer = tokio::spawn(async move {
+            let (mut conn, _) = listener.accept().await.unwrap();
+            conn.write_all(b"SSH-2.0-SYNTHETIC\r\n").await.unwrap();
+        });
+        let (stage, banner) =
+            bounded_transport_probe(&endpoint.to_string(), b"SSH-", "SSH_PORT_REFUSED").await;
+        peer.await.unwrap();
+        assert_eq!(stage, "TCP_REACHABLE_AUTH_NOT_TESTED");
+        assert!(banner);
+    }
+
+    #[tokio::test]
+    async fn r1028_telnet_negotiation_is_not_credentialed_connection() {
+        use tokio::net::TcpListener;
+        let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let endpoint = listener.local_addr().unwrap();
+        let peer = tokio::spawn(async move {
+            let (mut conn, _) = listener.accept().await.unwrap();
+            conn.write_all(&[255u8, 251, 1, 255, 253, 3]).await.unwrap();
+        });
+        let (stage, telnet_iac) =
+            bounded_transport_probe(&endpoint.to_string(), &[255u8], "TELNET_PORT_REFUSED").await;
+        peer.await.unwrap();
+        assert_eq!(stage, "TCP_REACHABLE_AUTH_NOT_TESTED");
+        assert!(telnet_iac);
+    }
+
+    #[tokio::test]
+    async fn r1028_tcp_listener_without_expected_banner_is_only_reachable() {
+        use tokio::net::TcpListener;
+        let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let endpoint = listener.local_addr().unwrap();
+        let peer = tokio::spawn(async move {
+            let (mut conn, _) = listener.accept().await.unwrap();
+            conn.write_all(b"NOT-A-DEVICE").await.unwrap();
+        });
+        let (stage, signature) =
+            bounded_transport_probe(&endpoint.to_string(), b"SSH-", "SSH_PORT_REFUSED").await;
+        peer.await.unwrap();
+        assert_eq!(stage, "TCP_REACHABLE_AUTH_NOT_TESTED");
+        assert!(!signature);
+    }
+
+    #[tokio::test]
+    async fn r1028_private_probe_denies_external_host_before_network_access() {
+        let resp = router()
+            .oneshot(
+                Request::builder()
+                    .uri("/lab/c320-owner-network-probe")
+                    .header("Host", "external.example")
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(resp.status(), StatusCode::FORBIDDEN);
+    }
+
     #[test]
     fn refresh_diagnostic_never_forwards_arbitrary_agent_text() {
         let known = json!({"error":"C320_STATE_HEADER_UNSUPPORTED"});
