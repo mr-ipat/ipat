@@ -410,3 +410,9 @@ R9.96 now refuses **any** tracked modification, untracked or ignored checkout fi
 ## R10.29 — Network and lab UX accepted; commercial go-live still blocked
 
 **DONE VERIFIED:** exact-source R10.28 native Rust binary built/tested on Ubuntu 26.04, installed with checksum/rollback controls only on private :3002; Mac-to-VPS dashboard responded HTTP200; new C320 SSH321 and Telnet323 network diagnostics confirmed TCP and initial protocol signatures; existing C320 read-only connector still CONNECTED. The operator repeatable live verifier and six negative/synthetic tests passed. **NOT VERIFIED / BLOCKED:** actual PostgreSQL 18 production HA/PITR and independent full-host restore attestation, root authorization, public TLS with domain Host/SNI, real administrator MFA/tenant isolation browser, full hardware readback/vendor-native restore and authorized device writes. No relaxation of PRD, PUBLIC NO_GO.
+
+## R10.30 — Commercial UX source verification versus production acceptance (2026-10-15)
+
+- DONE VERIFIED in isolated synthetic browser: tenant authorized navigation and focus, missing Site/create/return with Site selected, unchanged Device Save retry after simulated 503 preserving request_id, unauthorized nav hidden. Node source test runs in preexisting CI coverage. Platform Owner keyboard/scroll changes are source-checked; no live authenticated Platform session was used.
+- IMPLEMENTED NOT VERIFIED on production: tenant/platform WCAG2.2-oriented markup/CSS and device form UX in commercial source only. No commercial runtime/PostgreSQL/MFA/HTTPS currently active on owner VPS. Do not confuse localhost mock Chrome with customer acceptance.
+- OPEN: live multiple tenant browser, real role API negative tests on production, screen-reader/keyboard/mobile contrast audit, full A/AA manual accessibility assessment, R9.96/97 recovery gate and production PostgreSQL18 HA/PITR/TLS. Public NO_GO unchanged.

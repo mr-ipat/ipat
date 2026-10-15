@@ -4,7 +4,7 @@
 (() => {
  const $=id=>document.getElementById(id);
  const notice=text=>{$('notice').textContent=text};
- const state={page:null,sites:[],pops:[],popNext:null,devices:[],catalog:[],next:null,editId:null,editRevision:null,pendingSite:null,nocPops:[],realNocPops:[],nocMembers:[],nocAccess:[],pendingNocRequest:null,subscribers:[],subscriberEdit:null,canReadSubscribers:false,canManageSubscribers:false,canManagePppoePlans:false,canCreatePppoePlans:false,canReviewPppoePlans:false,canArmPppoePlans:false,pendingPppoe:null,branding:null,pendingBranding:null};
+ const state={page:null,sites:[],pops:[],popNext:null,devices:[],catalog:[],next:null,editId:null,editRevision:null,pendingSite:null,pendingDevice:null,returnToDevicesAfterSite:false,pageGeneration:0,nocPops:[],realNocPops:[],nocMembers:[],nocAccess:[],pendingNocRequest:null,subscribers:[],subscriberEdit:null,canReadSubscribers:false,canManageSubscribers:false,canManagePppoePlans:false,canCreatePppoePlans:false,canReviewPppoePlans:false,canArmPppoePlans:false,pendingPppoe:null,branding:null,pendingBranding:null};
  const csrf=()=>document.cookie.split(';').map(x=>x.trim()).find(x=>x.startsWith('__Host-ipat_csrf='))?.split('=')[1];
  async function api(path,method='GET',body){
   const headers={'Accept':'application/json'};
@@ -83,7 +83,12 @@
    remove.disabled=site.assigned_devices>0;
    $('site-rows').append(tr);
   }
-  fillSiteChoices('device-site',state.pendingSite||selectedDevice);fillSiteChoices('edit-site',selectedEdit);state.pendingSite=null;
+  fillSiteChoices('device-site',state.pendingSite||selectedDevice);
+  fillSiteChoices('edit-site',selectedEdit);
+  $('device-site-note').textContent=state.sites.length
+   ?'Choose a registered Site. POPs are separate and cannot be entered as Sites.'
+   :'No Sites registered. Choose Create or manage Sites to register a Site first.';
+  state.pendingSite=null;
  }
  async function loadCatalog(){const r=await api('/api/v1/device-catalog');state.catalog=r.catalog;
   if(r.catalog_semantics!=='platform_curated_metadata_only_not_verified_physical_support')throw Error('Catalog identity not verified; registration disabled.');const types=[...new Set(state.catalog.map(v=>v.type))];$('device-kind').replaceChildren();types.forEach(t=>option($('device-kind'),t.toUpperCase(),t));syncCatalog()}
@@ -362,10 +367,27 @@
   $('noc-device-rows').replaceChildren();
   for(const d of devices.devices){const tr=document.createElement('tr');cell(tr,d.display_name);cell(tr,d.site);cell(tr,d.device_kind+' / '+d.vendor);cell(tr,d.lifecycle_state==='SAVED'?'Saved — not connected':d.lifecycle_state);$('noc-device-rows').append(tr)}
  }
- async function page(name){if(!['pops','sites','devices','domains','branding','subscribers','diagnostics','pppoe','noc-access','noc'].includes(name)||$('nav-'+name)?.hidden)return;state.page=name;$('welcome').hidden=true;document.querySelectorAll('[data-panel]').forEach(p=>p.hidden=p.dataset.panel!==name);notice('Loading current tenant data…');try{if(name==='pops')await refreshPops();if(name==='sites'){await refreshPops();await refreshSites()}if(name==='devices'){await refreshPops();await refreshSites();await refreshDevices()}if(name==='domains')await refreshDomains();if(name==='branding')await refreshBranding();if(name==='subscribers')await loadSubscriberWorkspace();if(name==='diagnostics')await refreshSubscribers();if(name==='pppoe')await loadPppoeWorkspace();if(name==='noc-access'){await refreshPops();await refreshNocAccess()}if(name==='noc')await refreshNoc();notice('Data loaded. Operations remain subject to current authorization.')}catch(e){notice(e.message)}}
+ async function page(name){
+  const nav=$('nav-'+name);
+  if(!['pops','sites','devices','domains','branding','subscribers','diagnostics','pppoe','noc-access','noc'].includes(name)||!nav||nav.hidden)return;
+  state.page=name;const generation=++state.pageGeneration;
+  $('welcome').hidden=true;
+  document.querySelectorAll('.nav').forEach(button=>{
+   if(button===nav)button.setAttribute('aria-current','page');
+   else button.removeAttribute('aria-current');
+  });
+  document.querySelectorAll('[data-panel]').forEach(panel=>panel.hidden=panel.dataset.panel!==name);
+  const heading=document.querySelector('[data-panel="'+name+'"] h2');
+  if(heading){heading.tabIndex=-1;heading.focus({preventScroll:true})}
+  notice('Loading current tenant data…');try{if(name==='pops')await refreshPops();if(name==='sites'){await refreshPops();await refreshSites()}if(name==='devices'){await refreshPops();await refreshSites();await refreshDevices()}if(name==='domains')await refreshDomains();if(name==='branding')await refreshBranding();if(name==='subscribers')await loadSubscriberWorkspace();if(name==='diagnostics')await refreshSubscribers();if(name==='pppoe')await loadPppoeWorkspace();if(name==='noc-access'){await refreshPops();await refreshNocAccess()}if(name==='noc')await refreshNoc();if(state.pageGeneration===generation)notice('Data loaded. Operations remain subject to current authorization.')}catch(e){if(state.pageGeneration===generation)notice(e.message)}}
  async function submit(form,callback){const button=form.querySelector('button[type=submit],button:not([type])');if(button)button.disabled=true;try{await callback()}catch(e){notice(e.message)}finally{if(button)button.disabled=false}}
- document.querySelectorAll('.nav').forEach(b=>{b.id='nav-'+b.dataset.page;b.addEventListener('click',()=>page(b.dataset.page))});
- $('create-site-link').addEventListener('click',e=>{e.preventDefault();page('sites')});
+ document.querySelectorAll('.nav').forEach(b=>{b.id='nav-'+b.dataset.page;b.setAttribute('aria-controls','panel-'+b.dataset.page);b.addEventListener('click',()=>{state.returnToDevicesAfterSite=false;page(b.dataset.page)})});
+ document.querySelectorAll('[data-panel]').forEach(panel=>panel.id='panel-'+panel.dataset.panel);
+ $('create-site-link').addEventListener('click',e=>{
+  e.preventDefault();
+  state.returnToDevicesAfterSite=true;
+  page('sites');
+ });
  $('manage-pops-link').addEventListener('click',e=>{e.preventDefault();page('pops')});
  $('pop-more').addEventListener('click',()=>refreshPops(state.popNext).catch(e=>notice(e.message)));
  $('pop-create').addEventListener('submit',e=>{e.preventDefault();const f=e.currentTarget;submit(f,async()=>{
@@ -395,8 +417,21 @@
  $('device-kind').addEventListener('change',syncCatalog);$('device-vendor').addEventListener('change',syncCatalog);$('device-transport').addEventListener('change',syncEndpoint);
  $('site-create').addEventListener('submit',e=>{e.preventDefault();const f=e.currentTarget;submit(f,async()=>{const d=Object.fromEntries(new FormData(f));d.parent_pop_code=d.parent_pop_code||null;
   await api('/api/v1/sites','POST',d);state.pendingSite=d.code;clearForm(f);
-  await refreshPops();await refreshSites();notice('Site registered successfully.')})});
- $('device-create').addEventListener('submit',e=>{e.preventDefault();const f=e.currentTarget;submit(f,async()=>{const d=Object.fromEntries(new FormData(f));if(['cwmp','usp'].includes(d.management_transport)){d.management_host=null;d.management_port=null}else{d.management_port=Number(d.management_port)};d.request_id=crypto.randomUUID();d.intended_model=d.intended_model||null;await api('/api/v1/devices','POST',d);clearForm(f);syncCatalog();await refreshDevices();notice('Device saved as metadata. Physical connection not yet established.')})});
+  await refreshPops();await refreshSites();
+  if(state.returnToDevicesAfterSite){
+   state.returnToDevicesAfterSite=false;
+   await page('devices');
+   notice('Site registered and selected. Complete the device form.');
+  }else notice('Site registered successfully.')})});
+ $('device-create').addEventListener('submit',e=>{e.preventDefault();const f=e.currentTarget;submit(f,async()=>{const d=Object.fromEntries(new FormData(f));if(['cwmp','usp'].includes(d.management_transport)){d.management_host=null;d.management_port=null}else{d.management_port=Number(d.management_port)};d.intended_model=d.intended_model||null;
+  const fingerprint=JSON.stringify([d.pop_id,d.display_name,d.device_kind,d.vendor,d.intended_model,d.management_transport,d.management_host,d.management_port]);
+  // Preserve the server idempotency key after an ambiguous timeout. Changed
+  // fields start a new intent; unchanged fields safely replay the same intent.
+  if(!state.pendingDevice||state.pendingDevice.fingerprint!==fingerprint)
+   state.pendingDevice={fingerprint,request_id:crypto.randomUUID()};
+  d.request_id=state.pendingDevice.request_id;
+  await api('/api/v1/devices','POST',d);
+  state.pendingDevice=null;clearForm(f);syncCatalog();await refreshDevices();notice('Device saved as metadata. Physical connection not yet established.')})});
  $('device-edit').addEventListener('submit',e=>{e.preventDefault();const f=e.currentTarget;submit(f,async()=>{const d=Object.fromEntries(new FormData(f));d.expected_revision=state.editRevision;d.intended_model=d.intended_model||null;d.management_host=d.management_host||null;d.management_port=d.management_port?Number(d.management_port):null;await api('/api/v1/devices/'+encodeURIComponent(state.editId),'PATCH',d);$('device-edit-panel').hidden=true;state.editId=null;await refreshDevices();notice('Saved device metadata updated.')})});
  $('edit-cancel').addEventListener('click',()=>{$('device-edit-panel').hidden=true;state.editId=null});
  $('subscriber-cancel').addEventListener('click',clearSubscriberEdit);
@@ -413,7 +448,7 @@
     state.pendingPppoe={fingerprint,request_id:crypto.randomUUID()};
   const r=await api('/api/v1/pppoe-plans','POST',{request_id:state.pendingPppoe.request_id,router_id,items});
   state.pendingPppoe=null;$('pppoe-operations').value='';await refreshPppoePlans();
-  notice('Dry-run '+r.id+' created. A different Tenant Admin must approve it; physical execution remains disabled.');
+  notice('Dry-run '+r.id+' created. A distinct Security Admin must review it; physical execution remains disabled until separately qualified.');
  })});
  $('diagnostic-form').addEventListener('submit',e=>{e.preventDefault();submit(e.currentTarget,runDiagnostic)});
  $('branding-form').addEventListener('submit',e=>{e.preventDefault();const f=e.currentTarget;submit(f,async()=>{

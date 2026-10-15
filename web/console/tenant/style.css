@@ -9,3 +9,19 @@ body[data-accent="amber"]{--tenant-accent:#d97706}
 body[data-accent="rose"]{--tenant-accent:#e11d48}
 .brand-lockup{display:flex;gap:.65rem;align-items:baseline}
 .brand-lockup strong{border-inline-start:.35rem solid var(--tenant-accent,#475569);padding-inline-start:.55rem}
+
+
+/* R10.30: WCAG 2.2 A/AA-oriented focus, navigation and compact viewport baseline.
+   Server capabilities are the only authority for menu availability. */
+.skip-link{position:absolute;left:1rem;top:-8rem;z-index:1000;background:#fff;color:#10202c;padding:.8rem 1rem;border-radius:.4rem}
+.skip-link:focus{top:.5rem}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,main:focus-visible,[data-panel] h2:focus-visible{outline:3px solid #ffd36e;outline-offset:3px}
+.nav[aria-current="page"]{background:#215b68;color:#f4fffd;border:2px solid #78e6d6;padding:calc(.75rem - 2px) calc(.95rem - 2px)}
+textarea{font:inherit;width:100%;max-width:100%;padding:.75rem;border:1px solid #5b7484;border-radius:.5rem;background:#142a3a;color:inherit}
+.table-wrap{max-width:100%;overflow-x:auto;scrollbar-gutter:stable}
+th{white-space:nowrap}
+td{overflow-wrap:anywhere}
+input,select,textarea,button{min-height:44px}
+[hidden]{display:none!important}
+@media(max-width:480px){header{flex-wrap:wrap}main{min-width:0}.content{padding:.85rem}table{min-width:520px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition-duration:0.01ms!important;animation-duration:0.01ms!important}}
