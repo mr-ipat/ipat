@@ -176,6 +176,45 @@ SCENARIO_RECONCILE = """
 </script>
 """
 
+
+SCENARIO_STALE_LIST = """
+<script>
+(async()=>{
+ const sleep=t=>new Promise(resolve=>setTimeout(resolve,t));
+ const done=x=>document.body.dataset.r1032StaleList=x;
+ for(let i=0;i<100;i++){
+  if(!document.querySelector('[data-page=devices]').hidden)break;
+  await sleep(50);
+ }
+ document.querySelector('[data-page=devices]').click();
+ for(let i=0;i<100;i++){
+  if(document.querySelector('#device-site').options.length>1)break;
+  await sleep(50);
+ }
+ const f=document.querySelector('#device-create');
+ f.elements.display_name.value='Synthetic stale list readback';
+ f.elements.pop_id.value='SITE-R1030';
+ f.elements.intended_model.value='C320';
+ f.elements.management_host.value='olt.lab.invalid';
+ f.elements.management_port.value='321';
+ f.requestSubmit();
+ for(let i=0;i<100;i++){
+  if(document.querySelector('#notice').textContent.includes('could not be reconciled'))break;
+  await sleep(50);
+ }
+ if(!document.querySelector('#notice').textContent.includes('could not be reconciled')){done('FALSE_SUCCESS');return}
+ if(f.elements.display_name.value!=='Synthetic stale list readback'){done('FORM_CLEARED');return}
+ f.requestSubmit();
+ for(let i=0;i<100;i++){
+  if(document.querySelector('#notice').textContent.includes('exact ID verified'))break;
+  await sleep(50);
+ }
+ if(!document.querySelector('#notice').textContent.includes('exact ID verified')){done('NOT_RECONCILED');return}
+ done('PASS');
+})();
+</script>
+"""
+
 class Handler(BaseHTTPRequestHandler):
     requests = []
     site_mode = False
@@ -184,6 +223,8 @@ class Handler(BaseHTTPRequestHandler):
     mobile_mode = False
     reconcile_mode = False
     list_failed = False
+    stale_mode = False
+    stale_returned_empty = False
     def log_message(self, *_):
         pass
     def send(self, code, body, content_type="application/json"):
@@ -197,7 +238,7 @@ class Handler(BaseHTTPRequestHandler):
         if path=="/dashboard":
             html=(WEB/"dashboard.html").read_text()
             html=html.replace("<head>", "<head>"+PRELUDE, 1)
-            self.send(200,html+(SCENARIO_DENIED if self.denied_mode else SCENARIO_RECONCILE if self.reconcile_mode else SCENARIO_MOBILE if self.mobile_mode else SCENARIO_SITE if self.site_mode else SCENARIO), "text/html; charset=utf-8")
+            self.send(200,html+(SCENARIO_DENIED if self.denied_mode else SCENARIO_STALE_LIST if self.stale_mode else SCENARIO_RECONCILE if self.reconcile_mode else SCENARIO_MOBILE if self.mobile_mode else SCENARIO_SITE if self.site_mode else SCENARIO), "text/html; charset=utf-8")
             return
         for route,name,kind in (
             ("/dashboard/assets/app.js","app.js","text/javascript"),
@@ -211,11 +252,15 @@ class Handler(BaseHTTPRequestHandler):
               "catalog":[{"type":"olt","vendor":"ZTE","transports":["ssh"],"protocols":[{"transport":"ssh","description":"Inventory candidate only."}]}]},
             "/api/v1/pops": {"ok":True,"pops":[],"next_after":None},
             "/api/v1/sites": {"ok":True,"sites":([{"code":"SITE-R1030","display_name":"Test site","assigned_devices":0,"revision":1,"parent_pop_code":None}] if not self.site_mode or self.site_created else []),"next_after":None},
-            "/api/v1/devices": {"ok":True,"devices":[]},
+            "/api/v1/devices": {"ok":True,"devices":([{"id":"00000000-0000-4000-8000-000000000012","lifecycle_state":"SAVED","display_name":"Synthetic C320","site":"SITE-R1030","device_kind":"olt","vendor":"ZTE"}] if len(self.requests)>= (1 if self.reconcile_mode or self.stale_mode else 2) else [])},
         }
         if path=="/api/v1/devices" and self.reconcile_mode and len(self.requests)==1 and not self.list_failed:
             self.__class__.list_failed=True
             self.send(503,'{"ok":false}')
+            return
+        if path=="/api/v1/devices" and self.stale_mode and len(self.requests)==1 and not self.stale_returned_empty:
+            self.__class__.stale_returned_empty=True
+            self.send(200,'{"ok":true,"devices":[]}')
             return
         self.send(200,json.dumps(responses.get(path,{"ok":False})))
     def do_POST(self):
@@ -228,7 +273,7 @@ class Handler(BaseHTTPRequestHandler):
             return
         if path=="/api/v1/devices":
             self.__class__.requests.append(body)
-            if len(self.requests)==1 and not self.reconcile_mode:
+            if len(self.requests)==1 and not self.reconcile_mode and not self.stale_mode:
                 self.send(503,json.dumps({"ok":False}))
             else:
                 self.send(201,json.dumps({"ok":True,"id":"00000000-0000-4000-8000-000000000012","lifecycle_state":"SAVED"}))
@@ -237,6 +282,33 @@ class Handler(BaseHTTPRequestHandler):
 
 @unittest.skipUnless(CHROME, "Headless Chrome not installed; separate GitHub source/CI required")
 class DashboardChromeTest(unittest.TestCase):
+    def test_http_200_empty_inventory_never_claims_save_complete(self):
+        Handler.requests=[]
+        Handler.stale_mode=True
+        Handler.stale_returned_empty=False
+        Handler.reconcile_mode=False
+        Handler.site_mode=False
+        Handler.denied_mode=False
+        server=ThreadingHTTPServer(("127.0.0.1",0),Handler)
+        threading.Thread(target=server.serve_forever,daemon=True).start()
+        try:
+            with tempfile.TemporaryDirectory(prefix="ipat-r1032-stale-") as profile:
+                proc=subprocess.run([CHROME,"--headless=new","--no-first-run",
+                   "--disable-gpu","--user-data-dir="+profile,
+                   "--virtual-time-budget=12000","--dump-dom",
+                   f"http://127.0.0.1:{server.server_port}/dashboard"],
+                   capture_output=True,text=True,timeout=35)
+            self.assertEqual(proc.returncode,0,proc.stderr[-700:])
+            self.assertIn('data-r1032-stale-list="PASS"',proc.stdout)
+            self.assertTrue(Handler.stale_returned_empty)
+            self.assertEqual(len(Handler.requests),2)
+            self.assertEqual(Handler.requests[0]["request_id"],Handler.requests[1]["request_id"])
+            print("R1032_CHROME_HTTP200_EMPTY_LIST_RETRY_EXACT_SAVED_ID=PASS")
+        finally:
+            Handler.stale_mode=False
+            server.shutdown()
+            server.server_close()
+
     def test_saved_device_reconciles_failed_list_without_new_request_id(self):
         Handler.requests=[]
         Handler.reconcile_mode=True
