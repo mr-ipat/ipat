@@ -424,3 +424,7 @@ Synthetic Chrome verified that an inventory POST acknowledged by the backend doe
 ### R10.31 — High-impact review action error prevention
 
 Tenant PPPoE dry-run review and Platform Owner company activation review now require explicit contextual operator confirmation, disable sibling Approve/Reject controls while one request is in flight, and state that review does not activate physical execution or domain TLS. Synthetic Chrome verified cancellation does not issue a POST and confirmation submits exactly one review. This is **IMPLEMENTED and SYNTHETIC-VERIFIED**; it is not proof of actual MFA/different-person backend acceptance on the live production Host. Existing backend maker/checker and CSRF remain the sole authority. Public NO_GO unchanged.
+
+## R10.32 — Tenant Device Save exact-ID readback (2026-10-15)
+
+**IMPLEMENTED NOT VERIFIED (commercial):** After PostgreSQL-backed device registration, the tenant UI must verify that the exact created ID (not just HTTP 200 or a similarly named device) appears as SAVED in the authorized tenant inventory. Otherwise the form and request_id remain intact, and the operator receives explicit safe-retry guidance. R10.32 adds an executable Node VM predicate/negative-case contract in existing CI plus synthetic Chrome fixture for HTTP200 empty list and same-key retry. Neither updated Chrome run nor real production PostgreSQL/MFA/TLS/tenant browser is yet verified in this milestone. R10.29 private C320 operational proof remains separate. Public GO is FALSE.

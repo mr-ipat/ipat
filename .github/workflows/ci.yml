@@ -106,6 +106,18 @@ jobs:
           python3 -m py_compile deploy/db/tests/test_tenant_menu_entitlements_integration.py
           grep -Fq 'R9.70' docs/PRD.md
           grep -Fq 'R9.70' docs/PRD_AUDIT_MATRIX.md
+      - name: R10.32 browser verifies exact Device Save ID and safe retry (isolated synthetic only)
+        run: |
+          set -euo pipefail
+          if [[ -x /usr/bin/google-chrome ]]; then
+            echo "R1032_CHROME_BIN=/usr/bin/google-chrome"
+          elif [[ -x /usr/bin/chromium ]]; then
+            echo "R1032_CHROME_BIN=/usr/bin/chromium"
+          else
+            echo "R1032_CHROME_REQUIRED_BUT_MISSING" >&2
+            exit 1
+          fi
+          python3 -m unittest discover -s deploy/scripts/lab/r1030 -p 'test_dashboard_browser_flow.py' -v
       - name: Verify root-config encrypted stream scripts (static contract)
         run: |
           bash -n deploy/scripts/lab/mac-root-config-backup.sh
