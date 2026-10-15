@@ -4991,3 +4991,9 @@ Owner Mac made two actual previously allowlisted private C320 read-only operatio
 ### R10.30 additional device post-commit UI reconciliation safety
 
 The Device create form now preserves the entered values and replay ID until the post-create inventory list fetch is successful. A source-level contract plus real headless Chrome synthetic test showed POST201 -> list GET503 -> unchanged repeat POST201 -> list GET200 with the identical request UUID. Final local Chrome suite: 5/5 PASS. No schema or production service change.
+
+## R10.31 — Explicit maker/checker review UX guard (2026-10-15 WIB)
+
+- Audited commercial Platform Owner company-activation review and Tenant PPPoE plan review. Former single-click Approve/Reject actions could be triggered accidentally and had no row-level in-flight disable. Added explicit reviewer confirmation with exact company/hostname or plan ID, clear limits on DNS/TLS/device execution and accessible action labels. Both actions in a row are disabled while one review request is pending and re-enabled on failure; this does not replace backend current-role, distinct actor or CSRF enforcement.
+- Real operator-Mac Chrome headless with a disposable local synthetic Platform API: CANCEL submitted zero review requests; APPROVE submitted exactly one review with approve=true. Two browser tests PASS. R9.70 and R10.31 Node source contracts PASS; no real production identities, domains, tenant DB or device operations were involved.
+- No PostgreSQL migration, gateway configuration, DNS, firewall or device write. Commercial root restore/PG18 HA/PITR/tenant MFA/TLS still BLOCKED and PUBLIC GO remains FALSE. This is an error-prevention improvement, not an authorization policy change.
