@@ -116,11 +116,33 @@ SCENARIO_DENIED = """
 </script>
 """
 
+SCENARIO_MOBILE = """
+<script>
+(async()=>{
+ const sleep=t=>new Promise(resolve=>setTimeout(resolve,t));
+ for(let i=0;i<80;i++){
+  if(!document.querySelector('[data-page=devices]').hidden)break;
+  await sleep(50);
+ }
+ document.querySelector('[data-page=devices]').click();
+ await sleep(250);
+ const viewport=document.documentElement.clientWidth;
+ const width=document.documentElement.scrollWidth;
+ const table=document.querySelector('[data-panel=devices] .table-wrap');
+ const mobile=window.innerWidth<=500;
+ const wrapped=table && getComputedStyle(table).overflowX==='auto';
+ document.body.setAttribute('data-r1030-mobile',
+  mobile&&wrapped&&width<=viewport+2?'PASS':'FAIL_'+mobile+'_'+width+'_'+viewport);
+})();
+</script>
+"""
+
 class Handler(BaseHTTPRequestHandler):
     requests = []
     site_mode = False
     site_created = False
     denied_mode = False
+    mobile_mode = False
     def log_message(self, *_):
         pass
     def send(self, code, body, content_type="application/json"):
@@ -134,7 +156,7 @@ class Handler(BaseHTTPRequestHandler):
         if path=="/dashboard":
             html=(WEB/"dashboard.html").read_text()
             html=html.replace("<head>", "<head>"+PRELUDE, 1)
-            self.send(200,html+(SCENARIO_DENIED if self.denied_mode else SCENARIO_SITE if self.site_mode else SCENARIO), "text/html; charset=utf-8")
+            self.send(200,html+(SCENARIO_DENIED if self.denied_mode else SCENARIO_MOBILE if self.mobile_mode else SCENARIO_SITE if self.site_mode else SCENARIO), "text/html; charset=utf-8")
             return
         for route,name,kind in (
             ("/dashboard/assets/app.js","app.js","text/javascript"),
@@ -170,6 +192,29 @@ class Handler(BaseHTTPRequestHandler):
 
 @unittest.skipUnless(CHROME, "Headless Chrome not installed; separate GitHub source/CI required")
 class DashboardChromeTest(unittest.TestCase):
+    def test_mobile_viewport_has_no_document_horizontal_overflow(self):
+        Handler.requests=[]
+        Handler.mobile_mode=True
+        Handler.denied_mode=False
+        Handler.site_mode=False
+        server=ThreadingHTTPServer(("127.0.0.1",0),Handler)
+        threading.Thread(target=server.serve_forever,daemon=True).start()
+        try:
+            with tempfile.TemporaryDirectory(prefix="ipat-r1030-mobile-") as directory:
+                proc=subprocess.run([CHROME,"--headless=new","--no-first-run",
+                  "--disable-gpu","--user-data-dir="+directory,
+                  "--window-size=390,850","--force-device-scale-factor=1",
+                  "--virtual-time-budget=10000","--dump-dom",
+                  f"http://127.0.0.1:{server.server_port}/dashboard"],
+                  capture_output=True,text=True,timeout=35)
+            self.assertEqual(proc.returncode,0,proc.stderr[-700:])
+            self.assertIn('data-r1030-mobile="PASS"',proc.stdout)
+            print("R1030_HEADLESS_CHROME_COMPACT_LAYOUT_OVERFLOW=PASS")
+        finally:
+            Handler.mobile_mode=False
+            server.shutdown()
+            server.server_close()
+
     def test_deny_by_default_menu_stays_hidden_without_capability(self):
         Handler.requests=[]
         Handler.denied_mode=True

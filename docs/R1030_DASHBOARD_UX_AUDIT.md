@@ -19,7 +19,7 @@ Target WCAG 2.2 A/AA, especially keyboard navigation, perceivable focus, form la
 ## Executed verification
 
 - Node JavaScript parse and CI-invoked static authorization/UX contract PASS.
-- Actual Chrome headless on operator Mac over an isolated local synthetic HTTP API: 3 PASS, testing capability-denied menus, Site-missing/create/resume, and Device Save HTTP 503 then 201 with identical request UUID and correct Site.
+- Actual Chrome headless on operator Mac over an isolated local synthetic HTTP API: 4 PASS, testing capability-denied menus, compact viewport without horizontal document overflow, Site-missing/create/resume, and Device Save HTTP 503 then 201 with identical request UUID and correct Site.
 - No real identity session, DNS, TLS, PostgreSQL production, customer records, devices, firmware or network changes. The private C320 dashboard R10.29 remains separate and operational.
 
 ## Residual PRD acceptance
