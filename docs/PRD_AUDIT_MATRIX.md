@@ -1,4 +1,4 @@
-# IPAT production PRD audit matrix — R9.64 (2026-10-02)
+# IPAT production PRD audit matrix — R9.64 baseline, updated 2026-10-15
 
 **Scope of this document:** trace each canonical `docs/PRD.md` acceptance gate to actual source, tests and **real commercial production** evidence. PASS in an isolated synthetic test does not mean a tenant can access the public production service. This matrix is intentionally usable by an independent auditor who must not rely on the conversation or on the author's assurances. Do not mark any row production PASS without exact deployment/environment evidence, an owner-accepted test oracle and a dated test result.
 
