@@ -19,7 +19,7 @@ Target WCAG 2.2 A/AA, especially keyboard navigation, perceivable focus, form la
 ## Executed verification
 
 - Node JavaScript parse and CI-invoked static authorization/UX contract PASS.
-- Actual Chrome headless on operator Mac over an isolated local synthetic HTTP API: 4 PASS, testing capability-denied menus, compact viewport without horizontal document overflow, Site-missing/create/resume, and Device Save HTTP 503 then 201 with identical request UUID and correct Site.
+- Actual Chrome headless on operator Mac over an isolated local synthetic HTTP API: 5 PASS, testing capability-denied menus, compact viewport without horizontal document overflow, Site-missing/create/resume, HTTP503 then 201 retry and successful POST followed by failed list refresh/reconciliation with identical request UUID and correct Site.
 - No real identity session, DNS, TLS, PostgreSQL production, customer records, devices, firmware or network changes. The private C320 dashboard R10.29 remains separate and operational.
 
 ## Residual PRD acceptance
@@ -29,3 +29,7 @@ Real production browser Host/SNI/MFA, tenant role changes, direct API denial, ex
 ### Skip-navigation correctness review
 
 Following WCAG 2.2 bypass-blocks review, the Tenant skip link targets the content SECTION after the navigation sidebar rather than the wrapping main grid. The page retains a main landmark and a distinct primary h1 heading; the sidebar uses a lower-level heading. Browser fixture and Node source contract were rerun PASS after this correction.
+
+### R10.30 hardening of post-commit reconciliation
+
+Once the backend has accepted Device registration, the client must not clear the input or idempotency key before the refreshed inventory list has been fetched. A failed list request is reported as saved-but-not-reconciled, and another Save replays the same request ID. The Chrome synthetic fixture verifies two identical POST keys, failed first list refresh, and successful second refresh without losing the device form. This is still per-page-session behavior, not durable cross-reload reconciliation.

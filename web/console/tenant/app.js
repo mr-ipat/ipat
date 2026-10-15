@@ -431,7 +431,13 @@
    state.pendingDevice={fingerprint,request_id:crypto.randomUUID()};
   d.request_id=state.pendingDevice.request_id;
   await api('/api/v1/devices','POST',d);
-  state.pendingDevice=null;clearForm(f);syncCatalog();await refreshDevices();notice('Device saved as metadata. Physical connection not yet established.')})});
+  // A successful POST followed by a failed list GET is still a committed Save.
+  // Keep both the form and request ID until the list actually reconciles.
+  try{await refreshDevices()}catch(error){
+   throw Error('Device saved; inventory list could not be refreshed. Retry Save to reconcile using the same request ID. '+error.message);
+  }
+  state.pendingDevice=null;clearForm(f);syncCatalog();
+  notice('Device saved as metadata and confirmed in the inventory list. Physical connection not yet established.')})});
  $('device-edit').addEventListener('submit',e=>{e.preventDefault();const f=e.currentTarget;submit(f,async()=>{const d=Object.fromEntries(new FormData(f));d.expected_revision=state.editRevision;d.intended_model=d.intended_model||null;d.management_host=d.management_host||null;d.management_port=d.management_port?Number(d.management_port):null;await api('/api/v1/devices/'+encodeURIComponent(state.editId),'PATCH',d);$('device-edit-panel').hidden=true;state.editId=null;await refreshDevices();notice('Saved device metadata updated.')})});
  $('edit-cancel').addEventListener('click',()=>{$('device-edit-panel').hidden=true;state.editId=null});
  $('subscriber-cancel').addEventListener('click',clearSubscriberEdit);

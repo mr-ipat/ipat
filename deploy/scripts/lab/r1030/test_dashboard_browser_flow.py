@@ -137,12 +137,53 @@ SCENARIO_MOBILE = """
 </script>
 """
 
+
+SCENARIO_RECONCILE = """
+<script>
+(async()=>{
+ const sleep=t=>new Promise(resolve=>setTimeout(resolve,t));
+ const done=x=>document.body.setAttribute('data-r1030-reconcile',x);
+ for(let i=0;i<80;i++){
+  if(!document.querySelector('[data-page=devices]').hidden)break;
+  await sleep(50);
+ }
+ document.querySelector('[data-page=devices]').click();
+ for(let i=0;i<80;i++){
+  if(document.querySelector('#device-site').options.length>1)break;
+  await sleep(50);
+ }
+ const form=document.querySelector('#device-create');
+ form.elements.display_name.value='Safe reconciliation fixture';
+ form.elements.pop_id.value='SITE-R1030';
+ form.elements.intended_model.value='C320';
+ form.elements.management_host.value='olt.lab.invalid';
+ form.elements.management_port.value='321';
+ form.requestSubmit();
+ for(let i=0;i<80;i++){
+  if(document.querySelector('#notice').textContent.includes('inventory list could not be refreshed'))break;
+  await sleep(50);
+ }
+ if(!document.querySelector('#notice').textContent.includes('inventory list could not be refreshed')){done('MISSING_LIST_ERROR');return}
+ if(form.elements.display_name.value!=='Safe reconciliation fixture'){done('LOST_FORM');return}
+ form.requestSubmit();
+ for(let i=0;i<80;i++){
+  if(document.querySelector('#notice').textContent.includes('confirmed in the inventory list'))break;
+  await sleep(50);
+ }
+ if(!document.querySelector('#notice').textContent.includes('confirmed in the inventory list')){done('MISSING_RECONCILIATION');return}
+ done('PASS');
+})();
+</script>
+"""
+
 class Handler(BaseHTTPRequestHandler):
     requests = []
     site_mode = False
     site_created = False
     denied_mode = False
     mobile_mode = False
+    reconcile_mode = False
+    list_failed = False
     def log_message(self, *_):
         pass
     def send(self, code, body, content_type="application/json"):
@@ -156,7 +197,7 @@ class Handler(BaseHTTPRequestHandler):
         if path=="/dashboard":
             html=(WEB/"dashboard.html").read_text()
             html=html.replace("<head>", "<head>"+PRELUDE, 1)
-            self.send(200,html+(SCENARIO_DENIED if self.denied_mode else SCENARIO_MOBILE if self.mobile_mode else SCENARIO_SITE if self.site_mode else SCENARIO), "text/html; charset=utf-8")
+            self.send(200,html+(SCENARIO_DENIED if self.denied_mode else SCENARIO_RECONCILE if self.reconcile_mode else SCENARIO_MOBILE if self.mobile_mode else SCENARIO_SITE if self.site_mode else SCENARIO), "text/html; charset=utf-8")
             return
         for route,name,kind in (
             ("/dashboard/assets/app.js","app.js","text/javascript"),
@@ -172,6 +213,10 @@ class Handler(BaseHTTPRequestHandler):
             "/api/v1/sites": {"ok":True,"sites":([{"code":"SITE-R1030","display_name":"Test site","assigned_devices":0,"revision":1,"parent_pop_code":None}] if not self.site_mode or self.site_created else []),"next_after":None},
             "/api/v1/devices": {"ok":True,"devices":[]},
         }
+        if path=="/api/v1/devices" and self.reconcile_mode and len(self.requests)==1 and not self.list_failed:
+            self.__class__.list_failed=True
+            self.send(503,'{"ok":false}')
+            return
         self.send(200,json.dumps(responses.get(path,{"ok":False})))
     def do_POST(self):
         path=urlsplit(self.path).path
@@ -183,7 +228,7 @@ class Handler(BaseHTTPRequestHandler):
             return
         if path=="/api/v1/devices":
             self.__class__.requests.append(body)
-            if len(self.requests)==1:
+            if len(self.requests)==1 and not self.reconcile_mode:
                 self.send(503,json.dumps({"ok":False}))
             else:
                 self.send(201,json.dumps({"ok":True,"id":"00000000-0000-4000-8000-000000000012","lifecycle_state":"SAVED"}))
@@ -192,6 +237,32 @@ class Handler(BaseHTTPRequestHandler):
 
 @unittest.skipUnless(CHROME, "Headless Chrome not installed; separate GitHub source/CI required")
 class DashboardChromeTest(unittest.TestCase):
+    def test_saved_device_reconciles_failed_list_without_new_request_id(self):
+        Handler.requests=[]
+        Handler.reconcile_mode=True
+        Handler.list_failed=False
+        Handler.site_mode=False
+        Handler.denied_mode=False
+        server=ThreadingHTTPServer(("127.0.0.1",0),Handler)
+        threading.Thread(target=server.serve_forever,daemon=True).start()
+        try:
+            with tempfile.TemporaryDirectory(prefix="ipat-r1030-reconcile-") as directory:
+                proc=subprocess.run([CHROME,"--headless=new","--no-first-run",
+                  "--disable-gpu","--user-data-dir="+directory,
+                  "--virtual-time-budget=12000","--dump-dom",
+                  f"http://127.0.0.1:{server.server_port}/dashboard"],
+                  capture_output=True,text=True,timeout=35)
+            self.assertEqual(proc.returncode,0,proc.stderr[-700:])
+            self.assertIn('data-r1030-reconcile="PASS"',proc.stdout)
+            self.assertTrue(Handler.list_failed)
+            self.assertEqual(len(Handler.requests),2)
+            self.assertEqual(Handler.requests[0]["request_id"],Handler.requests[1]["request_id"])
+            print("R1030_HEADLESS_CHROME_POST_SUCCEEDED_LIST_FAILED_SAFE_RETRY=PASS")
+        finally:
+            Handler.reconcile_mode=False
+            server.shutdown()
+            server.server_close()
+
     def test_mobile_viewport_has_no_document_horizontal_overflow(self):
         Handler.requests=[]
         Handler.mobile_mode=True

@@ -416,3 +416,7 @@ R9.96 now refuses **any** tracked modification, untracked or ignored checkout fi
 - DONE VERIFIED in isolated synthetic browser: tenant authorized navigation and focus, missing Site/create/return with Site selected, unchanged Device Save retry after simulated 503 preserving request_id, unauthorized nav hidden. Node source test runs in preexisting CI coverage. Platform Owner keyboard/scroll changes are source-checked; no live authenticated Platform session was used.
 - IMPLEMENTED NOT VERIFIED on production: tenant/platform WCAG2.2-oriented markup/CSS and device form UX in commercial source only. No commercial runtime/PostgreSQL/MFA/HTTPS currently active on owner VPS. Do not confuse localhost mock Chrome with customer acceptance.
 - OPEN: live multiple tenant browser, real role API negative tests on production, screen-reader/keyboard/mobile contrast audit, full A/AA manual accessibility assessment, R9.96/97 recovery gate and production PostgreSQL18 HA/PITR/TLS. Public NO_GO unchanged.
+
+### R10.30 post-commit list reconciliation
+
+Synthetic Chrome verified that an inventory POST acknowledged by the backend does not clear the form or rotate request_id when a subsequent list GET fails. Replay of the same immutable intent after that failure uses the same UUID and returns visible Save feedback once the list refresh passes. Production browser and durable cross-reload reconciliation remain outstanding.
