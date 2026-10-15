@@ -1,4 +1,4 @@
-# IPAT production PRD audit matrix — R9.64 (2026-10-02)
+# IPAT production PRD audit matrix — R9.64 baseline, updated 2026-10-15
 
 **Scope of this document:** trace each canonical `docs/PRD.md` acceptance gate to actual source, tests and **real commercial production** evidence. PASS in an isolated synthetic test does not mean a tenant can access the public production service. This matrix is intentionally usable by an independent auditor who must not rely on the conversation or on the author's assurances. Do not mark any row production PASS without exact deployment/environment evidence, an owner-accepted test oracle and a dated test result.
 
@@ -406,3 +406,7 @@ R9.96 now refuses **any** tracked modification, untracked or ignored checkout fi
 - R10.07 obsolete unreachable Tenant Admin success assertions have been removed from the Rust HTTP test because they contradict current R10.09 provisioning/security role separation. Tenant Admin HTTP403 and no RouterOS execution remain tested source invariants; R10.09 owns the positive maker/checker integration. Removing unreachable code **does not** downgrade the PRD's physical PPPoE/readback/rollback requirements.
 - Device Manager commercial Site field now explicitly selects a registered Site rather than presenting a `Site / POP` ambiguity. Its backing API's historic `pop_id` transport name is unchanged; the normalized Site value and distinct POP master remain separately enforced by existing SQL. Physical OLT adoption and end-to-end UI/browser Save acceptance remain open.
 - **PUBLIC NO_GO:** actual separate production root-controlled PostgreSQL18, HA/PITR/restored offsite backup, human MFA, Host/SNI TLS, two-tenant live browser denial and vendor interoperability are still independent acceptance dependencies. Changes in this milestone are implemented source/test/UX only.
+
+## R10.29 — Network and lab UX accepted; commercial go-live still blocked
+
+**DONE VERIFIED:** exact-source R10.28 native Rust binary built/tested on Ubuntu 26.04, installed with checksum/rollback controls only on private :3002; Mac-to-VPS dashboard responded HTTP200; new C320 SSH321 and Telnet323 network diagnostics confirmed TCP and initial protocol signatures; existing C320 read-only connector still CONNECTED. The operator repeatable live verifier and six negative/synthetic tests passed. **NOT VERIFIED / BLOCKED:** actual PostgreSQL 18 production HA/PITR and independent full-host restore attestation, root authorization, public TLS with domain Host/SNI, real administrator MFA/tenant isolation browser, full hardware readback/vendor-native restore and authorized device writes. No relaxation of PRD, PUBLIC NO_GO.
