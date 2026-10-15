@@ -25,3 +25,6 @@ input,select,textarea,button{min-height:44px}
 [hidden]{display:none!important}
 @media(max-width:480px){header{flex-wrap:wrap}main{min-width:0}.content{padding:.85rem}table{min-width:520px}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition-duration:0.01ms!important;animation-duration:0.01ms!important}}
+
+/* Skip navigation targets the content region after the sidebar. */
+.content>h1{font-size:1.55rem;margin:.5rem 0 .9rem}aside>h2{font-size:1.25rem}

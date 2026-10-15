@@ -15,7 +15,12 @@ for(const [name,html,css] of [
  ['Tenant',tenant,tenantCss],['Platform',platform,platformCss],
 ]){
  assert.match(html, /class="skip-link" href="#main-content"/,name+' skip link');
- assert.match(html, /<main id="main-content" tabindex="-1"/,name+' skip destination');
+ if(name==='Tenant'){
+  assert.match(html, /<section class="content" id="main-content" tabindex="-1"/,name+' bypass nav');
+  assert.match(html, /<h1>Company operations<\/h1>/);
+} else {
+  assert.match(html, /<main id="main-content" tabindex="-1"/,name+' skip destination');
+}
  assert.match(css, /:focus-visible/,name+' keyboard focus');
  assert.match(css, /prefers-reduced-motion:reduce/,name+' reduced motion');
  assert.match(css, /@media\(max-width:/,name+' responsive rules');

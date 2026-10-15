@@ -25,3 +25,7 @@ Target WCAG 2.2 A/AA, especially keyboard navigation, perceivable focus, form la
 ## Residual PRD acceptance
 
 Real production browser Host/SNI/MFA, tenant role changes, direct API denial, expiry, Site and Device CRUD persistence, Screen Reader/keyboard and viewport/contrast testing remain required before commercial GO. Browser request IDs persist only during the current page lifecycle; cross-reload ambiguous submissions need server-side reconciliation before full production acceptance. No PRD security requirements were removed.
+
+### Skip-navigation correctness review
+
+Following WCAG 2.2 bypass-blocks review, the Tenant skip link targets the content SECTION after the navigation sidebar rather than the wrapping main grid. The page retains a main landmark and a distinct primary h1 heading; the sidebar uses a lower-level heading. Browser fixture and Node source contract were rerun PASS after this correction.
