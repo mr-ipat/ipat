@@ -104,6 +104,12 @@
    ?'Registration allowed for metadata only. '+selected.description+' No automatic physical connection or firmware action.'
    :'Choose a catalog-listed vendor and transport; compatibility is not established.';
   const remote=['cwmp','usp'].includes($('device-transport').value);for(const id of ['device-host','device-port']){$(id).disabled=remote;$(id).required=!remote;if(remote)$(id).value='';else if(id==='device-port'&&!$(id).value)$(id).value='22'}}
+ // Do not tell an ISP operator that Save is complete until the exact new
+ // record is visible in the authoritative tenant-scoped inventory response.
+ function savedDeviceInCurrentList(deviceId){
+  return typeof deviceId==='string' &&
+   state.devices.some(device=>device.id===deviceId && device.lifecycle_state==='SAVED');
+ }
  async function refreshDevices(){const r=await api('/api/v1/devices');state.devices=r.devices;$('device-rows').replaceChildren();for(const d of state.devices){
   const tr=document.createElement('tr');cell(tr,d.display_name);cell(tr,d.site);cell(tr,`${d.device_kind} / ${d.vendor}`);cell(tr,d.lifecycle_state==='SAVED'?'Saved — not connected':d.lifecycle_state);
   const actions=cell(tr,'');actions.textContent='';btn(actions,'View',async()=>{try{const x=(await api('/api/v1/devices/'+encodeURIComponent(d.id))).device;notice(`${x.display_name} · ${x.vendor} ${x.intended_model||''} · ${x.lifecycle_state} · Revision ${x.revision}. No physical action available.`)}catch(e){notice(e.message)}});
@@ -445,14 +451,19 @@
   if(!state.pendingDevice||state.pendingDevice.fingerprint!==fingerprint)
    state.pendingDevice={fingerprint,request_id:crypto.randomUUID()};
   d.request_id=state.pendingDevice.request_id;
-  await api('/api/v1/devices','POST',d);
-  // A successful POST followed by a failed list GET is still a committed Save.
-  // Keep both the form and request ID until the list actually reconciles.
-  try{await refreshDevices()}catch(error){
-   throw Error('Device saved; inventory list could not be refreshed. Retry Save to reconcile using the same request ID. '+error.message);
+  const saved=await api('/api/v1/devices','POST',d);
+  // HTTP 201 is not enough. The list may be stale or its GET can fail
+  // after a committed Save. Keep input and request ID until the exact saved
+  // device is visible; replay of unchanged intent is safe server-side.
+  try{
+   await refreshDevices();
+   if(!savedDeviceInCurrentList(saved.id))
+    throw Error('Saved device not yet visible in tenant inventory.');
+  }catch(error){
+   throw Error('Device Save could not be reconciled. Do not create another entry; retry unchanged Save with the same request ID. '+error.message);
   }
   state.pendingDevice=null;clearForm(f);syncCatalog();
-  notice('Device saved as metadata and confirmed in the inventory list. Physical connection not yet established.')})});
+  notice('Device saved and its exact ID verified in the inventory list. Physical connection not yet established.')})});
  $('device-edit').addEventListener('submit',e=>{e.preventDefault();const f=e.currentTarget;submit(f,async()=>{const d=Object.fromEntries(new FormData(f));d.expected_revision=state.editRevision;d.intended_model=d.intended_model||null;d.management_host=d.management_host||null;d.management_port=d.management_port?Number(d.management_port):null;await api('/api/v1/devices/'+encodeURIComponent(state.editId),'PATCH',d);$('device-edit-panel').hidden=true;state.editId=null;await refreshDevices();notice('Saved device metadata updated.')})});
  $('edit-cancel').addEventListener('click',()=>{$('device-edit-panel').hidden=true;state.editId=null});
  $('subscriber-cancel').addEventListener('click',clearSubscriberEdit);
