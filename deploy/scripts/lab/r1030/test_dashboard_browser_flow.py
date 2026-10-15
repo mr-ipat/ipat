@@ -57,10 +57,10 @@ SCENARIO = """
  if(!document.querySelector('#notice').textContent.includes('HTTP 503')){done('FIRST_REJECTION_MISSING');return}
  form.requestSubmit();
  for(let i=0;i<90;i++){
-  if(document.querySelector('#notice').textContent.includes('Device saved as metadata'))break;
+  if(document.querySelector('#notice').textContent.includes('exact ID verified'))break;
   await sleep(50);
  }
- if(!document.querySelector('#notice').textContent.includes('Device saved as metadata')){done('SECOND_SAVE_MISSING');return}
+ if(!document.querySelector('#notice').textContent.includes('exact ID verified')){done('SECOND_SAVE_MISSING');return}
  done('PASS');
 })();
 </script>
@@ -167,10 +167,10 @@ SCENARIO_RECONCILE = """
  if(form.elements.display_name.value!=='Safe reconciliation fixture'){done('LOST_FORM');return}
  form.requestSubmit();
  for(let i=0;i<80;i++){
-  if(document.querySelector('#notice').textContent.includes('confirmed in the inventory list'))break;
+  if(document.querySelector('#notice').textContent.includes('exact ID verified'))break;
   await sleep(50);
  }
- if(!document.querySelector('#notice').textContent.includes('confirmed in the inventory list')){done('MISSING_RECONCILIATION');return}
+ if(!document.querySelector('#notice').textContent.includes('exact ID verified')){done('MISSING_RECONCILIATION');return}
  done('PASS');
 })();
 </script>
