@@ -15,7 +15,11 @@
   }
   const r=await fetch(path,{method,credentials:'same-origin',headers,cache:'no-store',body:body===undefined?undefined:JSON.stringify(body)});
   const result=await r.json().catch(()=>({ok:false}));
-  if(!r.ok||!result.ok)throw Error(r.status===401?'Session expired or your permissions changed. Sign in again.':`Request rejected (HTTP ${r.status}); refresh before retrying.`);
+  if(!r.ok||!result.ok){
+   const error=Error(r.status===401?'Session expired or your permissions changed. Sign in again.':`Request rejected (HTTP ${r.status}); refresh before retrying.`);
+   error.httpStatus=r.status;
+   throw error;
+  }
   return result;
  }
  const cell=(tr,value)=>{const td=document.createElement('td');td.textContent=String(value??'—');tr.append(td);return td};
@@ -515,11 +519,39 @@
   $('pppoe-create-workspace').hidden=!state.canCreatePppoePlans;
   if(state.canReadSubscribers){$('nav-subscribers').hidden=false;$('nav-diagnostics').hidden=false}
   $('subscriber-manage').hidden=!state.canManageSubscribers;
-  if(r.can_manage_sites){for(const n of ['pops','sites','devices','domains','noc-access'])$('nav-'+n).hidden=false;await loadCatalog()}
+  const degraded=[];
+  if(r.can_manage_sites){
+   for(const n of ['pops','sites','domains','noc-access'])$('nav-'+n).hidden=false;
+   try{await loadCatalog();$('nav-devices').hidden=false}
+   catch(error){
+    if(error.httpStatus===401||error.httpStatus===403)throw error;
+    $('nav-devices').hidden=true;
+    degraded.push('Device catalog unavailable; Device registration is disabled until a reload succeeds.');
+   }
+  }
   if(r.can_manage_branding)$('nav-branding').hidden=false;
-  await refreshBranding();
+  try{await refreshBranding()}
+  catch(error){
+   if(error.httpStatus===401||error.httpStatus===403)throw error;
+   $('nav-branding').hidden=true;
+   degraded.push('Company branding temporarily unavailable; other authorized modules can still be used.');
+  }
   $('logout').hidden=false;
-  notice(r.can_manage_sites||state.canReadSubscribers||state.nocPops.length||state.realNocPops.length?'Tenant permissions verified. Select a permitted module.':'No operations modules assigned to your current identity.');
+  notice(degraded.length?degraded.join(' '):
+   r.can_manage_sites||state.canReadSubscribers||state.nocPops.length||state.realNocPops.length
+    ?'Tenant permissions verified. Select a permitted module.'
+    :'No operations modules assigned to your current identity.');
 
- }catch(e){notice(e.message);$('signin').hidden=false;$('identity').textContent='Sign-in required'}})();
+ }catch(error){
+  document.querySelectorAll('.nav').forEach(button=>{
+   button.hidden=true;button.removeAttribute('aria-current');
+  });
+  document.querySelectorAll('[data-panel]').forEach(panel=>panel.hidden=true);
+  $('welcome').hidden=false;
+  const reauth=error.httpStatus===401||error.httpStatus===403;
+  $('signin').hidden=!reauth;
+  $('logout').hidden=true;
+  $('identity').textContent=reauth?'Sign-in required':'Access verification unavailable';
+  notice(error.message);
+ }})();
 })();
