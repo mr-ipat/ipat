@@ -1267,3 +1267,11 @@ MUST: suspended company reservation is distinct from activation. Initial activat
 
 ## R10.12 — MikroTik private HTTPS first-read source boundary
 MUST for FR-019/AC-05: the first target RouterOS identity read uses approved exact management IP, independent trusted CA and pinned peer certificate, fixed non-writing REST GET, confidential external read-only credentials, bounded response size and timeout, exact model/version evidence, and no automatic compatibility/tenant/PPPoE activation. API-SSL binary 8729 and HTTPS REST443 must not be conflated. Source-only transport and synthetic tests are PARTIAL until actual owner-authorized physical RouterOS identity and version tuple have been observed.
+
+## R10.30 — Commercial dashboard usability and accessibility addendum (2026-10-15)
+
+- **MUST**: Tenant and Platform dashboards have legible labeled fields, keyboard-visible focus, clear current-page navigation and error feedback. Unauthorized menu entries must remain hidden and their APIs denied by current backend RBAC/ABAC.
+- **MUST**: Device Save retries following ambiguous HTTP failure reuse the same idempotency request key while the submission intent is unchanged; changed input starts a new intent. A saved inventory row must never imply an adopted or connected device.
+- **MUST**: POP and Site remain separate tenant-scoped master entities. Missing Site guides an operator into independent Site creation and returns to Add Device with newly saved Site selected. High-risk PPPoE messaging must name Security Admin as the distinct reviewer; no simplified physical execution.
+- **SHOULD**: Target W3C WCAG 2.2 Level A/AA for skip navigation, focus, form instructions, responsive layouts, reduced motion and assistive technology; source-only tests do not prove conformity.
+- **Acceptance**: actual role-separated MFA/TLS/Host tenant browser, API 403 on forbidden direct paths, empty-Site resume, safe Save retries, mobile/keyboard/screen-reader interactions and error feedback must be observed on the live commercial environment before public GO. R10.30 synthetic Chrome fixtures are not production acceptance.

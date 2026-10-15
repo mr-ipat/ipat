@@ -5,3 +5,15 @@ main{padding-top:1.5rem}form{display:flex;gap:1rem;align-items:end;flex-wrap:wra
 label{display:grid;gap:.3rem}input,button{font:inherit;padding:.45rem}
 table{width:100%;border-collapse:collapse;margin-top:1.5rem}th,td{padding:.65rem;border-bottom:1px solid;text-align:left;overflow-wrap:anywhere}
 #notice{min-height:2rem}
+
+
+/* R10.30 keyboard, responsive table, and minimum target-size baseline. */
+.skip-link{position:absolute;top:-8rem;left:1rem;background:#fff;color:#17243b;padding:.8rem;z-index:10}
+.skip-link:focus{top:.5rem}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,.table-wrap:focus-visible,main:focus-visible{outline:3px solid #287dcc;outline-offset:3px}
+input,select,button{min-height:44px}select{font:inherit;padding:.45rem}
+.table-wrap{max-width:100%;overflow-x:auto;scrollbar-gutter:stable}
+.table-wrap table{min-width:640px}
+td{overflow-wrap:anywhere}
+@media(max-width:650px){body{padding:.9rem}header{gap:1rem;flex-wrap:wrap}form{display:grid}label{min-width:0}input,select{max-width:100%}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition-duration:0.01ms!important;animation-duration:0.01ms!important}}
