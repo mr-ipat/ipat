@@ -520,3 +520,7 @@ R10.28 application source adds fixed-address dual-port bounded network diagnosti
 ## R10.29 — C320 private-laboratory acceptance (2026-10-15)
 
 Actual private dashboard rollout was verified end-to-end on the operator Mac and owner VPS. SSH port 321 TCP/banner and Telnet port 323 TCP/negotiation probes PASS; the already-enrolled read-only C320 connector also reported CONNECTED. No network probe authenticated, sent commands, or changed any OLT settings. Production adoption and physical writes remain disabled. Support classification is still PARTIAL, not commercial compatibility validation.
+
+### R10.29 — Fresh physical read-only C320 post-rollout (2026-10-15)
+
+Two existing fixed allowlisted read operations were actually executed through the deployed private C320 connector from the authorized operator Mac. CARDS returned HTTP200, cards_in_service=3, snapshot_is_live=true, read_at_utc=2026-10-15T02:33:56.455379+00:00. FIRMWARE returned HTTP200, firmware_rows=5, firmware_reconciled=false, snapshot_is_live=true, read_at_utc=2026-10-15T02:34:01.987167+00:00. Both responses reported physical_writes_enabled=false and device_adopted=false; no raw CLI transcripts, device serials or credentials were collected in the recorded summary. This verifies two bounded real hardware reads, NOT independent board-to-firmware reconciliation, firmware upgrade, ONU provisioning, native restore or tenant production adoption.
