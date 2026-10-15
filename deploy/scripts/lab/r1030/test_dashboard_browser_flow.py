@@ -160,10 +160,10 @@ SCENARIO_RECONCILE = """
  form.elements.management_port.value='321';
  form.requestSubmit();
  for(let i=0;i<80;i++){
-  if(document.querySelector('#notice').textContent.includes('inventory list could not be refreshed'))break;
+  if(document.querySelector('#notice').textContent.includes('Device Save could not be reconciled'))break;
   await sleep(50);
  }
- if(!document.querySelector('#notice').textContent.includes('inventory list could not be refreshed')){done('MISSING_LIST_ERROR');return}
+ if(!document.querySelector('#notice').textContent.includes('Device Save could not be reconciled')){done('MISSING_LIST_ERROR');return}
  if(form.elements.display_name.value!=='Safe reconciliation fixture'){done('LOST_FORM');return}
  form.requestSubmit();
  for(let i=0;i<80;i++){
