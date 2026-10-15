@@ -22,7 +22,7 @@ SCENARIO = """
  for(let i=0;i<120;i++){
   const x=document.querySelector('#notice').textContent;
   if(x.includes('Device catalog unavailable')||x.includes('Company branding temporarily unavailable')
-      ||x.includes('HTTP 401'))break;
+      ||document.querySelector('#identity').textContent==='Sign-in required')break;
   await sleep(50);
  }
  const m=new URL(location.href).searchParams.get('fault');
