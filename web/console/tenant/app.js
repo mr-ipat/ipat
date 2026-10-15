@@ -293,8 +293,23 @@
     notice('Dry-run detail loaded. Secret references and values are not returned.');
    }catch(e){notice(e.message)}});
    if(p.state==='awaiting_approval'&&p.can_review){
-    btn(actions,'Approve dry-run',async()=>{try{await api('/api/v1/pppoe-plans/'+encodeURIComponent(p.id)+'/review','POST',{approve:true});await refreshPppoePlans();notice('Dry-run approved by Security Admin. A distinct current System Admin plus fresh physical readiness is still required.')}catch(e){notice(e.message)}});
-    btn(actions,'Reject',async()=>{try{await api('/api/v1/pppoe-plans/'+encodeURIComponent(p.id)+'/review','POST',{approve:false});await refreshPppoePlans();notice('Dry-run rejected.')}catch(e){notice(e.message)}});
+    const reviewButtons=[];
+    for(const [label,approve] of [['Approve dry-run',true],['Reject',false]]){
+     const control=btn(actions,label,async()=>{
+      if(reviewButtons.some(button=>button.disabled))return;
+      if(!confirm((approve?'Approve':'Reject')+' PPPoE dry-run '+p.id+
+       '? This records a Security Admin review only. No device execution is authorized.'))return;
+      reviewButtons.forEach(button=>button.disabled=true);
+      try{
+       await api('/api/v1/pppoe-plans/'+encodeURIComponent(p.id)+'/review','POST',{approve});
+       await refreshPppoePlans();
+       notice(approve?'Dry-run approved by Security Admin. A distinct System Admin and fresh physical readiness are still required.':'Dry-run rejected.');
+      }catch(e){notice(e.message)}
+      finally{reviewButtons.forEach(button=>button.disabled=false)}
+     });
+     control.setAttribute('aria-label',label+' PPPoE plan '+p.id);
+     reviewButtons.push(control);
+    }
    }else if(p.state==='awaiting_approval')actions.append(document.createTextNode(' Awaiting current Security Admin'));
    if(p.state==='approved'&&p.can_arm){
     btn(actions,'Arm reviewed execution',async()=>{try{

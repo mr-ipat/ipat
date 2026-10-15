@@ -34,14 +34,24 @@
       :'Available only after independent approval');
     const actions=cell('');actions.textContent='';
     if(x.state==='REQUESTED'){
+      const reviewButtons=[];
       for(const pair of [['Approve',true],['Reject',false]]){
         const b=document.createElement('button');b.type='button';b.textContent=pair[0];
-        b.addEventListener('click',async()=>{try{
-          await api('/api/v1/platform/activation-requests/'+encodeURIComponent(x.request_id)+'/review',
-            'POST',{approve:pair[1]});
-          notice(pair[1]?'Company activation approved; DNS/TLS remains pending.':'Activation rejected.');
-          await refresh();await refreshActivations();
-        }catch(error){notice(error.message)}});actions.append(b);
+        b.setAttribute('aria-label',pair[0]+' company activation for '+x.tenant_slug);
+        b.addEventListener('click',async()=>{
+          if(reviewButtons.some(button=>button.disabled))return;
+          const decision=pair[1]?'approve':'reject';
+          if(!confirm('Review '+decision+' of company '+x.tenant_slug+
+            ' for hostname '+x.hostname+'? Two distinct current Platform Owners are required. Approval does NOT activate DNS, TLS or customer login.'))return;
+          reviewButtons.forEach(button=>button.disabled=true);
+          try{
+           await api('/api/v1/platform/activation-requests/'+encodeURIComponent(x.request_id)+'/review',
+             'POST',{approve:pair[1]});
+           notice(pair[1]?'Company activation approved; DNS/TLS remains pending.':'Activation rejected.');
+           await refresh();await refreshActivations();
+          }catch(error){notice(error.message)}
+          finally{reviewButtons.forEach(button=>button.disabled=false)}
+        });actions.append(b);reviewButtons.push(b);
       }
     }
     rows.append(tr);

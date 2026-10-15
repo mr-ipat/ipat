@@ -420,3 +420,7 @@ R9.96 now refuses **any** tracked modification, untracked or ignored checkout fi
 ### R10.30 post-commit list reconciliation
 
 Synthetic Chrome verified that an inventory POST acknowledged by the backend does not clear the form or rotate request_id when a subsequent list GET fails. Replay of the same immutable intent after that failure uses the same UUID and returns visible Save feedback once the list refresh passes. Production browser and durable cross-reload reconciliation remain outstanding.
+
+### R10.31 — High-impact review action error prevention
+
+Tenant PPPoE dry-run review and Platform Owner company activation review now require explicit contextual operator confirmation, disable sibling Approve/Reject controls while one request is in flight, and state that review does not activate physical execution or domain TLS. Synthetic Chrome verified cancellation does not issue a POST and confirmation submits exactly one review. This is **IMPLEMENTED and SYNTHETIC-VERIFIED**; it is not proof of actual MFA/different-person backend acceptance on the live production Host. Existing backend maker/checker and CSRF remain the sole authority. Public NO_GO unchanged.
