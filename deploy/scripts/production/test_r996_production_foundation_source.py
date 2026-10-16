@@ -389,3 +389,12 @@ assert _r1036_spec is not None and _r1036_spec.loader is not None
 _r1036_module=importlib.util.module_from_spec(_r1036_spec)
 _r1036_spec.loader.exec_module(_r1036_module)
 RootReleaseCustodyTests=_r1036_module.RootReleaseCustodyTests
+
+# R10.38 local-only PostgreSQL18 QA orchestrator source checks reuse the
+# already-present R9.96 CI job; no workflow file or production opt-in changes.
+_r1038_path=Path(__file__).resolve().parent/"test_r1038_pg18_qa_source.py"
+_r1038_spec=importlib.util.spec_from_file_location("ipat_r1038_ci",_r1038_path)
+assert _r1038_spec is not None and _r1038_spec.loader is not None
+_r1038_module=importlib.util.module_from_spec(_r1038_spec)
+_r1038_spec.loader.exec_module(_r1038_module)
+R1038Pg18QATests=_r1038_module.R1038Pg18QATests
