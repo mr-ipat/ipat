@@ -3,6 +3,15 @@ from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from unittest import mock
 import importlib.util
+# CI invokes this test as a path from the repository root, so r1034 is not
+# importable as a top-level module. Load through this file's absolute parent,
+# without global sys.path changes or shadowing trusted standard modules.
+_r1034_file=Path(__file__).resolve().parent/"r1034/test_read_only_foundation_gate.py"
+_r1034_spec=importlib.util.spec_from_file_location("ipat_r1034_negative_tests",_r1034_file)
+assert _r1034_spec is not None and _r1034_spec.loader is not None
+_r1034_module=importlib.util.module_from_spec(_r1034_spec)
+_r1034_spec.loader.exec_module(_r1034_module)
+R1034Source=_r1034_module.R1034Source
 
 ROOT=Path(__file__).resolve().parents[3]
 SCRIPT=ROOT/"deploy/scripts/production/r996_prepare_production_foundation.sh"
