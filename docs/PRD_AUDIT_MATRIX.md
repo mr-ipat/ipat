@@ -441,3 +441,8 @@ Tenant PPPoE dry-run review and Platform Owner company activation review now req
 ## R10.38 — PostgreSQL18 reproducible synthetic migration and recovery verification
 
 DONE VERIFIED in isolated Mac Docker: 50 passing PG18 tenant/role/POP/site/vendor tests (one legacy-role skip), PG18 named-point WAL PITR with RLS, physical standby promotion, encrypted Restic restore+PITR with RLS. A local-only R10.38 suite runner and CI negative tests fail closed on remote Docker, root or production DB environment. **Not verified on production VPS**: database installation, offsite full-host recovery, live HA/PITR, real tenant MFA/TLS and public ingress. No PRD exception; commercial GO=false.
+
+## R10.39 — Encrypted off-host host filesystem capture and Site readback race
+
+- Source implemented: Keychain-encrypted Mac Restic repository (real initialized and synthetic roundtrip verified), binary-safe SSH/sudo tar stream with rootfs and separately mounted EFI, five non-network safety tests. Actual host archive upload ongoing at authoring; independent booted second VPS/VM restore **NOT VERIFIED** and no R9.96 root attestation created. Not a production GO.
+- UI defect corrected: stale asynchronous tenant Site list fetch can overwrite just-created Site selection after Device form navigation. Generation-fenced refresh, current-selection preservation, Node VM out-of-order response test and six operator-Mac Chrome flow tests PASS. GitHub exact-head validation pending.
