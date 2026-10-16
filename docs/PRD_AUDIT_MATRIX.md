@@ -437,3 +437,7 @@ Tenant PPPoE dry-run review and Platform Owner company activation review now req
 
 - **DONE VERIFIED — readiness checks only:** current GitHub main exact native Rust release built on Ubuntu26 and staged nonroot with SHA256 manifest; full R9.96 18/18 and R9.97 6/6 Ubuntu26 security/source tests; PostgreSQL18 candidate and non-mutating APT simulation; VPS listeners/identities probed; private C320 and authorized Mac browser read-only acceptance repeated.
 - **BLOCKED — actual commercial PRD:** root-reviewed rescue/full-host restore evidence inaccessible from nonroot, clean root-owned release handoff and R9.96 PostgreSQL18 installation not executed, no actual PITR/HA, public HTTPS/OIDC MFA, tenant session/Host/SNI or real cross-tenant CRUD. R10.34 script emits public_go=false, even with source/digest PASS. No architectural or PRD MUST relaxation.
+
+## R10.38 — PostgreSQL18 reproducible synthetic migration and recovery verification
+
+DONE VERIFIED in isolated Mac Docker: 50 passing PG18 tenant/role/POP/site/vendor tests (one legacy-role skip), PG18 named-point WAL PITR with RLS, physical standby promotion, encrypted Restic restore+PITR with RLS. A local-only R10.38 suite runner and CI negative tests fail closed on remote Docker, root or production DB environment. **Not verified on production VPS**: database installation, offsite full-host recovery, live HA/PITR, real tenant MFA/TLS and public ingress. No PRD exception; commercial GO=false.
