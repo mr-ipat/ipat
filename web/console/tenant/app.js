@@ -4,7 +4,7 @@
 (() => {
  const $=id=>document.getElementById(id);
  const notice=text=>{$('notice').textContent=text};
- const state={page:null,sites:[],pops:[],popNext:null,devices:[],catalog:[],next:null,editId:null,editRevision:null,pendingSite:null,pendingDevice:null,returnToDevicesAfterSite:false,pageGeneration:0,nocPops:[],realNocPops:[],nocMembers:[],nocAccess:[],pendingNocRequest:null,subscribers:[],subscriberEdit:null,canReadSubscribers:false,canManageSubscribers:false,canManagePppoePlans:false,canCreatePppoePlans:false,canReviewPppoePlans:false,canArmPppoePlans:false,pendingPppoe:null,branding:null,pendingBranding:null};
+ const state={page:null,sites:[],pops:[],popNext:null,devices:[],catalog:[],next:null,editId:null,editRevision:null,pendingSite:null,sitesFetchGeneration:0,pendingDevice:null,returnToDevicesAfterSite:false,pageGeneration:0,nocPops:[],realNocPops:[],nocMembers:[],nocAccess:[],pendingNocRequest:null,subscribers:[],subscriberEdit:null,canReadSubscribers:false,canManageSubscribers:false,canManagePppoePlans:false,canCreatePppoePlans:false,canReviewPppoePlans:false,canArmPppoePlans:false,pendingPppoe:null,branding:null,pendingBranding:null};
  const csrf=()=>document.cookie.split(';').map(x=>x.trim()).find(x=>x.startsWith('__Host-ipat_csrf='))?.split('=')[1];
  async function api(path,method='GET',body){
   const headers={'Accept':'application/json'};
@@ -57,12 +57,16 @@
  }
  function fillSiteChoices(id,selected){const select=$(id);select.replaceChildren();option(select,'Select a registered Site','');state.sites.forEach(s=>option(select,`${s.display_name} (${s.code})`,s.code));select.value=selected||''}
  async function refreshSites(after){
-  // Preserve a user's current selection while a navigation-triggered fetch
-  // is in flight. Creating a Site explicitly preselects the new Site.
-  const selectedDevice=$('device-site').value;
-  const selectedEdit=$('edit-site').value;
+  // A prior page navigation may resolve after a newer Site creation refresh.
+  // Do not let its stale response overwrite the exact Site just selected.
+  const generation=++state.sitesFetchGeneration;
   const url='/api/v1/sites'+(after?'?after='+encodeURIComponent(after):'');
   const r=await api(url);
+  if(generation!==state.sitesFetchGeneration)return;
+  // Capture the selection AFTER the await, not before it: an operator may
+  // choose a Site while the GET is in flight.
+  const selectedDevice=$('device-site').value;
+  const selectedEdit=$('edit-site').value;
   if(!after)state.sites=[];
   state.sites.push(...r.sites);
   state.next=r.next_after||null;

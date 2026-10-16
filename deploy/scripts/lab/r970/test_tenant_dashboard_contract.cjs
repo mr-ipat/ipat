@@ -49,4 +49,5 @@ require('../r1030/test_dashboard_ux_contract.cjs');
 require('../r1031/test_approval_ux_contract.cjs');
 require('../r1032/test_device_save_readback_contract.cjs');
 require('../r1033/test_tenant_degraded_contract.cjs');
+require('../r1039/test_site_refresh_race.cjs');
 console.log('R970_STATIC_DEFAULT_DENY_SAME_ORIGIN_MENU_VENDOR_CSRF_SESSION_SOURCE=PASS');
