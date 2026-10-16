@@ -380,3 +380,12 @@ printf '%s\n%s\n' "$IPAT_R987_BOOTSTRAP" "$IPAT_R987_SOURCE_ROOT"
             with self.assertRaises(ValueError):m.validate_file(p,src,os.geteuid())
 
 if __name__=="__main__":unittest.main()
+
+# R10.36 root-owned release provenance negative cases are run by the existing
+# R9.96 exact-head CI command without editing workflow configuration.
+_r1036_path=Path(__file__).resolve().parent/"test_r1036_root_release_handoff_source.py"
+_r1036_spec=importlib.util.spec_from_file_location("ipat_r1036_ci",_r1036_path)
+assert _r1036_spec is not None and _r1036_spec.loader is not None
+_r1036_module=importlib.util.module_from_spec(_r1036_spec)
+_r1036_spec.loader.exec_module(_r1036_module)
+RootReleaseCustodyTests=_r1036_module.RootReleaseCustodyTests
