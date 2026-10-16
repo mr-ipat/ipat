@@ -432,3 +432,8 @@ Tenant PPPoE dry-run review and Platform Owner company activation review now req
 ## R10.33 — Availability/error UX must not bypass deny-by-default (2026-10-15)
 
 **IMPLEMENTED NOT VERIFIED on commercial VPS:** the Tenant dashboard now hides Devices until a currently authorized server-curated catalog has loaded; a catalog/branding HTTP 503 cannot be mislabeled as "Sign-in required" or inadvertently expose Device entry. Other independently authorized modules may remain usable after a secondary service 503, but HTTP 401/403 from current authorization hides all navigation and panels. Node contract and actual Chrome fault-injection fixtures for catalog 503/branding 503/capability 401 are in GitHub CI; report outcome only after exact-head run. PostgreSQL18+MFA/TLS real user acceptance and independent recovery still BLOCKED. No changes to PRD security rules or commercial public GO.
+
+## R10.34 — Actual owner VPS production foundation read-only gate (2026-10-16)
+
+- **DONE VERIFIED — readiness checks only:** current GitHub main exact native Rust release built on Ubuntu26 and staged nonroot with SHA256 manifest; full R9.96 18/18 and R9.97 6/6 Ubuntu26 security/source tests; PostgreSQL18 candidate and non-mutating APT simulation; VPS listeners/identities probed; private C320 and authorized Mac browser read-only acceptance repeated.
+- **BLOCKED — actual commercial PRD:** root-reviewed rescue/full-host restore evidence inaccessible from nonroot, clean root-owned release handoff and R9.96 PostgreSQL18 installation not executed, no actual PITR/HA, public HTTPS/OIDC MFA, tenant session/Host/SNI or real cross-tenant CRUD. R10.34 script emits public_go=false, even with source/digest PASS. No architectural or PRD MUST relaxation.

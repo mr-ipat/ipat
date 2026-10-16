@@ -3,6 +3,10 @@ from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from unittest import mock
 import importlib.util
+# Collect the actual read-only R10.34 release/preflight negative tests in the
+# existing exact-head R9.96 production-foundation CI suite. No workflow scope.
+from r1034.test_read_only_foundation_gate import R1034Source
+
 
 ROOT=Path(__file__).resolve().parents[3]
 SCRIPT=ROOT/"deploy/scripts/production/r996_prepare_production_foundation.sh"
