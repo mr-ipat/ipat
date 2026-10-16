@@ -45,11 +45,11 @@ class R1039HostBackupSource(unittest.TestCase):
                 module.os,"geteuid",return_value=501):
             with self.assertRaisesRegex(ValueError,"existing local"):
                 module.restic_env(Path("/tmp/missing-ipat-r1039"))
-            with mock.patch.dict(module.os.environ,{"PGPASSWORD":"not-a-real-secret"}):
+            repo=Path.home()/"Backups/IPAT/R1039-synthetic-ci-only"
+            with mock.patch.object(Path,"is_file",return_value=True), mock.patch.dict(
+                    module.os.environ,{"PGPASSWORD":"synthetic-test-value"}):
                 with self.assertRaisesRegex(ValueError,"security-sensitive"):
-                    repo=Path.home()/"Backups/IPAT/R1039-host-recovery-current"
-                    if (repo/"config").is_file():
-                        module.restic_env(repo)
+                    module.restic_env(repo)
 
     def test_local_encrypted_repo_keychain_command_only(self):
         self.assertIn("/usr/bin/security find-generic-password",module.KEYCHAIN_PASSWORD_COMMAND)
