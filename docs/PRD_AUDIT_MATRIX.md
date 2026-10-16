@@ -446,3 +446,7 @@ DONE VERIFIED in isolated Mac Docker: 50 passing PG18 tenant/role/POP/site/vendo
 
 - Source implemented: Keychain-encrypted Mac Restic repository (real initialized and synthetic roundtrip verified), binary-safe SSH/sudo tar stream with rootfs and separately mounted EFI, five non-network safety tests. Actual host archive upload ongoing at authoring; independent booted second VPS/VM restore **NOT VERIFIED** and no R9.96 root attestation created. Not a production GO.
 - UI defect corrected: stale asynchronous tenant Site list fetch can overwrite just-created Site selection after Device form navigation. Generation-fenced refresh, current-selection preservation, Node VM out-of-order response test and six operator-Mac Chrome flow tests PASS. GitHub exact-head validation pending.
+
+## R10.40 — Owner risk exception for LOCAL foundation (2026-10-17)
+
+**OWNER DECISION DOCUMENTED, TEST PENDING:** after actual encrypted full-rootfs and EFI tar/Restic read checks, the owner accepts the residual risk that a different booted VM/VPS restore has not been tested. R10.40 introduces a distinct 24h root-only risk waiver, permits only a R9.96 application-disabled Unix-socket PostgreSQL18 foundation, and makes R9.97 public-edge acceptance explicitly reject that state. The full-host restoration MUST remains technically **NOT VERIFIED**, NOT PASSED. This does not deliver commercial MFA, TLS, multi-tenant real browser, production HA/PITR or device interop, and public GO remains false.

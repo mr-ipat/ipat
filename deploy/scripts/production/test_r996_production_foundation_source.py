@@ -406,3 +406,11 @@ assert _r1039_spec is not None and _r1039_spec.loader is not None
 _r1039_module=importlib.util.module_from_spec(_r1039_spec)
 _r1039_spec.loader.exec_module(_r1039_module)
 R1039HostBackupSource=_r1039_module.R1039HostBackupSource
+
+# R10.40 source-only risk waiver does not substitute for real boot restore.
+_r1040_path=Path(__file__).resolve().parent/"test_r1040_owner_risk_source.py"
+_r1040_spec=importlib.util.spec_from_file_location("ipat_r1040_ci",_r1040_path)
+assert _r1040_spec is not None and _r1040_spec.loader is not None
+_r1040_module=importlib.util.module_from_spec(_r1040_spec)
+_r1040_spec.loader.exec_module(_r1040_module)
+R1040OwnerRiskExceptionTests=_r1040_module.R1040OwnerRiskExceptionTests

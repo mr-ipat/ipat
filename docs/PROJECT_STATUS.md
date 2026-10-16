@@ -5062,3 +5062,11 @@ The Device create form now preserves the entered values and replay ID until the 
 ### R10.39 additional stream verification (2026-10-16 WIB)
 
 - Independently streamed encrypted snapshot EFI `af1a0129` and rootfs `2d767d09` via Restic `dump` to `tar -tf -`, without storing any plaintext tar or exposing filenames/credentials in logs. Both processes returned exit 0 for each archive, **PASS** (39.57 s). Root filesystem archive structure/decryption now verified in addition to full Restic read-data. Booted independent VPS/VM recovery remains NOT VERIFIED; do not issue R9.96 recovery attestation or activate public production on that basis.
+
+## R10.40 — Owner accepted recovery test risk for local-only foundation (2026-10-17 WIB)
+
+- Product Owner requested proceeding with PRD/production without treating missing independent boot restore as a blocker. Engineering records this honestly as a **bounded risk acceptance**, not actual VM recovery evidence.
+- Actual R10.39 encrypted Mac rootfs+EFI backup, full Restic data integrity and tar decryption/structure checks are documented; booted separate VM still NOT TESTED.
+- Implemented separate `r1040_validate_owner_risk_acceptance.py` with strict root-owned FD/ancestor/TTL/document rules and explicit first-install-only typed acceptance; modified R9.96 to allow this as a separate recovery input without changing the original real-attestation gate. Foundation marker records `OWNER_ACCEPTED_UNTESTED_BOOT_RESTORE_LOCAL_ONLY`, `independent_full_host_restore_verified=false`, `public_go=false`. R9.97 now refuses public edge from that foundation even after PITR acceptance. No risk waiver equates to production GO.
+- Added R10.40 negative/positive tests to the existing R9.96 CI suite, 50 combined foundation+activation tests on Mac PASS (1 GNU find macOS skip). New source must pass exact-head CI and Ubuntu26 review before any actual first-install. No PostgreSQL install/production HTTP/DNS/firewall/OLT writes performed at authoring.
+- Added ADR-109 and updated SECURITY, ARCHITECTURE, PRD audit matrix, scoped runbook. All other PRD requirements remain mandatory.
