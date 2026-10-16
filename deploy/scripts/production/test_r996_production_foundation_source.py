@@ -398,3 +398,11 @@ assert _r1038_spec is not None and _r1038_spec.loader is not None
 _r1038_module=importlib.util.module_from_spec(_r1038_spec)
 _r1038_spec.loader.exec_module(_r1038_module)
 R1038Pg18QATests=_r1038_module.R1038Pg18QATests
+
+# R10.39 safety contract loaded by the existing exact-head R9.96 CI runner.
+_r1039_file=Path(__file__).resolve().parent/"test_r1039_host_backup_source.py"
+_r1039_spec=importlib.util.spec_from_file_location("ipat_r1039_host_ci",_r1039_file)
+assert _r1039_spec is not None and _r1039_spec.loader is not None
+_r1039_module=importlib.util.module_from_spec(_r1039_spec)
+_r1039_spec.loader.exec_module(_r1039_module)
+R1039HostBackupSource=_r1039_module.R1039HostBackupSource
