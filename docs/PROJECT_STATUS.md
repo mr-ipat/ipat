@@ -5058,3 +5058,7 @@ The Device create form now preserves the entered values and replay ID until the 
 - Opened the new Mac Restic repository with the reviewed Keychain command and enumerated 6 snapshot records. Identified completed rootfs snapshot `2d767d09` (logical 31,759,953,920 bytes) and EFI `af1a0129` (logical 9,000,960 bytes), each tagged `ipat-r1039-host-backup`.
 - Ran **real repository-wide** `restic check --read-data` against new backup repository; exit 0, PASS. No repository password or plaintext archive was written to project artifacts. Previous old R1037 repository remains separate.
 - Mac remaining free disk approximately 19 GiB is insufficient for both rootfs archive and a separate booted recovery VM. A standalone VM/VPS with sufficient capacity and verified EFI/bootloader reconstruction is still required. These are encrypted archive + integrity evidence, **not independently verified bootable whole-host restoration**, and production R9.96 attestation remains unissued.
+
+### R10.39 additional stream verification (2026-10-16 WIB)
+
+- Independently streamed encrypted snapshot EFI `af1a0129` and rootfs `2d767d09` via Restic `dump` to `tar -tf -`, without storing any plaintext tar or exposing filenames/credentials in logs. Both processes returned exit 0 for each archive, **PASS** (39.57 s). Root filesystem archive structure/decryption now verified in addition to full Restic read-data. Booted independent VPS/VM recovery remains NOT VERIFIED; do not issue R9.96 recovery attestation or activate public production on that basis.
