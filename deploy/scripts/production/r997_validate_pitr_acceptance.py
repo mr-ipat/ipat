@@ -26,6 +26,15 @@ def validate_documents(foundation:dict,pitr:dict,now:datetime|None=None)->dict:
         raise ValueError("foundation marker schema invalid")
     if foundation.get("application_services")!="DISABLED" or foundation.get("public_go") is not False:
         raise ValueError("foundation is not in pre-public disabled state")
+    # Owner acceptance of an untested independent-VM boot restore was
+    # permitted for the local-socket foundation only, NEVER public activation.
+    # Do not confuse local PostgreSQL PITR verification with whole-host boot.
+    if foundation.get("recovery_gate")=="OWNER_ACCEPTED_UNTESTED_BOOT_RESTORE_LOCAL_ONLY":
+        raise ValueError("owner risk waiver foundation cannot activate public edge")
+    if foundation.get("recovery_gate") not in (None,"INDEPENDENT_HOST_RECOVERY_VERIFIED"):
+        raise ValueError("unknown foundation recovery gate")
+    if foundation.get("independent_full_host_restore_verified") is False:
+        raise ValueError("foundation lacks independent host restore for public ingress")
     source=str(foundation.get("source_commit",""))
     if not re.fullmatch(r"[0-9a-f]{40}",source):
         raise ValueError("foundation source invalid")

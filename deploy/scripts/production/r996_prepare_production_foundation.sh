@@ -67,9 +67,24 @@ source_status=$(git -C "$root" status --porcelain --untracked-files=all --ignore
 [[ -z $source_status ]] || die "tracked, untracked and ignored source artifacts must all be absent"
 [[ -f $binary && ! -L $binary ]] || die "binary source must be regular non-symlink"
 [[ $(sha256sum "$binary" | awk '{print $1}') == "$binary_sha" ]] || die "binary SHA256 mismatch"
-python3 -I "$root/deploy/scripts/production/r996_validate_recovery_attestation.py" \
-  --path "$att" --expected-source "$expected" >/dev/null \
-  || die "reviewed recovery attestation rejected"
+# R10.40: Product Owner may explicitly accept the untested independent-VM
+# boot-restore risk FOR THE LOCAL-ONLY FOUNDATION ONLY. Keep the original
+# independent recovery attestation path unchanged for fully verified installs.
+# The waiver must never assert restore succeeded or authorize public ingress.
+recovery_gate=INDEPENDENT_HOST_RECOVERY_VERIFIED
+if [[ -n ${IPAT_R1040_OWNER_EXCEPTION:-} ]]; then
+  [[ $att == "$IPAT_R1040_OWNER_EXCEPTION" ]] || die "risk exception path must exactly match reviewed input"
+  [[ ${IPAT_R1040_ACCEPT_LOCAL_DB_RISK:-} == ACCEPT_UNTESTED_INDEPENDENT_BOOT_RESTORE_RISK_FOR_LOCAL_DB_FOUNDATION_ONLY ]] \
+    || die "explicit owner exception CLI opt-in required"
+  python3 -I "$root/deploy/scripts/production/r1040_validate_owner_risk_acceptance.py" \
+    --path "$att" --expected-source "$expected" >/dev/null \
+    || die "root-owned owner recovery risk acceptance rejected"
+  recovery_gate=OWNER_ACCEPTED_UNTESTED_BOOT_RESTORE_LOCAL_ONLY
+else
+  python3 -I "$root/deploy/scripts/production/r996_validate_recovery_attestation.py" \
+    --path "$att" --expected-source "$expected" >/dev/null \
+    || die "reviewed recovery attestation rejected"
+fi
 
 users=(ipatpapi ipatpoidc ipattapi ipattoidc ipatdverify ipatdnsverify ipatpgmigrate)
 for u in "${users[@]}"; do
@@ -161,10 +176,10 @@ done
 
 install -d -o root -g root -m 0700 /var/lib/ipat
 tmp=$(mktemp /var/lib/ipat/r996-foundation.pending.XXXXXX)
-python3 - "$tmp" "$expected" "$binary_sha" <<'PY'
+python3 - "$tmp" "$expected" "$binary_sha" "$recovery_gate" <<'PY'
 import json,sys
 from datetime import datetime,timezone
-p,source,binary=sys.argv[1:]
+p,source,binary,recovery_gate=sys.argv[1:]
 with open(p,"w") as f:
  json.dump({
   "schema":"ipat.production-foundation.v1",
@@ -175,6 +190,8 @@ with open(p,"w") as f:
   "application_services":"DISABLED",
   "public_http_https":"NOT_CONFIGURED",
   "production_pitr_acceptance":"REQUIRED_BEFORE_PUBLIC_ACTIVATION",
+  "recovery_gate":recovery_gate,
+  "independent_full_host_restore_verified":recovery_gate=="INDEPENDENT_HOST_RECOVERY_VERIFIED",
   "public_go":False,
  },f,sort_keys=True)
 PY
