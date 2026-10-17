@@ -82,7 +82,15 @@ r1014_require_absent \
 
 # Subscripts independently revalidate their own exact env, peer roles and rollback.
 rollback_armed=YES
-trap rollback ERR INT TERM
+# Never continue public ingress setup after a failed activation child.
+edge_abort(){
+  local failed_status=$?
+  trap - ERR INT TERM
+  rollback
+  echo "R997_EDGE_ABORTED_AFTER_CHILD_FAILURE status=$failed_status" >&2
+  exit 4
+}
+trap edge_abort ERR INT TERM
 
 IPAT_R985_APPLY=ACTIVATE_REVIEWED_PLATFORM_RUNTIME \
 IPAT_R985_PUBLIC_IPV4="$ip" \

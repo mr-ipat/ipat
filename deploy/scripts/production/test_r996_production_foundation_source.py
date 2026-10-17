@@ -414,3 +414,11 @@ assert _r1040_spec is not None and _r1040_spec.loader is not None
 _r1040_module=importlib.util.module_from_spec(_r1040_spec)
 _r1040_spec.loader.exec_module(_r1040_module)
 R1040OwnerRiskExceptionTests=_r1040_module.R1040OwnerRiskExceptionTests
+
+# R10.41 actual-host locale failure and false-success rollback regression.
+_r1041_path=Path(__file__).resolve().parent/"test_r1041_foundation_fail_closed_source.py"
+_r1041_spec=importlib.util.spec_from_file_location("ipat_r1041_ci",_r1041_path)
+assert _r1041_spec is not None and _r1041_spec.loader is not None
+_r1041_module=importlib.util.module_from_spec(_r1041_spec)
+_r1041_spec.loader.exec_module(_r1041_module)
+R1041RollbackFailureTests=_r1041_module.R1041RollbackFailureTests

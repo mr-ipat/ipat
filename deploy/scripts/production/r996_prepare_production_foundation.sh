@@ -148,7 +148,17 @@ rollback(){
   echo "R996_ROLLBACK_SAFE_STATE_APPLICATIONS_DISABLED_NO_PUBLIC_EDGE" >&2
 }
 rollback_armed=YES
-trap rollback ERR INT TERM
+# A plain ERR trap that only calls rollback can return success and let bash
+# continue to write a false foundation marker after a failed child command.
+# Preserve the failed state as a hard exit, even if rollback succeeded.
+foundation_abort(){
+  local failed_status=$?
+  trap - ERR INT TERM
+  rollback
+  echo "R996_FOUNDATION_ABORTED_AFTER_CHILD_FAILURE status=$failed_status" >&2
+  exit 4
+}
+trap foundation_abort ERR INT TERM
 
 IPAT_R985_PREPARE=PREPARE_REVIEWED_PLATFORM_RUNTIME \
 IPAT_R985_BINARY_SOURCE="$binary" IPAT_R985_BINARY_SHA256="$binary_sha" \
@@ -171,6 +181,21 @@ for unit in ipat-platform-api.service ipat-platform-oidc.service ipat-tenant-api
             ipat-domain-ingress-verifier.timer ipat-domain-ownership-verifier.service; do
   [[ $(systemctl is-active "$unit" 2>/dev/null || true) != active ]] || die "application/verifier unexpectedly active: $unit"
 done
+# Independent *post*-install invariants: the marker must never be created
+# for an aborted cluster/user/unit install, even if a nested rollback trap
+# accidentally consumed a failure in an older child shell.
+command -v pg_lsclusters >/dev/null || die "PostgreSQL cluster inspection missing after install"
+pg_lsclusters --no-header | awk '$1=="18" && $2=="ipat" && $4=="online"{seen=1} END{exit !seen}' \
+  || die "PostgreSQL18 IPAT cluster not online after install"
+[[ -S /run/postgresql/.s.PGSQL.5432 ]] || die "local PostgreSQL socket missing"
+for identity in ipatpapi ipatpoidc ipattapi ipattoidc ipatdverify ipatdnsverify; do
+  getent passwd "$identity" >/dev/null || die "required production identity missing after install: $identity"
+done
+! getent passwd ipatpgmigrate >/dev/null || die "temporary migrator identity survived bootstrap"
+for unit in ipat-platform-api.service ipat-platform-oidc.service ipat-tenant-api.service; do
+  [[ -f /etc/systemd/system/$unit ]] || die "required runtime unit missing after install: $unit"
+done
+
 [[ -z $(ss -H -ltn '( sport = :80 or sport = :443 or sport = :5432 or sport = :3003 or sport = :3005 or sport = :3006 )' 2>/dev/null || true) ]] \
   || die "foundation unexpectedly exposes managed TCP listener"
 

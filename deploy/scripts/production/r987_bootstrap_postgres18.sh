@@ -3,6 +3,10 @@
 # No TCP listener, no runtime passwords, no firewall/DNS/device mutation.
 set -Eeuo pipefail
 umask 077
+# Ubuntu26 inherited client locales can carry LC_CTYPE=UTF-8 without a
+# valid locale name. PostgreSQL cluster creation rejects that environment.
+# Use the on-host supported UTF-8 locale; do not edit global host locale.
+export LANG=C.UTF-8 LC_ALL=C.UTF-8
 die(){ echo "R987_BOOTSTRAP_REFUSED: $*" >&2; exit 4; }
 [[ ${EUID:-$(id -u)} -eq 0 ]] || die "root required"
 [[ ${IPAT_R987_BOOTSTRAP:-} == CREATE_REVIEWED_LOCAL_POSTGRES18 ]] || die "explicit reviewed opt-in missing"
@@ -64,7 +68,14 @@ rollback(){
   if [[ ${created:-NO} == YES ]]; then pg_dropcluster --stop 18 ipat >/dev/null 2>&1 || true; fi
   if getent passwd ipatpgmigrate >/dev/null; then userdel ipatpgmigrate || true; fi
 }
-trap rollback ERR INT TERM
+bootstrap_abort(){
+  local failed_status=$?
+  trap - ERR INT TERM
+  rollback
+  echo "R987_LOCAL_POSTGRES_BOOTSTRAP_ABORTED status=$failed_status" >&2
+  exit 4
+}
+trap bootstrap_abort ERR INT TERM
 conf=/etc/postgresql/18/ipat
 [[ -d $conf && ! -L $conf ]] || die "cluster config missing"
 cat >> "$conf/postgresql.conf" <<'CFG'

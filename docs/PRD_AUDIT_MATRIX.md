@@ -450,3 +450,7 @@ DONE VERIFIED in isolated Mac Docker: 50 passing PG18 tenant/role/POP/site/vendo
 ## R10.40 — Owner risk exception for LOCAL foundation (2026-10-17)
 
 **OWNER DECISION DOCUMENTED, TEST PENDING:** after actual encrypted full-rootfs and EFI tar/Restic read checks, the owner accepts the residual risk that a different booted VM/VPS restore has not been tested. R10.40 introduces a distinct 24h root-only risk waiver, permits only a R9.96 application-disabled Unix-socket PostgreSQL18 foundation, and makes R9.97 public-edge acceptance explicitly reject that state. The full-host restoration MUST remains technically **NOT VERIFIED**, NOT PASSED. This does not deliver commercial MFA, TLS, multi-tenant real browser, production HA/PITR or device interop, and public GO remains false.
+
+## R10.41 — Real first-install rollback failure discovered (2026-10-17)
+
+**BUG FOUND, FIX SOURCE-IMPLEMENTED, RETRY NOT YET VERIFIED:** Real Ubuntu26 local-only PostgreSQL18 first-install failed in `pg_createcluster` due to inherited `LC_CTYPE=UTF-8`, and an ERR trap erroneously returned success after rollback. Independent root/port/status checks showed **NO database cluster, NO runtime users**; original foundation marker is INVALID. R10.41 implements process-local UTF-8 locale, hard nonzero aborts in R996/R987/R997, and independent cluster/socket/role/unit postconditions before new marker issuance. Five negative tests PASS on Mac; real retry requires CI and root forensic quarantine. No public production/PRD acceptance is claimed.
