@@ -124,7 +124,11 @@ runuser -u ipatpgmigrate -- psql -X -U postgres -d postgres -v ON_ERROR_STOP=1 -
 
 while read -r sum file; do
   [[ -n ${sum:-} && -n ${file:-} ]] || continue
-  runuser -u ipatpgmigrate -- psql -X -U postgres -d ipat_prod -v ON_ERROR_STOP=1 -q -f "$root/$file"
+  # The reviewed release resides under root-only /root (mode 0700).
+  # Do not grant source-tree access to the temporary migrator: root opens
+  # the already-checksummed SQL and pipes its bytes via stdin to psql.
+  # pipefail + ON_ERROR_STOP reject read or migration failures.
+  cat -- "$root/$file" | runuser -u ipatpgmigrate -- psql -X -U postgres -d ipat_prod -v ON_ERROR_STOP=1 -q -f -
 done < "$manifest"
 
 # Replace bootstrap superuser mapping with final runtime-only auth.

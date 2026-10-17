@@ -8,7 +8,7 @@ root=$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd -P)
 name="ipat-r987-u26-$RANDOM-$$"
 cleanup(){ docker rm -f "$name" >/dev/null 2>&1 || :; }
 trap cleanup EXIT
-docker run --rm --name "$name" -v "$root:/src:ro" ubuntu:26.04@sha256:f144425ff09be612d6d9ad965196e9cdc23dae1f42110a8a11a3e9a8198759f7 bash -lc '
+docker run --rm --name "$name" -v "$root:/root/ipat-src:ro" ubuntu:26.04@sha256:f144425ff09be612d6d9ad965196e9cdc23dae1f42110a8a11a3e9a8198759f7 bash -lc '
 set -Eeuo pipefail
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -qq
@@ -19,7 +19,7 @@ useradd --system --no-create-home --home-dir /nonexistent --shell /usr/sbin/nolo
 useradd --system --no-create-home --home-dir /nonexistent --shell /usr/sbin/nologin ipattoidc
 useradd --system --no-create-home --home-dir /nonexistent --shell /usr/sbin/nologin ipatdverify
 useradd --system --no-create-home --home-dir /nonexistent --shell /usr/sbin/nologin ipatdnsverify
-IPAT_R987_BOOTSTRAP=CREATE_REVIEWED_LOCAL_POSTGRES18 IPAT_R987_SOURCE_ROOT=/src bash /src/deploy/scripts/production/r987_bootstrap_postgres18.sh
+IPAT_R987_BOOTSTRAP=CREATE_REVIEWED_LOCAL_POSTGRES18 IPAT_R987_SOURCE_ROOT=/root/ipat-src bash /root/ipat-src/deploy/scripts/production/r987_bootstrap_postgres18.sh
 [[ $(pg_lsclusters --no-header | awk '"'"'{print $1"/"$2"/"$4}'"'"') == 18/ipat/online ]]
 [[ $(ss -H -ltn "( sport = :5432 )" | wc -l) -eq 0 ]]
 [[ $(runuser -u ipatpapi -- psql -X -w -h /run/postgresql -U ipat_platform_session_api_login -d ipat_prod -Atqc "select current_user") == ipat_platform_session_api_login ]]

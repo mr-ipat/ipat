@@ -422,3 +422,11 @@ assert _r1041_spec is not None and _r1041_spec.loader is not None
 _r1041_module=importlib.util.module_from_spec(_r1041_spec)
 _r1041_spec.loader.exec_module(_r1041_module)
 R1041RollbackFailureTests=_r1041_module.R1041RollbackFailureTests
+
+# R10.42 root-only source/migrator stdin isolation; CI path-safe import.
+_r1042_path=Path(__file__).resolve().parent/"test_r1042_root_migration_pipe_source.py"
+_r1042_spec=importlib.util.spec_from_file_location("ipat_r1042_ci",_r1042_path)
+assert _r1042_spec is not None and _r1042_spec.loader is not None
+_r1042_module=importlib.util.module_from_spec(_r1042_spec)
+_r1042_spec.loader.exec_module(_r1042_module)
+R1042RootSqlMigrationTests=_r1042_module.R1042RootSqlMigrationTests

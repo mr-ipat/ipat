@@ -454,3 +454,7 @@ DONE VERIFIED in isolated Mac Docker: 50 passing PG18 tenant/role/POP/site/vendo
 ## R10.41 — Real first-install rollback failure discovered (2026-10-17)
 
 **BUG FOUND, FIX SOURCE-IMPLEMENTED, RETRY NOT YET VERIFIED:** Real Ubuntu26 local-only PostgreSQL18 first-install failed in `pg_createcluster` due to inherited `LC_CTYPE=UTF-8`, and an ERR trap erroneously returned success after rollback. Independent root/port/status checks showed **NO database cluster, NO runtime users**; original foundation marker is INVALID. R10.41 implements process-local UTF-8 locale, hard nonzero aborts in R996/R987/R997, and independent cluster/socket/role/unit postconditions before new marker issuance. Five negative tests PASS on Mac; real retry requires CI and root forensic quarantine. No public production/PRD acceptance is claimed.
+
+## R10.42 — Real root-owned schema migration trust boundary (2026-10-17)
+
+**R10.41 abort VERIFIED; R10.42 SOURCE FIX PENDING RETRY:** The actual VPS migration account was denied traversal into `/root` (expected security policy), causing migration 0001 to fail. R10.41 correctly returned exit code 4 and rolled back without emitting success marker. R10.42 streams root-verified SQL via stdin into restricted `psql -f -` and recreates /root-untraversable checkout in Ubuntu disposable tests. No production schema/roles remain installed yet. Subsequent acceptance requires fresh CI and real VPS postgres/role/health results. Public GO=false.
