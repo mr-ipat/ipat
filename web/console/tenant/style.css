@@ -55,3 +55,20 @@ thead{background:var(--ui-active)}
 .theme-picker select{min-width:105px;width:auto;padding:.45rem;border-radius:10px}
 .brand-lockup strong{border-color:var(--tenant-accent,var(--ui-primary))}
 @media(max-width:800px){aside{border-color:var(--ui-line)}aside nav{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:.3rem}.nav{margin:0}}
+
+/* R10.44 Chrome mobile overflow regression: grid children and form controls
+   must be allowed to shrink; wide tables scroll inside their own container. */
+main,.content,.content>section,aside,header,.brand-lockup{min-width:0}
+.content>section,.table-wrap{max-width:100%;min-width:0}
+form>label{min-width:0}
+@media(max-width:800px){
+ header{flex-wrap:wrap}
+ .brand-lockup{flex-wrap:wrap;overflow-wrap:anywhere}
+ .theme-picker{max-width:100%}
+ .content>section:not([hidden]){overflow-wrap:anywhere}
+}
+@media(max-width:500px){
+ form{display:grid;grid-template-columns:minmax(0,1fr)}
+ form>*{min-width:0;max-width:100%}
+ .table-wrap{overflow-x:auto}
+}

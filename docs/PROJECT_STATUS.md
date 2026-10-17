@@ -5110,3 +5110,8 @@ The Device create form now preserves the entered values and replay ID until the 
 - Verified both JS syntax with Node, 2/2 focused source contract tests PASS, and `git diff --check` PASS. Tests assert authorized tenant menus remain hidden by default and theme control does not set entitlements.
 - UI changes are source-only; real authenticated browser/light-dark accessibility and production release tests are **NOT YET RUN**. No claim of deployment to VPS, user MFA login, public HTTPS, device commands or PRD-wide completion.
 - Next: exact-head CI, reviewed merge, rebuild and staged deployment; authenticated browser checks for theme persistence, keyboard operation and role-hidden menus under current backend policy.
+
+### R10.44 Chrome mobile regression and correction
+
+- PR #242 first R10.44 CI unit-tests failed at exact mobile viewport: document scrollWidth 601 vs clientWidth 485 in `test_mobile_viewport_has_no_document_horizontal_overflow`; all five other browser cases passed. Cause: new card/grid/layout introduced unconstrained shrinkability in narrow mobile.
+- Added `min-width:0` for grid/flex children and form labels, bounded panels, and table-contained horizontal scrolling in `web/console/tenant/style.css`. Reran the real local Chrome test suite `python3 -m unittest discover -s deploy/scripts/lab/r1030 -p test_dashboard_browser_flow.py -v`: **6/6 PASS**, including mobile no-document-overflow. New exact-head GitHub CI still required before merge.
