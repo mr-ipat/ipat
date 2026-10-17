@@ -2,6 +2,24 @@
 // The server enforces role, exact Host, CSRF and current session on every call.
 (()=>{
  const $=id=>document.getElementById(id);
+ // Appearance is a device-local preference only; never grants UI/API permissions.
+ const appearance=$('appearance-theme');
+ const themeKey='ipat:appearance';
+ const allowedThemes=new Set(['system','light','dark']);
+ let savedTheme='system';
+ try { const raw=localStorage.getItem(themeKey);if(allowedThemes.has(raw))savedTheme=raw; } catch (_) {}
+ function applyTheme(mode){
+  const selected=allowedThemes.has(mode)?mode:'system';
+  document.documentElement.dataset.theme=selected;
+  document.documentElement.style.colorScheme=selected==='system'?'light dark':selected;
+  appearance.value=selected;
+ }
+ applyTheme(savedTheme);
+ appearance.addEventListener('change',()=>{
+  applyTheme(appearance.value);
+  try{localStorage.setItem(themeKey,appearance.value);}catch(_){}
+ });
+
  let pending=null;let pendingActivation=null;
  const notice=msg=>{$('notice').textContent=msg};
  const csrf=()=>document.cookie.split(';').map(x=>x.trim())

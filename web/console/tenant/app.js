@@ -3,6 +3,24 @@
 // The server re-verifies current membership and CSRF on EVERY API request.
 (() => {
  const $=id=>document.getElementById(id);
+ // Appearance is a device-local preference only; never grants UI/API permissions.
+ const appearance=$('appearance-theme');
+ const themeKey='ipat:appearance';
+ const allowedThemes=new Set(['system','light','dark']);
+ let savedTheme='system';
+ try { const raw=localStorage.getItem(themeKey);if(allowedThemes.has(raw))savedTheme=raw; } catch (_) {}
+ function applyTheme(mode){
+  const selected=allowedThemes.has(mode)?mode:'system';
+  document.documentElement.dataset.theme=selected;
+  document.documentElement.style.colorScheme=selected==='system'?'light dark':selected;
+  appearance.value=selected;
+ }
+ applyTheme(savedTheme);
+ appearance.addEventListener('change',()=>{
+  applyTheme(appearance.value);
+  try{localStorage.setItem(themeKey,appearance.value);}catch(_){}
+ });
+
  const notice=text=>{$('notice').textContent=text};
  const state={page:null,sites:[],pops:[],popNext:null,devices:[],catalog:[],next:null,editId:null,editRevision:null,pendingSite:null,sitesFetchGeneration:0,pendingDevice:null,returnToDevicesAfterSite:false,pageGeneration:0,nocPops:[],realNocPops:[],nocMembers:[],nocAccess:[],pendingNocRequest:null,subscribers:[],subscriberEdit:null,canReadSubscribers:false,canManageSubscribers:false,canManagePppoePlans:false,canCreatePppoePlans:false,canReviewPppoePlans:false,canArmPppoePlans:false,pendingPppoe:null,branding:null,pendingBranding:null};
  const csrf=()=>document.cookie.split(';').map(x=>x.trim()).find(x=>x.startsWith('__Host-ipat_csrf='))?.split('=')[1];

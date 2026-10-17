@@ -5102,3 +5102,11 @@ The Device create form now preserves the entered values and replay ID until the 
 - Added `deploy/scripts/production/r1043/test_private_foundation_preflight.py`: 3/3 local synthetic tests PASS; Python compile PASS; git diff check PASS.
 - Executed the exact proposed script over authenticated noninteractive SSH on owner VPS through Python stdin: all four factual checks returned true; `public_go=false`. This is a **private foundation check**, not Platform API/OIDC deployment or a successful customer login.
 - NEXT MUST: implement and test separately gated **loopback-only production service activation** with real IdP/MFA and database peer roles, preserving existing R9.97 public-edge restrictions; independently tested off-host PITR/HA; physical CWMP/USP/OLT/ONT/MikroTik interop; PRD comprehensive acceptance. HTTPS/custom domain to follow actual DNS availability.
+
+## R10.44 — Modern responsive Light/Dark dashboard source (2026-10-18 WIB)
+
+- Implemented a consistent responsive visual system for both Platform Owner and Tenant dashboards: card sections, sidebar navigation, form controls, table contrast, typography, and light/dark palette CSS tokens. System theme follows OS preference; explicit Light/Dark selection overrides it and is retained only in browser localStorage.
+- Changed: `web/console/{tenant,platform}/{dashboard.html,style.css,app.js}`; added `deploy/scripts/production/r1044/test_dashboard_theme.py`. Tenant branding accent remains a finite server-managed token and does not control authorization.
+- Verified both JS syntax with Node, 2/2 focused source contract tests PASS, and `git diff --check` PASS. Tests assert authorized tenant menus remain hidden by default and theme control does not set entitlements.
+- UI changes are source-only; real authenticated browser/light-dark accessibility and production release tests are **NOT YET RUN**. No claim of deployment to VPS, user MFA login, public HTTPS, device commands or PRD-wide completion.
+- Next: exact-head CI, reviewed merge, rebuild and staged deployment; authenticated browser checks for theme persistence, keyboard operation and role-hidden menus under current backend policy.
