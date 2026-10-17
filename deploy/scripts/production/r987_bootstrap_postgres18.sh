@@ -3,7 +3,7 @@
 # No TCP listener, no runtime passwords, no firewall/DNS/device mutation.
 set -Eeuo pipefail
 umask 077
-# Ubuntu26 host SSH sessions can carry macOS LC_CTYPE=UTF-8 without a
+# Ubuntu26 inherited client locales can carry LC_CTYPE=UTF-8 without a
 # valid locale name. PostgreSQL cluster creation rejects that environment.
 # Use the on-host supported UTF-8 locale; do not edit global host locale.
 export LANG=C.UTF-8 LC_ALL=C.UTF-8
