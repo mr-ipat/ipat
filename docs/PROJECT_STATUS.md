@@ -5133,3 +5133,10 @@ The Device create form now preserves the entered values and replay ID until the 
 - Owner access: authenticated SSH tunnel command: ssh -N -L 13002:127.0.0.1:3002 ipat-lab ; URL http://127.0.0.1:13002/lab/device-workbench (only works on machine running tunnel). This is NOT customer-facing commercial authentication.
 - Commercial /dashboard and /platform were HTTP404 on private preview. New Light/Dark source is embedded in Rust release but requires production services, trusted HTTPS/MFA and external browser acceptance. PUBLIC NO_GO; full PRD remains incomplete.
 - Rollback: remove only ~/.config/systemd/user/ipat-r911-preview.service.d/zzzzzz-r1046-reviewed-ui.conf; user systemd daemon-reload and restart preview; verify original binary and HTTP health.
+
+## R10.47 — Tenant login readiness (2026-10-18 WIB)
+
+- Owner requested commercial company login before public domain. Review confirmed secure Host-bound sessions and verified OIDC issuer / trusted TLS prerequisites; these must not be spoofed.
+- Added nonroot read-only readiness script and two passing isolated Python tests.
+- Actual Ubuntu26 VPS result: PG18 online; commercial Tenant API, Platform API, Platform OIDC inactive; no listener on 3003/443. MFA and customer login unverified; PUBLIC GO false.
+- NEXT: implement reviewed private trusted TLS/real OIDC environment or a domain-backed trusted ingress, then authenticate real humans and verify tenant isolation. No service/secret/database/device writes in this milestone.
