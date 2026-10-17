@@ -458,3 +458,9 @@ DONE VERIFIED in isolated Mac Docker: 50 passing PG18 tenant/role/POP/site/vendo
 ## R10.42 — Real root-owned schema migration trust boundary (2026-10-17)
 
 **R10.41 abort VERIFIED; R10.42 SOURCE FIX PENDING RETRY:** The actual VPS migration account was denied traversal into `/root` (expected security policy), causing migration 0001 to fail. R10.41 correctly returned exit code 4 and rolled back without emitting success marker. R10.42 streams root-verified SQL via stdin into restricted `psql -f -` and recreates /root-untraversable checkout in Ubuntu disposable tests. No production schema/roles remain installed yet. Subsequent acceptance requires fresh CI and real VPS postgres/role/health results. Public GO=false.
+
+## R10.42 — Production PostgreSQL18 first-install DONE, public SaaS acceptance still open (2026-10-18)
+
+**DONE VERIFIED ON REAL OWNER VPS:** PostgreSQL18 local-socket cluster `18/ipat` online, exact release/migrations installed, six restricted OS→DB peer-role authentications PASS, no temporary migrator, all managed public/commercial TCP ports closed, root-owned nonpublic foundation marker truthful, C320 private lab unaffected. Proven by R9.96 exit 0 and independent privileged host verification, not synthetic tests.
+
+**NOT VERIFIED:** independent whole-host recovery boot, live PostgreSQL off-host PITR+HA, real administrator/user MFA, public edge TLS and tenant Host routing, two authenticated tenants' cross-tenant API denials, physical ACS/USP/OLT/ONT/MikroTik provisioning. R10.40 owner waiver only authorizes local DB bootstrap, not public GO. No PRD MUST requirement was deleted.
