@@ -5172,3 +5172,7 @@ The Device create form now preserves the entered values and replay ID until the 
 - Source changes: apps/control-api/src/commercial_tenant_api.rs; web/console/tenant/app.js; updated synthetic fixtures and old contracts under deploy/scripts/lab/r1030, r1033 and r970; new module uniqueness/granular permission contract deploy/scripts/production/r1051/test_dashboard_module_boundaries.py.
 - Tests performed: new contract 2/2 PASS; Node R9.70 contracts PASS; real headless Chrome R10.30 6/6 PASS; JS syntax and git diff PASS. No production Tenant API, actual human MFA/IdP or public access activated.
 - NEXT: exact PR CI 4/4, merge, reviewed Rust rebuild and staged deployment; separate actual human two-company Host, cookie/revocation/API isolation acceptance remains unverified. PUBLIC GO FALSE.
+
+### R10.51 isolated capability browser acceptance
+
+- Added a real headless Chrome synthetic HTTP scenario with ONLY can_manage_domains=true and independent other management grants explicitly false. Acceptance verifies the only visible menu is Domain, no otherwise-hidden page is displayed, both cross-module Site/POP shortcut links remain hidden, and navigating to Domain displays exactly one panel. Result R1051_REAL_CHROME_EXACT_MODULE_INDEPENDENT_CAPABILITIES=PASS, complete Chrome suite 7/7 PASS; no authenticated production OIDC context inferred.

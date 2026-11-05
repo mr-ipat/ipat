@@ -215,11 +215,36 @@ SCENARIO_STALE_LIST = """
 </script>
 """
 
+SCENARIO_EXACT_DOMAIN_ONLY = '''
+<script>
+(async()=>{
+ const sleep=t=>new Promise(resolve=>setTimeout(resolve,t));
+ const done=x=>document.body.setAttribute('data-r1051-exact-module',x);
+ for(let i=0;i<80;i++){
+  if(document.querySelector('[data-page=domains]').hidden===false)break;
+  await sleep(50);
+ }
+ const visible=[...document.querySelectorAll('.nav')].filter(n=>!n.hidden).map(n=>n.dataset.page);
+ const panels=[...document.querySelectorAll('[data-panel]')];
+ if(visible.length!==1||visible[0]!=='domains'){done('EXTRA_OR_MISSING_MENU_'+visible);return}
+ if(!panels.every(p=>p.hidden)){done('PANEL_VISIBLE_WITHOUT_NAV');return}
+ if(!document.querySelector('#create-site-link').hidden){done('CROSS_MODULE_SITE_LINK_VISIBLE');return}
+ if(!document.querySelector('#manage-pops-link').hidden){done('CROSS_MODULE_POP_LINK_VISIBLE');return}
+ document.querySelector('[data-page=domains]').click();
+ await sleep(100);
+ if(document.querySelector('[data-panel=domains]').hidden){done('DOMAIN_PANEL_NOT_VISIBLE');return}
+ if(panels.filter(p=>!p.hidden).length!==1){done('MORE_THAN_ONE_PANEL');return}
+ done('PASS');
+})();
+</script>
+'''
+
 class Handler(BaseHTTPRequestHandler):
     requests = []
     site_mode = False
     site_created = False
     denied_mode = False
+    exact_domain_only = False
     mobile_mode = False
     reconcile_mode = False
     list_failed = False
@@ -238,7 +263,7 @@ class Handler(BaseHTTPRequestHandler):
         if path=="/dashboard":
             html=(WEB/"dashboard.html").read_text()
             html=html.replace("<head>", "<head>"+PRELUDE, 1)
-            self.send(200,html+(SCENARIO_DENIED if self.denied_mode else SCENARIO_STALE_LIST if self.stale_mode else SCENARIO_RECONCILE if self.reconcile_mode else SCENARIO_MOBILE if self.mobile_mode else SCENARIO_SITE if self.site_mode else SCENARIO), "text/html; charset=utf-8")
+            self.send(200,html+(SCENARIO_EXACT_DOMAIN_ONLY if self.exact_domain_only else SCENARIO_DENIED if self.denied_mode else SCENARIO_STALE_LIST if self.stale_mode else SCENARIO_RECONCILE if self.reconcile_mode else SCENARIO_MOBILE if self.mobile_mode else SCENARIO_SITE if self.site_mode else SCENARIO), "text/html; charset=utf-8")
             return
         for route,name,kind in (
             ("/dashboard/assets/app.js","app.js","text/javascript"),
@@ -262,6 +287,12 @@ class Handler(BaseHTTPRequestHandler):
             self.__class__.stale_returned_empty=True
             self.send(200,'{"ok":true,"devices":[]}')
             return
+        if path=="/api/v1/capabilities" and self.exact_domain_only:
+            responses[path].update({k:False for k in (
+                "can_manage_sites","can_manage_pops","can_manage_devices",
+                "can_manage_noc_access","can_manage_branding",
+                "can_read_subscribers","can_read_diagnostics")})
+            responses[path]["can_manage_domains"]=True
         self.send(200,json.dumps(responses.get(path,{"ok":False})))
     def do_POST(self):
         path=urlsplit(self.path).path
@@ -282,6 +313,29 @@ class Handler(BaseHTTPRequestHandler):
 
 @unittest.skipUnless(CHROME, "Headless Chrome not installed; separate GitHub source/CI required")
 class DashboardChromeTest(unittest.TestCase):
+    def test_domain_only_role_does_not_inherit_site_pop_device_or_noc(self):
+        Handler.exact_domain_only=True
+        Handler.denied_mode=False
+        Handler.site_mode=False
+        Handler.reconcile_mode=False
+        Handler.stale_mode=False
+        server=ThreadingHTTPServer(("127.0.0.1",0),Handler)
+        threading.Thread(target=server.serve_forever,daemon=True).start()
+        try:
+            with tempfile.TemporaryDirectory(prefix="ipat-r1051-domain-only-") as profile:
+                proc=subprocess.run([CHROME,"--headless=new","--no-first-run",
+                     "--disable-gpu","--user-data-dir="+profile,
+                     "--virtual-time-budget=7000","--dump-dom",
+                     f"http://127.0.0.1:{server.server_port}/dashboard"],
+                     capture_output=True,text=True,timeout=30)
+            self.assertEqual(proc.returncode,0,proc.stderr[-700:])
+            self.assertIn('data-r1051-exact-module="PASS"',proc.stdout)
+            print("R1051_REAL_CHROME_EXACT_MODULE_INDEPENDENT_CAPABILITIES=PASS")
+        finally:
+            Handler.exact_domain_only=False
+            server.shutdown()
+            server.server_close()
+
     def test_http_200_empty_inventory_never_claims_save_complete(self):
         Handler.requests=[]
         Handler.stale_mode=True
