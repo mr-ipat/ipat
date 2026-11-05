@@ -164,6 +164,7 @@ async fn capabilities(
         json!({"ok":true,"tenant_id":a.tenant_id.to_string(),
         "can_manage_sites":admin,"can_manage_pops":admin,
         "can_manage_devices":admin,"can_manage_domains":admin, "can_manage_branding":admin,
+        "can_manage_noc_access":admin,
         "can_read_subscribers":can_read_subscribers,
         "can_manage_subscribers":can_manage_subscribers,
         "can_read_diagnostics":can_read_subscribers,

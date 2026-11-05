@@ -539,11 +539,23 @@
   state.canArmPppoePlans=r.can_arm_pppoe_plans===true;
   if(state.canManagePppoePlans)$('nav-pppoe').hidden=false;
   $('pppoe-create-workspace').hidden=!state.canCreatePppoePlans;
-  if(state.canReadSubscribers){$('nav-subscribers').hidden=false;$('nav-diagnostics').hidden=false}
+  if(state.canReadSubscribers)$('nav-subscribers').hidden=false;
+  if(r.can_read_diagnostics===true)$('nav-diagnostics').hidden=false;
   $('subscriber-manage').hidden=!state.canManageSubscribers;
   const degraded=[];
-  if(r.can_manage_sites){
-   for(const n of ['pops','sites','domains','noc-access'])$('nav-'+n).hidden=false;
+  // Each module has its own backend-issued entitlement. A Site grant must
+  // never implicitly expose POP, Domain, Device or NOC Access operations.
+  if(r.can_manage_pops===true)$('nav-pops').hidden=false;
+  if(r.can_manage_sites===true)$('nav-sites').hidden=false;
+  if(r.can_manage_domains===true)$('nav-domains').hidden=false;
+  if(r.can_manage_noc_access===true)$('nav-noc-access').hidden=false;
+  // Cross-module shortcuts are not alternate entrances to an unauthorized
+  // master record. Present a clear next action instead of a dead link.
+  $('create-site-link').hidden=r.can_manage_sites!==true;
+  $('manage-pops-link').hidden=r.can_manage_pops!==true;
+  if(r.can_manage_devices===true && r.can_manage_sites!==true)
+   $('device-site-note').textContent='Choose a registered Site. Ask an authorized company administrator to create missing Sites.';
+  if(r.can_manage_devices===true){
    try{await loadCatalog();$('nav-devices').hidden=false}
    catch(error){
     if(error.httpStatus===401||error.httpStatus===403)throw error;
@@ -560,7 +572,7 @@
   }
   $('logout').hidden=false;
   notice(degraded.length?degraded.join(' '):
-   r.can_manage_sites||state.canReadSubscribers||state.nocPops.length||state.realNocPops.length
+   r.can_manage_sites||r.can_manage_pops||r.can_manage_devices||r.can_manage_domains||r.can_manage_noc_access||r.can_manage_branding||state.canReadSubscribers||r.can_read_diagnostics===true||state.canManagePppoePlans||state.nocPops.length||state.realNocPops.length
     ?'Tenant permissions verified. Select a permitted module.'
     :'No operations modules assigned to your current identity.');
 

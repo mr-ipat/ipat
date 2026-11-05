@@ -29,7 +29,7 @@ async function setup(page,admin){
    let out,status=200,type='application/json';
    const p=u.pathname, method=req.method(),body=req.postData()?JSON.parse(req.postData()):null;
    if(p in pages){out=pages[p];type=p.endsWith('.js')?'application/javascript':p.endsWith('.css')?'text/css':'text/html'}
-   else if(p==='/api/v1/capabilities'){out={ok:true,tenant_id:'70707070-7070-4070-8070-707070707071',can_manage_sites:admin,can_manage_devices:admin,can_manage_domains:admin}}
+   else if(p==='/api/v1/capabilities'){out={ok:true,tenant_id:'70707070-7070-4070-8070-707070707071',can_manage_sites:admin,can_manage_pops:admin,can_manage_devices:admin,can_manage_domains:admin,can_manage_noc_access:admin}}
    else if(!admin){status=403;out={ok:false}}
    else if(p==='/api/v1/device-catalog'){out={ok:true,catalog}}
    else if(p==='/api/v1/sites'&&method==='GET'){out={ok:true,sites:siteList,next_after:null};reads++}

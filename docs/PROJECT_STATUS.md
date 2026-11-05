@@ -5164,3 +5164,20 @@ The Device create form now preserves the entered values and replay ID until the 
 - Independently verified that unprivileged VPS SSH user openai cannot authenticate to restricted ipat_tenant_api_login over the local PostgreSQL socket: PASS rejection (no tenant records accessed).
 - Copied read-only R10.50 audit script to VPS user-private /home/openai/.local/share/ipat/release-operations/r1050-live-rls-readonly.sh; source and remote SHA256 identical 83dbdaa8f45fb342bea6c0026ba5f0420eb41aec54e24ff95bcd84c86580adf7, bash -n PASS. The script is only STAGED; its privileged live peer-role audit has NOT been run. Never treat this user-owned candidate as trusted root executable until independent root-owned copy/hash and operator authorization.
 - Live production DB role/RLS metadata, real OIDC two-company login, hostile cross-tenant browser/API and customer activation remain NOT VERIFIED. No service deployment, customer DB mutation, firewall change or physical-device write occurred.
+
+## R10.51 — Resolve ambiguous module authorization in Tenant dashboard (2026-11-05 WIB)
+
+- User ran Linux VPS /home/openai/... path directly on Mac zsh, causing no such file. Independently verified SSH VPS remote audit script exists, bash syntax PASS and SHA256 83dbdaa8f45fb342bea6c0026ba5f0420eb41aec54e24ff95bcd84c86580adf7 matches source; root-only production peer/RLS audit is NOT EXECUTED.
+- Found original Tenant dashboard revealed POP/Site/Domain/NOC Access and Device menus from can_manage_sites alone. Backend already provided distinct can_manage_pops, can_manage_sites, can_manage_devices and can_manage_domains; added can_manage_noc_access (currently current Tenant Admin only). Each menu now checks its own explicit true capability. Diagnostics checks independent can_read_diagnostics. Unauthorized cross-module shortcut links are hidden and Site guidance remains actionable. No backend permission escalation, no duplicate master features.
+- Source changes: apps/control-api/src/commercial_tenant_api.rs; web/console/tenant/app.js; updated synthetic fixtures and old contracts under deploy/scripts/lab/r1030, r1033 and r970; new module uniqueness/granular permission contract deploy/scripts/production/r1051/test_dashboard_module_boundaries.py.
+- Tests performed: new contract 2/2 PASS; Node R9.70 contracts PASS; real headless Chrome R10.30 6/6 PASS; JS syntax and git diff PASS. No production Tenant API, actual human MFA/IdP or public access activated.
+- NEXT: exact PR CI 4/4, merge, reviewed Rust rebuild and staged deployment; separate actual human two-company Host, cookie/revocation/API isolation acceptance remains unverified. PUBLIC GO FALSE.
+
+### R10.51 isolated capability browser acceptance
+
+- Added a real headless Chrome synthetic HTTP scenario with ONLY can_manage_domains=true and independent other management grants explicitly false. Acceptance verifies the only visible menu is Domain, no otherwise-hidden page is displayed, both cross-module Site/POP shortcut links remain hidden, and navigating to Domain displays exactly one panel. Result R1051_REAL_CHROME_EXACT_MODULE_INDEPENDENT_CAPABILITIES=PASS, complete Chrome suite 7/7 PASS; no authenticated production OIDC context inferred.
+
+### R10.51 CI regression and correction
+
+- PR #248 first exact-head GitHub run 41977285714: unit-tests, K3s and physical recovery jobs PASS, PostgreSQL RLS job FAILED on old R10.05 JavaScript source contract expecting both Subscriber and Diagnostics menus to be controlled by canReadSubscribers. This is a test-fixture mismatch after intentional independent can_read_diagnostics gating; actual Rust/Axum subscriber diagnostics integration immediately before it passed.
+- Updated deploy/scripts/lab/r1005/test_subscriber_diagnostics_ui.cjs to assert independent subscriber and diagnostics authorization and corresponding server capability. Local R10.05 and R9.70 contract tests PASS; exact new-head CI required before merge. No backend diagnostic authorization relaxed.
