@@ -91,6 +91,38 @@ class SyntheticPostgresRlsAndRestore(unittest.TestCase):
         self.assertIn("synthetic-b",other)
         self.assertNotIn("synthetic-a",other)
 
+    def test_two_tenant_explicit_id_lookup_and_connection_reset(self):
+        # Real PostgreSQL RLS: a guessed identifier must never expose another
+        # tenant's device or subscriber, even when the SQL supplies that UUID.
+        for own, other, own_device, other_device, own_sub, other_sub in (
+            (TA, TB, DA, DB, SA, SB),
+            (TB, TA, DB, DA, SB, SA),
+        ):
+            q = f"""BEGIN;
+                     SET LOCAL ipat.tenant_id = '{own}';
+                     SELECT 'own-device:' || count(*) FROM ipat_ops.devices
+                       WHERE tenant_id = '{own}' AND id = '{own_device}';
+                     SELECT 'other-device:' || count(*) FROM ipat_ops.devices
+                       WHERE tenant_id = '{other}' AND id = '{other_device}';
+                     SELECT 'own-subscriber:' || count(*) FROM ipat_ops.subscribers
+                       WHERE tenant_id = '{own}' AND id = '{own_sub}';
+                     SELECT 'other-subscriber:' || count(*) FROM ipat_ops.subscribers
+                       WHERE tenant_id = '{other}' AND id = '{other_sub}';
+                     COMMIT;
+                     SELECT 'after-commit:' || count(*) FROM ipat_ops.devices;"""
+            lines = sql(q, user="ipat_app_runtime").stdout.splitlines()
+            for expected in (
+                "own-device:1", "other-device:0",
+                "own-subscriber:1", "other-subscriber:0",
+                "after-commit:0",
+            ):
+                self.assertIn(expected, lines)
+            # New PostgreSQL client connection must not inherit a prior scope.
+            self.assertEqual(
+                sql("SELECT count(*) FROM ipat_ops.subscribers",
+                    user="ipat_app_runtime").stdout.strip(), "0"
+            )
+
     def test_cross_tenant_writes_and_truncate_fail(self):
         q = f"""BEGIN;SET LOCAL ipat.tenant_id='{TA}';
                 INSERT INTO ipat_ops.devices(tenant_id,id,pop_id,device_kind,vendor)
