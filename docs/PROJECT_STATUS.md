@@ -5176,3 +5176,8 @@ The Device create form now preserves the entered values and replay ID until the 
 ### R10.51 isolated capability browser acceptance
 
 - Added a real headless Chrome synthetic HTTP scenario with ONLY can_manage_domains=true and independent other management grants explicitly false. Acceptance verifies the only visible menu is Domain, no otherwise-hidden page is displayed, both cross-module Site/POP shortcut links remain hidden, and navigating to Domain displays exactly one panel. Result R1051_REAL_CHROME_EXACT_MODULE_INDEPENDENT_CAPABILITIES=PASS, complete Chrome suite 7/7 PASS; no authenticated production OIDC context inferred.
+
+### R10.51 CI regression and correction
+
+- PR #248 first exact-head GitHub run 41977285714: unit-tests, K3s and physical recovery jobs PASS, PostgreSQL RLS job FAILED on old R10.05 JavaScript source contract expecting both Subscriber and Diagnostics menus to be controlled by canReadSubscribers. This is a test-fixture mismatch after intentional independent can_read_diagnostics gating; actual Rust/Axum subscriber diagnostics integration immediately before it passed.
+- Updated deploy/scripts/lab/r1005/test_subscriber_diagnostics_ui.cjs to assert independent subscriber and diagnostics authorization and corresponding server capability. Local R10.05 and R9.70 contract tests PASS; exact new-head CI required before merge. No backend diagnostic authorization relaxed.
