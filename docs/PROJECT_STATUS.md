@@ -5140,3 +5140,12 @@ The Device create form now preserves the entered values and replay ID until the 
 - Added nonroot read-only readiness script and two passing isolated Python tests.
 - Actual Ubuntu26 VPS result: PG18 online; commercial Tenant API, Platform API, Platform OIDC inactive; no listener on 3003/443. MFA and customer login unverified; PUBLIC GO false.
 - NEXT: implement reviewed private trusted TLS/real OIDC environment or a domain-backed trusted ingress, then authenticate real humans and verify tenant isolation. No service/secret/database/device writes in this milestone.
+
+
+## R10.49 — Real PostgreSQL two-tenant RLS isolation acceptance (2026-11-05 Asia/Jakarta)
+
+- Owner requested functioning actual tenant isolation tests. Both Remote Desktop Commander endpoints were OFFLINE at execution; the real owner VPS was NOT accessed, modified, or tested in this milestone. No production tenant identity or secret was used.
+- Implemented two-direction guessed-resource-ID negative tests in `deploy/db/tests/test_postgres_rls_integration.py`: tenant A cannot SELECT tenant B device/subscriber IDs, tenant B cannot SELECT tenant A IDs; own rows remain visible under transaction-local tenant context; COMMIT and a fresh PostgreSQL connection return zero scoped records. Tests execute as restricted `ipat_app_runtime` on an ACTUAL ephemeral PostgreSQL instance, not a mocked database.
+- PR #245 source `8ad088f1e1faa94115584106c9a3f256b36c7bb3`; GitHub Actions run `41966580921` all **4/4 jobs PASS**. Verified specific job log `127044874366`: `test_two_tenant_explicit_id_lookup_and_connection_reset ... ok`, `Ran 6 tests in 1.009s`; the same job also runs genuine disposable PostgreSQL + Rust/Axum commercial session integration. PR #245 merged to main `4593324e588189c25aefde01bc94ddf59f8c28c4`.
+- **Scope distinction:** real PostgreSQL engine with synthetic tenants in isolated CI proves tested RLS cases; it does NOT prove live Ubuntu VPS production database policy, real external OIDC/MFA sessions, browser Host/cookie replay, actual two customer accounts or production tenant isolation. Those remain NOT TESTED/BLOCKED while VPS access and commercial tenant service are unavailable. PUBLIC PRODUCTION GO remains FALSE.
+- NEXT: restore authorized Desktop Commander/VPS access; run non-mutating role/RLS verification on actual production PostgreSQL; prepare separate disposable isolated server/DB for true end-to-end two-company OIDC MFA, Host/SNI, revoked role, direct-URL/API/search/export and cross-tenant attack matrix. No unqualified production data writes.
