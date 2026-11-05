@@ -7,7 +7,15 @@ const start=src.indexOf(" (async()=>{try{\n  const r=await api('/api/v1/capabili
 const tail=src.slice(start);
 assert(start>0,'current capabilities bootstrap must be present');
 assert.match(src,/error\.httpStatus=r\.status/);
-assert.match(tail,/if\(r\.can_manage_sites\)\{[\s\S]*for\(const n of \['pops','sites','domains','noc-access'\]\)/);
+for(const [cap,menu] of [
+ ['can_manage_pops','pops'],['can_manage_sites','sites'],
+ ['can_manage_domains','domains'],['can_manage_noc_access','noc-access'],
+ ['can_manage_devices','devices']]){
+ assert(tail.includes("if(r."+cap+"===true)"),
+   "menu "+menu+" must use independent server entitlement");
+}
+assert.doesNotMatch(tail,/for\(const n of \['pops','sites','domains','noc-access'\]\)/);
+
 assert.match(tail,/try\{await loadCatalog\(\);\$\('nav-devices'\)\.hidden=false\}/);
 assert.match(tail,/if\(error\.httpStatus===401\|\|error\.httpStatus===403\)throw error/);
 assert.match(tail,/Device catalog unavailable; Device registration is disabled/);

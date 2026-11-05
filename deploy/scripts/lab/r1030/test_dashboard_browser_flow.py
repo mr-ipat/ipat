@@ -246,7 +246,7 @@ class Handler(BaseHTTPRequestHandler):
             if path==route:
                 self.send(200,(WEB/name).read_text(),kind);return
         responses={
-            "/api/v1/capabilities": {"ok":True,"tenant_id":"00000000-0000-4000-8000-000000000010","can_manage_sites":not self.denied_mode},
+            "/api/v1/capabilities": {"ok":True,"tenant_id":"00000000-0000-4000-8000-000000000010",**{k:not self.denied_mode for k in ("can_manage_sites","can_manage_pops","can_manage_devices","can_manage_domains","can_manage_noc_access","can_read_diagnostics")}},
             "/api/v1/branding": {"ok":True,"branding":{"display_name":"Synthetic Company","mark_text":"SC","accent_token":"slate","revision":1}},
             "/api/v1/device-catalog": {"ok":True,"catalog_semantics":"platform_curated_metadata_only_not_verified_physical_support",
               "catalog":[{"type":"olt","vendor":"ZTE","transports":["ssh"],"protocols":[{"transport":"ssh","description":"Inventory candidate only."}]}]},
