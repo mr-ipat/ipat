@@ -5205,3 +5205,9 @@ The Device create form now preserves the entered values and replay ID until the 
 
 - PR #249 first full CI run 42588316208: mandatory real PostgreSQL+Axum R9.70 two-company integration **PASS**, but unit-tests job failed on source Rustfmt check only. Updated the modified Rust source using pinned 1.98.1 cargo fmt on owner VPS; verified cargo fmt --all -- --check PASS. The changes are formatting-only; no authorization behavior was relaxed.
 - Subsequent exact-head CI must complete all four jobs on the final PR revision before merge. GitHub had not yet scheduled the follow-up run on the first formatting-only push; a new documentation update triggers review of the observed CI failure and correction. Do not infer green tests from previous commit run.
+
+## R10.54 — Single deterministic two-company CI fixture (2026-11-09 WIB)
+
+- R10.53 PR #249 successfully passed exact-head GitHub Actions run 42589054891 all four jobs and squash-merged into main 2fa263d69b5fc096d17c00478bfc6cf75075cbe3. Actual VPS PG18 real Axum synthetic Host/cookie/Site isolation also PASS.
+- Identified possible shared synthetic fixture collision if both the standalone R10.53 #[tokio::test] and mandatory R9.70 PG/Axum test were executed concurrently with IPAT_PG_EPHEMERAL_TEST=1 on the same disposable DB. Removed redundant standalone test entrypoint; the identical two-company matrix remains executed exactly once inside the existing required R9.70 PG/Axum test. No production runtime behavior or authorization changed.
+- Added deploy/scripts/production/r1054/test_single_issuer_fixture_path.py; local 1/1 PASS and git diff check PASS. Requires exact new-head CI review before merge. Actual commercial IdP human MFA/real tenant activation STILL NOT ACTIVE; public GO remains FALSE.
