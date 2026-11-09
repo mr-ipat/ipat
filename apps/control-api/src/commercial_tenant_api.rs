@@ -3200,6 +3200,9 @@ mod pg_integration {
         {
             return;
         }
+        // R10.53 two-company Host/session isolation is part of the existing
+        // mandatory R9.70 real PostgreSQL + Axum CI job, not an optional test.
+        r1053_two_company_host_cookie_matrix().await;
         let admin = connect_admin().await;
         // 0023 is explicitly applied in the new R9.70 disposable CI step.
         if admin.query_one("SELECT to_regprocedure('ipat_platform.tenant_admin_ui_capability(text,text,uuid)') IS NOT NULL",&[]).await.unwrap().get::<_,bool>(0)==false {return}
@@ -3810,6 +3813,226 @@ mod pg_integration {
             .await
             .unwrap();
         assert_eq!(csrf_missing.status(), StatusCode::UNAUTHORIZED);
+    }
+
+    // Genuine Axum + PostgreSQL integration on an isolated synthetic database,
+    // NOT a real third-party OIDC/MFA login or public-domain TLS acceptance.
+    #[tokio::test]
+    async fn r1053_real_pg_two_company_host_cookie_isolation_and_revocation() {
+        if std::env::var("IPAT_PG_EPHEMERAL_TEST").as_deref() != Ok("1")
+            || std::env::var("PGDATABASE").as_deref() != Ok("ipat_synthetic")
+        {
+            return;
+        }
+        r1053_two_company_host_cookie_matrix().await;
+    }
+
+    async fn r1053_two_company_host_cookie_matrix() {
+        let admin = connect_admin().await;
+        let issuer = "https://id.r1053.synthetic.invalid/realms/ipat";
+        let fixtures = [
+            (
+                "a1530000-0000-4000-8000-000000000001",
+                "b1530000-0000-4000-8000-000000000001",
+                "c1530000-0000-4000-8000-000000000001",
+                "tenant-a.r1053.example.net",
+                "r1053-admin-a",
+                "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "ccccccccccccccccccccccccccccccccccccccccccc",
+            ),
+            (
+                "a1530000-0000-4000-8000-000000000002",
+                "b1530000-0000-4000-8000-000000000002",
+                "c1530000-0000-4000-8000-000000000002",
+                "tenant-b.r1053.example.net",
+                "r1053-admin-b",
+                "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                "ddddddddddddddddddddddddddddddddddddddddddd",
+            ),
+        ];
+        let issuer_db = connect_admin().await;
+        issuer_db
+            .batch_execute("SET ROLE ipat_oidc_session_issuer_login")
+            .await
+            .unwrap();
+        for (i, f) in fixtures.iter().enumerate() {
+            let tenant = Uuid::parse_str(f.0).unwrap();
+            let domain = Uuid::parse_str(f.1).unwrap();
+            let session = Uuid::parse_str(f.2).unwrap();
+            let slug = format!("r1053-company-{}", i + 1);
+            admin.execute(
+                "INSERT INTO ipat_platform.tenants(id,tenant_slug,state) VALUES($1,$2,'active')",
+                &[&tenant, &slug],
+            ).await.unwrap();
+            admin.execute(
+                "INSERT INTO ipat_platform.identity_memberships(tenant_id,issuer,subject,role,approved_by,expires_at) VALUES($1,$2,$3,'tenant_admin','r1053-synthetic-independent-reviewer',clock_timestamp()+interval '1 day')",
+                &[&tenant, &issuer, &f.4],
+            ).await.unwrap();
+            let verification_name = format!("_ipat-verify.{}", f.3);
+            let verification_value = format!("ipat-domain={domain}");
+            admin.execute(
+                "INSERT INTO ipat_platform.tenant_domains(id,tenant_id,hostname,domain_type,verification_state,verification_method,verified_at,routing_mode,verification_name,verification_value,requested_by_issuer,requested_by_subject,requested_at,activation_state,ownership_verified_at,routing_ready_at,tls_ready_at,activated_at) VALUES($1,$2,$3,'custom_domain','verified','dns_txt',clock_timestamp(),'a_record',$4,$5,$6,$7,clock_timestamp(),'active',clock_timestamp(),clock_timestamp(),clock_timestamp(),clock_timestamp())",
+                &[&domain,&tenant,&f.3,&verification_name,&verification_value,&issuer,&f.4],
+            ).await.unwrap();
+            let issued = issuer_db.query_one(
+                "SELECT ipat_platform.issue_tenant_browser_session($1,$2,$3::uuid,$4::uuid,$5::uuid,$6,$7,clock_timestamp()+interval '10 minutes')",
+                &[&issuer,&f.4,&tenant,&domain,&session,&hex(f.5),&hex(f.6)],
+            ).await.unwrap();
+            assert_eq!(issued.get::<_, Option<Uuid>>(0), Some(session));
+        }
+        let api_db = connect_admin().await;
+        api_db
+            .batch_execute("SET ROLE ipat_tenant_api_login")
+            .await
+            .unwrap();
+        let app = router(Arc::new(api_db));
+        for (idx, f) in fixtures.iter().enumerate() {
+            let valid = app
+                .clone()
+                .oneshot(req(
+                    "GET",
+                    "/api/v1/capabilities",
+                    f.3,
+                    Some(f.5),
+                    None,
+                    None,
+                ))
+                .await
+                .unwrap();
+            assert_eq!(valid.status(), StatusCode::OK, "own company {}", idx);
+            let payload = body_json(valid).await;
+            assert_eq!(payload["tenant_id"], f.0);
+            assert_eq!(payload["can_manage_sites"], true);
+            // Same exact Site code is a different tenant-scoped master.
+            // Each tenant may create only their own row, never another's.
+            let display_name = format!("R1053 Company {} Site", idx + 1);
+            let site_body = json!({"code":"SITE-R1053","display_name":display_name}).to_string();
+            let created = app
+                .clone()
+                .oneshot(req(
+                    "POST",
+                    "/api/v1/sites",
+                    f.3,
+                    Some(f.5),
+                    Some(f.6),
+                    Some(&site_body),
+                ))
+                .await
+                .unwrap();
+            assert_eq!(created.status(), StatusCode::CREATED);
+            let own_sites = app
+                .clone()
+                .oneshot(req("GET", "/api/v1/sites", f.3, Some(f.5), None, None))
+                .await
+                .unwrap();
+            assert_eq!(own_sites.status(), StatusCode::OK);
+            let visible = body_json(own_sites).await;
+            let sites = visible["sites"].as_array().unwrap();
+            assert_eq!(sites.len(), 1, "only current company Site may be listed");
+            assert_eq!(sites[0]["code"], "SITE-R1053");
+            assert_eq!(sites[0]["display_name"], display_name);
+            let own_dashboard = app
+                .clone()
+                .oneshot(req("GET", "/dashboard", f.3, Some(f.5), None, None))
+                .await
+                .unwrap();
+            assert_eq!(own_dashboard.status(), StatusCode::OK);
+            let other = &fixtures[1 - idx];
+            for (host, cookie) in [(other.3, f.5), (f.3, other.5), (other.3, other.5)] {
+                // Wrong Host with own cookie, or foreign cookie with own Host,
+                // must not authenticate to this tenant's session.
+                let result = app
+                    .clone()
+                    .oneshot(req(
+                        "GET",
+                        "/api/v1/capabilities",
+                        host,
+                        Some(cookie),
+                        None,
+                        None,
+                    ))
+                    .await
+                    .unwrap();
+                if host == other.3 && cookie == other.5 {
+                    assert_eq!(
+                        result.status(),
+                        StatusCode::OK,
+                        "other company remains independent"
+                    );
+                    assert_eq!(body_json(result).await["tenant_id"], other.0);
+                } else {
+                    assert_eq!(
+                        result.status(),
+                        StatusCode::UNAUTHORIZED,
+                        "cross-tenant session denied"
+                    );
+                }
+            }
+            let forged_mutation = app
+                .clone()
+                .oneshot(req(
+                    "POST",
+                    "/api/v1/logout",
+                    f.3,
+                    Some(f.5),
+                    Some(other.6),
+                    None,
+                ))
+                .await
+                .unwrap();
+            assert_eq!(forged_mutation.status(), StatusCode::UNAUTHORIZED);
+        }
+        let b = Uuid::parse_str(fixtures[1].0).unwrap();
+        admin
+            .execute(
+                "UPDATE ipat_platform.tenants SET state='suspended' WHERE id=$1",
+                &[&b],
+            )
+            .await
+            .unwrap();
+        let b_denied = app
+            .clone()
+            .oneshot(req(
+                "GET",
+                "/api/v1/capabilities",
+                fixtures[1].3,
+                Some(fixtures[1].5),
+                None,
+                None,
+            ))
+            .await
+            .unwrap();
+        assert_eq!(b_denied.status(), StatusCode::UNAUTHORIZED);
+        let a_healthy = app
+            .clone()
+            .oneshot(req(
+                "GET",
+                "/api/v1/capabilities",
+                fixtures[0].3,
+                Some(fixtures[0].5),
+                None,
+                None,
+            ))
+            .await
+            .unwrap();
+        assert_eq!(a_healthy.status(), StatusCode::OK);
+        admin.execute(
+            "UPDATE ipat_platform.identity_memberships SET revoked_at=clock_timestamp() WHERE tenant_id=$1 AND issuer=$2 AND subject=$3",
+            &[&Uuid::parse_str(fixtures[0].0).unwrap(), &issuer, &fixtures[0].4],
+        ).await.unwrap();
+        let revoked = app
+            .clone()
+            .oneshot(req(
+                "GET",
+                "/dashboard",
+                fixtures[0].3,
+                Some(fixtures[0].5),
+                None,
+                None,
+            ))
+            .await
+            .unwrap();
+        assert_eq!(revoked.status(), StatusCode::UNAUTHORIZED);
     }
 
     #[tokio::test]
