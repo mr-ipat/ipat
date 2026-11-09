@@ -56,3 +56,5 @@ export CARGO_TARGET_DIR="$work/rust-target" CARGO_BUILD_JOBS=8
 /home/openai/.cargo/bin/cargo test --locked --offline -p control-api \
   commercial_tenant_api::pg_integration::r1053_real_pg_two_company_host_cookie_isolation_and_revocation -- --exact
 echo R1053_VPS_REAL_POSTGRES18_TWO_COMPANY_AXUM_HOST_COOKIE_NEGATIVE_MATRIX_PASS
+# This is the existing required CI integration test that now also exercises R10.53.
+# Run it on a fresh disposable database to ensure no fixture collision.

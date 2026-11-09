@@ -3200,6 +3200,9 @@ mod pg_integration {
         {
             return;
         }
+        // R10.53 two-company Host/session isolation is part of the existing
+        // mandatory R9.70 real PostgreSQL + Axum CI job, not an optional test.
+        r1053_two_company_host_cookie_matrix().await;
         let admin = connect_admin().await;
         // 0023 is explicitly applied in the new R9.70 disposable CI step.
         if admin.query_one("SELECT to_regprocedure('ipat_platform.tenant_admin_ui_capability(text,text,uuid)') IS NOT NULL",&[]).await.unwrap().get::<_,bool>(0)==false {return}
@@ -3822,6 +3825,10 @@ mod pg_integration {
         {
             return;
         }
+        r1053_two_company_host_cookie_matrix().await;
+    }
+
+    async fn r1053_two_company_host_cookie_matrix() {
         let admin = connect_admin().await;
         let issuer = "https://id.r1053.synthetic.invalid/realms/ipat";
         let fixtures = [
