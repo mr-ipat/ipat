@@ -3815,7 +3815,6 @@ mod pg_integration {
         assert_eq!(csrf_missing.status(), StatusCode::UNAUTHORIZED);
     }
 
-
     // Genuine Axum + PostgreSQL integration on an isolated synthetic database,
     // NOT a real third-party OIDC/MFA login or public-domain TLS acceptance.
     #[tokio::test]
@@ -3882,12 +3881,24 @@ mod pg_integration {
             assert_eq!(issued.get::<_, Option<Uuid>>(0), Some(session));
         }
         let api_db = connect_admin().await;
-        api_db.batch_execute("SET ROLE ipat_tenant_api_login").await.unwrap();
+        api_db
+            .batch_execute("SET ROLE ipat_tenant_api_login")
+            .await
+            .unwrap();
         let app = router(Arc::new(api_db));
         for (idx, f) in fixtures.iter().enumerate() {
-            let valid = app.clone().oneshot(req(
-                "GET", "/api/v1/capabilities", f.3, Some(f.5), None, None,
-            )).await.unwrap();
+            let valid = app
+                .clone()
+                .oneshot(req(
+                    "GET",
+                    "/api/v1/capabilities",
+                    f.3,
+                    Some(f.5),
+                    None,
+                    None,
+                ))
+                .await
+                .unwrap();
             assert_eq!(valid.status(), StatusCode::OK, "own company {}", idx);
             let payload = body_json(valid).await;
             assert_eq!(payload["tenant_id"], f.0);
@@ -3896,62 +3907,131 @@ mod pg_integration {
             // Each tenant may create only their own row, never another's.
             let display_name = format!("R1053 Company {} Site", idx + 1);
             let site_body = json!({"code":"SITE-R1053","display_name":display_name}).to_string();
-            let created = app.clone().oneshot(req(
-                "POST", "/api/v1/sites", f.3, Some(f.5), Some(f.6), Some(&site_body),
-            )).await.unwrap();
+            let created = app
+                .clone()
+                .oneshot(req(
+                    "POST",
+                    "/api/v1/sites",
+                    f.3,
+                    Some(f.5),
+                    Some(f.6),
+                    Some(&site_body),
+                ))
+                .await
+                .unwrap();
             assert_eq!(created.status(), StatusCode::CREATED);
-            let own_sites = app.clone().oneshot(req(
-                "GET", "/api/v1/sites", f.3, Some(f.5), None, None,
-            )).await.unwrap();
+            let own_sites = app
+                .clone()
+                .oneshot(req("GET", "/api/v1/sites", f.3, Some(f.5), None, None))
+                .await
+                .unwrap();
             assert_eq!(own_sites.status(), StatusCode::OK);
             let visible = body_json(own_sites).await;
             let sites = visible["sites"].as_array().unwrap();
             assert_eq!(sites.len(), 1, "only current company Site may be listed");
             assert_eq!(sites[0]["code"], "SITE-R1053");
             assert_eq!(sites[0]["display_name"], display_name);
-            let own_dashboard = app.clone().oneshot(req(
-                "GET", "/dashboard", f.3, Some(f.5), None, None,
-            )).await.unwrap();
+            let own_dashboard = app
+                .clone()
+                .oneshot(req("GET", "/dashboard", f.3, Some(f.5), None, None))
+                .await
+                .unwrap();
             assert_eq!(own_dashboard.status(), StatusCode::OK);
             let other = &fixtures[1 - idx];
             for (host, cookie) in [(other.3, f.5), (f.3, other.5), (other.3, other.5)] {
                 // Wrong Host with own cookie, or foreign cookie with own Host,
                 // must not authenticate to this tenant's session.
-                let result = app.clone().oneshot(req(
-                    "GET", "/api/v1/capabilities", host, Some(cookie), None, None,
-                )).await.unwrap();
+                let result = app
+                    .clone()
+                    .oneshot(req(
+                        "GET",
+                        "/api/v1/capabilities",
+                        host,
+                        Some(cookie),
+                        None,
+                        None,
+                    ))
+                    .await
+                    .unwrap();
                 if host == other.3 && cookie == other.5 {
-                    assert_eq!(result.status(), StatusCode::OK, "other company remains independent");
+                    assert_eq!(
+                        result.status(),
+                        StatusCode::OK,
+                        "other company remains independent"
+                    );
                     assert_eq!(body_json(result).await["tenant_id"], other.0);
                 } else {
-                    assert_eq!(result.status(), StatusCode::UNAUTHORIZED, "cross-tenant session denied");
+                    assert_eq!(
+                        result.status(),
+                        StatusCode::UNAUTHORIZED,
+                        "cross-tenant session denied"
+                    );
                 }
             }
-            let forged_mutation = app.clone().oneshot(req(
-                "POST", "/api/v1/logout", f.3, Some(f.5), Some(other.6), None,
-            )).await.unwrap();
+            let forged_mutation = app
+                .clone()
+                .oneshot(req(
+                    "POST",
+                    "/api/v1/logout",
+                    f.3,
+                    Some(f.5),
+                    Some(other.6),
+                    None,
+                ))
+                .await
+                .unwrap();
             assert_eq!(forged_mutation.status(), StatusCode::UNAUTHORIZED);
         }
         let b = Uuid::parse_str(fixtures[1].0).unwrap();
-        admin.execute(
-            "UPDATE ipat_platform.tenants SET state='suspended' WHERE id=$1",
-            &[&b],
-        ).await.unwrap();
-        let b_denied = app.clone().oneshot(req(
-            "GET", "/api/v1/capabilities", fixtures[1].3, Some(fixtures[1].5), None, None,
-        )).await.unwrap();
+        admin
+            .execute(
+                "UPDATE ipat_platform.tenants SET state='suspended' WHERE id=$1",
+                &[&b],
+            )
+            .await
+            .unwrap();
+        let b_denied = app
+            .clone()
+            .oneshot(req(
+                "GET",
+                "/api/v1/capabilities",
+                fixtures[1].3,
+                Some(fixtures[1].5),
+                None,
+                None,
+            ))
+            .await
+            .unwrap();
         assert_eq!(b_denied.status(), StatusCode::UNAUTHORIZED);
-        let a_healthy = app.clone().oneshot(req(
-            "GET", "/api/v1/capabilities", fixtures[0].3, Some(fixtures[0].5), None, None,
-        )).await.unwrap();
+        let a_healthy = app
+            .clone()
+            .oneshot(req(
+                "GET",
+                "/api/v1/capabilities",
+                fixtures[0].3,
+                Some(fixtures[0].5),
+                None,
+                None,
+            ))
+            .await
+            .unwrap();
         assert_eq!(a_healthy.status(), StatusCode::OK);
         admin.execute(
             "UPDATE ipat_platform.identity_memberships SET revoked_at=clock_timestamp() WHERE tenant_id=$1 AND issuer=$2 AND subject=$3",
             &[&Uuid::parse_str(fixtures[0].0).unwrap(), &issuer, &fixtures[0].4],
         ).await.unwrap();
-        let revoked = app.clone().oneshot(req(
-            "GET", "/dashboard", fixtures[0].3, Some(fixtures[0].5), None, None,
-        )).await.unwrap();
+        let revoked = app
+            .clone()
+            .oneshot(req(
+                "GET",
+                "/dashboard",
+                fixtures[0].3,
+                Some(fixtures[0].5),
+                None,
+                None,
+            ))
+            .await
+            .unwrap();
         assert_eq!(revoked.status(), StatusCode::UNAUTHORIZED);
     }
 
