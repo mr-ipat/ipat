@@ -3892,6 +3892,23 @@ mod pg_integration {
             let payload = body_json(valid).await;
             assert_eq!(payload["tenant_id"], f.0);
             assert_eq!(payload["can_manage_sites"], true);
+            // Same exact Site code is a different tenant-scoped master.
+            // Each tenant may create only their own row, never another's.
+            let display_name = format!("R1053 Company {} Site", idx + 1);
+            let site_body = json!({"code":"SITE-R1053","display_name":display_name}).to_string();
+            let created = app.clone().oneshot(req(
+                "POST", "/api/v1/sites", f.3, Some(f.5), Some(f.6), Some(&site_body),
+            )).await.unwrap();
+            assert_eq!(created.status(), StatusCode::CREATED);
+            let own_sites = app.clone().oneshot(req(
+                "GET", "/api/v1/sites", f.3, Some(f.5), None, None,
+            )).await.unwrap();
+            assert_eq!(own_sites.status(), StatusCode::OK);
+            let visible = body_json(own_sites).await;
+            let sites = visible["sites"].as_array().unwrap();
+            assert_eq!(sites.len(), 1, "only current company Site may be listed");
+            assert_eq!(sites[0]["code"], "SITE-R1053");
+            assert_eq!(sites[0]["display_name"], display_name);
             let own_dashboard = app.clone().oneshot(req(
                 "GET", "/dashboard", f.3, Some(f.5), None, None,
             )).await.unwrap();
