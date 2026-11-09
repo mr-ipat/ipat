@@ -14,7 +14,7 @@ Once logged into VPS, use the exact verified R10.55 hash from the release record
     expected=c421ab6b591b1c4273c1dc7b4f0ef7fd342db10daf09dd22955db06cdf966a7d
     test "$(sha256sum "$src" | cut -d" " -f1)" = "$expected"
     sudo install -o root -g root -m 0500 "$src" /root/ipat-r1055-company-login-activation-audit.py
-    sudo sha256sum /root/ipat-r1055-company-login-activation-audit.py
+    test "$(sudo sha256sum /root/ipat-r1055-company-login-activation-audit.py | cut -d" " -f1)" = "$expected"
     sudo python3 /root/ipat-r1055-company-login-activation-audit.py
 
 Compare the root-owned installed hash with expected before running Python. This read-only script checks metadata and processes only; never reads/prints secrets. Two human company MFA and browser login are **always NOT VERIFIED** by this script. Never run user-writable code directly through sudo.
