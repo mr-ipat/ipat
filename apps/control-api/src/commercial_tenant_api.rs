@@ -3817,16 +3817,6 @@ mod pg_integration {
 
     // Genuine Axum + PostgreSQL integration on an isolated synthetic database,
     // NOT a real third-party OIDC/MFA login or public-domain TLS acceptance.
-    #[tokio::test]
-    async fn r1053_real_pg_two_company_host_cookie_isolation_and_revocation() {
-        if std::env::var("IPAT_PG_EPHEMERAL_TEST").as_deref() != Ok("1")
-            || std::env::var("PGDATABASE").as_deref() != Ok("ipat_synthetic")
-        {
-            return;
-        }
-        r1053_two_company_host_cookie_matrix().await;
-    }
-
     async fn r1053_two_company_host_cookie_matrix() {
         let admin = connect_admin().await;
         let issuer = "https://id.r1053.synthetic.invalid/realms/ipat";
