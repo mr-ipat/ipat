@@ -73,6 +73,11 @@ struct Snapshot {
     pops: Vec<Pop>,
     #[serde(default)]
     linked_c320_pop: Option<String>,
+    // Resetting only the LAB connector may temporarily remove the old
+    // representation. A newly saved draft/enrollment restores visibility.
+    // Existing inventory JSON files default to their prior behavior.
+    #[serde(default)]
+    linked_c320_hidden_until_reenrollment: bool,
 }
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -368,6 +373,12 @@ fn c320_present(snapshot: &Snapshot, live: &Value) -> Value {
         "health":"NOT_MEASURED","physical_writes_enabled":false,
         "remove_requires_separate_revocation":true})
 }
+fn show_linked_c320(snapshot: &Snapshot, live: &Value) -> bool {
+    !snapshot.linked_c320_hidden_until_reenrollment
+        || live.get("credentials_enrolled").and_then(Value::as_bool) == Some(true)
+        || live.get("draft_saved").and_then(Value::as_bool) == Some(true)
+}
+
 async fn physical(headers: HeaderMap) -> Value {
     super::c320_live_lab::connection_status(headers)
         .await
@@ -384,13 +395,18 @@ async fn list(
     let _guard = state.guard.lock().await;
     let snapshot = load(&state.path)
         .map_err(|_| error(StatusCode::SERVICE_UNAVAILABLE, "OWNER_STORE_UNAVAILABLE"))?;
-    let c320 = c320_present(&snapshot, &physical(headers).await);
-    let mut rows = vec![c320];
+    let live = physical(headers).await;
+    let linked_visible = show_linked_c320(&snapshot, &live);
+    let mut rows = Vec::new();
+    if linked_visible {
+        rows.push(c320_present(&snapshot, &live));
+    }
     rows.extend(snapshot.devices.iter().map(presented));
     Ok((
         super::private_lab_headers("application/json; charset=utf-8"),
         Json(json!({"owner_private_lab_only":true,"persistent":true,
             "count":rows.len(),"devices":rows,"audit_count":snapshot.audit.len(),
+            "c320_reenrollment_required":snapshot.linked_c320_hidden_until_reenrollment && !linked_visible,
             "production_tenant_registry":false})),
     ))
 }
@@ -406,7 +422,11 @@ async fn detail(
     let snapshot = load(&state.path)
         .map_err(|_| error(StatusCode::SERVICE_UNAVAILABLE, "OWNER_STORE_UNAVAILABLE"))?;
     let row = if id == "DEV-01" {
-        c320_present(&snapshot, &physical(headers).await)
+        let live = physical(headers).await;
+        if !show_linked_c320(&snapshot, &live) {
+            return Err(error(StatusCode::NOT_FOUND, "DEVICE_NOT_FOUND"));
+        }
+        c320_present(&snapshot, &live)
     } else {
         snapshot
             .devices
@@ -1139,6 +1159,37 @@ mod tests {
             vec!["CREATE_POP", "CREATE", "UPDATE_POP", "REMOVE", "REMOVE_POP"]
         );
     }
+    #[test]
+    fn reset_linked_c320_is_hidden_without_credentials_and_reappears_on_new_draft() {
+        let mut snapshot = Snapshot::default();
+        let offline = json!({"connector_online":true,"credentials_enrolled":false,
+            "draft_saved":false});
+        assert!(show_linked_c320(&snapshot, &offline));
+        snapshot.linked_c320_hidden_until_reenrollment = true;
+        assert!(!show_linked_c320(&snapshot, &offline));
+        assert!(!show_linked_c320(
+            &snapshot,
+            &json!({
+                "credentials_enrolled":false,"draft_saved":false,"connector_online":false
+            })
+        ));
+        assert!(show_linked_c320(
+            &snapshot,
+            &json!({
+                "credentials_enrolled":false,"draft_saved":true
+            })
+        ));
+        assert!(show_linked_c320(
+            &snapshot,
+            &json!({
+                "credentials_enrolled":true,"draft_saved":false
+            })
+        ));
+        let encoded = serde_json::to_vec(&snapshot).unwrap();
+        let restored: Snapshot = serde_json::from_slice(&encoded).unwrap();
+        assert!(restored.linked_c320_hidden_until_reenrollment);
+    }
+
     #[tokio::test]
     async fn standalone_site_resource_counts_live_assignments_and_safe_unassign() {
         let temp = tempfile::tempdir().unwrap();
