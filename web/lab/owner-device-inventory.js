@@ -268,6 +268,8 @@
       const data=linked ? {expected_revision:editing.revision,display_name:field('name').value.trim(),
           ...(field('pop').value?{pop_id:field('pop').value}:{clear_pop:true})}
         : { ...recordFields(),...(editing?.id ? {expected_revision:editing.revision}:{}) };
+      if(!linked && data.device_kind==='olt' && data.management_host==='10.10.13.233')
+        throw Error('The lab C320 uses the dedicated OLT connection form. Do not save a duplicate inventory record for the same physical target.');
       const endpoint=editing?.id ? api+'/'+encodeURIComponent(editing.id) : api;
       const result=await call(endpoint,{method:editing?.id?'PUT':'POST',body:JSON.stringify(data)});
       const wasEditing=Boolean(editing?.id);

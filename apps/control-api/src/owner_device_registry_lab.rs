@@ -175,6 +175,11 @@ fn permitted_vendor(vendor: &str, kind: &str, transport: &str) -> bool {
         _ => false,
     }
 }
+// The physical lab C320 is the fixed DEV-01 connector, not a generic
+// inventory record. Different POP/vendor/port values cannot duplicate it.
+fn reserved_owner_c320_endpoint(fields: &Fields) -> bool {
+    fields.device_kind == "olt" && fields.management_host.as_deref() == Some("10.10.13.233")
+}
 fn known_pop(snapshot: &Snapshot, code: &str) -> bool {
     snapshot.pops.iter().any(|p| p.code == code)
 }
@@ -451,6 +456,9 @@ async fn create(
     if !valid(&fields) {
         return Err(error(StatusCode::BAD_REQUEST, "INVALID_DEVICE_METADATA"));
     }
+    if reserved_owner_c320_endpoint(&fields) {
+        return Err(error(StatusCode::CONFLICT, "USE_DEDICATED_C320_CONNECTION"));
+    }
     let _guard = state.guard.lock().await;
     let mut snapshot = load(&state.path)
         .map_err(|_| error(StatusCode::SERVICE_UNAVAILABLE, "OWNER_STORE_UNAVAILABLE"))?;
@@ -565,6 +573,9 @@ async fn update(
         .map_err(|_| error(StatusCode::BAD_REQUEST, "INVALID_DEVICE_METADATA"))?;
     if !valid(&fields) {
         return Err(error(StatusCode::BAD_REQUEST, "INVALID_DEVICE_METADATA"));
+    }
+    if reserved_owner_c320_endpoint(&fields) {
+        return Err(error(StatusCode::CONFLICT, "USE_DEDICATED_C320_CONNECTION"));
     }
     if !known_pop(&snapshot, &fields.pop_id) {
         return Err(error(
@@ -904,6 +915,38 @@ mod tests {
         "management_host":"192.0.2.20","management_port":22})
         .to_string()
     }
+    #[tokio::test]
+    async fn cannot_duplicate_fixed_c320_via_generic_lab_inventory() {
+        let temp = tempfile::tempdir().unwrap();
+        let app = router_at(temp.path().join("owner").join("devices.json"));
+        assert_eq!(call(&app,"POST","/lab/owner/pops",
+            r#"{"code":"LAB-01","display_name":"Lab Core"}"#,true).await.0, StatusCode::CREATED);
+        for (vendor,port,transport) in [("ZTE",321,"ssh"),("C-DATA",22,"ssh"),("ZTE",161,"snmp")] {
+            let body = json!({"display_name":"Duplicate C320","pop_id":"LAB-01",
+                "device_kind":"olt","vendor":vendor,"exact_model":"C320",
+                "management_protocol":transport,"management_host":"10.10.13.233",
+                "management_port":port}).to_string();
+            let (code, response) = call(&app,"POST","/lab/owner/devices",&body,true).await;
+            assert_eq!(code,StatusCode::CONFLICT);
+            assert_eq!(response["error"],"USE_DEDICATED_C320_CONNECTION");
+        }
+        let mut ordinary: Value = serde_json::from_str(&example()).unwrap();
+        ordinary["pop_id"] = json!("LAB-01");
+        let (created, _) = call(&app,"POST","/lab/owner/devices",
+            &ordinary.to_string(),true).await;
+        assert_eq!(created,StatusCode::CREATED);
+        ordinary["management_host"] = json!("10.10.13.233");
+        ordinary["expected_revision"] = json!(1);
+        let (edited, result) = call(&app,"PUT",
+            "/lab/owner/devices/OWN-000001",&ordinary.to_string(),true).await;
+        assert_eq!(edited,StatusCode::CONFLICT);
+        assert_eq!(result["error"],"USE_DEDICATED_C320_CONNECTION");
+        let (_,inventory)=call(&app,"GET","/lab/owner/devices","",false).await;
+        assert_eq!(inventory["audit_count"],2);
+        assert_eq!(inventory["devices"].as_array().unwrap().len(),2);
+        assert_eq!(inventory["devices"][1]["management_host"],"192.0.2.20");
+    }
+
     #[tokio::test]
     async fn persists_crud_and_immutable_audit_across_router_restarts() {
         let dir = tempfile::tempdir().unwrap();
