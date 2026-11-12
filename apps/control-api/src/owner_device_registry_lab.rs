@@ -1167,15 +1167,24 @@ mod tests {
         assert!(show_linked_c320(&snapshot, &offline));
         snapshot.linked_c320_hidden_until_reenrollment = true;
         assert!(!show_linked_c320(&snapshot, &offline));
-        assert!(!show_linked_c320(&snapshot, &json!({
-            "credentials_enrolled":false,"draft_saved":false,"connector_online":false
-        })));
-        assert!(show_linked_c320(&snapshot, &json!({
-            "credentials_enrolled":false,"draft_saved":true
-        })));
-        assert!(show_linked_c320(&snapshot, &json!({
-            "credentials_enrolled":true,"draft_saved":false
-        })));
+        assert!(!show_linked_c320(
+            &snapshot,
+            &json!({
+                "credentials_enrolled":false,"draft_saved":false,"connector_online":false
+            })
+        ));
+        assert!(show_linked_c320(
+            &snapshot,
+            &json!({
+                "credentials_enrolled":false,"draft_saved":true
+            })
+        ));
+        assert!(show_linked_c320(
+            &snapshot,
+            &json!({
+                "credentials_enrolled":true,"draft_saved":false
+            })
+        ));
         let encoded = serde_json::to_vec(&snapshot).unwrap();
         let restored: Snapshot = serde_json::from_slice(&encoded).unwrap();
         assert!(restored.linked_c320_hidden_until_reenrollment);
