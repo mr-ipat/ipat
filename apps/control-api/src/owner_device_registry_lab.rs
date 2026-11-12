@@ -225,11 +225,6 @@ fn valid(fields: &Fields) -> bool {
         && valid_label(&fields.exact_model, 80)
         && ["olt", "ont", "router", "switch", "other"].contains(&fields.device_kind.as_str())
         && endpoint
-        && !(fields.device_kind == "olt"
-            && fields.vendor.eq_ignore_ascii_case("ZTE")
-            && fields.exact_model.eq_ignore_ascii_case("C320")
-            && fields.management_host.as_deref() == Some("10.10.13.233")
-            && fields.management_port == Some(321))
 }
 pub(super) fn private_dir(folder: &FsPath) -> std::io::Result<()> {
     if !folder.exists() {
@@ -453,11 +448,11 @@ async fn create(
     if !strict_owner(&headers, true) {
         return Err(error(StatusCode::FORBIDDEN, "OWNER_TUNNEL_REQUIRED"));
     }
-    if !valid(&fields) {
-        return Err(error(StatusCode::BAD_REQUEST, "INVALID_DEVICE_METADATA"));
-    }
     if reserved_owner_c320_endpoint(&fields) {
         return Err(error(StatusCode::CONFLICT, "USE_DEDICATED_C320_CONNECTION"));
+    }
+    if !valid(&fields) {
+        return Err(error(StatusCode::BAD_REQUEST, "INVALID_DEVICE_METADATA"));
     }
     let _guard = state.guard.lock().await;
     let mut snapshot = load(&state.path)
@@ -571,11 +566,11 @@ async fn update(
         .ok_or_else(|| error(StatusCode::BAD_REQUEST, "INVALID_DEVICE_METADATA"))?;
     let fields: Fields = serde_json::from_value(Value::Object(object))
         .map_err(|_| error(StatusCode::BAD_REQUEST, "INVALID_DEVICE_METADATA"))?;
-    if !valid(&fields) {
-        return Err(error(StatusCode::BAD_REQUEST, "INVALID_DEVICE_METADATA"));
-    }
     if reserved_owner_c320_endpoint(&fields) {
         return Err(error(StatusCode::CONFLICT, "USE_DEDICATED_C320_CONNECTION"));
+    }
+    if !valid(&fields) {
+        return Err(error(StatusCode::BAD_REQUEST, "INVALID_DEVICE_METADATA"));
     }
     if !known_pop(&snapshot, &fields.pop_id) {
         return Err(error(
@@ -919,32 +914,59 @@ mod tests {
     async fn cannot_duplicate_fixed_c320_via_generic_lab_inventory() {
         let temp = tempfile::tempdir().unwrap();
         let app = router_at(temp.path().join("owner").join("devices.json"));
-        assert_eq!(call(&app,"POST","/lab/owner/pops",
-            r#"{"code":"LAB-01","display_name":"Lab Core"}"#,true).await.0, StatusCode::CREATED);
-        for (vendor,port,transport) in [("ZTE",321,"ssh"),("C-DATA",22,"ssh"),("ZTE",161,"snmp")] {
+        assert_eq!(
+            call(
+                &app,
+                "POST",
+                "/lab/owner/pops",
+                r#"{"code":"LAB-01","display_name":"Lab Core"}"#,
+                true
+            )
+            .await
+            .0,
+            StatusCode::CREATED
+        );
+        for (vendor, port, transport) in [
+            ("ZTE", 321, "ssh"),
+            ("C-DATA", 22, "ssh"),
+            ("ZTE", 161, "snmp"),
+        ] {
             let body = json!({"display_name":"Duplicate C320","pop_id":"LAB-01",
                 "device_kind":"olt","vendor":vendor,"exact_model":"C320",
                 "management_protocol":transport,"management_host":"10.10.13.233",
-                "management_port":port}).to_string();
-            let (code, response) = call(&app,"POST","/lab/owner/devices",&body,true).await;
-            assert_eq!(code,StatusCode::CONFLICT);
-            assert_eq!(response["error"],"USE_DEDICATED_C320_CONNECTION");
+                "management_port":port})
+            .to_string();
+            let (code, response) = call(&app, "POST", "/lab/owner/devices", &body, true).await;
+            assert_eq!(code, StatusCode::CONFLICT);
+            assert_eq!(response["error"], "USE_DEDICATED_C320_CONNECTION");
         }
         let mut ordinary: Value = serde_json::from_str(&example()).unwrap();
         ordinary["pop_id"] = json!("LAB-01");
-        let (created, _) = call(&app,"POST","/lab/owner/devices",
-            &ordinary.to_string(),true).await;
-        assert_eq!(created,StatusCode::CREATED);
+        let (created, _) = call(
+            &app,
+            "POST",
+            "/lab/owner/devices",
+            &ordinary.to_string(),
+            true,
+        )
+        .await;
+        assert_eq!(created, StatusCode::CREATED);
         ordinary["management_host"] = json!("10.10.13.233");
         ordinary["expected_revision"] = json!(1);
-        let (edited, result) = call(&app,"PUT",
-            "/lab/owner/devices/OWN-000001",&ordinary.to_string(),true).await;
-        assert_eq!(edited,StatusCode::CONFLICT);
-        assert_eq!(result["error"],"USE_DEDICATED_C320_CONNECTION");
-        let (_,inventory)=call(&app,"GET","/lab/owner/devices","",false).await;
-        assert_eq!(inventory["audit_count"],2);
-        assert_eq!(inventory["devices"].as_array().unwrap().len(),2);
-        assert_eq!(inventory["devices"][1]["management_host"],"192.0.2.20");
+        let (edited, result) = call(
+            &app,
+            "PUT",
+            "/lab/owner/devices/OWN-000001",
+            &ordinary.to_string(),
+            true,
+        )
+        .await;
+        assert_eq!(edited, StatusCode::CONFLICT);
+        assert_eq!(result["error"], "USE_DEDICATED_C320_CONNECTION");
+        let (_, inventory) = call(&app, "GET", "/lab/owner/devices", "", false).await;
+        assert_eq!(inventory["audit_count"], 2);
+        assert_eq!(inventory["devices"].as_array().unwrap().len(), 2);
+        assert_eq!(inventory["devices"][1]["management_host"], "192.0.2.20");
     }
 
     #[tokio::test]
