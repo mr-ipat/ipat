@@ -528,3 +528,7 @@ Two existing fixed allowlisted read operations were actually executed through th
 ## R10.34 — DEV-01 fresh physical read-only acceptance (2026-10-16 WIB)
 
 Actual Ubuntu26 owner VPS reached 10.10.13.233:321 TCP with SSH initial identification, and :323 TCP with Telnet IAC negotiation. These were credentialless and CLI-free initial protocol probes. Existing enrolled SSH-only read-only C320 connector separately reported CONNECTED and last-read timestamp 2026-10-16T01:09:34.118111+00:00. Fresh fixed allowlisted reads: CARDS HTTP200=3 active boards at 2026-10-16T01:14:22.007835+00:00; FIRMWARE HTTP200=5 rows at 2026-10-16T01:14:27.529545+00:00, firmware_reconciled=false. No physical writes, Telnet authentication, firmware change or tenant commercial adoption; DEV-01 remains PARTIAL. Authorized Mac real headless Chrome rendered private Device Workbench via SSH tunnel.
+
+### R10.56 actual owner C320 reset/re-adoption (2026-11-12 WIB)
+
+Prior actual private inventory contained one disconnected but credential-enrolled ZTE C320 DEV-01. Under owner authorization the encrypted credential and old draft were archived, live credential deactivated and audited, and a new private bootstrap prepared. Actual current owner device list is ZERO; C320 status is NOT_ENROLLED. This is an IPAT management state reset, NOT a factory reset, physical device CLI/write, new firmware operation or authenticated physical read. Historical TC-OLT-01 reads remain historical; current physical compatibility/connectivity must be reverified after re-enrollment. See latest PROJECT_STATUS.
