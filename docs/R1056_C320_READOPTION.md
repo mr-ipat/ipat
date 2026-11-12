@@ -15,3 +15,16 @@ Reset sequence after CI and exact-native deployed build:
 Script: deploy/scripts/production/r1056/reset_c320_owner_adoption.py
 Tests: deploy/scripts/production/r1056/test_reset_c320_owner_adoption.py and Rust owner registry tests.
 Owner protected archive supports rollback. Never delete the overall IPAT data directory.
+
+
+## Verified Mac access and new enrollment (R10.57)
+
+On the approved owner Mac, bind exactly the local port 3002 because the owner-private API requires Host and Origin 127.0.0.1:3002 (the older port13002 instructions support viewing HTML but not protected owner inventory actions):
+
+    ssh -o ExitOnForwardFailure=yes -N -L 127.0.0.1:3002:127.0.0.1:3002 ipat-lab
+
+Then open:
+
+    http://127.0.0.1:3002/lab/device-workbench
+
+The actual Mac Chrome browser and owner API were tested over this tunnel, showing 0 managed records and C320 reset complete. The tunnel is owner-private only; do not expose 3002 on a public interface. In the dedicated C320 connection form, use its Copy Command to fetch the new one-time owner code into your local clipboard (never chat or Git), and enter the lab OLT SSH password in the private browser. Saving a draft alone is not proof of connection. On successful enrollment, the linked DEV-01 reappears without a duplicate; verified physical CLI read results still need separate acceptance. Generic owner device CRUD now rejects any duplicate C320 host (HTTP 409). Real SaaS login and broader device-adapter coverage remain incomplete.
