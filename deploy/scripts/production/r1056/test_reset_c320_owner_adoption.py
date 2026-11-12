@@ -59,6 +59,7 @@ class R1056ResetTests(unittest.TestCase):
                  patch.object(module,"SECRETS",root/"r945-connection"), \
                  patch.object(module,"ARCHIVE_DIR",root/"r1056-c320-readoption"), \
                  patch.object(module,"systemd",side_effect=lambda action,unit:calls.append((action,unit))), \
+                 patch.object(module,"verify_reset"), \
                  patch.dict(os.environ,{"IPAT_R1056_CONFIRM":module.PROTOCOL}):
                 module.do_reset()
             self.assertEqual(len(calls),4)
@@ -75,6 +76,24 @@ class R1056ResetTests(unittest.TestCase):
             d=json.loads((root/"r961-device-inventory/devices.json").read_text())
             self.assertTrue(d["linked_c320_hidden_until_reenrollment"])
             self.assertEqual(d["audit"][-1]["operation"],"RESET_LINKED_READ_ADOPTION")
+
+    def test_postcondition_failure_rolls_back_after_both_services_restart(self):
+        with tempfile.TemporaryDirectory() as td:
+            root,original=self.fixture(td)
+            calls=[]
+            with patch.object(module,"BASE",root), \
+                 patch.object(module,"REGISTRY",root/"r961-device-inventory/devices.json"), \
+                 patch.object(module,"SECRETS",root/"r945-connection"), \
+                 patch.object(module,"ARCHIVE_DIR",root/"r1056-c320-readoption"), \
+                 patch.object(module,"systemd",side_effect=lambda action,unit:calls.append((action,unit))), \
+                 patch.object(module,"verify_reset",side_effect=RuntimeError("synthetic postcondition refused")), \
+                 patch.dict(os.environ,{"IPAT_R1056_CONFIRM":module.PROTOCOL}):
+                with self.assertRaises(RuntimeError):
+                    module.do_reset()
+            self.assertEqual(json.loads((root/"r961-device-inventory/devices.json").read_text()),original)
+            self.assertTrue((root/"r945-connection/device.fernet").exists())
+            self.assertFalse((root/"r945-connection/bootstrap-token").exists())
+            self.assertGreaterEqual(len(calls),8)
 
     def test_restart_failure_restores_original_and_no_bootstrap_left(self):
         with tempfile.TemporaryDirectory() as td:

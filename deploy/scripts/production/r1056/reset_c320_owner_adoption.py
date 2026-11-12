@@ -17,6 +17,7 @@ import subprocess
 import sys
 import tempfile
 import time
+import urllib.request
 
 BASE = Path("/home/openai/.local/share/ipat")
 REGISTRY = BASE / "r961-device-inventory" / "devices.json"
@@ -95,6 +96,29 @@ def systemd(action, name):
     run("systemctl", "--user", action, name)
 
 
+def verify_reset():
+    base = "http://127.0.0.1:3002"
+    for attempt in range(24):
+        try:
+            with urllib.request.urlopen(base + "/lab/owner/devices", timeout=2) as response:
+                inventory = json.loads(response.read(16 * 1024))
+            with urllib.request.urlopen(base + "/lab/c320-owner-connection", timeout=2) as response:
+                connector = json.loads(response.read(16 * 1024))
+            if (inventory.get("count") == 0
+                and inventory.get("devices") == []
+                and inventory.get("c320_reenrollment_required") is True
+                and connector.get("connector_online") is True
+                and connector.get("credentials_enrolled") is False
+                and connector.get("draft_saved") is False
+                and connector.get("production_adopted") is False
+                and connector.get("physical_writes_enabled") is False):
+                return
+        except (ValueError, OSError, TimeoutError):
+            pass
+        time.sleep(0.25)
+    raise RuntimeError("readoption postcondition failed; rollback required")
+
+
 def do_reset():
     uid = os.getuid()
     if uid == 0 or os.geteuid() != uid:
@@ -160,6 +184,7 @@ def do_reset():
         # Neither the token nor any old encrypted credential appears in stdout.
         for service in reversed(UNITS):
             systemd("start", service)
+        verify_reset()
         print("R1056_C320_READ_ADOPTION_RESET_STAGED_REENROLL_REQUIRED")
         print("OLD_ENCRYPTED_CREDENTIAL_ARCHIVED_OWNER_ONLY")
         print("NO_DEVICE_COMMANDS_NO_PRODUCTION_TENANT_MUTATION")
