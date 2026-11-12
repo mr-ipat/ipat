@@ -160,9 +160,11 @@
         throw Error('Registry returned an unexpected response');
       items=payload.devices;
       const linked=items.find(item=>item.id==='DEV-01');
-      summary.textContent=items.length+' managed records · '+(linked
-        ? 'Live C320: '+linked.connection_state : 'Live C320 status unknown')
-        +' · Durable private owner inventory';
+      summary.textContent=items.length+' managed records · '+(
+        payload.c320_reenrollment_required===true
+          ? 'C320 reset complete — use the dedicated OLT connection form to enroll again'
+          : linked ? 'C320: '+linked.connection_state : 'No enrolled C320 in this inventory'
+      )+' · Durable private owner inventory';
       render();
     } catch(error) {
       summary.textContent='Inventory unavailable: '+error.message;
